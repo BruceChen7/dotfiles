@@ -13,6 +13,9 @@ Plug 'ludovicchabant/vim-gutentags'
 Plug 'mhinz/vim-signify'
 Plug 'Shougo/echodoc.vim'
 Plug 'rdnetto/YCM-Generator', {'branch': 'stable'}
+Plug 'altercation/vim-colors-solarized'
+Plug 'ldelossa/vimdark'
+Plug 'morhetz/gruvbox'
 call plug#end()
 
 
@@ -55,6 +58,7 @@ let g:ycm_semantic_triggers =  {
             \ 'cs,lua,javascript': ['re!\w{2}'],
             \ }
 
+let g:ycm_server_python_interpreter="/usr/bin/python2.7"
 let g:ycm_filetype_whitelist = {
             \ "c":1,
             \ "cpp":1,
