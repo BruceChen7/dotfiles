@@ -1,0 +1,1 @@
+/data1/brookchen/rail_develop_branch/common/builder/blade/vim/ftdetect/blade.vim
