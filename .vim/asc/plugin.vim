@@ -13,9 +13,7 @@ Plug 'ludovicchabant/vim-gutentags'
 Plug 'mhinz/vim-signify'
 Plug 'Shougo/echodoc.vim'
 Plug 'rdnetto/YCM-Generator', {'branch': 'stable'}
-Plug 'altercation/vim-colors-solarized'
-Plug 'ldelossa/vimdark'
-Plug 'morhetz/gruvbox'
+Plug 'owickstrom/vim-colors-paramount'
 call plug#end()
 
 
@@ -117,7 +115,7 @@ let g:ycm_filetype_whitelist = {
 " leadf设置
 let g:Lf_ShortcutF = '<c-p>'
 noremap <m-m> :LeaderfMru<cr>
-noremap <m-n> :LeaderfFunction<cr>
+noremap <m-p> :LeaderfFunction<cr>
 noremap <m-u> :LeaderfBuffer<cr>
 noremap <m-t> :LeaderfTag<cr>
 
