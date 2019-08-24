@@ -133,6 +133,8 @@ exec 'set rtp+='.s:home
 IncScript .vim/asc/vimmake.vim
 VimmakeKeymap
 IncScript .vim/asc/config.vim
+IncScript .vim/asc/gtags.vim
+IncScript .vim/asc/gtags-cscope.vim
 IncScript .vim/asc/tools.vim
 IncScript .vim/asc/keymaps.vim
 IncScript .vim/asc/plugin.vim
@@ -142,7 +144,7 @@ syntax  on
 filetype plugin  on
 filetype plugin indent on
 
-let mapleader = ","
+let mapleader = ";"
 
 """"""""key mapping""""""""""""""
 nnoremap <leader>ev :vsplit ~/.vimrc <cr>
@@ -161,3 +163,5 @@ set cc=100
 set t_Co=256
 set background=dark
 colorscheme paramount
+let $GTAGSLABEL = 'native-pygments'
+

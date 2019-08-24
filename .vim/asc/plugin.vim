@@ -14,6 +14,8 @@ Plug 'mhinz/vim-signify'
 Plug 'Shougo/echodoc.vim'
 Plug 'rdnetto/YCM-Generator', {'branch': 'stable'}
 Plug 'owickstrom/vim-colors-paramount'
+Plug 'skywind3000/vim-preview'
+Plug 'skywind3000/gutentags_plus'
 call plug#end()
 
 
@@ -116,8 +118,15 @@ let g:ycm_filetype_whitelist = {
 let g:Lf_ShortcutF = '<c-p>'
 noremap <m-m> :LeaderfMru<cr>
 noremap <m-p> :LeaderfFunction<cr>
-noremap <m-u> :LeaderfBuffer<cr>
+noremap <m-r> :LeaderfBuffer<cr>
 noremap <m-t> :LeaderfTag<cr>
+
+" vim-preivew设置
+noremap <m-;> :PreviewTag<CR>
+noremap <silent><M-:> :PreviewClose<cr>
+noremap <silent><tab>; :PreviewGoto edit<cr>
+noremap <silent><tab>: :PreviewGoto tabe<cr>
+
 
 " signify设置
 " noremap <s-l> :SignifyDiff<cr>
@@ -143,25 +152,35 @@ let g:Lf_NormalMap = {
     \ }
 
 " tags设置
-" set tags=./.tags;,.tags
+set tags=./.tags;,.tags
+
+let g:gutentags_modules = ['ctags', 'gtags_cscope']
 " gutentags 搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归
 let g:gutentags_project_root = ['.root', '.svn', '.git', '.hg', '.project']
 " 所生成的数据文件的名称
 let g:gutentags_ctags_tagfile = '.tags'
 " 将自动生成的 tags 文件全部放入 ~/.cache/tags 目录中，避免污染工程目录
 let s:vim_tags = expand('~/.cache/tags')
+" 设置目录
 let g:gutentags_cache_dir = s:vim_tags
 
-" 配置 ctags 的参数
+" change focus to quickfix window after search (optional).
+let g:gutentags_plus_switch = 1
+
+
+" 配置 ctags/universal tags 的参数
 let g:gutentags_ctags_extra_args = ['--fields=+niazS', '--extra=+q']
 let g:gutentags_ctags_extra_args += ['--c++-kinds=+px']
 let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
+" 使用universal ctags
+let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
+" 不加载universal ctags数据库
+let g:gutentags_auto_add_gtags_cscope = 0
 
 " 检测 ~/.cache/tags 不存在就新建
 if !isdirectory(s:vim_tags)
     silent! call mkdir(s:vim_tags, 'p')
 endif
-
 
 "======================================================================
 " 将build/compile_commands.json放在当前的工作目录中
