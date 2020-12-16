@@ -1,3 +1,4 @@
 plugged
 cache
-.swp
+*.swp
+.vim/cache/

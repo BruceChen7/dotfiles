@@ -30,9 +30,6 @@ noremap <silent><tab>8 :VinegarOpen belowright sp<cr>
 noremap <silent><tab>9 :VinegarOpen tabedit<cr>
 noremap <silent>+ :VinegarOpen edit<cr>
 
-noremap <silent><space>ha :GuiSignRemove
-			\ errormarker_error errormarker_warning<cr>
-
 " replace
 noremap <space>p viw"0p
 noremap <space>y yiw
@@ -63,37 +60,9 @@ cnoremap <M-l> <c-right>
 cnoremap <M-b> <c-left>
 cnoremap <M-f> <c-right>
 
-
-"----------------------------------------------------------------------
-" space + s : svn
-"----------------------------------------------------------------------
-noremap <space>sc :VimMake svn co -m "update from vim"<cr>
-noremap <space>su :VimMake svn up<cr>
-noremap <space>st :VimMake svn st<cr>
-
 " editing commands
 noremap <space>a ggVG
 
-
-"----------------------------------------------------------------------
-" space + j : make
-"----------------------------------------------------------------------
-" noremap <silent><space>jj  :VimMake -cwd=<root> make<cr>
-" noremap <silent><space>jc  :VimMake -cwd=<root> make clean<cr>
-" noremap <silent><space>jk  :VimMake -mode=4 -cwd=<root> make run<cr>
-" noremap <silent><space>jl  :VimMake -mode=4 -cwd=<root> make test<cr>
-" noremap <silent><space>j1  :VimMake -mode=4 -cwd=<root> make t1<cr>
-" noremap <silent><space>j2  :VimMake -mode=4 -cwd=<root> make t2<cr>
-" noremap <silent><space>j3  :VimMake -mode=4 -cwd=<root> make t3<cr>
-" noremap <silent><space>j4  :VimMake -mode=4 -cwd=<root> make t4<cr>
-" noremap <silent><space>j5  :VimMake -mode=4 -cwd=<root> make t5<cr>
-" noremap <silent><space>k1  :VimMake -cwd=<root> make t1<cr>
-" noremap <silent><space>k2  :VimMake -cwd=<root> make t2<cr>
-" noremap <silent><space>k3  :VimMake -cwd=<root> make t3<cr>
-" noremap <silent><space>k4  :VimMake -cwd=<root> make t4<cr>
-" noremap <silent><space>k5  :VimMake -cwd=<root> make t5<cr>
-"
-" noremap <silent><space>jm :call Tools_SwitchMakeFile()<cr>
 
 
 noremap <silent><F9> :call Toggle_QuickFix(5)<cr>
@@ -159,18 +128,6 @@ noremap <silent><space>fh :call Open_HeaderFile(1)<cr>
 noremap <silent><space>ft :call Open_Explore(0)<cr>
 noremap <silent><space>fe :call Open_Explore(1)<cr>
 noremap <silent><space>fo :call Open_Explore(2)<cr>
-" noremap <silent><space>fp :call Tools_Pydoc("<C-R>=expand("<cword>")<cr>", 1)<cr>
-" noremap <silent><space>fs :mksession! ~/.vim/session.txt<cr>
-" noremap <silent><space>fl :so ~/.vim/session.txt<cr>
-
-" set ssop-=options    " do not store global and local values in a session
-" set ssop-=folds      " do not store folds
-"
-" for s:index in range(5)
-" 	exec 'noremap <silent><space>f'.s:index.'s :mksession! ~/.vim/session.'.s:index.'<cr>'
-" 	exec 'noremap <silent><space>f'.s:index.'l :so ~/.vim/session.'.s:index.'<cr>'
-" endfor
-
 
 "----------------------------------------------------------------------
 " leader + b/c : buffer
@@ -178,19 +135,6 @@ noremap <silent><space>fo :call Open_Explore(2)<cr>
 noremap <silent><leader>bc :BufferClose<cr>
 noremap <silent><leader>cw :call Change_DirectoryToFile()<cr>
 
-
-"----------------------------------------------------------------------
-" space + h : fast open files
-"----------------------------------------------------------------------
-" noremap <space>hp :FileSwitch tabe ~/.vim/project.txt<cr>
-" noremap <space>hl :FileSwitch tabe ~/.vim/cloud/Documents/agenda.otl<cr>
-" noremap <space>hf <c-w>gf
-"
-" noremap <space>hb :FileSwitch tabe ~/.vim/bundle.vim<cr>
-" noremap <space>hq :FileSwitch tabe ~/.vim/quicknote.txt<cr>
-" noremap <space>hd :FileSwitch tabe ~/Dropbox/Documents/notes.txt<cr>
-" noremap <space>ho :FileSwitch tabe ~/.vim/cloud/Documents/cloudnote.txt<cr>
-" noremap <space>h; :call asclib#owncloud_sync()<cr>
 
 let s:filename = expand('<sfile>:p')
 exec 'nnoremap <space>hk :FileSwitch tabe '.fnameescape(s:filename).'<cr>'
@@ -233,17 +177,6 @@ vmap <space>gs y/<C-R>=escape(@", '\\/.*$^~[]')<CR>
 vmap <space>gr y:%s/<C-R>=escape(@", '\\/.*$^~[]')<CR>//gc<Left><Left><Left>
 
 
-"----------------------------------------------------------------------
-" linting
-"----------------------------------------------------------------------
-" noremap <silent><space>lp :call asclib#lint_pylint('')<cr>
-" noremap <silent><space>lf :call asclib#lint_flake8('')<cr>
-" noremap <silent><space>ls :call asclib#lint_splint('')<cr>
-" noremap <silent><space>lc :call asclib#lint_cppcheck('')<cr>
-" noremap <silent><space>lg :call asclib#open_gprof('', '')<cr>
-" noremap <silent><space>lt :call asclib#html_prettify()<cr>
-"
-
 noremap <C-F10> :VimBuild gcc -pg<cr>
 
 
@@ -255,11 +188,5 @@ nnoremap gl :YcmCompleter GoToDefinition <cr>
 nnoremap gx :YcmCompleter GoToDefinitionElseDeclaration <cr>
 nnoremap gy :YcmCompleter GoToReferences <cr>
 
-nnoremap <silent>g1 :GrepCode <C-R>=expand("<cword>")<cr><cr>
-nnoremap <silent>g2 :GrepCode! <C-R>=expand("<cword>")<cr><cr>
-nnoremap <silent>g3 :VimScope g <C-R>=expand("<cword>")<cr><cr>
-nnoremap <silent>g4 :VimScope s <C-R>=expand("<cword>")<cr><cr>
+nnoremap <silent>g1 :AsyncTask grep-cword<cr>
 nnoremap <silent>g5 :PreviewTag<cr>
-nnoremap <silent>g6 :call vimmake#update_tags('!', 'cs', '.cscope')<cr>
-nnoremap <silent>g7 :call vimmake#update_tags('!', 'py', '.cscopy')<cr>
-nnoremap <silent>g9 :call vimmake#update_tags('!', 'ctags', '.tags')<cr>

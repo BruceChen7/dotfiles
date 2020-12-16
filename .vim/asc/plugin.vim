@@ -1,42 +1,44 @@
 silent! call plug#begin()
-Plug 'bling/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
 Plug 'scrooloose/nerdtree'
-Plug 'terryma/vim-multiple-cursors'
 Plug 'tomtom/tcomment_vim'
-Plug 'Valloric/YouCompleteMe'
+Plug 'skywind3000/asynctasks.vim'
 Plug 'skywind3000/asyncrun.vim'
 Plug 'ConradIrwin/vim-bracketed-paste'
 Plug 'bronson/vim-trailing-whitespace'
 Plug 'Yggdroot/LeaderF', {'do': './install.sh'}
-Plug 'ludovicchabant/vim-gutentags'
 Plug 'mhinz/vim-signify'
-Plug 'Shougo/echodoc.vim'
-Plug 'rdnetto/YCM-Generator', {'branch': 'stable'}
-Plug 'owickstrom/vim-colors-paramount'
+Plug 'ludovicchabant/vim-gutentags'
 Plug 'skywind3000/vim-preview'
 Plug 'skywind3000/gutentags_plus'
+Plug 'tpope/vim-fugitive'
+Plug 'ycm-core/YouCompleteMe'
+"Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'Chiel92/vim-autoformat'
+Plug 'skywind3000/vim-terminal-help'
+Plug 'wellle/targets.vim'
+Plug 'pechorin/any-jump.vim'
+Plug 'voldikss/vim-floaterm'
+Plug 'camspiers/lens.vim'
+Plug 'ojroques/vim-oscyank', {'branch': 'main'}
+
+" colorscheme
+Plug 'kkga/vim-envy'
+Plug 'sonph/onehalf', { 'rtp': 'vim' }
+Plug 'habamax/vim-polar'
 call plug#end()
-
-
-"----------------------------------------------------------------------
-"  airline config
-"----------------------------------------------------------------------
-let g:airline#extensions#tabline#enabled = 1
-let g:airline_theme="base16"
-
 
 
 "----------------------------------------------------------------------
 " nerdtree setting
 "----------------------------------------------------------------------
-
-" let NERDTreeWinSize=20
+let NERDTreeWinSize=20
 noremap ne :NERDTreeToggle<CR> :vertical resize +3 <cr>
+noremap nc :NERDTree % <CR>
 let NERDTreeIgnore = ['\~$', '\$.*$', '\.swp$', '\.pyc$', '#.\{-\}#$']
 let NERDTreeRespectWildIgnore = 1
+" noremap <silent> nc :Fern %:h -drawer -width=35 -toggle<CR><C-w>=
+" noremap <silent> ne :Fern . -reveal=% <CR><C-w>=
 
-let g:ycm_global_ycm_extra_conf = '~/.vim/plugged/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
 
 "----------------------------------------------------------------------
 " Youcompleteme setting
@@ -50,75 +52,76 @@ let g:ycm_complete_in_strings=1
 let g:ycm_key_invoke_completion = '<c-z>'
 let g:ycm_complete_in_comments = 1
 set completeopt=menu,menuone
+let g:ycm_global_ycm_extra_conf = '~/.vim/plugged/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
 
 noremap <c-z> <NOP>
 
 let g:ycm_semantic_triggers =  {
-            \ 'c,cpp,python,java,go,erlang,perl': ['re!\w{2}'],
-            \ 'cs,lua,javascript': ['re!\w{2}'],
-            \ }
+			\ 'c,cpp,python,java,go,erlang,perl': ['re!\w{2}'],
+			\ 'cs,lua,javascript': ['re!\w{2}'],
+			\ }
 
-let g:ycm_server_python_interpreter="/usr/bin/python2.7"
+let g:ycm_server_python_interpreter="/usr/bin/python3"
 let g:ycm_filetype_whitelist = {
-            \ "c":1,
-            \ "cpp":1,
-            \ "objc":1,
-            \ "objcpp":1,
-            \ "python":1,
-            \ "java":1,
-            \ "javascript":1,
-            \ "coffee":1,
-            \ "vim":1,
-            \ "go":1,
-            \ "cs":1,
-            \ "lua":1,
-            \ "perl":1,
-            \ "perl6":1,
-            \ "php":1,
-            \ "ruby":1,
-            \ "rust":1,
-            \ "erlang":1,
-            \ "asm":1,
-            \ "nasm":1,
-            \ "masm":1,
-            \ "tasm":1,
-            \ "asm68k":1,
-            \ "asmh8300":1,
-            \ "asciidoc":1,
-            \ "basic":1,
-            \ "vb":1,
-            \ "make":1,
-            \ "cmake":1,
-            \ "html":1,
-            \ "css":1,
-            \ "less":1,
-            \ "json":1,
-            \ "cson":1,
-            \ "typedscript":1,
-            \ "haskell":1,
-            \ "lhaskell":1,
-            \ "lisp":1,
-            \ "scheme":1,
-            \ "sdl":1,
-            \ "sh":1,
-            \ "zsh":1,
-            \ "bash":1,
-            \ "man":1,
-            \ "markdown":1,
-            \ "matlab":1,
-            \ "maxima":1,
-            \ "dosini":1,
-            \ "conf":1,
-            \ "config":1,
-            \ "zimbu":1,
-            \ "ps1":1,
-            \ }
+			\ "c":1,
+			\ "cpp":1,
+			\ "objc":1,
+			\ "objcpp":1,
+			\ "python":1,
+			\ "java":1,
+			\ "javascript":1,
+			\ "coffee":1,
+			\ "vim":1,
+			\ "go":1,
+			\ "cs":1,
+			\ "lua":1,
+			\ "perl":1,
+			\ "perl6":1,
+			\ "php":1,
+			\ "ruby":1,
+			\ "rust":1,
+			\ "erlang":1,
+			\ "asm":1,
+			\ "nasm":1,
+			\ "masm":1,
+			\ "tasm":1,
+			\ "asm68k":1,
+			\ "asmh8300":1,
+			\ "asciidoc":1,
+			\ "basic":1,
+			\ "vb":1,
+			\ "make":1,
+			\ "cmake":1,
+			\ "html":1,
+			\ "css":1,
+			\ "less":1,
+			\ "json":1,
+			\ "cson":1,
+			\ "typedscript":1,
+			\ "haskell":1,
+			\ "lhaskell":1,
+			\ "lisp":1,
+			\ "scheme":1,
+			\ "sdl":1,
+			\ "sh":1,
+			\ "zsh":1,
+			\ "bash":1,
+			\ "man":1,
+			\ "markdown":1,
+			\ "matlab":1,
+			\ "maxima":1,
+			\ "dosini":1,
+			\ "conf":1,
+			\ "config":1,
+			\ "zimbu":1,
+			\ "ps1":1,
+			\ }
 
 " leadf设置
 let g:Lf_ShortcutF = '<c-p>'
 noremap <m-m> :LeaderfMru<cr>
 noremap <m-p> :LeaderfFunction<cr>
-noremap <m-r> :LeaderfBuffer<cr>
+noremap <m-b> :LeaderfBuffer<cr>
 noremap <m-t> :LeaderfTag<cr>
 
 " vim-preivew设置
@@ -139,17 +142,18 @@ let g:Lf_CacheDirectory = expand('~/.vim/cache')
 let g:Lf_ShowRelativePath = 0
 let g:Lf_HideHelp = 1
 let g:Lf_StlColorscheme = 'powerline'
+let g:Lf_Ctags = '/usr/local/bin/ctags'
 
 let g:Lf_NormalMap = {
-    \ "File":   [["<ESC>", ':exec g:Lf_py "fileExplManager.quit()"<CR>'],
-    \            ["<F6>", ':exec g:Lf_py "fileExplManager.quit()"<CR>'] ],
-    \ "Buffer": [["<ESC>", ':exec g:Lf_py "bufExplManager.quit()"<CR>'],
-    \            ["<F6>", ':exec g:Lf_py "bufExplManager.quit()"<CR>'] ],
-    \ "Mru":    [["<ESC>", ':exec g:Lf_py "mruExplManager.quit()"<CR>']],
-    \ "Tag":    [["<ESC>", ':exec g:Lf_py "tagExplManager.quit()"<CR>']],
-    \ "Function":    [["<ESC>", ':exec g:Lf_py "functionExplManager.quit()"<CR>']],
-    \ "Colorscheme":    [["<ESC>", ':exec g:Lf_py "colorschemeExplManager.quit()"<CR>']],
-    \ }
+			\ "File":   [["<ESC>", ':exec g:Lf_py "fileExplManager.quit()"<CR>'],
+			\            ["<F6>", ':exec g:Lf_py "fileExplManager.quit()"<CR>'] ],
+			\ "Buffer": [["<ESC>", ':exec g:Lf_py "bufExplManager.quit()"<CR>'],
+			\            ["<F6>", ':exec g:Lf_py "bufExplManager.quit()"<CR>'] ],
+			\ "Mru":    [["<ESC>", ':exec g:Lf_py "mruExplManager.quit()"<CR>']],
+			\ "Tag":    [["<ESC>", ':exec g:Lf_py "tagExplManager.quit()"<CR>']],
+			\ "Function":    [["<ESC>", ':exec g:Lf_py "functionExplManager.quit()"<CR>']],
+			\ "Colorscheme":    [["<ESC>", ':exec g:Lf_py "colorschemeExplManager.quit()"<CR>']],
+			\ }
 
 " tags设置
 set tags=./.tags;,.tags
@@ -177,32 +181,65 @@ let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
 " 不加载universal ctags数据库
 let g:gutentags_auto_add_gtags_cscope = 0
 
+let g:gutentags_define_advanced_commands = 1
+let $GTAGSLABEL='native'
+let $GTAGSCONF='/usr/local/share/gtags/gtags.conf'
+
+
 " 检测 ~/.cache/tags 不存在就新建
 if !isdirectory(s:vim_tags)
-    silent! call mkdir(s:vim_tags, 'p')
+	silent! call mkdir(s:vim_tags, 'p')
 endif
 
-"======================================================================
-" 将build/compile_commands.json放在当前的工作目录中
-"======================================================================
-function! <SID>CopyBuildJsonToCWD()
-    let l:cwd_directory = getcwd()
-    let l:build_directory = l:cwd_directory . '/build'
-    let l:build_json_file = l:build_directory . "/compile_commands.json"
-    if !isdirectory(l:build_directory) || !filereadable(l:build_json_file)
-        call asclib#errmsg(l:build_directory . " is not existed or ".l:build_json_file. " not existed")
-        return
-    endif
-    call system('cp ' . l:build_json_file. ' '. l:cwd_directory)
-    call asclib#cmdmsg('compile_commands move done', 1)
-    " 清除Ycm编译数据
-    YcmCompleter ClearCompilationFlagCache
-endfunc
+let g:asyncrun_open = 6
 
-noremap <space>bj :call <SID>CopyBuildJsonToCWD()<cr>
+"""coc.vims配置
+" set updatetime=300
+" set shortmess+=c
+" set cmdheight=2
+" " Recently vim can merge signcolumn and number column into one
+" set signcolumn=number
+"
+" " Use tab for trigger completion with characters ahead and navigate.
+" " NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
+" " other plugin before putting this into your config.
+" inoremap <silent><expr> <TAB>
+" 			\ pumvisible() ? "\<C-n>" :
+" 			\ <SID>check_back_space() ? "\<TAB>" :
+" 			\ coc#refresh()
+" inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+"
+" function! s:check_back_space() abort
+" 	let col = col('.') - 1
+" 	return !col || getline('.')[col - 1]  =~# '\s'
+" endfunction
+"
+" " Make <CR> auto-select the first completion item and notify coc.nvim to
+" " format on enter, <cr> could be remapped by other vim plugin
+" inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm()
+" 			\: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+"
+" " Use `[g` and `]g` to navigate diagnostics
+" " Use `:CocDiagnostics` to get all diagnostics of current buffer in location list.
+" nmap <silent> [g <Plug>(coc-diagnostic-prev)
+" nmap <silent> ]g <Plug>(coc-diagnostic-next)
+"
+" " GoTo code navigation.
+" nmap <silent> gd <Plug>(coc-definition)
+" nmap <silent> gy <Plug>(coc-type-definition)
+" nmap <silent> gi <Plug>(coc-implementation)
+" nmap <silent> gr <Plug>(coc-references)
+"
+"
+" function! s:show_documentation()
+"   if (index(['vim','help'], &filetype) >= 0)
+"     execute 'h '.expand('<cword>')
+"   elseif (coc#rpc#ready())
+"     call CocActionAsync('doHover')
+"   else
+"     execute '!' . &keywordprg . " " . expand('<cword>')
+"   endif
+" endfunction
 
-" 这个键冲突
-let g:multi_cursor_select_all_word_key = '<A-a>'
-
-set cmdheight=2
-let g:echodoc_enable_at_startup = 1
+" Highlight the symbol and its references when holding the cursor.
+"autocmd CursorHold * silent call CocActionAsync('highlight')

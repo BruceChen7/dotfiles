@@ -552,37 +552,6 @@ endfunc
 
 
 "----------------------------------------------------------------------
-" bash for windows 
-"----------------------------------------------------------------------
-function! asclib#wsl_bash(cwd)
-	let root = $SystemRoot
-	let test1 = root . '/system32/bash.exe'
-	let test2 = root . '/SysNative/bash.exe'
-	let cd = haslocaldir()? 'lcd ' : 'cd '
-	let cwd = getcwd()
-	if executable(test1)
-		let name = test1
-	elseif executable(test2)
-		let name = test2
-	else
-		call asclib#errmsg('can not find bash for window')
-		return
-	endif
-	if a:cwd != ''
-		if a:cwd == '%'
-			exec cd . fnameescape(expand('%:p:h'))
-		else
-			exec cd . fnameescape(a:cwd)
-		endif
-	endif
-	silent exec 'silent !start '. fnameescape(name)
-	if a:cwd != ''
-		exec cd . fnameescape(cwd)
-	endif
-endfunc
-
-
-"----------------------------------------------------------------------
 " change color
 "----------------------------------------------------------------------
 function! asclib#color_switch(names)
