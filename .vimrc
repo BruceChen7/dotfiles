@@ -96,18 +96,6 @@ inoremap <tab>k <esc><c-w>k
 inoremap <tab>l <esc><c-w>l
 inoremap <tab>w <esc><c-w>w
 
-"======================================================================
-" 这是在terminal模式下使用tab h 来移动光标焦点
-"======================================================================
-tnoremap <m-q> <c-\><c-n>
-if has("terminal") && exists(":terminal") == 2 && has("patch-8.1.1")
-    set termwinkey=<c-_>
-    tnoremap <tab>h <c-_>h
-    tnoremap <tab>l <c-_>l
-    tnoremap <tab>j <c-_>j
-    tnoremap <tab>k <c-_>k
-endif
-
 " insert mode as emacs
 inoremap <c-a> <home>
 inoremap <c-e> <end>
@@ -164,4 +152,3 @@ set t_Co=256
 set background=dark
 colorscheme paramount
 let $GTAGSLABEL = 'native-pygments'
-
