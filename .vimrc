@@ -11,7 +11,7 @@ set nowrap
 " 补全文件名的时候，忽略这些文件
 set wildignore=*.swp,*.bak,*.pyc,*.obj,*.o,*.class
 set ttimeout
-set ttimeoutlen=100
+set ttimeoutlen=50
 set cmdheight=1
 set ruler
 set backspace=2
@@ -23,6 +23,7 @@ set incsearch
 "set mouse=a
 set smartindent
 set hlsearch
+set cursorline
 
 
 if has('multi_byte')
@@ -121,9 +122,12 @@ exec 'set rtp+='.s:home
 IncScript .vim/asc/vimmake.vim
 VimmakeKeymap
 IncScript .vim/asc/config.vim
+"IncScript .vim/asc/gtags.vim
+"IncScript .vim/asc/gtags-cscope.vim
 IncScript .vim/asc/tools.vim
 IncScript .vim/asc/keymaps.vim
 IncScript .vim/asc/plugin.vim
+"IncScript .vim/asc/misc.vim
 
 syntax  on
 filetype plugin  on
@@ -139,6 +143,8 @@ noremap <leader>v :vsp<CR>
 nnoremap W :w!<cr>
 nnoremap Q :q!<cr>
 inoremap jj <ESC>
+" 映射跳转键
+nnoremap <c-n> <c-i>
 
 """"" Fast Indeting """"""""""
 vnoremap < <gv
