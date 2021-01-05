@@ -14,7 +14,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'ycm-core/YouCompleteMe'
 "Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'Chiel92/vim-autoformat'
-Plug 'skywind3000/vim-terminal-help'
+"Plug 'skywind3000/vim-terminal-help'
 Plug 'wellle/targets.vim'
 Plug 'pechorin/any-jump.vim'
 Plug 'voldikss/vim-floaterm'

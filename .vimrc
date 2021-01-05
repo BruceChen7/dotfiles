@@ -121,12 +121,9 @@ exec 'set rtp+='.s:home
 IncScript .vim/asc/vimmake.vim
 VimmakeKeymap
 IncScript .vim/asc/config.vim
-IncScript .vim/asc/gtags.vim
-IncScript .vim/asc/gtags-cscope.vim
 IncScript .vim/asc/tools.vim
 IncScript .vim/asc/keymaps.vim
 IncScript .vim/asc/plugin.vim
-IncScript .vim/asc/misc.vim
 
 syntax  on
 filetype plugin  on
