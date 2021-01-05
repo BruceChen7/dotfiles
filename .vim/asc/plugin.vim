@@ -11,10 +11,8 @@ Plug 'ludovicchabant/vim-gutentags'
 Plug 'skywind3000/vim-preview'
 Plug 'skywind3000/gutentags_plus'
 Plug 'tpope/vim-fugitive'
-Plug 'ycm-core/YouCompleteMe'
-"Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'Chiel92/vim-autoformat'
-"Plug 'skywind3000/vim-terminal-help'
 Plug 'wellle/targets.vim'
 Plug 'pechorin/any-jump.vim'
 Plug 'voldikss/vim-floaterm'
@@ -43,79 +41,79 @@ let NERDTreeRespectWildIgnore = 1
 "----------------------------------------------------------------------
 " Youcompleteme setting
 "----------------------------------------------------------------------
-let g:ycm_add_preview_to_completeopt = 0
-let g:ycm_show_diagnostics_ui = 0
-let g:ycm_server_log_level = 'info'
-let g:ycm_min_num_identifier_candidate_chars = 2
-let g:ycm_collect_identifiers_from_comments_and_strings = 1
-let g:ycm_complete_in_strings=1
-let g:ycm_key_invoke_completion = '<c-z>'
-let g:ycm_complete_in_comments = 1
-set completeopt=menu,menuone
-let g:ycm_global_ycm_extra_conf = '~/.vim/plugged/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
-
-noremap <c-z> <NOP>
-
-let g:ycm_semantic_triggers =  {
-			\ 'c,cpp,python,java,go,erlang,perl': ['re!\w{2}'],
-			\ 'cs,lua,javascript': ['re!\w{2}'],
-			\ }
-
-let g:ycm_server_python_interpreter="/usr/bin/python3"
-let g:ycm_filetype_whitelist = {
-			\ "c":1,
-			\ "cpp":1,
-			\ "objc":1,
-			\ "objcpp":1,
-			\ "python":1,
-			\ "java":1,
-			\ "javascript":1,
-			\ "coffee":1,
-			\ "vim":1,
-			\ "go":1,
-			\ "cs":1,
-			\ "lua":1,
-			\ "perl":1,
-			\ "perl6":1,
-			\ "php":1,
-			\ "ruby":1,
-			\ "rust":1,
-			\ "erlang":1,
-			\ "asm":1,
-			\ "nasm":1,
-			\ "masm":1,
-			\ "tasm":1,
-			\ "asm68k":1,
-			\ "asmh8300":1,
-			\ "asciidoc":1,
-			\ "basic":1,
-			\ "vb":1,
-			\ "make":1,
-			\ "cmake":1,
-			\ "html":1,
-			\ "css":1,
-			\ "less":1,
-			\ "json":1,
-			\ "cson":1,
-			\ "typedscript":1,
-			\ "haskell":1,
-			\ "lhaskell":1,
-			\ "lisp":1,
-			\ "scheme":1,
-			\ "sdl":1,
-			\ "sh":1,
-			\ "zsh":1,
-			\ "bash":1,
-			\ "man":1,
-			\ "markdown":1,
-			\ "matlab":1,
-			\ "maxima":1,
-			\ "dosini":1,
-			\ "conf":1,
-			\ "config":1,
-			\ "zimbu":1,
-			\ "ps1":1,
-			\ }
+" let g:ycm_add_preview_to_completeopt = 0
+" let g:ycm_show_diagnostics_ui = 0
+" let g:ycm_server_log_level = 'info'
+" let g:ycm_min_num_identifier_candidate_chars = 2
+" let g:ycm_collect_identifiers_from_comments_and_strings = 1
+" let g:ycm_complete_in_strings=1
+" let g:ycm_key_invoke_completion = '<c-z>'
+" let g:ycm_complete_in_comments = 1
+" set completeopt=menu,menuone
+" let g:ycm_global_ycm_extra_conf = '~/.vim/plugged/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
+"
+" noremap <c-z> <NOP>
+"
+" let g:ycm_semantic_triggers =  {
+" 			\ 'c,cpp,python,java,go,erlang,perl': ['re!\w{2}'],
+" 			\ 'cs,lua,javascript': ['re!\w{2}'],
+" 			\ }
+"
+" let g:ycm_server_python_interpreter="/usr/bin/python3"
+" let g:ycm_filetype_whitelist = {
+" 			\ "c":1,
+" 			\ "cpp":1,
+" 			\ "objc":1,
+" 			\ "objcpp":1,
+" 			\ "python":1,
+" 			\ "java":1,
+" 			\ "javascript":1,
+" 			\ "coffee":1,
+" 			\ "vim":1,
+" 			\ "go":1,
+" 			\ "cs":1,
+" 			\ "lua":1,
+" 			\ "perl":1,
+" 			\ "perl6":1,
+" 			\ "php":1,
+" 			\ "ruby":1,
+" 			\ "rust":1,
+" 			\ "erlang":1,
+" 			\ "asm":1,
+" 			\ "nasm":1,
+" 			\ "masm":1,
+" 			\ "tasm":1,
+" 			\ "asm68k":1,
+" 			\ "asmh8300":1,
+" 			\ "asciidoc":1,
+" 			\ "basic":1,
+" 			\ "vb":1,
+" 			\ "make":1,
+" 			\ "cmake":1,
+" 			\ "html":1,
+" 			\ "css":1,
+" 			\ "less":1,
+" 			\ "json":1,
+" 			\ "cson":1,
+" 			\ "typedscript":1,
+" 			\ "haskell":1,
+" 			\ "lhaskell":1,
+" 			\ "lisp":1,
+" 			\ "scheme":1,
+" 			\ "sdl":1,
+" 			\ "sh":1,
+" 			\ "zsh":1,
+" 			\ "bash":1,
+" 			\ "man":1,
+" 			\ "markdown":1,
+" 			\ "matlab":1,
+" 			\ "maxima":1,
+" 			\ "dosini":1,
+" 			\ "conf":1,
+" 			\ "config":1,
+" 			\ "zimbu":1,
+" 			\ "ps1":1,
+" 			\ }
 
 " leadf设置
 let g:Lf_ShortcutF = '<c-p>'
@@ -183,7 +181,7 @@ let g:gutentags_auto_add_gtags_cscope = 0
 
 let g:gutentags_define_advanced_commands = 1
 let $GTAGSLABEL='native'
-let $GTAGSCONF='/usr/local/share/gtags/gtags.conf'
+let $GTAGSCONF='/usr/share/gtags/gtags.conf'
 
 
 " 检测 ~/.cache/tags 不存在就新建
@@ -194,52 +192,52 @@ endif
 let g:asyncrun_open = 6
 
 """coc.vims配置
-" set updatetime=300
-" set shortmess+=c
-" set cmdheight=2
-" " Recently vim can merge signcolumn and number column into one
-" set signcolumn=number
-"
-" " Use tab for trigger completion with characters ahead and navigate.
-" " NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
-" " other plugin before putting this into your config.
-" inoremap <silent><expr> <TAB>
-" 			\ pumvisible() ? "\<C-n>" :
-" 			\ <SID>check_back_space() ? "\<TAB>" :
-" 			\ coc#refresh()
-" inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-"
-" function! s:check_back_space() abort
-" 	let col = col('.') - 1
-" 	return !col || getline('.')[col - 1]  =~# '\s'
-" endfunction
-"
-" " Make <CR> auto-select the first completion item and notify coc.nvim to
-" " format on enter, <cr> could be remapped by other vim plugin
-" inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm()
-" 			\: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
-"
-" " Use `[g` and `]g` to navigate diagnostics
-" " Use `:CocDiagnostics` to get all diagnostics of current buffer in location list.
-" nmap <silent> [g <Plug>(coc-diagnostic-prev)
-" nmap <silent> ]g <Plug>(coc-diagnostic-next)
-"
-" " GoTo code navigation.
-" nmap <silent> gd <Plug>(coc-definition)
-" nmap <silent> gy <Plug>(coc-type-definition)
-" nmap <silent> gi <Plug>(coc-implementation)
-" nmap <silent> gr <Plug>(coc-references)
-"
-"
-" function! s:show_documentation()
-"   if (index(['vim','help'], &filetype) >= 0)
-"     execute 'h '.expand('<cword>')
-"   elseif (coc#rpc#ready())
-"     call CocActionAsync('doHover')
-"   else
-"     execute '!' . &keywordprg . " " . expand('<cword>')
-"   endif
-" endfunction
+set updatetime=300
+set shortmess+=c
+set cmdheight=2
+" Recently vim can merge signcolumn and number column into one
+set signcolumn=number
 
-" Highlight the symbol and its references when holding the cursor.
-"autocmd CursorHold * silent call CocActionAsync('highlight')
+" Use tab for trigger completion with characters ahead and navigate.
+" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
+" other plugin before putting this into your config.
+inoremap <silent><expr> <TAB>
+			\ pumvisible() ? "\<C-n>" :
+			\ <SID>check_back_space() ? "\<TAB>" :
+			\ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+
+function! s:check_back_space() abort
+	let col = col('.') - 1
+	return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+" Make <CR> auto-select the first completion item and notify coc.nvim to
+" format on enter, <cr> could be remapped by other vim plugin
+inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm()
+			\: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+" Use `[g` and `]g` to navigate diagnostics
+" Use `:CocDiagnostics` to get all diagnostics of current buffer in location list.
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+
+" GoTo code navigation.
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  elseif (coc#rpc#ready())
+    call CocActionAsync('doHover')
+  else
+    execute '!' . &keywordprg . " " . expand('<cword>')
+  endif
+endfunction
+
+"Highlight the symbol and its references when holding the cursor.
+autocmd CursorHold * silent call CocActionAsync('highlight')
