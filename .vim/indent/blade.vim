@@ -1,1 +1,0 @@
-/data1/brookchen/rail_develop_branch/common/builder/blade/vim/indent/blade.vim
