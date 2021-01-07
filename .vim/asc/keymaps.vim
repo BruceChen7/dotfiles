@@ -120,10 +120,6 @@ inoremap <silent><M-d> <c-\><c-o>:call Tools_PreviousCursor(7)<cr>
 "----------------------------------------------------------------------
 " space + f : open tools
 "----------------------------------------------------------------------
-" no working
-" noremap <silent><space>fd :call Open_Dictionary("<C-R>=expand("<cword>")<cr>")<cr>
-" notworking
-" noremap <silent><space>fm :!man -S 3:2:1 "<C-R>=expand("<cword>")"<CR>
 noremap <silent><space>fh :call Open_HeaderFile(1)<cr>
 noremap <silent><space>ft :call Open_Explore(0)<cr>
 noremap <silent><space>fe :call Open_Explore(1)<cr>
@@ -169,24 +165,7 @@ noremap <silent><space>g' :PreviewGoto edit<cr>
 noremap <silent><space>g" :PreviewGoto tabe<cr>
 
 "----------------------------------------------------------------------
-" visual mode
-"----------------------------------------------------------------------
-vnoremap <space>gp :!python<cr>
-" vmap <space>gs y/<c-r>"<cr>
-vmap <space>gs y/<C-R>=escape(@", '\\/.*$^~[]')<CR>
-vmap <space>gr y:%s/<C-R>=escape(@", '\\/.*$^~[]')<CR>//gc<Left><Left><Left>
-
-
-noremap <C-F10> :VimBuild gcc -pg<cr>
-
-
-"----------------------------------------------------------------------
 " g command
 "----------------------------------------------------------------------
-nnoremap gb :YcmCompleter GoToDeclaration <cr>
-nnoremap gl :YcmCompleter GoToDefinition <cr>
-nnoremap gx :YcmCompleter GoToDefinitionElseDeclaration <cr>
-nnoremap gy :YcmCompleter GoToReferences <cr>
-
 nnoremap <silent>g1 :AsyncTask grep-cword<cr>
 nnoremap <silent>g5 :PreviewTag<cr>
