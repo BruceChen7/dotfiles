@@ -143,6 +143,19 @@ noremap <silent> <leader>tn :tabnext<cr>
 noremap <silent> <leader>tp :tabprev<cr>
 noremap <silent> <leader>to :tabonly<cr>
 
+noremap <silent>\t :tabnew<cr>
+noremap <silent>\d :tabclose<cr>
+noremap <silent>\1 :tabn 1<cr>
+noremap <silent>\2 :tabn 2<cr>
+noremap <silent>\3 :tabn 3<cr>
+noremap <silent>\4 :tabn 4<cr>
+noremap <silent>\5 :tabn 5<cr>
+noremap <silent>\6 :tabn 6<cr>
+noremap <silent>\7 :tabn 7<cr>
+noremap <silent>\8 :tabn 8<cr>
+noremap <silent>\9 :tabn 9<cr>
+noremap <silent>\0 :tabn 10<cr>
+
 
 " 左移 tab
 function! Tab_MoveLeft()
@@ -176,7 +189,7 @@ noremap <m-l> w
 inoremap <m-h> <c-left>
 inoremap <m-l> <c-right>
 
-" ALT+j/k 逻辑跳转下一行/上一行（按 wrap 逻辑换行进行跳转） 
+" ALT+j/k 逻辑跳转下一行/上一行（按 wrap 逻辑换行进行跳转）
 noremap <m-j> gj
 noremap <m-k> gk
 inoremap <m-j> <c-\><c-o>gj
@@ -190,6 +203,19 @@ cnoremap <m-l> <c-right>
 noremap <m-y> d$
 inoremap <m-y> <c-\><c-o>d$
 
+
+vnoremap < <gv
+vnoremap > >gv
+
+
+
+"----------------------------------------------------------------------
+" window control
+"----------------------------------------------------------------------
+noremap <silent><space>= :resize +3<cr>
+noremap <silent><space>- :resize -3<cr>
+noremap <silent><space>, :vertical resize -5<cr>
+noremap <silent><space>. :vertical resize +5<cr>
 
 "----------------------------------------------------------------------
 " 窗口切换：ALT+SHIFT+hjkl
@@ -318,17 +344,17 @@ endfunc
 " 下面进行 grep，这样能方便的对相关项目进行搜索
 "----------------------------------------------------------------------
 " if executable('rg')
-" 	noremap <silent>g1 :AsyncRun! -cwd=<root> rg -n --no-heading 
-" 				\ --color never -g *.h -g *.c* -g *.py -g *.js -g *.vim 
+" 	noremap <silent>g1 :AsyncRun! -cwd=<root> rg -n --no-heading
+" 				\ --color never -g *.h -g *.c* -g *.py -g *.js -g *.vim
 " 				\ <C-R><C-W> "<root>" <cr>
 " elseif has('win32') || has('win64')
-" 	noremap <silent><F2> :AsyncRun! -cwd=<root> findstr /n /s /C:"<C-R><C-W>" 
+" 	noremap <silent><F2> :AsyncRun! -cwd=<root> findstr /n /s /C:"<C-R><C-W>"
 " 				\ "\%CD\%\*.h" "\%CD\%\*.c*" "\%CD\%\*.py" "\%CD\%\*.js"
 " 				\ "\%CD\%\*.vim"
 " 				\ <cr>
 " else
-" 	noremap <silent><F2> :AsyncRun! -cwd=<root> grep -n -s -R <C-R><C-W> 
-" 				\ --include='*.h' --include='*.c*' --include='*.py' 
+" 	noremap <silent><F2> :AsyncRun! -cwd=<root> grep -n -s -R <C-R><C-W>
+" 				\ --include='*.h' --include='*.c*' --include='*.py'
 " 				\ --include='*.js' --include='*.vim'
 " 				\ '<root>' <cr>
 " endif

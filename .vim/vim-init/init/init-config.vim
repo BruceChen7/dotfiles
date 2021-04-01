@@ -108,6 +108,9 @@ set noswapfile
 " 禁用 undo文件
 set noundofile
 
+
+set noerrorbells
+
 " 创建目录，并且忽略可能出现的警告
 silent! call mkdir(expand('~/.vim/tmp'), "p", 0755)
 
@@ -156,11 +159,14 @@ augroup InitFileTypesGroup
 	" C/C++ 文件使用 // 作为注释
 	au FileType c,cpp setlocal commentstring=//\ %s
 
+	au FileType zig setlocal ts=4 sw=4 et
 	" markdown 允许自动换行
 	au FileType markdown setlocal wrap
 
 	" lisp 进行微调
 	au FileType lisp setlocal ts=8 sts=2 sw=2 et
+
+	au FileType go setlocal ts=8 sw=8
 
 	" scala 微调
 	au FileType scala setlocal sts=4 sw=4 noet

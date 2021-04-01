@@ -103,6 +103,8 @@ if index(g:bundle_group, 'basic') >= 0
 	" 支持库，给其他插件用的函数库
 	Plug 'xolox/vim-misc'
 
+	Plug 'camspiers/lens.vim'
+
 	" 用于在侧边符号栏显示 marks （ma-mz 记录的位置）
 	Plug 'kshenoy/vim-signature'
 
@@ -124,9 +126,11 @@ if index(g:bundle_group, 'basic') >= 0
 
 	Plug 'ojroques/vim-oscyank', {'branch': 'main'}
 
+	" 用来执行任务
 	Plug 'skywind3000/asynctasks.vim'
 
 	Plug 'skywind3000/asyncrun.vim'
+
 
 	" 使用 ALT+e 来选择窗口
 	nmap <m-e> <Plug>(choosewin)
@@ -134,12 +138,13 @@ if index(g:bundle_group, 'basic') >= 0
 	"vim-privew调整优化"
 	noremap <m-;> :PreviewTag<CR>
 	noremap <silent><M-:> :PreviewClose<cr>
-	noremap <silent><tab>; :PreviewGoto edit<cr>
-	noremap <silent><tab>: :PreviewGoto tabe<cr>
+	 " 暂时没有啥用
+	" noremap <silent><tab>; :PreviewGoto edit<cr>
+	" noremap <silent><tab>: :PreviewGoto tabe<cr>
 
 	" 默认不显示 startify
-	let g:startify_disable_at_vimenter = 1
-	let g:startify_session_dir = '~/.vim/session'
+	" let g:startify_disable_at_vimenter = 1
+	" let g:startify_session_dir = '~/.vim/session'
 
 	" 使用 <space>ha 清除 errormarker 标注的错误
 	noremap <silent><space>ha :RemoveErrorMarkers<cr>
@@ -157,7 +162,7 @@ if index(g:bundle_group, 'basic') >= 0
 				\ 'git': 'git diff --no-color --diff-algorithm=histogram --no-ext-diff -U0 -- %f',
 				\}
 
-
+	"用来搜索关键字"
 	nnoremap <silent>g1 :AsyncTask grep-cword<cr>
 endif
 
@@ -227,7 +232,7 @@ if index(g:bundle_group, 'tags') >= 0
 	if executable('gtags') && executable('gtags-cscope')
 		let g:gutentags_modules += ['gtags_cscope']
 		let $GTAGSLABEL = 'native-pygments'
-        let $GTAGSCONF='/usr/share/gtags/gtags.conf'
+        let $GTAGSCONF='/usr/local/share/gtags/gtags.conf'
 	endif
 
 	" 设置 ctags 的参数
@@ -507,10 +512,10 @@ if index(g:bundle_group, 'leaderf') >= 0
 		noremap <m-m> :LeaderfMru<cr>
 
 		" ALT+p 打开函数列表，按 i 进入模糊匹配，ESC 退出
-		noremap <m-p> :LeaderfFunction!<cr>
+		noremap <m-p> :LeaderfFunction<cr>
 
 		" ALT+SHIFT+p 打开 tag 列表，i 进入模糊匹配，ESC退出
-		noremap <m-P> :LeaderfBufTag!<cr>
+		noremap <m-P> :LeaderfBufTag<cr>
 
 		" ALT+n 打开 buffer 列表进行模糊匹配
 		noremap <m-n> :LeaderfBuffer<cr>
