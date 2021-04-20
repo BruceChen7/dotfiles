@@ -32,6 +32,8 @@ if has('nvim') == 0 && has('gui_running') == 0
 	endfor
 	for i in range(26)
 		call s:metacode(nr2char(char2nr('a') + i))
+	endfor
+	for i in range(15) + range(16, 25)
 		call s:metacode(nr2char(char2nr('A') + i))
 	endfor
 	for c in [',', '.', '/', ';', '{', '}']

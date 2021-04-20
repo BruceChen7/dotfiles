@@ -128,7 +128,6 @@ if index(g:bundle_group, 'basic') >= 0
 
 	" 用来执行任务
 	Plug 'skywind3000/asynctasks.vim'
-
 	Plug 'skywind3000/asyncrun.vim'
 
 
@@ -537,6 +536,8 @@ if index(g:bundle_group, 'leaderf') >= 0
 
 		" 显示绝对路径
 		let g:Lf_ShowRelativePath = 0
+		" 不显示图标
+		let g:Lf_ShowDevIcons = 0
 
 		" 隐藏帮助
 		let g:Lf_HideHelp = 1
