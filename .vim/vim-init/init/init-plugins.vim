@@ -36,6 +36,7 @@ endfunc
 "----------------------------------------------------------------------
 call plug#begin(get(g:, 'bundle_home', '~/.vim/bundles'))
 
+let g:plug_url_format = 'https://hub.fastgit.org/%s.git'
 
 "----------------------------------------------------------------------
 " 默认插件
@@ -100,6 +101,8 @@ if index(g:bundle_group, 'basic') >= 0
 	" 一次性安装一大堆 colorscheme
 	Plug 'flazz/vim-colorschemes'
 
+	Plug 'sainnhe/everforest'
+
 	" 支持库，给其他插件用的函数库
 	Plug 'xolox/vim-misc'
 
@@ -128,6 +131,7 @@ if index(g:bundle_group, 'basic') >= 0
 
 	" 用来执行任务
 	Plug 'skywind3000/asynctasks.vim'
+
 	Plug 'skywind3000/asyncrun.vim'
 
 
@@ -137,7 +141,7 @@ if index(g:bundle_group, 'basic') >= 0
 	"vim-privew调整优化"
 	noremap <m-;> :PreviewTag<CR>
 	noremap <silent><M-:> :PreviewClose<cr>
-	 " 暂时没有啥用
+	" 暂时没有啥用
 	" noremap <silent><tab>; :PreviewGoto edit<cr>
 	" noremap <silent><tab>: :PreviewGoto tabe<cr>
 
@@ -231,7 +235,11 @@ if index(g:bundle_group, 'tags') >= 0
 	if executable('gtags') && executable('gtags-cscope')
 		let g:gutentags_modules += ['gtags_cscope']
 		let $GTAGSLABEL = 'native-pygments'
-        let $GTAGSCONF='/usr/local/share/gtags/gtags.conf'
+		if has("unix")
+			let $GTAGSCONF='/usr/share/gtags/gtags.conf'
+		elseif has("macunix")
+			let $GTAGSCONF='/usr/local/share/gtags/gtags.conf'
+		endif
 	endif
 
 	" 设置 ctags 的参数
@@ -536,6 +544,8 @@ if index(g:bundle_group, 'leaderf') >= 0
 
 		" 显示绝对路径
 		let g:Lf_ShowRelativePath = 0
+
+
 		" 不显示图标
 		let g:Lf_ShowDevIcons = 0
 
