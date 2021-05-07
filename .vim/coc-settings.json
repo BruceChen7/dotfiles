@@ -1,11 +1,8 @@
 {
+	"go.goplsOptions": {
+		"usePlaceholders": true
+	},
 	"languageserver": {
-		"go": {
-			"command": "gopls",
-			"rootPatterns": ["go.mod"],
-			"trace.server": "verbose",
-			"filetypes": ["go"]
-		},
 		"python": {
 			"command": "python",
 			"args": [
