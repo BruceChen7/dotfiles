@@ -134,6 +134,10 @@ if index(g:bundle_group, 'basic') >= 0
 
 	Plug 'skywind3000/asyncrun.vim'
 
+	Plug 'SirVer/ultisnips'
+
+	Plug 'skywind3000/Leaderf-snippet'
+
 
 	" 使用 ALT+e 来选择窗口
 	nmap <m-e> <Plug>(choosewin)
@@ -167,6 +171,13 @@ if index(g:bundle_group, 'basic') >= 0
 
 	"用来搜索关键字"
 	nnoremap <silent>g1 :AsyncTask grep-cword<cr>
+
+	"leaderf-snippet
+	inoremap <c-x><c-j> <c-\><c-o>:Leaderf snippet<cr>
+	" optional: preview
+	let g:Lf_PreviewResult = get(g:, 'Lf_PreviewResult', {})
+	let g:Lf_PreviewResult.snippet = 1
+
 endif
 
 
