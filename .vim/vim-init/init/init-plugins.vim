@@ -131,13 +131,17 @@ if index(g:bundle_group, 'basic') >= 0
 
 	" 用来执行任务
 	Plug 'skywind3000/asynctasks.vim'
-
 	Plug 'skywind3000/asyncrun.vim'
 
-	Plug 'SirVer/ultisnips'
 
 	Plug 'skywind3000/Leaderf-snippet'
 
+	Plug 'SirVer/ultisnips'
+
+	" 用来预览snippet
+	Plug 'skywind3000/Leaderf-snippet'
+	" 用来设置tab
+	Plug 'tpope/vim-sleuth'
 
 	" 使用 ALT+e 来选择窗口
 	nmap <m-e> <Plug>(choosewin)
@@ -555,8 +559,6 @@ if index(g:bundle_group, 'leaderf') >= 0
 
 		" 显示绝对路径
 		let g:Lf_ShowRelativePath = 0
-
-
 		" 不显示图标
 		let g:Lf_ShowDevIcons = 0
 

@@ -43,6 +43,8 @@ set splitright
 " 颜色主题：色彩文件位于 colors 目录中
 "----------------------------------------------------------------------
 
+" 设置颜色主题，会在所有 runtimepaths 的 colors 目录寻找同名配置
+color everforest
 " 设置黑色背景
 set background=dark
 
@@ -52,16 +54,17 @@ set t_Co=256
 let g:everforest_background = 'hard'
 
 
-if exists('+termguicolors')
+if exists('+termguicolors') && $TERM_PROGRAM != "" && $TERM_PROGRAM != "Apple_Terminal"
 	let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
 	let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 	set termguicolors
 endif
 
 
-" 设置颜色主题，会在所有 runtimepaths 的 colors 目录寻找同名配置
-color everforest
-"color desert256
+" 最左边的颜色和colorsheme的一致
+highlight clear SignColumn
+
+
 
 
 "----------------------------------------------------------------------
@@ -69,6 +72,7 @@ color everforest
 "----------------------------------------------------------------------
 set statusline=                                 " 清空状态了
 set statusline+=\ %F                            " 文件名
+set statusline+=%{FugitiveStatusline()}
 set statusline+=\ [%1*%M%*%n%R%H]               " buffer 编号和状态
 set statusline+=%=                              " 向右对齐
 set statusline+=\ %y                            " 文件类型
