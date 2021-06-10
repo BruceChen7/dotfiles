@@ -1,36 +1,3 @@
-export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles/bottles
-alias ll="ls -al"
-export CLICOLOR=1
-export LSCOLORS=ExGxFxdaCxDaDahbadeche
-setopt PROMPT_SUBST
-PROMPT='%n@%m: ${(%):-%~} '
-alias taw="tmux attach -t working"
-alias tas="tmux new -s working"
-#eval "$(lua /usr/local/bin/z.lua  --init zsh once enhanced)"    # ZSH 初始化
-# 多个加,xxxx.com
-export GOFLAGS=-mod=vendor
-export GO111MODULE=on
-export GOPRIVATE=git.garena.com/*
-#export GOPROXY=https://goproxy.cn
-alias ssa="smc -e test services enter social-activity-test-sg"
-
-
-[[ -s "/Users/ming.chen/.gvm/scripts/gvm" ]] && source "/Users/ming.chen/.gvm/scripts/gvm"
-
-# Load version control information
-autoload -Uz vcs_info
-precmd() { vcs_info }
-
-# ## Format the vcs_info_msg_0_ variable
-zstyle ':vcs_info:git:*' formats ' %b'
-
-setopt PROMPT_SUBST
-PROMPT='%n in ${PWD/#$HOME/~} ${vcs_info_msg_0_} > '
-alias vdi="vimdiff init-style.vim ~/github/dotfiles/.vim/vim-init/init/init-style.vim"
-alias gcn="git checkout feature-new-status-SPFRD-85"
-alias gct="git checkout test-feature"
-
-#Antigen: https://github.com/zsh-users/antigen
 ANTIGEN="$HOME/.local/bin/antigen.zsh"
 
 # Install antigen.zsh if not exist
@@ -230,3 +197,34 @@ DISABLE_CORRECTION="true"
 # completion detail
 zstyle ':completion:*:complete:-command-:*:*' ignored-patterns '*.pdf|*.exe|*.dll'
 zstyle ':completion:*:*sh:*:' tag-order files
+
+alias ll="ls -al"
+export CLICOLOR=1
+export LSCOLORS=ExGxFxdaCxDaDahbadeche
+export GOFLAGS=-mod=vendor
+export GO111MODULE=on
+export GOPRIVATE=git.garena.com/*
+
+
+[[ -s "/Users/ming.chen/.gvm/scripts/gvm" ]] && source "/Users/ming.chen/.gvm/scripts/gvm"
+
+# Load version control information
+autoload -Uz vcs_info
+precmd() { vcs_info }
+
+# ## Format the vcs_info_msg_0_ variable
+zstyle ':vcs_info:git:*' formats ' %b'
+
+setopt PROMPT_SUBST
+PROMPT='%n in ${PWD/#$HOME/~} ${vcs_info_msg_0_} > '
+
+alias taw="tmux attach -t working"
+alias tas="tmux new -s working"
+#eval "$(lua /usr/local/bin/z.lua  --init zsh once enhanced)"    # ZSH 初始化
+# 多个加,xxxx.com
+alias gcn="git checkout feature-new-status-SPFRD-85"
+alias gct="git checkout test-feature"
+
+if [[ `uname` == "darwin"]]; then
+	export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles/bottles
+fi
