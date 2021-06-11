@@ -250,10 +250,10 @@ if index(g:bundle_group, 'tags') >= 0
 	if executable('gtags') && executable('gtags-cscope')
 		let g:gutentags_modules += ['gtags_cscope']
 		let $GTAGSLABEL = 'native-pygments'
-		if has("unix")
-			let $GTAGSCONF='/usr/share/gtags/gtags.conf'
-		elseif has("macunix")
+		if has("macunix")
 			let $GTAGSCONF='/usr/local/share/gtags/gtags.conf'
+		elseif has("unix")
+			let $GTAGSCONF='/usr/share/gtags/gtags.conf'
 		endif
 	endif
 
@@ -264,10 +264,11 @@ if index(g:bundle_group, 'tags') >= 0
 	let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
 
 	" 使用 universal-ctags 的话需要下面这行，请反注释
-	" let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
+	let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
 
 	" 禁止 gutentags 自动链接 gtags 数据库
 	let g:gutentags_auto_add_gtags_cscope = 0
+	let g:gutentags_define_advanced_commands = 1
 
 endif
 
