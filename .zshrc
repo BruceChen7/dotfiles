@@ -1,5 +1,6 @@
 ANTIGEN="$HOME/.local/bin/antigen.zsh"
 
+# http://www.skywind.me/blog/archives/2060
 # Install antigen.zsh if not exist
 if [ ! -f "$ANTIGEN" ]; then
 	echo "Installing antigen ..."
