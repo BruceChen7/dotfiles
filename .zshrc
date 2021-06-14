@@ -226,6 +226,6 @@ alias tas="tmux new -s working"
 alias gcn="git checkout feature-new-status-SPFRD-85"
 alias gct="git checkout test-feature"
 
-if [[ `uname` == "darwin"]]; then
+if [[ `uname` == "darwin" ]]; then
 	export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles/bottles
 fi
