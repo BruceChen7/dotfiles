@@ -1,3 +1,4 @@
+#Antigen: https://github.com/zsh-users/antigen
 ANTIGEN="$HOME/.local/bin/antigen.zsh"
 
 # http://www.skywind.me/blog/archives/2060
@@ -91,7 +92,8 @@ antigen use prezto
 antigen bundle rupa/z z.sh
 antigen bundle Vifon/deer
 antigen bundle zdharma/fast-syntax-highlighting
-# antigen bundle zsh-users/zsh-autosuggestions
+antigen bundle zsh-users/zsh-autosuggestions
+antigen bundle git
 
 antigen bundle willghatch/zsh-cdr
 # antigen bundle zsh-users/zaw
@@ -107,8 +109,8 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
 
 typeset -A ZSH_HIGHLIGHT_STYLES
 
-# ZSH_HIGHLIGHT_STYLES[command]=fg=white,bold
-# ZSH_HIGHLIGHT_STYLES[alias]='fg=magenta,bold'
+ZSH_HIGHLIGHT_STYLES[command]=fg=white,bold
+ZSH_HIGHLIGHT_STYLES[alias]='fg=magenta,bold'
 
 ZSH_HIGHLIGHT_STYLES[default]=none
 ZSH_HIGHLIGHT_STYLES[unknown-token]=fg=009
@@ -204,7 +206,6 @@ export CLICOLOR=1
 export LSCOLORS=ExGxFxdaCxDaDahbadeche
 export GOFLAGS=-mod=vendor
 export GO111MODULE=on
-export GOPRIVATE=git.garena.com/*
 
 
 [[ -s "/Users/ming.chen/.gvm/scripts/gvm" ]] && source "/Users/ming.chen/.gvm/scripts/gvm"
@@ -213,7 +214,7 @@ export GOPRIVATE=git.garena.com/*
 autoload -Uz vcs_info
 precmd() { vcs_info }
 
-# ## Format the vcs_info_msg_0_ variable
+# Format the vcs_info_msg_0_ variable
 zstyle ':vcs_info:git:*' formats ' %b'
 
 setopt PROMPT_SUBST
@@ -221,11 +222,8 @@ PROMPT='%n in ${PWD/#$HOME/~} ${vcs_info_msg_0_} > '
 
 alias taw="tmux attach -t working"
 alias tas="tmux new -s working"
-#eval "$(lua /usr/local/bin/z.lua  --init zsh once enhanced)"    # ZSH 初始化
-# 多个加,xxxx.com
-alias gcn="git checkout feature-new-status-SPFRD-85"
-alias gct="git checkout test-feature"
 
 if [[ `uname` == "darwin" ]]; then
 	export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles/bottles
 fi
+eval "$(lua /usr/local/bin/z.lua  --init zsh once enhanced)"    # ZSH 初始化
