@@ -177,6 +177,7 @@ if index(g:bundle_group, 'basic') >= 0
 	nnoremap <silent>g1 :AsyncTask grep-cword<cr>
 
 	"leaderf-snippet
+	let g:UltiSnipsExpandTrigger="<tab>l"
 	inoremap <c-x><c-j> <c-\><c-o>:Leaderf snippet<cr>
 	" optional: preview
 	let g:Lf_PreviewResult = get(g:, 'Lf_PreviewResult', {})
@@ -194,7 +195,7 @@ if index(g:bundle_group, 'enhanced') >= 0
 	Plug 'terryma/vim-expand-region'
 
 	" 快速文件搜索
-	Plug 'junegunn/fzf'
+	" Plug 'junegunn/fzf'
 
 	" 给不同语言提供字典补全，插入模式下 c-x c-k 触发
 	Plug 'asins/vim-dict'
@@ -259,7 +260,7 @@ if index(g:bundle_group, 'tags') >= 0
 
 	" 设置 ctags 的参数
 	let g:gutentags_ctags_extra_args = []
-	let g:gutentags_ctags_extra_args = ['--fields=+niazS', '--extra=+q']
+	let g:gutentags_ctags_extra_args = ['--fields=+niazS', '--extras=+q']
 	let g:gutentags_ctags_extra_args += ['--c++-kinds=+px']
 	let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
 
@@ -307,7 +308,7 @@ endif
 if index(g:bundle_group, 'filetypes') >= 0
 
 	" powershell 脚本文件的语法高亮
-	Plug 'pprovost/vim-ps1', { 'for': 'ps1' }
+	" Plug 'pprovost/vim-ps1', { 'for': 'ps1' }
 
 	" lua 语法高亮增强
 	Plug 'tbastos/vim-lua', { 'for': 'lua' }
@@ -325,7 +326,7 @@ if index(g:bundle_group, 'filetypes') >= 0
 	Plug 'rust-lang/rust.vim', { 'for': 'rust' }
 
 	" vim org-mode
-	Plug 'jceb/vim-orgmode', { 'for': 'org' }
+	" Plug 'jceb/vim-orgmode', { 'for': 'org' }
 endif
 
 

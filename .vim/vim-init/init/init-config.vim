@@ -110,7 +110,6 @@ set noswapfile
 " 禁用 undo文件
 set noundofile
 
-
 set noerrorbells
 
 " 创建目录，并且忽略可能出现的警告
@@ -177,7 +176,9 @@ augroup InitFileTypesGroup
 	au FileType haskell setlocal et
 
 	" quickfix 隐藏行号
-	au FileType qf setlocal nonumber
+	 "au FileType qf setlocal nonumber
+	autocmd FileType qf nnoremap <silent><buffer> p :PreviewQuickfix<cr>
+        autocmd FileType qf nnoremap <silent><buffer> P :PreviewClose<cr>
 
 	" 强制对某些扩展名的 filetype 进行纠正
 	au BufNewFile,BufRead *.as setlocal filetype=actionscript
@@ -188,4 +189,5 @@ augroup InitFileTypesGroup
 
 augroup END
 
+autocmd BufWritePre *.go :silent call CocAction('runCommand', 'editor.action.organizeImport')
 
