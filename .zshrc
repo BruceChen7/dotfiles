@@ -1,3 +1,6 @@
+#export http_proxy=http://127.0.0.1:8889
+#export https_proxy=http://127.0.0.1:8889
+
 #Antigen: https://github.com/zsh-users/antigen
 ANTIGEN="$HOME/.local/bin/antigen.zsh"
 
@@ -223,7 +226,7 @@ PROMPT='%n in ${PWD/#$HOME/~} ${vcs_info_msg_0_} > '
 alias taw="tmux attach -t working"
 alias tas="tmux new -s working"
 
-if [[ `uname` == "darwin" ]]; then
+if [[ `uname` == "darwin" ]] || [[ `uname` == "Darwin" ]]; then
 	export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles/bottles
 fi
 eval "$(lua /usr/local/bin/z.lua  --init zsh once enhanced)"    # ZSH 初始化
