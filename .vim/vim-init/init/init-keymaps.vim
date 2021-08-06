@@ -71,6 +71,7 @@ noremap <silent><leader>0 10gt<cr>
 nnoremap W :w!<cr>
 nnoremap Q :q!<cr>
 inoremap jj <ESC>
+noremap <silent><leader>vh :vert help<cr>
 
 
 "----------------------------------------------------------------------
@@ -335,28 +336,34 @@ function! ExecuteFile()
 	endif
 endfunc
 
+"clear default terminal key mapping
+let g:terminal_default_mapping=0
+if has('terminal') && exists(':terminal') == 2 && has('patch-8.1.1')
+	set termwinkey=<c-_>
+	tnoremap <tab>h <c-_>h
+	tnoremap <tab>l <c-_>l
+	tnoremap <tab>j <c-_>j
+	tnoremap <tab>k <c-_>k
+	tnoremap <tab>n <c-_>p
+	tnoremap <m-q> <c-\><c-n>
+	tnoremap <m--> <c-_>"0
+elseif has('nvim')
+	tnoremap <m-H> <c-\><c-n><c-w>h
+	tnoremap <m-L> <c-\><c-n><c-w>l
+	tnoremap <m-J> <c-\><c-n><c-w>j
+	tnoremap <m-K> <c-\><c-n><c-w>k
+	tnoremap <m-N> <c-\><c-n><c-w>p
+	tnoremap <m-q> <c-\><c-n>
+	tnoremap <m--> <c-\><c-n>"0pa
+endif
+let g:terminal_key='<m-=>'
+let s:cmd = 'nnoremap <silent>'.(g:terminal_key). ' '
+exec s:cmd . ':call TerminalToggle()<cr>'
 
-
-"----------------------------------------------------------------------
-" g1 在项目目录下 Grep 光标下单词，默认 C/C++/Py/Js ，扩展名自己扩充
-" 支持 rg/grep/findstr ，其他类型可以自己扩充
-" 不是在当前目录 grep，而是会去到当前文件所属的项目目录 project root
-" 下面进行 grep，这样能方便的对相关项目进行搜索
-"----------------------------------------------------------------------
-" if executable('rg')
-" 	noremap <silent>g1 :AsyncRun! -cwd=<root> rg -n --no-heading
-" 				\ --color never -g *.h -g *.c* -g *.py -g *.js -g *.vim
-" 				\ <C-R><C-W> "<root>" <cr>
-" elseif has('win32') || has('win64')
-" 	noremap <silent><F2> :AsyncRun! -cwd=<root> findstr /n /s /C:"<C-R><C-W>"
-" 				\ "\%CD\%\*.h" "\%CD\%\*.c*" "\%CD\%\*.py" "\%CD\%\*.js"
-" 				\ "\%CD\%\*.vim"
-" 				\ <cr>
-" else
-" 	noremap <silent><F2> :AsyncRun! -cwd=<root> grep -n -s -R <C-R><C-W>
-" 				\ --include='*.h' --include='*.c*' --include='*.py'
-" 				\ --include='*.js' --include='*.vim'
-" 				\ '<root>' <cr>
-" endif
-
-
+if has('nvim') == 0
+	let s:cmd = 'tnoremap <silent>'.(g:terminal_key). ' '
+	exec s:cmd . '<c-_>:call TerminalToggle()<cr>'
+else
+	let s:cmd = 'tnoremap <silent>'.(g:terminal_key). ' '
+	exec s:cmd . '<c-\><c-n>:call TerminalToggle()<cr>'
+endif

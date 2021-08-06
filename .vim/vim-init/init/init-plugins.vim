@@ -136,6 +136,8 @@ if index(g:bundle_group, 'basic') >= 0
 
 	Plug 'skywind3000/Leaderf-snippet'
 
+	Plug 'skywind3000/vim-terminal-help'
+
 	Plug 'SirVer/ultisnips'
 
 	" 用来预览snippet
@@ -143,6 +145,7 @@ if index(g:bundle_group, 'basic') >= 0
 	" 用来设置tab
 	Plug 'tpope/vim-sleuth'
 
+	Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 	" 使用 ALT+e 来选择窗口
 	nmap <m-e> <Plug>(choosewin)
 
@@ -183,6 +186,8 @@ if index(g:bundle_group, 'basic') >= 0
 	let g:Lf_PreviewResult = get(g:, 'Lf_PreviewResult', {})
 	let g:Lf_PreviewResult.snippet = 1
 
+	" 在vim中操作git
+	nnoremap <space>g :Git<CR>
 endif
 
 
