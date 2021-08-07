@@ -160,7 +160,6 @@ augroup InitFileTypesGroup
 	" C/C++ 文件使用 // 作为注释
 	au FileType c,cpp setlocal commentstring=//\ %s
 
-	au FileType zig setlocal ts=4 sw=4 et
 	" markdown 允许自动换行
 	au FileType markdown setlocal wrap
 

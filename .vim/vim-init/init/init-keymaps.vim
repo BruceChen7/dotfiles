@@ -337,6 +337,8 @@ function! ExecuteFile()
 endfunc
 
 "clear default terminal key mapping
+let g:terminal_kill=1
+let g:terminal_close=1
 let g:terminal_default_mapping=0
 if has('terminal') && exists(':terminal') == 2 && has('patch-8.1.1')
 	set termwinkey=<c-_>
