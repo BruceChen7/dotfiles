@@ -3,6 +3,12 @@
 		"usePlaceholders": true
 	},
 	"languageserver": {
+		"zig": {
+			"command": "zls",
+			"filetypes": [
+				"zig"
+			]
+		},
 		"python": {
 			"command": "python",
 			"args": [
