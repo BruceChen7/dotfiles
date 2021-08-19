@@ -15,7 +15,7 @@
 "----------------------------------------------------------------------
 if !exists('g:bundle_group')
 	let g:bundle_group = ['basic', 'tags', 'enhanced', 'filetypes', 'textobj']
-	let g:bundle_group += ['tags', 'nerdtree', 'coc']
+	let g:bundle_group += ['tags', 'coc', 'vaffle']
 	let g:bundle_group += ['leaderf']
 endif
 
@@ -273,7 +273,7 @@ if index(g:bundle_group, 'tags') >= 0
 	let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
 
 	" 禁止 gutentags 自动链接 gtags 数据库
-	let g:gutentags_auto_add_gtags_cscope = 0
+	let g:gutentags_auto_add_gtags_cscope = 1
 	let g:gutentags_define_advanced_commands = 1
 
 endif
@@ -523,6 +523,26 @@ if index(g:bundle_group, 'coc') >= 0
 
 endif
 
+if index(g:bundle_group, 'vaffle') >= 0
+	Plug 'cocopon/vaffle.vim'
+	let g:vaffle_show_hidden_files=1
+	nnoremap ne :Vaffle <cr>
+	nnoremap nc :Vaffle %:h <cr>
+
+	function! s:customize_vaffle_mappings() abort
+		" Customize key mappings here
+		" ~
+		nmap <buffer><Bslash>  <Plug>(vaffle-open-root)
+		nmap <buffer> m        <Plug>(vaffle-mkdir)
+		nmap <buffer> a        <Plug>(vaffle-new-file)
+		nmap <buffer> u        <Plug>(vaffle-open-parent)
+		nmap <buffer> o        <Plug>(vaffle-open-selected)
+	endfunction
+	augroup vimrc_vaffle
+		autocmd!
+		autocmd FileType vaffle call s:customize_vaffle_mappings()
+	augroup END
+endif
 "----------------------------------------------------------------------
 " LeaderF：CtrlP / FZF 的超级代替者，文件模糊匹配，tags/函数名 选择
 "----------------------------------------------------------------------
