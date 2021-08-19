@@ -54,6 +54,7 @@ Plug 'godlygeek/tabular', { 'on': 'Tabularize' }
 " Diff 增强，支持 histogram / patience 等更科学的 diff 算法
 Plug 'chrisbra/vim-diff-enhanced'
 
+Plug 'ziglang/zig.vim'
 
 "----------------------------------------------------------------------
 " Dirvish 设置：自动排序并隐藏文件，同时定位到相关文件
@@ -205,8 +206,6 @@ if index(g:bundle_group, 'enhanced') >= 0
 	" 给不同语言提供字典补全，插入模式下 c-x c-k 触发
 	Plug 'asins/vim-dict'
 
-	" 使用 :FlyGrep 命令进行实时 grep
-	Plug 'wsdjeg/FlyGrep.vim'
 
 	" 使用 :CtrlSF 命令进行模仿 sublime 的 grep
 	Plug 'dyng/ctrlsf.vim'
@@ -614,6 +613,8 @@ if index(g:bundle_group, 'leaderf') >= 0
 					\ "BufTag": [["<ESC>", ':exec g:Lf_py "bufTagExplManager.quit()"<cr>']],
 					\ "Function": [["<ESC>", ':exec g:Lf_py "functionExplManager.quit()"<cr>']],
 					\ }
+		noremap <space>f :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>
+
 
 	else
 		" 不支持 python ，使用 CtrlP 代替
