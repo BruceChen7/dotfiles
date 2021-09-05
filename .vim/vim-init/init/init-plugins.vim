@@ -15,7 +15,7 @@
 "----------------------------------------------------------------------
 if !exists('g:bundle_group')
 	let g:bundle_group = ['basic', 'tags', 'enhanced', 'filetypes', 'textobj']
-	let g:bundle_group += ['tags', 'coc', 'vaffle']
+	let g:bundle_group += ['tags', 'coc', 'ranger']
 	let g:bundle_group += ['leaderf']
 endif
 
@@ -124,6 +124,7 @@ if index(g:bundle_group, 'basic') >= 0
 
 	" 提供基于 TAGS 的定义预览，函数参数预览，quickfix 预览
 	Plug 'skywind3000/vim-preview'
+	Plug 'skywind3000/vim-quickui'
 
 	" Git 支持
 	Plug 'tpope/vim-fugitive'
@@ -153,6 +154,15 @@ if index(g:bundle_group, 'basic') >= 0
 	"vim-privew调整优化"
 	noremap <m-;> :PreviewTag<CR>
 	noremap <silent><M-:> :PreviewClose<cr>
+	function! TermExit(code)
+		echom "terminal exit code: ". a:code
+	endfunc
+
+
+	let g:quickui_color_scheme = 'papercol dark'
+	let opts = {'w':600, 'h':800, 'callback':'TermExit'}
+	let opts.title = 'TIG POP'
+	noremap <leader>tg :call quickui#terminal#open('tig', opts)<CR>
 	" 暂时没有啥用
 	" noremap <silent><tab>; :PreviewGoto edit<cr>
 	" noremap <silent><tab>: :PreviewGoto tabe<cr>
@@ -188,7 +198,7 @@ if index(g:bundle_group, 'basic') >= 0
 	let g:Lf_PreviewResult.snippet = 1
 
 	" 在vim中操作git
-	nnoremap <space>g :Git<CR>
+	nnoremap <space>gg :Git<CR>
 endif
 
 
@@ -357,18 +367,15 @@ endif
 
 
 "----------------------------------------------------------------------
-" NERDTree
+"ranger
 "----------------------------------------------------------------------
-if index(g:bundle_group, 'nerdtree') >= 0
-	Plug 'scrooloose/nerdtree', {'on': ['NERDTree', 'NERDTreeFocus', 'NERDTreeToggle', 'NERDTreeCWD', 'NERDTreeFind'] }
-	Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
-	let g:NERDTreeMinimalUI = 1
-	let g:NERDTreeDirArrows = 1
-	let g:NERDTreeHijackNetrw = 0
-	noremap nc :NERDTree %<cr>
-	" noremap <space>no :NERDTreeFocus<cr>
-	" noremap <space>nm :NERDTreeMirror<cr>
-	noremap ne  :NERDTreeToggle <cr>
+if index(g:bundle_group, 'ranger') >= 0
+	" https://github.com/francoiscabrol/ranger.vim
+	Plug 'francoiscabrol/ranger.vim'
+	let g:ranger_map_keys = 0
+	map nc :Ranger<CR>
+	map ne :RangerWorkingDirectory<CR>
+
 endif
 
 
@@ -614,8 +621,6 @@ if index(g:bundle_group, 'leaderf') >= 0
 					\ "Function": [["<ESC>", ':exec g:Lf_py "functionExplManager.quit()"<cr>']],
 					\ }
 		noremap <space>f :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>
-
-
 	else
 		" 不支持 python ，使用 CtrlP 代替
 		Plug 'ctrlpvim/ctrlp.vim'
