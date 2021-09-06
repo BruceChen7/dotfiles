@@ -15,7 +15,7 @@
 "----------------------------------------------------------------------
 if !exists('g:bundle_group')
 	let g:bundle_group = ['basic', 'tags', 'enhanced', 'filetypes', 'textobj']
-	let g:bundle_group += ['tags', 'coc', 'ranger']
+	let g:bundle_group += ['tags', 'coc', 'fern']
 	let g:bundle_group += ['leaderf']
 endif
 
@@ -54,7 +54,7 @@ Plug 'godlygeek/tabular', { 'on': 'Tabularize' }
 " Diff 增强，支持 histogram / patience 等更科学的 diff 算法
 Plug 'chrisbra/vim-diff-enhanced'
 
-Plug 'ziglang/zig.vim'
+
 
 "----------------------------------------------------------------------
 " Dirvish 设置：自动排序并隐藏文件，同时定位到相关文件
@@ -96,9 +96,6 @@ if index(g:bundle_group, 'basic') >= 0
 
 	Plug 'Chiel92/vim-autoformat'
 
-	" 展示开始画面，显示最近编辑过的文件
-	" Plug 'mhinz/vim-startify'
-
 	" 一次性安装一大堆 colorscheme
 	Plug 'flazz/vim-colorschemes'
 
@@ -137,17 +134,17 @@ if index(g:bundle_group, 'basic') >= 0
 
 
 	Plug 'skywind3000/Leaderf-snippet'
-
 	Plug 'skywind3000/vim-terminal-help'
 
 	Plug 'SirVer/ultisnips'
-
 	" 用来预览snippet
 	Plug 'skywind3000/Leaderf-snippet'
 	" 用来设置tab
 	Plug 'tpope/vim-sleuth'
 
 	Plug 'mg979/vim-visual-multi', {'branch': 'master'}
+
+	Plug 'machakann/vim-sandwich'
 	" 使用 ALT+e 来选择窗口
 	nmap <m-e> <Plug>(choosewin)
 
@@ -199,6 +196,7 @@ if index(g:bundle_group, 'basic') >= 0
 
 	" 在vim中操作git
 	nnoremap <space>gg :Git<CR>
+	nnoremap <space>gv :Gdiffsplit<CR>
 endif
 
 
@@ -378,7 +376,45 @@ if index(g:bundle_group, 'ranger') >= 0
 
 endif
 
+"----------------------------------------------------------------------
+" fern
+"----------------------------------------------------------------------
+if index(g:bundle_group, 'fern') >= 0
+	Plug 'lambdalisue/fern.vim'
+	function! s:init_fern() abort
+		" Define NERDTree like mappings
+		nmap <buffer> o <Plug>(fern-action-open:edit)
+		nmap <buffer> go <Plug>(fern-action-open:edit)<C-w>p
+		nmap <buffer> t <Plug>(fern-action-open:tabedit)
+		nmap <buffer> T <Plug>(fern-action-open:tabedit)gT
+		nmap <buffer> i <Plug>(fern-action-open:split)
+		nmap <buffer> gi <Plug>(fern-action-open:split)<C-w>p
+		nmap <buffer> s <Plug>(fern-action-open:vsplit)
+		nmap <buffer> gs <Plug>(fern-action-open:vsplit)<C-w>p
+		nmap <buffer> ma <Plug>(fern-action-new-path)
+		nmap <buffer> P gg
 
+		nmap <buffer> C <Plug>(fern-action-enter)
+		nmap <buffer> u <Plug>(fern-action-leave)
+		nmap <buffer> r <Plug>(fern-action-reload)
+		nmap <buffer> R gg<Plug>(fern-action-reload)<C-o>
+		nmap <buffer> cd <Plug>(fern-action-cd)
+		nmap <buffer> CD gg<Plug>(fern-action-cd)<C-o>
+
+		nmap <buffer> I <Plug>(fern-action-hide-toggle)
+
+		nmap <buffer> q :<C-u>quit<CR>
+	endfunction
+	noremap ne :Fern . -reveal=% <CR>
+	noremap nc :Fern %:h -drawer -reveal=% -toggle <CR>
+
+	augroup fern-custom
+		autocmd! *
+		autocmd FileType fern call s:init_fern()
+	augroup END
+
+	Plug 'yuki-yano/fern-preview.vim'
+endif
 "----------------------------------------------------------------------
 " LanguageTool 语法检查
 "----------------------------------------------------------------------
