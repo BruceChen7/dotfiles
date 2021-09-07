@@ -73,6 +73,7 @@ highlight clear SignColumn
 set statusline=                                 " 清空状态了
 set statusline+=\ %F                            " 文件名
 set statusline+=%{FugitiveStatusline()}
+set statusline+=%{fugitive#statusline()}
 set statusline+=\ [%1*%M%*%n%R%H]               " buffer 编号和状态
 set statusline+=%=                              " 向右对齐
 set statusline+=\ %y                            " 文件类型

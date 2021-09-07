@@ -54,7 +54,7 @@ Plug 'godlygeek/tabular', { 'on': 'Tabularize' }
 " Diff 增强，支持 histogram / patience 等更科学的 diff 算法
 Plug 'chrisbra/vim-diff-enhanced'
 
-
+Plug 'ziglang/zig.vim'
 
 "----------------------------------------------------------------------
 " Dirvish 设置：自动排序并隐藏文件，同时定位到相关文件
@@ -143,7 +143,6 @@ if index(g:bundle_group, 'basic') >= 0
 	Plug 'tpope/vim-sleuth'
 
 	Plug 'mg979/vim-visual-multi', {'branch': 'master'}
-
 	Plug 'machakann/vim-sandwich'
 	" 使用 ALT+e 来选择窗口
 	nmap <m-e> <Plug>(choosewin)
