@@ -134,6 +134,7 @@ if index(g:bundle_group, 'basic') >= 0
 
 
 	Plug 'skywind3000/Leaderf-snippet'
+
 	Plug 'skywind3000/vim-terminal-help'
 
 	Plug 'SirVer/ultisnips'
@@ -392,6 +393,7 @@ if index(g:bundle_group, 'fern') >= 0
 		nmap <buffer> gs <Plug>(fern-action-open:vsplit)<C-w>p
 		nmap <buffer> ma <Plug>(fern-action-new-path)
 		nmap <buffer> P gg
+		nmap <buffer> as <Plug>(fern-action-open:select)
 
 		nmap <buffer> C <Plug>(fern-action-enter)
 		nmap <buffer> u <Plug>(fern-action-leave)
@@ -400,13 +402,17 @@ if index(g:bundle_group, 'fern') >= 0
 		nmap <buffer> cd <Plug>(fern-action-cd)
 		nmap <buffer> CD gg<Plug>(fern-action-cd)<C-o>
 
-		nmap <buffer> I <Plug>(fern-action-hide-toggle)
+		nmap <buffer> I <Plug>(fern-action-hidden)
 
 		nmap <buffer> q :<C-u>quit<CR>
 	endfunction
-	noremap ne :Fern . -reveal=% <CR>
-	noremap nc :Fern %:h -drawer -reveal=% -toggle <CR>
 
+	noremap ne :Fern .  -reveal=% <CR>
+	noremap nE :Fern . -opener=vsplit -reveal=% <CR>
+	" noremap nc :Fern %:h -drawer -reveal=% -toggle <CR>
+	" current buffer directory
+	noremap nc :Fern %:h  -reveal=% <CR>
+	noremap nC :Fern %:h -opener=vsplit -reveal=% <CR>
 	augroup fern-custom
 		autocmd! *
 		autocmd FileType fern call s:init_fern()
