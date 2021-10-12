@@ -1,7 +1,11 @@
+# https://gist.github.com/Cogitri/e8d5c63818443f3c8f13cd7760fe77aa
+env:
+  TERM: xterm-256color
 scrolling:
   history: 10000
   multiplier: 3
 alt_send_esc: true
+tabspaces: 4
 key_bindings:
   - { key: A,         mods: Alt,       chars: "\x1ba"                       }
   - { key: B,         mods: Alt,       chars: "\x1bb"                       }
@@ -80,7 +84,7 @@ key_bindings:
   - { key: Backslash, mods: Alt|Shift, chars: "\x1b|"                       } # Alt + |
 font:
   normal:
-    family: Monaco
-    style: Regular
-  size: 16
+    family: FiraCode Nerd Font
+    style: normal
+  size: 15
 
