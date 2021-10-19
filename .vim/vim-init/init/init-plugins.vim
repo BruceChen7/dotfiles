@@ -17,6 +17,7 @@ if !exists('g:bundle_group')
 	let g:bundle_group = ['basic', 'tags', 'enhanced', 'filetypes', 'textobj']
 	let g:bundle_group += ['tags', 'coc', 'fern']
 	let g:bundle_group += ['leaderf']
+	let g:bundle_group += ['gist']
 endif
 
 
@@ -138,6 +139,7 @@ if index(g:bundle_group, 'basic') >= 0
 	Plug 'skywind3000/vim-terminal-help'
 
 	Plug 'SirVer/ultisnips'
+
 	" 用来预览snippet
 	Plug 'skywind3000/Leaderf-snippet'
 	" 用来设置tab
@@ -220,9 +222,6 @@ if index(g:bundle_group, 'enhanced') >= 0
 
 	" 配对括号和引号自动补全
 	Plug 'Raimondi/delimitMate'
-
-	" 提供 gist 接口
-	"Plug 'lambdalisue/vim-gista', { 'on': 'Gista' }
 
 	" ALT_+/- 用于按分隔符扩大缩小 v 选区
 	map <m-=> <Plug>(expand_region_expand)
@@ -419,6 +418,7 @@ if index(g:bundle_group, 'fern') >= 0
 	augroup END
 
 	Plug 'yuki-yano/fern-preview.vim'
+
 endif
 "----------------------------------------------------------------------
 " LanguageTool 语法检查
@@ -656,136 +656,26 @@ if index(g:bundle_group, 'leaderf') >= 0
 		let g:Lf_NormalMap = {
 					\ "File":   [["<ESC>", ':exec g:Lf_py "fileExplManager.quit()"<CR>']],
 					\ "Buffer": [["<ESC>", ':exec g:Lf_py "bufExplManager.quit()"<cr>']],
+
 					\ "Mru": [["<ESC>", ':exec g:Lf_py "mruExplManager.quit()"<cr>']],
 					\ "Tag": [["<ESC>", ':exec g:Lf_py "tagExplManager.quit()"<cr>']],
 					\ "BufTag": [["<ESC>", ':exec g:Lf_py "bufTagExplManager.quit()"<cr>']],
 					\ "Function": [["<ESC>", ':exec g:Lf_py "functionExplManager.quit()"<cr>']],
 					\ }
 		noremap <space>f :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>
-	else
-		" 不支持 python ，使用 CtrlP 代替
-		Plug 'ctrlpvim/ctrlp.vim'
-
-		" 显示函数列表的扩展插件
-		Plug 'tacahiroy/ctrlp-funky'
-
-		" 忽略默认键位
-		let g:ctrlp_map = ''
-
-		" 模糊匹配忽略
-		let g:ctrlp_custom_ignore = {
-					\ 'dir':  '\v[\/]\.(git|hg|svn)$',
-					\ 'file': '\v\.(exe|so|dll|mp3|wav|sdf|suo|mht)$',
-					\ 'link': 'some_bad_symbolic_links',
-					\ }
-
-		" 项目标志
-		let g:ctrlp_root_markers = ['.project', '.root', '.svn', '.git']
-		let g:ctrlp_working_path = 0
-
-		" CTRL+p 打开文件模糊匹配
-		noremap <c-p> :CtrlP<cr>
-
-		" CTRL+n 打开最近访问过的文件的匹配
-		noremap <c-n> :CtrlPMRUFiles<cr>
-
-		" ALT+p 显示当前文件的函数列表
-		noremap <m-p> :CtrlPFunky<cr>
-
-		" ALT+n 匹配 buffer
-		noremap <m-n> :CtrlPBuffer<cr>
 	endif
 endif
 
-
+if index(g:bundle_group, "gist") >= 0
+	Plug 'mattn/webapi-vim'
+	Plug 'mattn/vim-gist'
+	let g:gist_show_privates = 1
+	let g:gist_post_private = 1
+	nnoremap <leader>gsl :Gist -l <CR>
+	nnoremap <leader>gsp :Gist -b <CR>
+	nnoremap <leader>gsd :Gist -d <CR>
+endif
 "----------------------------------------------------------------------
 " 结束插件安装
 "----------------------------------------------------------------------
 call plug#end()
-
-
-
-"----------------------------------------------------------------------
-" YouCompleteMe 默认设置：YCM 需要你另外手动编译安装
-"----------------------------------------------------------------------
-
-" 禁用预览功能：扰乱视听
-let g:ycm_add_preview_to_completeopt = 0
-
-" 禁用诊断功能：我们用前面更好用的 ALE 代替
-let g:ycm_show_diagnostics_ui = 0
-let g:ycm_server_log_level = 'info'
-let g:ycm_min_num_identifier_candidate_chars = 2
-let g:ycm_collect_identifiers_from_comments_and_strings = 1
-let g:ycm_complete_in_strings=1
-let g:ycm_key_invoke_completion = '<c-z>'
-set completeopt=menu,menuone,noselect
-
-" noremap <c-z> <NOP>
-
-" 两个字符自动触发语义补全
-let g:ycm_semantic_triggers =  {
-			\ 'c,cpp,python,java,go,erlang,perl': ['re!\w{2}'],
-			\ 'cs,lua,javascript': ['re!\w{2}'],
-			\ }
-
-
-"----------------------------------------------------------------------
-" Ycm 白名单（非名单内文件不启用 YCM），避免打开个 1MB 的 txt 分析半天
-"----------------------------------------------------------------------
-let g:ycm_filetype_whitelist = {
-			\ "c":1,
-			\ "cpp":1,
-			\ "objc":1,
-			\ "objcpp":1,
-			\ "python":1,
-			\ "java":1,
-			\ "javascript":1,
-			\ "coffee":1,
-			\ "vim":1,
-			\ "go":1,
-			\ "cs":1,
-			\ "lua":1,
-			\ "perl":1,
-			\ "perl6":1,
-			\ "php":1,
-			\ "ruby":1,
-			\ "rust":1,
-			\ "erlang":1,
-			\ "asm":1,
-			\ "nasm":1,
-			\ "masm":1,
-			\ "tasm":1,
-			\ "asm68k":1,
-			\ "asmh8300":1,
-			\ "asciidoc":1,
-			\ "basic":1,
-			\ "vb":1,
-			\ "make":1,
-			\ "cmake":1,
-			\ "html":1,
-			\ "css":1,
-			\ "less":1,
-			\ "json":1,
-			\ "cson":1,
-			\ "typedscript":1,
-			\ "haskell":1,
-			\ "lhaskell":1,
-			\ "lisp":1,
-			\ "scheme":1,
-			\ "sdl":1,
-			\ "sh":1,
-			\ "zsh":1,
-			\ "bash":1,
-			\ "man":1,
-			\ "markdown":1,
-			\ "matlab":1,
-			\ "maxima":1,
-			\ "dosini":1,
-			\ "conf":1,
-			\ "config":1,
-			\ "zimbu":1,
-			\ "ps1":1,
-			\ }
-
-
