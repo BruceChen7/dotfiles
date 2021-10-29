@@ -223,6 +223,8 @@ if index(g:bundle_group, 'enhanced') >= 0
 	" 配对括号和引号自动补全
 	Plug 'Raimondi/delimitMate'
 
+	" 提供 gist 接口
+	"Plug 'lambdalisue/vim-gista', { 'on': 'Gista' }
 	" ALT_+/- 用于按分隔符扩大缩小 v 选区
 	map <m-=> <Plug>(expand_region_expand)
 	map <m--> <Plug>(expand_region_shrink)
@@ -262,6 +264,7 @@ if index(g:bundle_group, 'tags') >= 0
 	if executable('gtags') && executable('gtags-cscope')
 		let g:gutentags_modules += ['gtags_cscope']
 		let $GTAGSLABEL = 'native-pygments'
+		let $GTAGSLABEL = 'native'
 		if has("macunix")
 			let $GTAGSCONF='/usr/local/share/gtags/gtags.conf'
 		elseif has("unix")
@@ -656,7 +659,6 @@ if index(g:bundle_group, 'leaderf') >= 0
 		let g:Lf_NormalMap = {
 					\ "File":   [["<ESC>", ':exec g:Lf_py "fileExplManager.quit()"<CR>']],
 					\ "Buffer": [["<ESC>", ':exec g:Lf_py "bufExplManager.quit()"<cr>']],
-
 					\ "Mru": [["<ESC>", ':exec g:Lf_py "mruExplManager.quit()"<cr>']],
 					\ "Tag": [["<ESC>", ':exec g:Lf_py "tagExplManager.quit()"<cr>']],
 					\ "BufTag": [["<ESC>", ':exec g:Lf_py "bufTagExplManager.quit()"<cr>']],
