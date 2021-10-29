@@ -49,6 +49,7 @@
     quotepath = false
 [github]
 	user = BruceChen7
+; https://www.jessesquires.com/blog/2021/10/24/git-aliases-to-improve-productivity/
 [alias]
 	aliases = "!f() { git config --global -l | grep alias | sort; }; f"
 	st = status
