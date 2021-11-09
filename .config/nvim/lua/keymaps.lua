@@ -20,7 +20,6 @@ U.map('i', "<c-_>", "<c-k>")
 -- U.map('c', "<C-j>", "<down>")
 -- U.map('c', "<C-k>", "<up>")
 -- U.map('c', "<C-l>", "<right>")
---
 U.map('n', "W", ":w!<cr>")
 U.map('n', "Q", ":q!<cr>")
 U.map('i', "jj", "<ESC>")
@@ -36,6 +35,12 @@ U.map("n", "<leader>to", ":tabonly<cr>")
 
 U.map("n", "<space>gg", ":Git <CR>")
 U.map("n", "<space>gv", ":Gdiffsplit <CR>")
+
+
+U.map("n", "<space>=", ":resize +3<cr>")
+U.map("n", "<space>-", ":resize -3<cr>")
+U.map("n", "<space>,", ":vertical resize -5<cr>")
+U.map("n", "<space>.", ":vertical resize +5<cr>")
 
 -- fern.vim
 vim.cmd([[
@@ -185,8 +190,6 @@ U.map('n', "<m-;>", ":PreviewTag<CR>")
 U.map('n', "<m-:", ":PreviewClose<CR>")
 
 vim.cmd([[
-"	noremap <m-;> :PreviewTag<CR>
-"	noremap <silent><M-:> :PreviewClose<cr>
 	function! TermExit(code)
 		echom "terminal exit code: ". a:code
 	endfunc
@@ -216,3 +219,72 @@ vim.cmd([[
 
 -- AsyncTask
 U.map('n', "g1", ":AsyncTask grep-cword<CR>")
+
+-- indent-files
+vim.g.indent_blankline_char = '┊'
+vim.g.indent_blankline_filetype_exclude = { 'help', 'packer' }
+vim.g.indent_blankline_buftype_exclude = { 'terminal', 'nofile' }
+vim.g.indent_blankline_char_highlight = 'LineNr'
+vim.g.indent_blankline_show_trailing_blankline_indent = false
+
+-- 自动打开 quickfix window ，高度为 6
+vim.g.asyncrun_open = 6
+-- 任务结束时候响铃提醒
+vim.g.asyncrun_bell = 1
+
+-- quickfix 手动打开
+U.map("n", "<space>co", ":call asyncrun#quickfix_toggle(6)<cr>")
+
+-- Treesitter configuration
+-- Parsers must be installed manually via :TSInstall
+-- https://github.com/nvim-lua/kickstart.nvim/blob/master/init.lua
+require('nvim-treesitter.configs').setup {
+  highlight = {
+    enable = true, -- false will disable the whole extension
+  },
+  incremental_selection = {
+    enable = true,
+    keymaps = {
+      init_selection = 'gnn',
+      node_incremental = 'grn',
+      scope_incremental = 'grc',
+      node_decremental = 'grm',
+    },
+  },
+  indent = {
+    enable = true,
+  },
+  textobjects = {
+    select = {
+      enable = true,
+      lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
+      keymaps = {
+        -- You can use the capture groups defined in textobjects.scm
+        ['af'] = '@function.outer',
+        ['if'] = '@function.inner',
+        ['ac'] = '@class.outer',
+        ['ic'] = '@class.inner',
+      },
+    },
+    move = {
+      enable = true,
+      set_jumps = true, -- whether to set jumps in the jumplist
+      goto_next_start = {
+        [']m'] = '@function.outer',
+        [']]'] = '@class.outer',
+      },
+      goto_next_end = {
+        [']M'] = '@function.outer',
+        [']['] = '@class.outer',
+      },
+      goto_previous_start = {
+        ['[m'] = '@function.outer',
+        ['[['] = '@class.outer',
+      },
+      goto_previous_end = {
+        ['[M'] = '@function.outer',
+        ['[]'] = '@class.outer',
+      },
+    },
+  },
+}

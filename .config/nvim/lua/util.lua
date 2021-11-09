@@ -1,6 +1,7 @@
 -- https://github.com/numToStr/dotfiles/blob/master/neovim/.config/nvim/lua/utils.lua
 local api = vim.api
 local cmd = api.nvim_command
+local m = require("math")
 
 local U = {}
 
@@ -14,5 +15,19 @@ function U.map(mode, key, result, opts)
 
     api.nvim_set_keymap(mode, key, result, options)
 end
+
+function U.tablelength(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+
+function U.random(n)
+	time = os.time()
+	m.randomseed(time)
+	return m.random(n)
+end
+
 return U
+
 

@@ -1,22 +1,19 @@
-local execute = vim.api.nvim_command
-local fn = vim.fn
--- /Users/username/.local/share/nvim/site/pack/packer/start/packer.nvim
-local packer_install_dir = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-local is_linux = true
+-- Install packer
+local install_path = vim.fn.stdpath 'data' .. '/site/pack/packer/start/packer.nvim'
 
-if is_linux then
-	plug_url_format = 'https://hub.fastgit.org/%s'
-else
-	plug_url_format = 'https://github.com/%s'
+if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
+  vim.fn.execute('!git clone https://github.com/wbthomason/packer.nvim ' .. install_path)
 end
 
-local packer_repo = string.format(plug_url_format, 'wbthomason/packer.nvim')
-local install_cmd = string.format('10split |term git clone --depth=1 %s %s', packer_repo, packer_install_dir)
-
-if fn.empty(fn.glob(packer_install_dir)) > 0 then
-	vim.api.nvim_echo({{'Installing packer.nvim', 'Type'}}, true, {})
-	-- execute 'packadd packer.nvim'
-end
+vim.api.nvim_exec(
+  [[
+	  augroup Packer
+		autocmd!
+		autocmd BufWritePost init.lua PackerCompile
+	  augroup end
+  ]],
+  false
+)
 
 vim.cmd [[packadd packer.nvim]]
 
@@ -70,4 +67,14 @@ return require('packer').startup(function()
 	use 'ojroques/vim-oscyank'
 	use 'mg979/vim-visual-multi'
 	use "lukas-reineke/indent-blankline.nvim"
+	use {
+		'nvim-treesitter/nvim-treesitter',
+		run = ':TSUpdate'
+	}
+	use 'nvim-treesitter/nvim-treesitter-textobjects'
+	-- colorscheme
+	use 'joshdick/onedark.vim'
+	-- colorscheme
+	use 'romainl/Apprentice'
 end)
+

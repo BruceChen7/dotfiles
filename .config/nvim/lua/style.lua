@@ -1,4 +1,4 @@
-local o = vim.o
+local o = vim.opt
 -- 总是显示标签栏
 --o.showtabline
 -- 设置显示制表符等隐藏字符
@@ -8,7 +8,10 @@ o.showcmd = true
 o.number = true
 
 o.splitright = true
-
+--o.errorformat = vim.opt.errorformat + '%f|%l col %c|%m'
+o.errorformat:append('[%f:%l] -> %m,[%f:%l]:%m')
+-- 设置buffer
+-- TODO: 重写这部分代码
 vim.cmd([[
 	highlight clear SignColumn
 	"quickfix 设置，隐藏行号
@@ -117,3 +120,58 @@ vim.cmd([[
 
 	set tabline=%!VimNeatTabLine()
 ]])
+
+vim.cmd([[
+augroup InitFileTypesGroup
+
+	" 清除同组的历史 autocommand
+	au!
+
+	" C/C++ 文件使用 // 作为注释
+	au FileType c,cpp setlocal commentstring=//\ %s
+
+	au FileType zig setlocal ts=4 sw=4 et
+	" markdown 允许自动换行
+	au FileType markdown setlocal wrap
+
+	" lisp 进行微调
+	au FileType lisp setlocal ts=8 sts=2 sw=2 et
+
+	au FileType go setlocal ts=8 sw=8
+
+	" scala 微调
+	au FileType scala setlocal sts=4 sw=4 noet
+
+	" haskell 进行微调
+	au FileType haskell setlocal et
+
+	" quickfix 隐藏行号
+	"au FileType qf setlocal nonumber
+	autocmd FileType qf nnoremap <silent><buffer> p :PreviewQuickfix<cr>
+	autocmd FileType qf nnoremap <silent><buffer> P :PreviewClose<cr>
+
+	" 强制对某些扩展名的 filetype 进行纠正
+	au BufNewFile,BufRead *.as setlocal filetype=actionscript
+	au BufNewFile,BufRead *.pro setlocal filetype=prolog
+	au BufNewFile,BufRead *.es setlocal filetype=erlang
+	au BufNewFile,BufRead *.asc setlocal filetype=asciidoc
+	au BufNewFile,BufRead *.vl setlocal filetype=verilog
+
+augroup END
+]])
+
+function getColorscheme()
+	local colorschemes = {"onedark", "apprentice"}
+	local U = require('util')
+	local len = U.tablelength(colorschemes)
+	i = U.random(len)
+	return colorschemes[i]
+end
+
+
+vim.cmd([[
+	let scheme = v:lua.getColorscheme()
+	execute 'colorschem ' . scheme
+]])
+
+
