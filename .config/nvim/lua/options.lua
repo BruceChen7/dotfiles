@@ -43,6 +43,9 @@ o.backupdir = '/tmp/'
 o.directory = '/tmp/'
 o.undodir = '/tmp/'
 
+--在右边vsplit
+o.splitright = true
+
 local cmd = vim.api.nvim_command
 cmd('filetype plugin indent on')
 
