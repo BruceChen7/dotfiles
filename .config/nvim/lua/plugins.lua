@@ -2,18 +2,15 @@
 local install_path = vim.fn.stdpath 'data' .. '/site/pack/packer/start/packer.nvim'
 
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-  vim.fn.execute('!git clone https://github.com/wbthomason/packer.nvim ' .. install_path)
+	vim.fn.execute('!git clone https://github.com/wbthomason/packer.nvim ' .. install_path)
 end
 
-vim.api.nvim_exec(
-  [[
-	  augroup Packer
-		autocmd!
-		autocmd BufWritePost init.lua PackerCompile
-	  augroup end
-  ]],
-  false
-)
+vim.api.nvim_exec( [[
+	augroup Packer
+	autocmd!
+	autocmd BufWritePost init.lua PackerCompile
+	augroup end
+]], false)
 
 vim.cmd [[packadd packer.nvim]]
 
@@ -43,6 +40,13 @@ return require('packer').startup(function()
 	-- 基础插件：提供让用户方便的自定义文本对象的接口
 	use 'kana/vim-textobj-user'
 
+	-- statusline
+	use {
+		'nvim-lualine/lualine.nvim',
+		requires = {'kyazdani42/nvim-web-devicons', opt = true}
+	}
+
+
 	-- indent 文本对象：ii/ai 表示当前缩进，vii 选中当缩进，cii 改写缩进
 	use 'kana/vim-textobj-indent'
 
@@ -64,13 +68,20 @@ return require('packer').startup(function()
 	use 'Chiel92/vim-autoformat'
 	-- 自动调整窗口
 	use 'camspiers/lens.vim'
+	-- 复制剪切板
 	use 'ojroques/vim-oscyank'
+
 	use 'mg979/vim-visual-multi'
+
+	-- indent-line
 	use "lukas-reineke/indent-blankline.nvim"
+
+	-- treesitter
 	use {
 		'nvim-treesitter/nvim-treesitter',
 		run = ':TSUpdate'
 	}
+
 	use 'nvim-treesitter/nvim-treesitter-textobjects'
 	-- colorscheme
 	use 'joshdick/onedark.vim'

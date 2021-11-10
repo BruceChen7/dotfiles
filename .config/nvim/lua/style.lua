@@ -5,11 +5,15 @@ local o = vim.opt
 o.list = true
 -- 右边显示命令
 o.showcmd = true
+-- 显示行号
 o.number = true
 
 o.splitright = true
+
+o.showtabline = 2
 --o.errorformat = vim.opt.errorformat + '%f|%l col %c|%m'
 o.errorformat:append('[%f:%l] -> %m,[%f:%l]:%m')
+
 -- 设置buffer
 -- TODO: 重写这部分代码
 vim.cmd([[

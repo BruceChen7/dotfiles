@@ -121,7 +121,7 @@ vim.cmd([[
     " 显示绝对路径
     let g:Lf_ShowRelativePath = 0
     " 不显示图标
-    let g:Lf_ShowDevIcons = 0
+    let g:Lf_ShowDevIcons = 1
 
     " 隐藏帮助
     let g:Lf_HideHelp = 1
@@ -288,3 +288,6 @@ require('nvim-treesitter.configs').setup {
     },
   },
 }
+
+-- lualine
+require('lualine').setup()
