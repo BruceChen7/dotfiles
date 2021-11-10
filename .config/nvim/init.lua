@@ -8,6 +8,7 @@ if not vim.tbl_contains(vim.opt.rtp:get(), base_dir) then
 end
 
 require("buildin")
+require("util")
 require("options")
 require("plugins")
 require("keymaps")

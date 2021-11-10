@@ -5,6 +5,9 @@ if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
 	vim.fn.execute('!git clone https://github.com/wbthomason/packer.nvim ' .. install_path)
 end
 
+u = require("util")
+
+
 vim.api.nvim_exec( [[
 	augroup Packer
 	autocmd!
@@ -63,6 +66,12 @@ return require('packer').startup({function()
 		'nvim-lualine/lualine.nvim',
 		requires = {'kyazdani42/nvim-web-devicons', opt = true}
 	}
+    local fullBuffPath = u.getFileFullPath
+	require("lualine").setup({
+		sections = {
+			lualine_c = {fullBuffPath}
+		}
+	})
 
 
 	-- indent 文本对象：ii/ai 表示当前缩进，vii 选中当缩进，cii 改写缩进
@@ -103,4 +112,12 @@ return require('packer').startup({function()
 	use 'nvim-treesitter/nvim-treesitter-textobjects'
 	-- colorscheme
 	use 'navarasu/onedark.nvim'
+
+	use {
+		'numToStr/Comment.nvim',
+		config = function()
+			require('Comment').setup()
+		end
+	}
+	require('Comment').setup()
 end})

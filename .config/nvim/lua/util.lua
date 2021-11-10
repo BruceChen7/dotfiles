@@ -28,6 +28,12 @@ function U.random(n)
 	return m.random(n)
 end
 
+
+
+function U.getFileFullPath()
+	return vim.fn.expand('%')
+end
+
 return U
 
 

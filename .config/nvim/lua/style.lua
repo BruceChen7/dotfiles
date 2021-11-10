@@ -165,7 +165,7 @@ augroup END
 ]])
 
 function getColorscheme()
-	local colorschemes = {"onedark", "apprentice"}
+	local colorschemes = {"onedark"}
 	local U = require('util')
 	local len = U.tablelength(colorschemes)
 	i = U.random(len)
