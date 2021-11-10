@@ -14,15 +14,22 @@ vim.api.nvim_exec( [[
 
 vim.cmd [[packadd packer.nvim]]
 
+local function getCodeLang()
+	return {"go", "rust", "zig", "c", "cpp", "lua"}
+end
 -- https://github.com/wbthomason/packer.nvim#requirements
-return require('packer').startup(function()
+return require('packer').startup({function()
 	-- Packer can manage itself
 	use 'wbthomason/packer.nvim'
 	use 'bronson/vim-trailing-whitespace'
 	--使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
 	use 't9md/vim-choosewin'
 	use 'tpope/vim-fugitive'
-	use 'lambdalisue/fern.vim'
+	use {
+		'lambdalisue/fern.vim',
+		ft = "fern"
+	}
+
 	use 'skywind3000/vim-preview'
 	use 'skywind3000/vim-quickui'
 	use 'skywind3000/asynctasks.vim'
@@ -30,12 +37,22 @@ return require('packer').startup(function()
 	use 'skywind3000/gutentags_plus'
 	use 'Yggdroot/LeaderF'
 	use 'neovim/nvim-lspconfig'
-	use 'hrsh7th/nvim-cmp' -- Autocompletion plugin
-	use 'hrsh7th/cmp-nvim-lsp' -- LSP source for nvim-cmp
+	use {
+		'hrsh7th/nvim-cmp', -- Autocompletion plugin
+		ft = getCodeLang()
+
+	}
+	use {
+		'hrsh7th/cmp-nvim-lsp',  -- LSP source for nvim-cmp
+		ft = getCodeLang()
+	}
 	use 'saadparwaiz1/cmp_luasnip' -- Snippets source for nvim-cmp
 	use 'L3MON4D3/LuaSnip' -- Snippets plugin
 	use 'antoinemadec/FixCursorHold.nvim'
-	use 'ludovicchabant/vim-gutentags'
+	use {
+		'ludovicchabant/vim-gutentags',
+		ft = getCodeLang()
+	}
 	use 'mhinz/vim-signify'
 	-- 基础插件：提供让用户方便的自定义文本对象的接口
 	use 'kana/vim-textobj-user'
@@ -84,8 +101,6 @@ return require('packer').startup(function()
 
 	use 'nvim-treesitter/nvim-treesitter-textobjects'
 	-- colorscheme
-	use 'joshdick/onedark.vim'
-	-- colorscheme
-	use 'romainl/Apprentice'
-end)
+	use 'navarasu/onedark.nvim'
+end})
 
