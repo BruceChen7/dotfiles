@@ -30,6 +30,11 @@ end
 
 
 
+function U.dump(...)
+    local objects = vim.tbl_map(vim.inspect, {...})
+    print(unpack(objects))
+end
+
 function U.getFileFullPath()
 	return vim.fn.expand('%')
 end

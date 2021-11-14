@@ -1,6 +1,7 @@
 local o = vim.o
 local g = vim.g
 local U = require('util')
+
 -- 自动缩进
 o.autoindent = true
 
@@ -48,8 +49,6 @@ o.directory = '/tmp/'
 o.undodir = '/tmp/'
 o.backupext='.bak'
 
-
-
 --在右边vsplit
 o.splitright = true
 
@@ -89,7 +88,6 @@ o.wildignore = [[
 	*.swp,.lock,.DS_Store,._*
 	*/tmp/*,*.so,*.swp,*.zip,**/node_modules/**,**/target/**,**.terraform/**"
 ]]
-
 
 local cmd = vim.api.nvim_command
 cmd('filetype plugin indent on')

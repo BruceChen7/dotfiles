@@ -52,6 +52,7 @@ local luasnip = require 'luasnip'
 -- Set completeopt to have a better completion experience
 vim.o.completeopt = 'menuone,noselect'
 
+
 -- nvim-cmp setup
 local cmp = require 'cmp'
 cmp.setup {

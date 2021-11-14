@@ -9,11 +9,11 @@ u = require("util")
 
 
 vim.api.nvim_exec( [[
-augroup Packer
-autocmd!
-autocmd BufWritePost init.lua PackerCompile
-augroup end
-	]], false)
+	augroup Packer
+	autocmd!
+       " autocmd BufWritePost init.lua PackerCompile
+	augroup end
+]], false)
 
 vim.cmd [[packadd packer.nvim]]
 
@@ -28,6 +28,8 @@ return require('packer').startup({function()
 	use 'lewis6991/impatient.nvim'
 	require("impatient")
 
+	use("nathom/filetype.nvim")
+
 	use 'bronson/vim-trailing-whitespace'
 	--使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
 	use 't9md/vim-choosewin'
@@ -35,13 +37,23 @@ return require('packer').startup({function()
 	use {
 		'lambdalisue/fern.vim'
 	}
+	require("config/fern")
+
+	use {
+		'ludovicchabant/vim-gutentags'
+	}
+	use 'skywind3000/gutentags_plus'
+	require("config/gtags")
+
 
 	use 'skywind3000/vim-preview'
 	use 'skywind3000/vim-quickui'
 	use 'skywind3000/asynctasks.vim'
 	use 'skywind3000/asyncrun.vim'
-	use 'skywind3000/gutentags_plus'
+
 	use 'Yggdroot/LeaderF'
+	require("config/leaderf")
+
 	use {
 		'neovim/nvim-lspconfig'
 	}
@@ -54,10 +66,10 @@ return require('packer').startup({function()
 	use 'saadparwaiz1/cmp_luasnip' -- Snippets source for nvim-cmp
 	use 'L3MON4D3/LuaSnip' -- Snippets plugin
 	use 'antoinemadec/FixCursorHold.nvim'
-	use {
-		'ludovicchabant/vim-gutentags'
-	}
+
 	use 'mhinz/vim-signify'
+	require 'config/signify'
+
 	-- 基础插件：提供让用户方便的自定义文本对象的接口
 	use 'kana/vim-textobj-user'
 
@@ -114,7 +126,6 @@ return require('packer').startup({function()
 	-- colorscheme
 	use 'rmehri01/onenord.nvim'
 	use 'dstein64/vim-startuptime'
-
 	use {
 		'numToStr/Comment.nvim',
 		config = function()
@@ -155,6 +166,6 @@ return require('packer').startup({function()
 				},
 			})
 		end,
-    })
+        })
 
 end})
