@@ -8,7 +8,7 @@ vim.g.gutentags_define_advanced_commands = 0
 -- vim.g.gutentags_ctags_extra_args = {'--fields=+niazS', '--extras=+q', '--c++-kinds=+px', '--c-kinds=+px'}
 -- 使用 universal-ctags 的话需要下面这行，请反注释
 local extra_tags =  {'--fields=+niazS', '--extras=+q', '--c++-kinds=+px', '--c-kinds=+px'}
-table.insert(extra_tags, 'output-format=e-ctags')
+table.insert(extra_tags, '--output-format=e-ctags')
 vim.g.gutentags_ctags_extra_args = extra_tags
 
 local modules = {}
