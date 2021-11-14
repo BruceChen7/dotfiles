@@ -9,11 +9,11 @@ u = require("util")
 
 
 vim.api.nvim_exec( [[
-	augroup Packer
-	autocmd!
-	autocmd BufWritePost init.lua PackerCompile
-	augroup end
-]], false)
+augroup Packer
+autocmd!
+autocmd BufWritePost init.lua PackerCompile
+augroup end
+	]], false)
 
 vim.cmd [[packadd packer.nvim]]
 
@@ -66,7 +66,7 @@ return require('packer').startup({function()
 		'nvim-lualine/lualine.nvim',
 		requires = {'kyazdani42/nvim-web-devicons', opt = true}
 	}
-    local fullBuffPath = u.getFileFullPath
+	local fullBuffPath = u.getFileFullPath
 	require("lualine").setup({
 		sections = {
 			lualine_c = {fullBuffPath}
@@ -120,4 +120,39 @@ return require('packer').startup({function()
 		end
 	}
 	require('Comment').setup()
+
+
+	use({
+		'NTBBloodbath/doom-one.nvim',
+		config = function()
+			require('doom-one').setup({
+				cursor_coloring = false,
+				terminal_colors = true,
+				italic_comments = false,
+				enable_treesitter = true,
+				transparent_background = false,
+				pumblend = {
+					enable = true,
+					transparency_amount = 210,
+				},
+				plugins_integrations = {
+					neorg = false,
+					barbar = false,
+					bufferline = false,
+					gitgutter = false,
+					gitsigns = true,
+					telescope = false,
+					neogit = true,
+					nvim_tree = true,
+					dashboard = false,
+					startify = false,
+					whichkey = true,
+					indent_blankline = true,
+					vim_illuminate = false,
+					lspsaga = false,
+				},
+			})
+		end,
+    })
+
 end})

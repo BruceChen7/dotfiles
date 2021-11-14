@@ -34,7 +34,7 @@ U.map("n", "<leader>tp", ":tabprev<cr>")
 U.map("n", "<leader>to", ":tabonly<cr>")
 
 U.map("n", "<space>gg", ":Git <CR>")
-U.map("n", "<space>gv", ":Gdiffsplit <CR>")
+U.map("n", "<space>gv", ":Gvdiffsplit <CR>")
 
 
 U.map("n", "<space>=", ":resize +3<cr>")
@@ -139,7 +139,6 @@ vim.cmd([[
     " 禁用 function/buftag 的预览功能，可以手动用 p 预览
     let g:Lf_PreviewResult = {'Function':0, 'BufTag':0}
 
-    " 使用 ESC 键可以直接退出 leaderf 的 normal 模式
     noremap <space>f :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>
 ]])
 
@@ -181,7 +180,7 @@ vim.cmd([[
 	let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
 
 	" 禁止 gutentags 自动链接 gtags 数据库
-	let g:gutentags_auto_add_gtags_cscope = 1
+	let g:gutentags_auto_add_gtags_cscope = 0
 	let g:gutentags_define_advanced_commands = 1
 ]])
 
@@ -201,15 +200,16 @@ vim.cmd([[
 	noremap <leader>tg :call quickui#terminal#open('tig', opts)<CR>
 ]])
 
-
+--  signify sign config
+vim.g.signify_sign_add = '+'
+vim.g.signify_sign_delete = '-'
+vim.g.signify_sign_change = '~'
+vim.g.signify_sign_delete_first_line = '‾'
+vim.g.signify_sign_changedelete = vim.g.signify_sign_change
+-- vim.g:signify_vcs_list = {'git', 'svn'}
 vim.cmd([[
 	" signify 调优
 	let g:signify_vcs_list = ['git', 'svn']
-	let g:signify_sign_add               = '+'
-	let g:signify_sign_delete            = '_'
-	let g:signify_sign_delete_first_line = '‾'
-	let g:signify_sign_change            = '~'
-	let g:signify_sign_changedelete      = g:signify_sign_change
 
 	" git 仓库使用 histogram 算法进行 diff
 	let g:signify_vcs_cmds = {
@@ -228,12 +228,12 @@ vim.g.indent_blankline_char_highlight = 'LineNr'
 vim.g.indent_blankline_show_trailing_blankline_indent = false
 
 -- 自动打开 quickfix window ，高度为 6
-vim.g.asyncrun_open = 6
+vim.g.asyncrun_open = 10
 -- 任务结束时候响铃提醒
 vim.g.asyncrun_bell = 1
 
 -- quickfix 手动打开
-U.map("n", "<space>co", ":call asyncrun#quickfix_toggle(6)<cr>")
+U.map("n", "<space>q", ":call asyncrun#quickfix_toggle(10)<cr>")
 
 -- Treesitter configuration
 -- Parsers must be installed manually via :TSInstall

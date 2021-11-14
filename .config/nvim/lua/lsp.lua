@@ -1,6 +1,9 @@
 local U = require("util")
 local nvim_lsp = require('lspconfig')
 
+-- Set completeopt to have a better completion experience
+vim.o.completeopt = 'menuone,noselect'
+
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
@@ -27,7 +30,7 @@ local on_attach = function(client, bufnr)
 	U.map('n', '<space>e', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
 	U.map('n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
 	U.map('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
-	U.map('n', '<space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
+	U.map('n', '<space>d', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
 	U.map('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
 	U.map('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
 	U.map('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
@@ -37,7 +40,7 @@ end
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
 local capabilities = vim.lsp.protocol.make_client_capabilities()
-local servers = {'pyright', 'gopls', 'clangd', 'rust_analyzer'}
+local servers = {'pyright', 'gopls', 'clangd', 'rust_analyzer', 'zls'}
 capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 for _, lsp in ipairs(servers) do
 	nvim_lsp[lsp].setup {
@@ -45,9 +48,6 @@ for _, lsp in ipairs(servers) do
 		capabilities = capabilities,
 	}
 end
-
--- Set completeopt to have a better completion experience
-vim.o.completeopt = 'menuone,noselect'
 
 -- luasnip setup
 local luasnip = require 'luasnip'

@@ -169,7 +169,12 @@ function getColorscheme()
 	local U = require('util')
 	local len = U.tablelength(colorschemes)
 	i = U.random(len)
-	return colorschemes[i]
+	scheme = colorschemes[i]
+
+	if scheme == 'edge' then
+		vim.g.edge_style='neon'
+	end
+	return scheme
 end
 
 
