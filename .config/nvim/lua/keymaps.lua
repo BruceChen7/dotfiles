@@ -1,4 +1,14 @@
 local U = require "util"
+-- https://github.com/Allaman/nvim/blob/main/lua/mappings.lua
+local default_options = {noremap = true, silent = true}
+local expr_options = {noremap = true, expr = true, silent = true}
+
+
+-- 设置leader key
+U.map('n', '<space>', '<Nop>')
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
+
 -- 窗口快捷键映射
 U.map('n', "<tab>h", '<c-w>h')
 U.map('n', "<tab>l", '<c-w>l')
@@ -11,15 +21,24 @@ U.map('i', "<c-e>", "<end>")
 U.map('i', "<c-d>", "<del>")
 U.map('i', "<c-_>", "<c-k>")
 
--- U.map('n', "<C-h>", "<left>")
--- U.map('n', "<C-j>", "<down>")
--- U.map('n', "<C-k>", "<up>")
--- U.map('n', "<C-l>", "<right>")
+U.map("v", "<", "<gv", default_options)
+U.map("v", ">", ">gv", default_options)
 
--- U.map('c', "<C-h>", "<left>")
--- U.map('c', "<C-j>", "<down>")
--- U.map('c', "<C-k>", "<up>")
--- U.map('c', "<C-l>", "<right>")
+-- paste over currently selected text without yanking it
+U.map("v", "p", "\"_dP", default_options)
+
+
+-- buffer switch
+U.map("n", "<tab>n", ":bNext<CR>", default_options)
+U.map("n", "<tab>p", ":bprevious<CR>", default_options)
+
+
+-- Cancel search highlighting with ESC
+U.map("n", "<ESC>", ":nohlsearch<Bar>:echo<CR>", default_options)
+
+-- yank
+U.map("n", "Y", "y$", default_options)
+
 U.map('n', "W", ":w!<cr>")
 U.map('n', "Q", ":q!<cr>")
 U.map('i', "jj", "<ESC>")
@@ -84,47 +103,43 @@ vim.cmd([[
 
 ]])
 
+-- leaderf config
+-- CTRL+p 打开文件模糊匹配
+vim.g.Lf_ShortcutF = '<C-p>'
+-- ALT+n 打开 buffer 模糊匹配
+vim.g.Lf_ShortcutB = '<m-n>'
+-- " 显示绝对路径
+vim.g.Lf_ShowRelativePath = 0
+-- " 不显示图标
+vim.g.Lf_ShowDevIcons = 1
+-- " 隐藏帮助
+vim.g.Lf_HideHelp = 0
+
+vim.g.Lf_MruMaxFiles = 2048
+-- " 如何识别项目目录，从当前文件目录向父目录递归知道碰到下面的文件/目录
+-- vim.g.Lf_RootMarkers = [[ '.project', '.root', '.svn', '.git']]
+vim.g.Lf_WorkingDirectoryMode = 'Ac'
+vim.g.Lf_WindowHeight = 0.40
+vim.g.Lf_CacheDirectory = vim.fn.expand('~/.vim/cache')
+
+-- ALT+m 打开最近使用的文件 MRU，进行模糊匹配
+U.map('n', '<m-m>', ':LeaderfMru<cr>')
+U.map('n', '<m-p>', ':LeaderfFunction<cr>')
+-- " ALT+SHIFT+p 打开 tag 列表，i 进入模糊匹配，ESC退出
+U.map('n', '<m-P>', ':LeaderfBufTag<cr>')
+-- ALT+n 打开 buffer 列表进行模糊匹配
+U.map('n', '<m-n>', ':LeaderfBuffer<cr>')
+-- " ALT+t 全局 tags 模糊匹配
+U.map('n', '<m-t>', ':LeaderfTag<cr>')
+
+--U.map('n', '<space>f', ':<C-U><C-R>=printf("Leaderf! rg -e %s", expand("<cword>"))<CR>')
+
 vim.cmd([[
-    " CTRL+p 打开文件模糊匹配
-    let g:Lf_ShortcutF = '<c-p>'
-
-    " ALT+n 打开 buffer 模糊匹配
-    let g:Lf_ShortcutB = '<m-n>'
-
-    " ALT+m 打开最近使用的文件 MRU，进行模糊匹配
-    noremap <m-m> :LeaderfMru<cr>
-
-    " ALT+p 打开函数列表，按 i 进入模糊匹配，ESC 退出
-    noremap <m-p> :LeaderfFunction<cr>
-
-    " ALT+SHIFT+p 打开 tag 列表，i 进入模糊匹配，ESC退出
-    noremap <m-P> :LeaderfBufTag<cr>
-
-    " ALT+n 打开 buffer 列表进行模糊匹配
-    noremap <m-n> :LeaderfBuffer<cr>
-
-    " ALT+t 全局 tags 模糊匹配
-    noremap <m-t> :LeaderfTag<cr>
-
-    " 最大历史文件保存 2048 个
-    let g:Lf_MruMaxFiles = 2048
-
     " ui 定制
     let g:Lf_StlSeparator = { 'left': '', 'right': '', 'font': '' }
 
     " 如何识别项目目录，从当前文件目录向父目录递归知道碰到下面的文件/目录
     let g:Lf_RootMarkers = ['.project', '.root', '.svn', '.git']
-    let g:Lf_WorkingDirectoryMode = 'Ac'
-    let g:Lf_WindowHeight = 0.30
-    let g:Lf_CacheDirectory = expand('~/.vim/cache')
-
-    " 显示绝对路径
-    let g:Lf_ShowRelativePath = 0
-    " 不显示图标
-    let g:Lf_ShowDevIcons = 1
-
-    " 隐藏帮助
-    let g:Lf_HideHelp = 1
 
     " 模糊匹配忽略扩展名
     let g:Lf_WildIgnore = {
@@ -138,17 +153,23 @@ vim.cmd([[
 
     " 禁用 function/buftag 的预览功能，可以手动用 p 预览
     let g:Lf_PreviewResult = {'Function':0, 'BufTag':0}
-
     noremap <space>f :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>
 ]])
 
+vim.g.gutentags_project_root = {'.root'}
+vim.g.gutentags_ctags_tagfile = '.tags'
+vim.g.gutentags_cache_dir = vim.fn.expand('~/.cache/tags')
+
+if vim.fn.executable('ctags') then
+	vim.g["gutentags_modules"] = {}
+	local m = vim.g["gutentags_modules"]
+	print(vim.inspect(#m))
+	m[#m+1] = 'ctags'
+	print(vim.inspect(vim.g["gutentags_modules"]))
+end
+
 vim.cmd([[
 	" 设定项目目录标志：除了 .git/.svn 外，还有 .root 文件
-	let g:gutentags_project_root = ['.root']
-	let g:gutentags_ctags_tagfile = '.tags'
-
-	" 默认生成的数据文件集中到 ~/.cache/tags 避免污染项目目录，好清理
-	let g:gutentags_cache_dir = expand('~/.cache/tags')
 
 	" 默认禁用自动生成
 	let g:gutentags_modules = []
@@ -206,10 +227,8 @@ vim.g.signify_sign_delete = '-'
 vim.g.signify_sign_change = '~'
 vim.g.signify_sign_delete_first_line = '‾'
 vim.g.signify_sign_changedelete = vim.g.signify_sign_change
--- vim.g:signify_vcs_list = {'git', 'svn'}
+vim.g.signify_vcs_list = {'git', 'svn'}
 vim.cmd([[
-	" signify 调优
-	let g:signify_vcs_list = ['git', 'svn']
 
 	" git 仓库使用 histogram 算法进行 diff
 	let g:signify_vcs_cmds = {

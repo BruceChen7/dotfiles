@@ -1,9 +1,6 @@
 local U = require("util")
 local nvim_lsp = require('lspconfig')
 
--- Set completeopt to have a better completion experience
-vim.o.completeopt = 'menuone,noselect'
-
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
@@ -51,6 +48,9 @@ end
 
 -- luasnip setup
 local luasnip = require 'luasnip'
+
+-- Set completeopt to have a better completion experience
+vim.o.completeopt = 'menuone,noselect'
 
 -- nvim-cmp setup
 local cmp = require 'cmp'

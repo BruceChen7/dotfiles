@@ -11,7 +11,7 @@ o.wrap = false
 o.termguicolors = true
 
 o.ttimeout = true
-o.ttimeoutlen = 50
+o.ttimeoutlen = 0
 
 
 -- 智能搜索大小写判断，默认忽略大小写，除非搜索内容包含大写字母
@@ -76,9 +76,20 @@ o.foldlevel=99
 --文件搜索和补全时忽略下面扩展名
 o.suffixes=".bak,~,.o,.h,.info,.swp,.obj,.pyc,.pyo,.egg-info,.class"
 
-o.wildignore ="*.o,*.obj,*~,*.exe,*.a,*.pdb,*.lib"
--- o.wildignore = o.wildignore + "*.so,*.dll,*.swp,*.egg,*.jar,*.class,*.pyc,*.pyo,*.bin,*.dex"
--- o.wildignore = o.wildignore:append("*.zip,*.7z,*.rar,*.gz,*.tar,*.gzip,*.bz2,*.tgz,*.xz")
+o.wildignore = [[
+	.git,.hg,.svn
+	*.aux,*.out,*.toc
+	*.o,*.obj,*.exe,*.dll,*.manifest,*.rbc,*.class
+	*.ai,*.bmp,*.gif,*.ico,*.jpg,*.jpeg,*.png,*.psd,*.webp
+	*.avi,*.divx,*.mp4,*.webm,*.mov,*.m2ts,*.mkv,*.vob,*.mpg,*.mpeg
+	*.mp3,*.oga,*.ogg,*.wav,*.flac
+	*.eot,*.otf,*.ttf,*.woff
+	*.doc,*.pdf,*.cbr,*.cbz
+	*.zip,*.tar.gz,*.tar.bz2,*.rar,*.tar.xz,*.kgb
+	*.swp,.lock,.DS_Store,._*
+	*/tmp/*,*.so,*.swp,*.zip,**/node_modules/**,**/target/**,**.terraform/**"
+]]
+
 
 local cmd = vim.api.nvim_command
 cmd('filetype plugin indent on')

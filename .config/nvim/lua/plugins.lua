@@ -110,8 +110,10 @@ return require('packer').startup({function()
 	}
 
 	use 'nvim-treesitter/nvim-treesitter-textobjects'
+
 	-- colorscheme
-	use 'navarasu/onedark.nvim'
+	use 'rmehri01/onenord.nvim'
+	use 'dstein64/vim-startuptime'
 
 	use {
 		'numToStr/Comment.nvim',

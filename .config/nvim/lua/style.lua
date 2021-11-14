@@ -165,7 +165,7 @@ augroup END
 ]])
 
 function getColorscheme()
-	local colorschemes = {"onedark"}
+	local colorschemes = {'doom-one'}
 	local U = require('util')
 	local len = U.tablelength(colorschemes)
 	i = U.random(len)
@@ -180,7 +180,7 @@ end
 
 vim.cmd([[
 	let scheme = v:lua.getColorscheme()
-	execute 'colorschem ' . scheme
+	execute 'colorscheme ' . scheme
 ]])
 
 
