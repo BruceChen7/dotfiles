@@ -1,28 +1,39 @@
 -- Install packer
-local install_path = vim.fn.stdpath 'data' .. '/site/pack/packer/start/packer.nvim'
+-- local install_path = vim.fn.stdpath 'data' .. '/site/pack/packer/start/packer.nvim'
+--
+-- if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
+--	vim.fn.execute('!git clone https://github.com/wbthomason/packer.nvim ' .. install_path)
+-- end
+--
+local u = require("util")
+local packer = require("util.packer")
+local config = {
+	profile = {
+		enable = true,
+		threshold = 0, -- the amount in ms that a plugins load time must be over for it to be included in the profile
+	},
+	display = {
+		open_fn = function()
+			return require("packer.util").float({ border = "single" })
+		end,
+	},
+	-- list of plugins that should be taken from ~/projects
+	-- this is NOT packer functionality!
+	local_plugins = {
+		folke = true,
+		["null-ls.nvim"] = false,
+		["nvim-lspconfig"] = false,
+		-- ["nvim-treesitter"] = true,
+	},
+}
 
-if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-	vim.fn.execute('!git clone https://github.com/wbthomason/packer.nvim ' .. install_path)
-end
-
-u = require("util")
-
-
-vim.api.nvim_exec( [[
-	augroup Packer
-	autocmd!
-       " autocmd BufWritePost init.lua PackerCompile
-	augroup end
-]], false)
-
-vim.cmd [[packadd packer.nvim]]
 
 local function getCodeLang()
 	return {"go", "rust", "zig", "c", "cpp", "lua"}
 end
 
--- https://github.com/wbthomason/packer.nvim#requirements
-return require('packer').startup({function()
+--
+local function plugins(use)
 	-- Packer can manage itself
 	use 'wbthomason/packer.nvim'
 	use 'lewis6991/impatient.nvim'
@@ -35,9 +46,10 @@ return require('packer').startup({function()
 	use 't9md/vim-choosewin'
 	use 'tpope/vim-fugitive'
 	use {
-		'lambdalisue/fern.vim'
+		'lambdalisue/fern.vim',
+		keys = "nc",
+		config = require("config/fern")
 	}
-	require("config/fern")
 
 	use {
 		'ludovicchabant/vim-gutentags'
@@ -51,8 +63,11 @@ return require('packer').startup({function()
 	use 'skywind3000/asynctasks.vim'
 	use 'skywind3000/asyncrun.vim'
 
-	use 'Yggdroot/LeaderF'
-	require("config/leaderf")
+	use {
+		'Yggdroot/LeaderF',
+		keys = {"<m-n>", "<m-p>", "m-m>"},
+		config = require("config/leaderf")
+	}
 
 	use {
 		'neovim/nvim-lspconfig'
@@ -73,18 +88,17 @@ return require('packer').startup({function()
 	-- 基础插件：提供让用户方便的自定义文本对象的接口
 	use 'kana/vim-textobj-user'
 
+	local fullBuffPath = u.getFileFullPath
+
 	-- statusline
 	use {
 		'nvim-lualine/lualine.nvim',
-		requires = {'kyazdani42/nvim-web-devicons', opt = true}
-	}
-	local fullBuffPath = u.getFileFullPath
-	require("lualine").setup({
+		requires = {'kyazdani42/nvim-web-devicons', opt = true},
+		config = require("lualine").setup({
 		sections = {
 			lualine_c = {fullBuffPath}
-		}
-	})
-
+		}})
+	}
 
 	-- indent 文本对象：ii/ai 表示当前缩进，vii 选中当缩进，cii 改写缩进
 	use 'kana/vim-textobj-indent'
@@ -123,70 +137,23 @@ return require('packer').startup({function()
 
 	use 'nvim-treesitter/nvim-treesitter-textobjects'
 
-	-- colorscheme
-	use 'rmehri01/onenord.nvim'
 	use 'dstein64/vim-startuptime'
 	use {
 		'numToStr/Comment.nvim',
-		config = function()
-			require('Comment').setup()
-		end
+		config = require('Comment').setup()
 	}
-	require('Comment').setup()
 
-	use {"akinsho/toggleterm.nvim"}
+	use ({
+		"akinsho/toggleterm.nvim",
+		keys = "<M-=>",
+		config = require("config/terminal")
+	})
 
-	require("toggleterm").setup{
-	    --  -- size can be a number or function which is passed the current terminal
-	    size = function(term)
-			if term.direction == "horizontal" then
-			  return 30
-			elseif term.direction == "vertical" then
-			  return vim.o.columns * 0.4
-			end
-	    end,
-	    open_mapping = [[<m-=>]],
-	    --  hide_numbers = true, -- hide the number column in toggleterm buffers
-	    --  shade_filetypes = {},
-	    shade_terminals = true,
-	    insert_mappings = true, -- whether or not the open mapping applies in insert mode
-	    --  persist_size = true,
-	    direction = 'vertical',
-	    close_on_exit = true -- close the terminal window when the process exits
-    }
-	require("config/terminal")
+	use {'Mofiqul/vscode.nvim'}
+	use {'christianchiarulli/nvcode-color-schemes.vim'}
+	use {"bluz71/vim-moonfly-colors"}
 
-	use({
-		'NTBBloodbath/doom-one.nvim',
-		config = function()
-			require('doom-one').setup({
-				cursor_coloring = false,
-				terminal_colors = true,
-				italic_comments = false,
-				enable_treesitter = true,
-				transparent_background = false,
-				pumblend = {
-					enable = true,
-					transparency_amount = 210,
-				},
-				plugins_integrations = {
-					neorg = false,
-					barbar = false,
-					bufferline = false,
-					gitgutter = false,
-					gitsigns = true,
-					telescope = false,
-					neogit = true,
-					nvim_tree = true,
-					dashboard = false,
-					startify = false,
-					whichkey = true,
-					indent_blankline = true,
-					vim_illuminate = false,
-					lspsaga = false,
-				},
-			})
-		end,
-        })
-
-end})
+	use {"windwp/nvim-autopairs"}
+	require('nvim-autopairs').setup{}
+end
+return packer.setup(config, plugins)

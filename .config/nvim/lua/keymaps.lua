@@ -1,67 +1,67 @@
-local U = require "util"
+local u = require "util"
 -- https://github.com/Allaman/nvim/blob/main/lua/mappings.lua
 local default_options = {noremap = true, silent = true}
 local expr_options = {noremap = true, expr = true, silent = true}
 
 
 -- 设置leader key
-U.map('n', '<space>', '<Nop>')
+u.map('n', '<space>', '<Nop>')
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- 窗口快捷键映射
-U.map('n', "<tab>h", '<c-w>h')
-U.map('n', "<tab>l", '<c-w>l')
-U.map('n', "<tab>j", '<c-w>j')
-U.map('n', "<tab>k", '<c-w>k')
+u.map('n', "<tab>h", '<c-w>h')
+u.map('n', "<tab>l", '<c-w>l')
+u.map('n', "<tab>j", '<c-w>j')
+u.map('n', "<tab>k", '<c-w>k')
 
 -- 编辑模式
-U.map('i', "<c-a>", "<home>")
-U.map('i', "<c-e>", "<end>")
-U.map('i', "<c-d>", "<del>")
-U.map('i', "<c-_>", "<c-k>")
+u.map('i', "<c-a>", "<home>")
+u.map('i', "<c-e>", "<end>")
+u.map('i', "<c-d>", "<del>")
+u.map('i', "<c-_>", "<c-k>")
 
-U.map("v", "<", "<gv", default_options)
-U.map("v", ">", ">gv", default_options)
+u.map("v", "<", "<gv", default_options)
+u.map("v", ">", ">gv", default_options)
 
 -- paste over currently selected text without yanking it
-U.map("v", "p", "\"_dP", default_options)
+u.map("v", "p", "\"_dP", default_options)
 
 
 -- buffer switch
-U.map("n", "<tab>n", ":bNext<CR>", default_options)
-U.map("n", "<tab>p", ":bprevious<CR>", default_options)
+u.map("n", "<tab>n", ":bNext<CR>", default_options)
+u.map("n", "<tab>p", ":bprevious<CR>", default_options)
 
 -- Cancel search highlighting with ESC
-U.map("n", "<ESC>", ":nohlsearch<Bar>:echo<CR>", default_options)
+u.map("n", "<ESC>", ":nohlsearch<Bar>:echo<CR>", default_options)
 
 -- yank
-U.map("n", "Y", "y$", default_options)
+u.map("n", "Y", "y$", default_options)
 
-U.map('n', "W", ":w!<cr>")
-U.map('n', "Q", ":q!<cr>")
-U.map('i', "jj", "<ESC>")
+u.map('n', "W", ":w!<cr>")
+u.map('n', "Q", ":q!<cr>")
+u.map('i', "jj", "<ESC>")
 
-U.map("n", "<leader>bn", ":bn<cr>")
-U.map("n", "<leader>bp", ":bp<cr>")
+u.map("n", "<leader>bn", ":bn<cr>")
+u.map("n", "<leader>bp", ":bp<cr>")
 
-U.map("n", "<leader>tc", ":tabnew<cr>")
-U.map("n", "<leader>tq", ":tabclose<cr>")
-U.map("n", "<leader>tn", ":tabnext<cr>")
-U.map("n", "<leader>tp", ":tabprev<cr>")
-U.map("n", "<leader>to", ":tabonly<cr>")
+u.map("n", "<leader>tc", ":tabnew<cr>")
+u.map("n", "<leader>tq", ":tabclose<cr>")
+u.map("n", "<leader>tn", ":tabnext<cr>")
+u.map("n", "<leader>tp", ":tabprev<cr>")
+u.map("n", "<leader>to", ":tabonly<cr>")
 
-U.map("n", "<space>gg", ":Git <CR>")
-U.map("n", "<space>gv", ":Gvdiffsplit <CR>")
+u.map("n", "<space>gg", ":Git <CR>")
+u.map("n", "<space>gv", ":Gvdiffsplit <CR>")
 
-U.map("n", "<space>=", ":resize +3<cr>")
-U.map("n", "<space>-", ":resize -3<cr>")
-U.map("n", "<space>,", ":vertical resize -5<cr>")
-U.map("n", "<space>.", ":vertical resize +5<cr>")
+u.map("n", "<space>=", ":resize +3<cr>")
+u.map("n", "<space>-", ":resize -3<cr>")
+u.map("n", "<space>,", ":vertical resize -5<cr>")
+u.map("n", "<space>.", ":vertical resize +5<cr>")
 
 -- vim-privew
-U.map('n', "<m-;>", ":PreviewTag<CR>")
-U.map('n', "<m-:", ":PreviewClose<CR>")
+u.map('n', "<m-;>", ":PreviewTag<CR>")
+u.map('n', "<m-:", ":PreviewClose<CR>")
 
 vim.cmd([[
 	function! TermExit(code)
@@ -80,9 +80,9 @@ vim.g.asyncrun_open = 10
 vim.g.asyncrun_bell = 1
 
 -- AsyncTask
-U.map('n', "g1", ":AsyncTask grep-cword<CR>")
+u.map('n', "g1", ":AsyncTask grep-cword<CR>")
 -- quickfix 手动打开
-U.map("n", "<space>q", ":call asyncrun#quickfix_toggle(10)<cr>")
+u.map("n", "<space>q", ":call asyncrun#quickfix_toggle(10)<cr>")
 
 -- Treesitter configuration
 -- Parsers must be installed manually via :TSInstall

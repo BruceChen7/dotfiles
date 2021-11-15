@@ -143,6 +143,8 @@ augroup InitFileTypesGroup
 
 	au FileType go setlocal ts=8 sw=8
 
+	au FileType lua setlocal ts=4 sw=4
+
 	" scala 微调
 	au FileType scala setlocal sts=4 sw=4 noet
 
@@ -165,14 +167,14 @@ augroup END
 ]])
 
 function getColorscheme()
-	local colorschemes = {'doom-one'}
+	local colorschemes = {"vscode"}
 	local U = require('util')
-	local len = U.tablelength(colorschemes)
+	local len = U.tableLength(colorschemes)
 	i = U.random(len)
 	scheme = colorschemes[i]
 
-	if scheme == 'edge' then
-		vim.g.edge_style='neon'
+	if scheme == 'vscode' then
+		vim.g.vscode_style ='dark'
 	end
 	return scheme
 end

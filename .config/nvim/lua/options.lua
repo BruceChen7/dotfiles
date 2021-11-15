@@ -34,7 +34,7 @@ o.lazyredraw = true
 o.sw = 4
 --  设置 TAB 宽度
 o.ts = 4
--- 禁止展开 tab (noexpandtab)
+-- 禁止展开 tab (noexpandtab)为空格
 o.expandtab = false
 --  如果后面设置了 expandtab 那么展开 tab 为多少字符
 o.softtabstop = 4

@@ -24,7 +24,8 @@ if vim.fn.executable("gtags") and vim.fn.executable("gtags-cscope") then
 	vim.env.GTAGSLABEL = 'native'
 	if vim.fn.has("unix") then
 		vim.env.GTAGSCONF='/usr/share/gtags/gtags.conf'
-	elseif vim.fn.has("macunix") then
+	end
+	if vim.fn.has("macunix") then
 		vim.env.GTAGSCONF = '/usr/local/share/gtags/gtags.conf'
 	end
 end
