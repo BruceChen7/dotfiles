@@ -1,12 +1,6 @@
--- Install packer
--- local install_path = vim.fn.stdpath 'data' .. '/site/pack/packer/start/packer.nvim'
---
--- if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
---	vim.fn.execute('!git clone https://github.com/wbthomason/packer.nvim ' .. install_path)
--- end
---
 local u = require("util")
 local packer = require("util.packer")
+-- packer.nvim config
 local config = {
 	profile = {
 		enable = true,
@@ -20,9 +14,9 @@ local config = {
 	-- list of plugins that should be taken from ~/projects
 	-- this is NOT packer functionality!
 	local_plugins = {
-		folke = true,
-		["null-ls.nvim"] = false,
-		["nvim-lspconfig"] = false,
+		-- folke = true,
+		-- ["null-ls.nvim"] = false,
+		-- ["nvim-lspconfig"] = false,
 		-- ["nvim-treesitter"] = true,
 	},
 }
@@ -36,8 +30,10 @@ end
 local function plugins(use)
 	-- Packer can manage itself
 	use 'wbthomason/packer.nvim'
-	use 'lewis6991/impatient.nvim'
-	require("impatient")
+	use {
+		'lewis6991/impatient.nvim',
+	    config = require("impatient")
+	}
 
 	use("nathom/filetype.nvim")
 
@@ -47,7 +43,6 @@ local function plugins(use)
 	use 'tpope/vim-fugitive'
 	use {
 		'lambdalisue/fern.vim',
-		keys = "nc",
 		config = require("config/fern")
 	}
 
@@ -65,7 +60,6 @@ local function plugins(use)
 
 	use {
 		'Yggdroot/LeaderF',
-		keys = {"<m-n>", "<m-p>", "m-m>"},
 		config = require("config/leaderf")
 	}
 
@@ -145,7 +139,6 @@ local function plugins(use)
 
 	use ({
 		"akinsho/toggleterm.nvim",
-		keys = "<M-=>",
 		config = require("config/terminal")
 	})
 
