@@ -1,81 +1,52 @@
-local util = require("util")
+local cmd = vim.cmd
 
-local M = {}
+local present, packer = pcall(require, 'packer')
 
-M.local_plugins = {}
+local first_install = false
 
--- 下载packer.nvim
-function M.bootstrap()
-	local fn = vim.fn
-	local install_path = fn.stdpath("data") .. "/site/pack/packer/opt/packer.nvim"
-	if fn.empty(fn.glob(install_path)) > 0 then
-		fn.system({ "git", "clone", "https://github.com/wbthomason/packer.nvim", install_path })
-		vim.cmd("packadd packer.nvim")
-	end
-	vim.cmd([[packadd packer.nvim]])
-	-- vim.cmd("autocmd BufWritePost plugins.lua PackerCompile") -- Auto compile when there are changes in plugins.lua
+if not present then
+  local packer_path = vim.fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
+
+  print('Cloning packer..')
+  -- remove the dir before cloning
+  vim.fn.delete(packer_path, 'rf')
+  vim.fn.system({
+    'git',
+    'clone',
+    'https://github.com/wbthomason/packer.nvim',
+    '--depth',
+    '20',
+    packer_path,
+  })
+
+  cmd('packadd packer.nvim')
+  present, packer = pcall(require, 'packer')
+
+  if present then
+    print('Packer cloned successfully.')
+    first_install = true
+  else
+    error("Couldn't clone packer !\nPacker path: " .. packer_path .. '\n' .. packer)
+  end
 end
 
-function M.get_name(pkg)
-  local parts = vim.split(pkg, "/")
-  return parts[#parts], parts[1]
-end
+packer.init({
+  display = {
+    open_fn = function()
+      return require('packer.util').float({ border = 'single' })
+    end,
+    prompt_border = 'single',
+  },
+  git = {
+    clone_timeout = 800, -- Timeout, in seconds, for git clones
+  },
+  compile_path = vim.fn.stdpath('config') .. '/lua/compiled.lua',
+  auto_clean = true,
+  compile_on_sync = true,
+})
 
-function M.has_local(name)
-	return vim.loop.fs_stat(vim.fn.expand("~/projects/" .. name)) ~= nil
-end
-
--- This method replaces any plugins with the local clone under ~/projects
-function M.process_local_plugins(spec)
-	-- 获取本地的package
-	if type(spec) == "string" then
-		local name, owner = M.get_name(spec)
-		local local_pkg = "~/projects/" .. name
-
-		if M.local_plugins[name] or M.local_plugins[owner] or M.local_plugins[owner .. "/" .. name] then
-			if M.has_local(name) then
-				return local_pkg
-			else
-				util.error("Local package " .. name .. " not found")
-			end
-		end
-		return spec
-	else
-		-- 分别处理每一个本地的package
-		for i, s in ipairs(spec) do
-			spec[i] = M.process_local_plugins(s)
-		end
-	end
-	if spec.requires then
-		spec.requires = M.process_local_plugins(spec.requires)
-	end
-	return spec
-end
-
-
--- 包裹相关function
-function M.wrap(use)
-	return function(spec)
-		spec = M.process_local_plugins(spec)
-		use(spec)
-	end
-end
-
-function M.setup(config, fn)
-	-- HACK: see https://github.com/wbthomason/packer.nvim/issues/180
-	vim.fn.setenv("MACOSX_DEPLOYMENT_TARGET", "10.15")
-	M.bootstrap()
-	local packer = require("packer")
-	-- 初始化packer
-	packer.init(config)
-	M.local_plugins = config.local_plugins or {}
-	return packer.startup({
-		function(use)
-			use = M.wrap(use)
-			fn(use)
-		end,
-	})
-end
-
-return M
+return {
+  packer = packer,
+  first_install = first_install,
+}
 

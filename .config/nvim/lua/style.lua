@@ -155,6 +155,8 @@ augroup InitFileTypesGroup
 	"au FileType qf setlocal nonumber
 	autocmd FileType qf nnoremap <silent><buffer> p :PreviewQuickfix<cr>
 	autocmd FileType qf nnoremap <silent><buffer> P :PreviewClose<cr>
+	autocmd BufWritePre *.go lua vim.lsp.buf.formatting()
+	autocmd BufWritePre *.rust lua vim.lsp.buf.formatting()
 
 	" 强制对某些扩展名的 filetype 进行纠正
 	au BufNewFile,BufRead *.as setlocal filetype=actionscript

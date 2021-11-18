@@ -1,25 +1,26 @@
 local u = require("util")
-local packer = require("util.packer")
--- packer.nvim config
-local config = {
-	profile = {
-		enable = true,
-		threshold = 0, -- the amount in ms that a plugins load time must be over for it to be included in the profile
-	},
-	display = {
-		open_fn = function()
-			return require("packer.util").float({ border = "single" })
-		end,
-	},
-	-- list of plugins that should be taken from ~/projects
-	-- this is NOT packer functionality!
-	local_plugins = {
-		-- folke = true,
-		-- ["null-ls.nvim"] = false,
-		-- ["nvim-lspconfig"] = false,
-		-- ["nvim-treesitter"] = true,
-	},
-}
+local present, util_packer = pcall(require, 'util.packer')
+
+if not present then
+	return false
+end
+
+local packer = util_packer.packer
+local use = packer.use
+
+
+local ok, err = pcall(require, "compiled")
+if not ok then
+	error('Run :PackerCompile!')
+end
+
+
+vim.cmd([[
+	augroup packer_user_config
+		autocmd!
+		autocmd BufWritePost plugins.lua source <afile> | PackerCompile
+	augroup end
+]])
 
 
 local function getCodeLang()
@@ -27,7 +28,7 @@ local function getCodeLang()
 end
 
 --
-local function plugins(use)
+return packer.startup(function()
 	-- Packer can manage itself
 	use 'wbthomason/packer.nvim'
 	use {
@@ -43,7 +44,10 @@ local function plugins(use)
 	use 'tpope/vim-fugitive'
 	use {
 		'lambdalisue/fern.vim',
-		config = require("config/fern")
+		keys = {"nc", "nC", "ne", "nE"},
+		config = function()
+			require("config/fern")
+		end,
 	}
 
 	use {
@@ -60,7 +64,10 @@ local function plugins(use)
 
 	use {
 		'Yggdroot/LeaderF',
-		config = require("config/leaderf")
+		keys = {"<m-n>", "<m-p>", "m-m>"},
+		config = function()
+			require("config/leaderf")
+		end,
 	}
 
 	use {
@@ -76,8 +83,12 @@ local function plugins(use)
 	use 'L3MON4D3/LuaSnip' -- Snippets plugin
 	use 'antoinemadec/FixCursorHold.nvim'
 
-	use 'mhinz/vim-signify'
-	require 'config/signify'
+	use {
+		'mhinz/vim-signify',
+		config = function()
+			require 'config/signify'
+		end
+	}
 
 	-- 基础插件：提供让用户方便的自定义文本对象的接口
 	use 'kana/vim-textobj-user'
@@ -85,14 +96,14 @@ local function plugins(use)
 	local fullBuffPath = u.getFileFullPath
 
 	-- statusline
-	use {
-		'nvim-lualine/lualine.nvim',
-		requires = {'kyazdani42/nvim-web-devicons', opt = true},
-		config = require("lualine").setup({
-		sections = {
-			lualine_c = {fullBuffPath}
-		}})
-	}
+	--	use {
+	--		'nvim-lualine/lualine.nvim',
+	--		requires = {'kyazdani42/nvim-web-devicons', opt = true},
+	--		config = require("lualine").setup({
+	--		sections = {
+	--			lualine_c = {fullBuffPath}
+	--		}})
+	--	}
 
 	-- indent 文本对象：ii/ai 表示当前缩进，vii 选中当缩进，cii 改写缩进
 	use 'kana/vim-textobj-indent'
@@ -123,6 +134,7 @@ local function plugins(use)
 	-- indent-line
 	use "lukas-reineke/indent-blankline.nvim"
 
+
 	-- treesitter
 	use {
 		'nvim-treesitter/nvim-treesitter',
@@ -132,14 +144,19 @@ local function plugins(use)
 	use 'nvim-treesitter/nvim-treesitter-textobjects'
 
 	use 'dstein64/vim-startuptime'
+
 	use {
 		'numToStr/Comment.nvim',
-		config = require('Comment').setup()
+		config = function()
+			require('Comment').setup()
+		end
 	}
 
 	use ({
 		"akinsho/toggleterm.nvim",
-		config = require("config/terminal")
+		config = function()
+			require("config/terminal")
+		end
 	})
 
 	use {'Mofiqul/vscode.nvim'}
@@ -148,5 +165,9 @@ local function plugins(use)
 
 	use {"windwp/nvim-autopairs"}
 	require('nvim-autopairs').setup{}
-end
-return packer.setup(config, plugins)
+
+	if util_packer.first_install then
+		packer.sync()
+	end
+end)
+

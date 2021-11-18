@@ -14,6 +14,7 @@ u.map('n', "<tab>h", '<c-w>h')
 u.map('n', "<tab>l", '<c-w>l')
 u.map('n', "<tab>j", '<c-w>j')
 u.map('n', "<tab>k", '<c-w>k')
+u.map('n', "0", '^')
 
 -- 编辑模式
 u.map('i', "<c-a>", "<home>")
@@ -139,4 +140,4 @@ require('nvim-treesitter.configs').setup {
 }
 
 -- lualine
-require('lualine').setup()
+-- require('lualine').setup()
