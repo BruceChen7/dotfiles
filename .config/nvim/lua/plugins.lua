@@ -18,7 +18,7 @@ end
 vim.cmd([[
 	augroup packer_user_config
 		autocmd!
-		autocmd BufWritePost plugins.lua source <afile> | PackerCompile
+		autocmd BufWritePost init.lua source <afile> | PackerCompile
 	augroup end
 ]])
 
@@ -171,10 +171,14 @@ return packer.startup(function()
 	use {'christianchiarulli/nvcode-color-schemes.vim'}
 	use {"bluz71/vim-moonfly-colors"}
 
-	use {"windwp/nvim-autopairs"}
-	require('nvim-autopairs').setup{}
+	use {
+		"windwp/nvim-autopairs",
+		config = function()
+			require('nvim-autopairs').setup{}
+		end
+	}
 
-    use 'ggandor/lightspeed.nvim'
+	use 'ggandor/lightspeed.nvim'
 
 	if util_packer.first_install then
 		packer.sync()
