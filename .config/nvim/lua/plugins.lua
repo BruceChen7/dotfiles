@@ -18,7 +18,7 @@ end
 vim.cmd([[
 	augroup packer_user_config
 		autocmd!
-		autocmd BufWritePost plugins.lua source <afile> | PackerCompile
+		autocmd BufWritePost init.lua source <afile> | PackerCompile
 	augroup end
 ]])
 
@@ -33,7 +33,9 @@ return packer.startup(function()
 	use 'wbthomason/packer.nvim'
 	use {
 		'lewis6991/impatient.nvim',
-	    config = require("impatient")
+	    config = function()
+			require("impatient")
+		end,
 	}
 
 	use("nathom/filetype.nvim")
@@ -53,8 +55,14 @@ return packer.startup(function()
 	use {
 		'ludovicchabant/vim-gutentags'
 	}
-	use 'skywind3000/gutentags_plus'
-	require("config/gtags")
+
+	use {
+		'skywind3000/gutentags_plus',
+		config = function()
+			require("config/gtags")
+		end,
+	}
+
 
 
 	use 'skywind3000/vim-preview'
@@ -64,7 +72,7 @@ return packer.startup(function()
 
 	use {
 		'Yggdroot/LeaderF',
-		keys = {"<m-n>", "<m-p>", "m-m>"},
+		keys = {"<m-n>", "<m-p>", "<m-m>"},
 		config = function()
 			require("config/leaderf")
 		end,
@@ -163,8 +171,14 @@ return packer.startup(function()
 	use {'christianchiarulli/nvcode-color-schemes.vim'}
 	use {"bluz71/vim-moonfly-colors"}
 
-	use {"windwp/nvim-autopairs"}
-	require('nvim-autopairs').setup{}
+	use {
+		"windwp/nvim-autopairs",
+		config = function()
+			require('nvim-autopairs').setup{}
+		end
+	}
+
+	use 'ggandor/lightspeed.nvim'
 
 	if util_packer.first_install then
 		packer.sync()

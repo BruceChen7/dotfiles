@@ -36,10 +36,10 @@ U.map('n', '<m-n>', ':LeaderfBuffer<cr>')
 -- " ALT+t 全局 tags 模糊匹配
 U.map('n', '<m-t>', ':LeaderfTag<cr>')
 
---U.map('n', '<space>f', ':<C-U><C-R>=printf("Leaderf! rg -e %s", expand("<cword>"))<CR>')
+-- U.map('n', '<space>s', ':<C-U><C-R>=printf("Leaderf! rg -e %s", expand("<cword>"))<CR>')
 
 vim.cmd([[
-    noremap <space>f :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>
+    noremap <space>s :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>
 ]])
 
 -- leaderf config
