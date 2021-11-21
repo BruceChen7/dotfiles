@@ -75,7 +75,7 @@ vim.cmd([[
 	noremap <leader>tg :call quickui#terminal#open('tig', opts)<CR>
 ]])
 
--- 自动打开 quickfix window ，高度为 6
+-- 自动打开 quickfix window ，高度为 10
 vim.g.asyncrun_open = 10
 -- 任务结束时候响铃提醒
 vim.g.asyncrun_bell = 1
@@ -138,6 +138,42 @@ require('nvim-treesitter.configs').setup {
     },
   },
 }
+-- tab keymap
+u.map("n", "<m-1>", ":tabn 1<cr>")
+u.map("n", "<m-2>", ":tabn 2<cr>")
+u.map("n", "<m-3>", ":tabn 3<cr>")
+u.map("n", "<m-4>", ":tabn 4<cr>")
+u.map("n", "<m-5>", ":tabn 5<cr>")
+u.map("n", "<m-6>", ":tabn 6<cr>")
+u.map("n", "<m-7>", ":tabn 7<cr>")
+u.map("n", "<m-8>", ":tabn 8<cr>")
+u.map("n", "<m-9>", ":tabn 9<cr>")
+u.map("n", "<m-0>", ":tabn 10<cr>")
+
+u.map("i", "<m-1>", "<ESC>:tabn 1<cr>")
+u.map("i", "<m-2>", "<ESC>:tabn 2<cr>")
+u.map("i", "<m-3>", "<ESC>:tabn 3<cr>")
+u.map("i", "<m-4>", "<ESC>:tabn 4<cr>")
+u.map("i", "<m-5>", "<ESC>:tabn 5<cr>")
+u.map("i", "<m-6>", "<ESC>:tabn 6<cr>")
+u.map("i", "<m-7>", "<ESC>:tabn 7<cr>")
+u.map("i", "<m-8>", "<ESC>:tabn 8<cr>")
+u.map("i", "<m-9>", "<ESC>:tabn 9<cr>")
+u.map("i", "<m-0>", "<ESC>:tabn 10<cr>")
+
+u.map("n", "\\t", ":tabnew<CR>")
+u.map("n", "\\d", ":tabclose<cr>")
+u.map("n", "\\1", ":tabn 1<cr>")
+u.map("n", "\\2", ":tabn 2<cr>")
+u.map("n", "\\3", ":tabn 3<cr>")
+u.map("n", "\\4", ":tabn 4<cr>")
+u.map("n", "\\5", ":tabn 5<cr>")
+u.map("n", "\\6", ":tabn 6<cr>")
+u.map("n", "\\7", ":tabn 7<cr>")
+u.map("n", "\\8", ":tabn 8<cr>")
+u.map("n", "\\9", ":tabn 9<cr>")
+u.map("n", "\\10", ":tabn 10<cr>")
+
 
 -- lualine
 -- require('lualine').setup()

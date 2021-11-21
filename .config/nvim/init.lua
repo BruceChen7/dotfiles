@@ -1,7 +1,7 @@
 do
   local ok, _ = pcall(require, 'impatient')
   if not ok then
-	  error("could not call impatient")
+    error("could not call impatient")
   end
 end
 require("util")

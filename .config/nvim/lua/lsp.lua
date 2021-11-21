@@ -32,6 +32,13 @@ local on_attach = function(client, bufnr)
 	U.map('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
 	U.map('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
 
+	require "lsp_signature".on_attach({
+		bind = true,
+		handler_opts = {
+			border = "double",
+			floating_window = true,
+		}
+	}, bufnr)
 end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
@@ -54,6 +61,7 @@ vim.o.completeopt = 'menuone,noselect'
 
 
 -- nvim-cmp setup
+local cmp_autopairs = require('nvim-autopairs.completion.cmp')
 local cmp = require 'cmp'
 cmp.setup {
 	snippet = {
@@ -98,3 +106,4 @@ cmp.setup {
 		{ name = 'luasnip' },
 	},
 }
+cmp.event:on( 'confirm_done', cmp_autopairs.on_confirm_done({  map_char = { tex = '' } }))

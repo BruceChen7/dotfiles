@@ -169,7 +169,7 @@ augroup END
 ]])
 
 function getColorscheme()
-	local colorschemes = {"vscode"}
+	local colorschemes = {"vscode", "nvcode"}
 	local U = require('util')
 	local len = U.tableLength(colorschemes)
 	i = U.random(len)
