@@ -111,6 +111,7 @@ return packer.startup(function()
 	--			lualine_c = {fullBuffPath}
 	--		}})
 	--	}
+
 	-- indent 文本对象：ii/ai 表示当前缩进，vii 选中当缩进，cii 改写缩进
 	use 'kana/vim-textobj-indent'
 
@@ -130,10 +131,8 @@ return packer.startup(function()
 	use 'jceb/vim-textobj-uri'
 
 	use 'Chiel92/vim-autoformat'
-
 	-- 自动调整窗口
 	use 'camspiers/lens.vim'
-
 	-- 复制剪切板
 	use 'ojroques/vim-oscyank'
 
@@ -142,12 +141,14 @@ return packer.startup(function()
 	-- indent-line
 	use "lukas-reineke/indent-blankline.nvim"
 
+
 	-- treesitter
 	use {
 		'nvim-treesitter/nvim-treesitter',
 		run = ':TSUpdate'
 	}
 
+	-- https://github.com/nvim-treesitter/nvim-treesitter-textobjects
 	use 'nvim-treesitter/nvim-treesitter-textobjects'
 
 	use 'dstein64/vim-startuptime'
@@ -175,7 +176,7 @@ return packer.startup(function()
 	-- bracket, brace auto complete
 	use ({
 		"windwp/nvim-autopairs",
-		config = function()
+	    config = function()
 			require('nvim-autopairs').setup{}
 		end,
 	})

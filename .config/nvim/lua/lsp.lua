@@ -41,6 +41,13 @@ local on_attach = function(client, bufnr)
 	}, bufnr)
 end
 
+vim.cmd([[
+augroup FormatGroup
+	au!
+	"autocmd BufWritePre *.go lua vim.lsp.buf.formatting_sync(nil, 1000)
+    autocmd BufWritePre *.go lua vim.lsp.buf.code_action()
+augroup END
+]])
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
 local capabilities = vim.lsp.protocol.make_client_capabilities()
