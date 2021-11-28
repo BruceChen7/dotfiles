@@ -156,6 +156,7 @@ augroup InitFileTypesGroup
 	autocmd FileType qf nnoremap <silent><buffer> p :PreviewQuickfix<cr>
 	autocmd FileType qf nnoremap <silent><buffer> P :PreviewClose<cr>
 	autocmd BufWritePre *.go lua vim.lsp.buf.formatting()
+	autocmd BufWritePre *.go lua goimports(1000)
 	autocmd BufWritePre *.rust lua vim.lsp.buf.formatting()
 
 	" 强制对某些扩展名的 filetype 进行纠正
@@ -185,5 +186,16 @@ vim.cmd([[
 	let scheme = v:lua.getColorscheme()
 	execute 'colorscheme ' . scheme
 ]])
+º
 
+vim.cmd([[
+set statusline=                                 " 清空状态了
+set statusline+=\ %F                            " 文件名
+set statusline+=%{fugitive#statusline()}
+set statusline+=\ [%1*%M%*%n%R%H]               " buffer 编号和状态
+set statusline+=%=                              " 向右对齐
+set statusline+=\ %y                            " 文件类型
 
+" 最右边显示文件编码和行号等信息，并且固定在一个 group 中，优先占位
+set statusline+=\ %0(%{&fileformat}\ [%{(&fenc==\"\"?&enc:&fenc).(&bomb?\",BOM\":\"\")}]\ %v:%l/%L%)
+]])
