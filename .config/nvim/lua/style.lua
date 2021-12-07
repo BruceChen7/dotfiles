@@ -186,7 +186,6 @@ vim.cmd([[
 	let scheme = v:lua.getColorscheme()
 	execute 'colorscheme ' . scheme
 ]])
-º
 
 vim.cmd([[
 set statusline=                                 " 清空状态了
