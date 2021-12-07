@@ -1,0 +1,3 @@
+bind main w !git diff %(commit)^!
+bind diff w !git diff %(commit)^!
+set vertical-split = yes
