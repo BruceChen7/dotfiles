@@ -110,6 +110,7 @@ function goimports(timeoutms)
 		vim.lsp.buf.execute_command(action)
 	end
 end
+
 -- nvim-cmp setup
 local cmp_autopairs = require('nvim-autopairs.completion.cmp')
 local cmp = require 'cmp'

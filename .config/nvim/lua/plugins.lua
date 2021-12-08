@@ -23,10 +23,6 @@ vim.cmd([[
 ]])
 
 
-local function getCodeLang()
-	return {"go", "rust", "zig", "c", "cpp", "lua"}
-end
-
 --
 return packer.startup(function()
 	-- Packer can manage itself
@@ -122,6 +118,7 @@ return packer.startup(function()
 	use 'jceb/vim-textobj-uri'
 
 	use 'Chiel92/vim-autoformat'
+
 	-- 自动调整窗口
 	use 'camspiers/lens.vim'
 	-- 复制剪切板
@@ -167,7 +164,7 @@ return packer.startup(function()
 	-- bracket, brace auto complete
 	use ({
 		"windwp/nvim-autopairs",
-	    config = function()
+		config = function()
 			require('nvim-autopairs').setup{}
 		end,
 	})
