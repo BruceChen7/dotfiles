@@ -174,6 +174,3 @@ u.map("n", "\\8", ":tabn 8<cr>")
 u.map("n", "\\9", ":tabn 9<cr>")
 u.map("n", "\\10", ":tabn 10<cr>")
 
-
--- lualine
--- require('lualine').setup()

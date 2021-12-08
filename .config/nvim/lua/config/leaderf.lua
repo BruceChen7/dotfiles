@@ -6,7 +6,7 @@ vim.g.Lf_ShortcutF = '<C-p>'
 vim.g.Lf_ShortcutB = '<m-n>'
 -- " 显示绝对路径
 vim.g.Lf_ShowRelativePath = 0
--- " 不显示图标
+-- 显示图标
 vim.g.Lf_ShowDevIcons = 1
 -- " 隐藏帮助
 vim.g.Lf_HideHelp = 0
@@ -35,8 +35,7 @@ U.map('n', '<m-P>', ':LeaderfBufTag<cr>')
 U.map('n', '<m-n>', ':LeaderfBuffer<cr>')
 -- " ALT+t 全局 tags 模糊匹配
 U.map('n', '<m-t>', ':LeaderfTag<cr>')
-
--- U.map('n', '<space>s', ':<C-U><C-R>=printf("Leaderf! rg -e %s", expand("<cword>"))<CR>')
+U.map('n', '<c-p>', ':LeaderfFile<cr>')
 
 vim.cmd([[
     noremap <space>s :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>

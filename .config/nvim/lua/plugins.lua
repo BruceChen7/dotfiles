@@ -44,6 +44,7 @@ return packer.startup(function()
 	--使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
 	use 't9md/vim-choosewin'
 	use 'tpope/vim-fugitive'
+
 	use {
 		'lambdalisue/fern.vim',
 		keys = {"nc", "nC", "ne", "nE"},
@@ -52,9 +53,7 @@ return packer.startup(function()
 		end,
 	}
 
-	use {
-		'ludovicchabant/vim-gutentags'
-	}
+	use 'ludovicchabant/vim-gutentags'
 
 	use {
 		'skywind3000/gutentags_plus',
@@ -71,21 +70,25 @@ return packer.startup(function()
 
 	use {
 		'Yggdroot/LeaderF',
-		keys = {"<m-n>", "<m-p>", "<m-m>"},
+		keys = {"<m-n>", "<m-p>", "<m-m>", "<c-p>"},
 		config = function()
 			require("config/leaderf")
 		end,
 	}
 
-	use {
-		'neovim/nvim-lspconfig'
-	}
-	use {
-		'hrsh7th/nvim-cmp' -- Autocompletion plugin
-	}
-	use {
-		'hrsh7th/cmp-nvim-lsp'  -- LSP source for nvim-cm
-	}
+	use 'neovim/nvim-lspconfig'
+	-- adds vscode-like pictograms to neovim built-in lsp
+	use "onsails/lspkind-nvim"
+	use 'hrsh7th/nvim-cmp' -- Autocompletion plugin
+
+	use 'hrsh7th/cmp-nvim-lsp'  -- LSP source for nvim-cmp
+	use "hrsh7th/cmp-cmdline"
+	use "hrsh7th/cmp-buffer"
+	use "hrsh7th/cmp-path"
+	use "hrsh7th/cmp-nvim-lua"
+	use "hrsh7th/cmp-nvim-lsp-document-symbol"
+	use "tamago324/cmp-zsh"
+
 	use 'saadparwaiz1/cmp_luasnip' -- Snippets source for nvim-cmp
 	use 'L3MON4D3/LuaSnip' -- Snippets plugin
 	use 'antoinemadec/FixCursorHold.nvim'
@@ -99,18 +102,6 @@ return packer.startup(function()
 
 	-- 基础插件：提供让用户方便的自定义文本对象的接口
 	use 'kana/vim-textobj-user'
-
-	local fullBuffPath = u.getFileFullPath
-
-	-- statusline
-	--	use {
-	--		'nvim-lualine/lualine.nvim',
-	--		requires = {'kyazdani42/nvim-web-devicons', opt = true},
-	--		config = require("lualine").setup({
-	--		sections = {
-	--			lualine_c = {fullBuffPath}
-	--		}})
-	--	}
 
 	-- indent 文本对象：ii/ai 表示当前缩进，vii 选中当缩进，cii 改写缩进
 	use 'kana/vim-textobj-indent'
@@ -186,7 +177,16 @@ return packer.startup(function()
 	  "ray-x/lsp_signature.nvim",
 	}
 
-	use 'ggandor/lightspeed.nvim'
+	-- use 'ggandor/lightspeed.nvim'
+
+    use {
+        'phaazon/hop.nvim',
+        branch = 'v1', -- optional but strongly recommended
+        config = function()
+            -- you can configure Hop the way you like here; see :h hop-config
+            require'hop'.setup { keys = 'etovxqpdygfblzhckisuran' }
+        end
+    }
 
 	if util_packer.first_install then
 		packer.sync()
