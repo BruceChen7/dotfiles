@@ -4,7 +4,7 @@ env:
 scrolling:
   history: 10000
   multiplier: 3
-alt_send_esc: true
+alt_send_esc: false
 tabspaces: 4
 key_bindings:
   - { key: A,         mods: Alt,       chars: "\x1ba"                       }
