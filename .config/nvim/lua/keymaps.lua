@@ -169,4 +169,5 @@ u.map("n", "\\6", ":tabn 6<cr>")
 u.map("n", "\\7", ":tabn 7<cr>")
 u.map("n", "\\8", ":tabn 8<cr>")
 u.map("n", "\\9", ":tabn 9<cr>")
-u.map("n", "\\10", ":tabn 10<cr>")
+-- avoid slowly to wait to parse \\1
+u.map("n", "\\0", ":tabn 10<cr>")
