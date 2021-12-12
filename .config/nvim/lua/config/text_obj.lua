@@ -27,6 +27,12 @@ tc.setup {
                 ['if'] = '@function.inner',
                 ['ac'] = '@class.outer',
                 ['ic'] = '@class.inner',
+                ["ii"] = '@parameter.inner',
+                ["ai"] = '@parameter.outer',
+                ["il"] = '@loop.inner',
+                ["al"] = '@loop.outer',
+                ["id"] = '@conditional.inner',
+                ["ad"] = '@conditional.outer',
             },
         },
         move = {
@@ -47,6 +53,15 @@ tc.setup {
             goto_previous_end = {
                 ['[M'] = '@function.outer',
                 ['[]'] = '@class.outer',
+            },
+        },
+        lsp_interop = {
+            enable = true,
+            border = 'none',
+            -- press K can do the same
+            peek_definition_code = {
+                ["<leader>df"] = "@function.outer",
+                ["<leader>dF"] = "@class.outer",
             },
         },
     },
