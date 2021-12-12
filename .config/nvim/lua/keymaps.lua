@@ -14,7 +14,6 @@ u.map('n', "<tab>h", '<c-w>h')
 u.map('n', "<tab>l", '<c-w>l')
 u.map('n', "<tab>j", '<c-w>j')
 u.map('n', "<tab>k", '<c-w>k')
-u.map('n', "0", '^')
 
 -- 编辑模式
 u.map('i', "<c-a>", "<home>")
@@ -52,15 +51,13 @@ u.map("n", "<leader>tn", ":tabnext<cr>")
 u.map("n", "<leader>tp", ":tabprev<cr>")
 u.map("n", "<leader>to", ":tabonly<cr>")
 
-u.map("n", "<space>gg", ":Git <CR>")
-u.map("n", "<space>gv", ":Gvdiffsplit <CR>")
 
 u.map("n", "<space>=", ":resize +3<cr>")
 u.map("n", "<space>-", ":resize -3<cr>")
 u.map("n", "<space>,", ":vertical resize -5<cr>")
 u.map("n", "<space>.", ":vertical resize +5<cr>")
 
--- vim-privew
+-- vim-preview
 u.map('n', "<m-;>", ":PreviewTag<CR>")
 u.map('n', "<m-:", ":PreviewClose<CR>")
 
@@ -173,4 +170,3 @@ u.map("n", "\\7", ":tabn 7<cr>")
 u.map("n", "\\8", ":tabn 8<cr>")
 u.map("n", "\\9", ":tabn 9<cr>")
 u.map("n", "\\10", ":tabn 10<cr>")
-
