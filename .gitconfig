@@ -7,6 +7,7 @@
     log = delta
     reflog = delta
     show = delta
+
 ; {{{ delta配置 用于查看diff
 ; https://github.com/yan42685/dotfiles/blob/master/.gitconfig
 [delta]
@@ -47,12 +48,22 @@
 
 [core]
     quotepath = false
+# https://www.lazy-electron.com/2021/07/29/git-aliases.html
+[alias]
+	amend = commit --amend --reuse-message=HEAD
+	glg = log --oneline --decorate --all --graph
+
 [github]
 	user = BruceChen7
+
 ; https://www.jessesquires.com/blog/2021/10/24/git-aliases-to-improve-productivity/
+
 [alias]
 	aliases = "!f() { git config --global -l | grep alias | sort; }; f"
 	st = status
 	smartlog = log --graph --pretty=format:'commit: %C(bold red)%h%Creset %C(red)<%H>%Creset %C(bold magenta)%d %Creset%ndate: %C(bold yellow)%cd %Creset%C(yellow)%cr%Creset%nauthor: %C(bold blue)%an%Creset %C(blue)<%ae>%Creset%n%C(cyan)%s%n%Creset'
 	ls = log --oneline
 	authors-list = shortlog -e -s -n
+
+[net]
+    git-fetch-with-cli = true

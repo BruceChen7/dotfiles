@@ -93,11 +93,21 @@ return packer.startup(function()
     use 'L3MON4D3/LuaSnip' -- Snippets plugin
     use 'antoinemadec/FixCursorHold.nvim'
 
+    -- use {
+    --     'mhinz/vim-signify',
+    --     config = function()
+    --         require 'config/signify'
+    --     end
+    -- }
+
     use {
-        'mhinz/vim-signify',
+        'lewis6991/gitsigns.nvim',
+        requires = {
+            'nvim-lua/plenary.nvim'
+        },
         config = function()
-            require 'config/signify'
-        end
+            require("config/gitsigns")
+        end,
     }
 
     -- 基础插件：提供让用户方便的自定义文本对象的接口
@@ -109,7 +119,11 @@ return packer.startup(function()
     -- 参数文本对象：i,/a, 包括参数或者列表元素
     use  'sgur/vim-textobj-parameter'
 
+
     use 'tpope/vim-surround'
+
+    use 'tpope/vim-repeat'
+
 
     use 'Chiel92/vim-autoformat'
 
