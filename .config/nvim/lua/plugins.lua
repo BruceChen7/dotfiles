@@ -22,7 +22,6 @@ augroup packer_user_config
 augroup end
 ]])
 
-
 --
 return packer.startup(function()
     -- Packer can manage itself

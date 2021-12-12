@@ -141,9 +141,9 @@ augroup InitFileTypesGroup
 	" lisp 进行微调
 	au FileType lisp setlocal ts=8 sts=2 sw=2 et
 
-	au FileType go setlocal ts=8 sw=8
+	au FileType go setlocal ts=8 sw=8 et
 
-	au FileType lua setlocal ts=4 sw=4
+	au FileType lua setlocal ts=4 sw=4 et
 
 	" scala 微调
 	au FileType scala setlocal sts=4 sw=4 noet

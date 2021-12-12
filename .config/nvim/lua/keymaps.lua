@@ -73,6 +73,7 @@ vim.cmd([[
 
 -- 自动打开 quickfix window ，高度为 10
 vim.g.asyncrun_open = 10
+
 -- 任务结束时候响铃提醒
 vim.g.asyncrun_bell = 1
 
