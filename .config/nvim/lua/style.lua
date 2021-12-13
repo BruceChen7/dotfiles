@@ -167,8 +167,8 @@ augroup END
 
 function getColorscheme()
 	local colorschemes = {"vscode", "nvcode"}
-	local U = require('util')
-	local len = U.tableLength(colorschemes)
+	local u = require('util')
+	local len = u.tableLength(colorschemes)
 	i = U.random(len)
 	scheme = colorschemes[i]
 
@@ -184,14 +184,33 @@ vim.cmd([[
 	execute 'colorscheme ' . scheme
 ]])
 
-vim.cmd([[
-set statusline=                                 " 清空状态了
-set statusline+=\ %F                            " 文件名
-set statusline+=%{fugitive#statusline()}
-set statusline+=\ [%1*%M%*%n%R%H]               " buffer 编号和状态
-set statusline+=%=                              " 向右对齐
-set statusline+=\ %y                            " 文件类型
 
-" 最右边显示文件编码和行号等信息，并且固定在一个 group 中，优先占位
-set statusline+=\ %0(%{&fileformat}\ [%{(&fenc==\"\"?&enc:&fenc).(&bomb?\",BOM\":\"\")}]\ %v:%l/%L%)
-]])
+function status_encoding()
+    if vim.o.fenc ~= "" then
+        code = vim.o.fenc
+    else
+        code = vim.o.enc
+    end
+    if vim.o.bomb then
+        code = code .. ",BOM"
+    end
+    return code
+end
+
+-- help statusline
+function status_line()
+    file_name = "%F "
+    git_status = "%{fugitive#statusline()}"
+    buffer_status = "[%1*%M%*%n%R%H]" -- [buffer number and buffer status]
+    -- 右对齐
+    seg = "%="
+    file_type = "%y " -- lua/go/rust
+
+    print(code)
+    -- " 最右边显示文件编码和行号等信息，并且固定在一个 group 中，优先占位
+    file_encoding = "%0(%{&fileformat} [%{v:lua.status_encoding()}] %v:%l/%L%) "
+    res = file_name..git_status..buffer_status..seg..file_type..file_encoding
+    return res
+end
+
+vim.o.statusline = status_line()
