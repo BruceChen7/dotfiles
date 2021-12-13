@@ -122,7 +122,7 @@ vim.cmd([[
 		return s
 	endfunc
 
-	set tabline=%!VimNeatTabLine()
+	-- set tabline=%!VimNeatTabLine()
 ]])
 
 vim.cmd([[

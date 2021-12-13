@@ -118,3 +118,45 @@ u.map("n", "\\8", ":tabn 8<cr>")
 u.map("n", "\\9", ":tabn 9<cr>")
 -- avoid slowly to wait to parse \\1
 u.map("n", "\\0", ":tabn 10<cr>")
+
+if vim.fn.exists(":VemTablineGo") then
+    -- always show number
+    vim.g.vem_tabline_show_number = "index"
+    -- alway show tabline
+    vim.g.vem_tabline_show = 2
+
+    -- tab keymap
+    u.map("n", "<m-1>", ":VemTablineGo 1<cr>")
+    u.map("n", "<m-2>", ":VemTablineGo 2<cr>")
+    u.map("n", "<m-3>", ":VemTablineGo 3<cr>")
+    u.map("n", "<m-4>", ":VemTablineGo 4<cr>")
+    u.map("n", "<m-5>", ":VemTablineGo 5<cr>")
+    u.map("n", "<m-6>", ":VemTablineGo 6<cr>")
+    u.map("n", "<m-7>", ":VemTablineGo 7<cr>")
+    u.map("n", "<m-8>", ":VemTablineGo 8<cr>")
+    u.map("n", "<m-9>", ":VemTablineGo 9<cr>")
+    u.map("n", "<m-0>", ":VemTablineGo 10<cr>")
+
+    u.map("i", "<m-1>", "<ESC>:VemTablineGo 1<cr>")
+    u.map("i", "<m-2>", "<ESC>:VemTablineGo 2<cr>")
+    u.map("i", "<m-3>", "<ESC>:VemTablineGo 3<cr>")
+    u.map("i", "<m-4>", "<ESC>:VemTablineGo 4<cr>")
+    u.map("i", "<m-5>", "<ESC>:VemTablineGo 5<cr>")
+    u.map("i", "<m-6>", "<ESC>:VemTablineGo 6<cr>")
+    u.map("i", "<m-7>", "<ESC>:VemTablineGo 7<cr>")
+    u.map("i", "<m-8>", "<ESC>:VemTablineGo 8<cr>")
+    u.map("i", "<m-9>", "<ESC>:VemTablineGo 9<cr>")
+    u.map("i", "<m-0>", "<ESC>:VemTablineGo 10<cr>")
+
+    u.map("n", "\\1", ":VemTablineGo 1<cr>")
+    u.map("n", "\\2", ":VemTablineGo 2<cr>")
+    u.map("n", "\\3", ":VemTablineGo 3<cr>")
+    u.map("n", "\\4", ":VemTablineGo 4<cr>")
+    u.map("n", "\\5", ":VemTablineGo 5<cr>")
+    u.map("n", "\\6", ":VemTablineGo 6<cr>")
+    u.map("n", "\\7", ":VemTablineGo 7<cr>")
+    u.map("n", "\\8", ":VemTablineGo 8<cr>")
+    u.map("n", "\\9", ":VemTablineGo 9<cr>")
+    -- avoid slowly to wait to parse \\1
+    u.map("n", "\\0", ":VemTablineGo 10<cr>")
+end

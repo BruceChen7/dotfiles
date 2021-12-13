@@ -188,6 +188,9 @@ return packer.startup(function()
         "ray-x/lsp_signature.nvim",
     }
 
+    use {
+        "pacha/vem-tabline"
+    }
     -- use 'ggandor/lightspeed.nvim'
 
     use {
