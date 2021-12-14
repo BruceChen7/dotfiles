@@ -126,7 +126,8 @@ function quitWindow()
     else
         vim.api.nvim_command('quit!')
     end
-e
+end
+
 if vim.fn.exists(":VemTablineGo") then
     -- always show number
     vim.g.vem_tabline_show_number = "index"
