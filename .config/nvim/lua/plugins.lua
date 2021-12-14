@@ -191,6 +191,10 @@ return packer.startup(function()
     use {
         "pacha/vem-tabline"
     }
+    use {
+        'ryanoasis/vim-devicons'
+    }
+
     -- use 'ggandor/lightspeed.nvim'
 
     use {

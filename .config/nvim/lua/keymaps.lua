@@ -61,14 +61,14 @@ u.map('n', "<m-;>", ":PreviewTag<CR>")
 u.map('n', "<m-:", ":PreviewClose<CR>")
 
 vim.cmd([[
-	function! TermExit(code)
-		echom "terminal exit code: ". a:code
-	endfunc
+function! TermExit(code)
+    echom "terminal exit code: ". a:code
+endfunc
 
-	let g:quickui_color_scheme = 'papercol dark'
-	let opts = {'w':600, 'h':800, 'callback':'TermExit'}
-	let opts.title = 'TIG POP'
-	noremap <leader>tg :call quickui#terminal#open('tig', opts)<CR>
+let g:quickui_color_scheme = 'papercol dark'
+let opts = {'w':600, 'h':800, 'callback':'TermExit'}
+let opts.title = 'TIG POP'
+noremap <leader>tg :call quickui#terminal#open('tig', opts)<CR>
 ]])
 
 -- 自动打开 quickfix window ，高度为 10
@@ -119,6 +119,14 @@ u.map("n", "\\9", ":tabn 9<cr>")
 -- avoid slowly to wait to parse \\1
 u.map("n", "\\0", ":tabn 10<cr>")
 
+function quitWindow()
+    local buf_total_num = vim.fn.len(vim.fn.getbufinfo({buflisted = 1}))
+    if buf_total_num ~= 1 then
+        vim.api.nvim_command("VemTablineDelete")
+    else
+        vim.api.nvim_command('quit!')
+    end
+e
 if vim.fn.exists(":VemTablineGo") then
     -- always show number
     vim.g.vem_tabline_show_number = "index"
@@ -148,6 +156,8 @@ if vim.fn.exists(":VemTablineGo") then
     u.map("i", "<m-9>", "<ESC>:VemTablineGo 9<cr>")
     u.map("i", "<m-0>", "<ESC>:VemTablineGo 10<cr>")
 
+    u.map("n", "\\t", ":tabnew<CR>")
+    u.map("n", "\\d", ":tabclose<cr>")
     u.map("n", "\\1", ":VemTablineGo 1<cr>")
     u.map("n", "\\2", ":VemTablineGo 2<cr>")
     u.map("n", "\\3", ":VemTablineGo 3<cr>")
@@ -159,4 +169,9 @@ if vim.fn.exists(":VemTablineGo") then
     u.map("n", "\\9", ":VemTablineGo 9<cr>")
     -- avoid slowly to wait to parse \\1
     u.map("n", "\\0", ":VemTablineGo 10<cr>")
+    vim.cmd [[
+        command -nargs=0 VemTablineDelete call vem_tabline#tabline.delete_buffer()
+    ]]
+    -- quit window
+    u.map("n", "Q", ":lua quitWindow()<cr>")
 end
