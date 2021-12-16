@@ -53,6 +53,8 @@
 	amend = commit --amend --reuse-message=HEAD
 	glg = log --oneline --decorate --all --graph
 
+; see https://stackoverflow.com/questions/8801729/is-it-possible-to-have-different-git-configuration-for-different-projects
+; how to set up user name in differenct project
 [github]
 	user = BruceChen7
 

@@ -13,6 +13,9 @@ lspkind.init()
 local on_attach = function(client, bufnr)
 	local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
 	local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+    -- https://github.com/jose-elias-alvarez/null-ls.nvim/wiki/Avoiding-LSP-formatting-conflicts
+    client.resolved_capabilities.document_formatting = false
+    client.resolved_capabilities.document_range_formatting = false
 
 	-- Enable completion triggered by <c-x><c-o>
 	buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
@@ -112,7 +115,6 @@ function goimports(timeoutms)
 end
 
 -- nvim-cmp setup
-local cmp_autopairs = require('nvim-autopairs.completion.cmp')
 local cmp = require 'cmp'
 cmp.setup {
     snippet = {
@@ -212,14 +214,18 @@ cmp.setup {
     },
 
 }
+
+-- insert `(` after select function or method item
+local cmp_autopairs = require('nvim-autopairs.completion.cmp')
 cmp.event:on( 'confirm_done', cmp_autopairs.on_confirm_done({  map_char = { tex = '' } }))
 
+-- format code
+-- " autocmd BufWritePre *.go lua goimports(1000)
+-- " autocmd BufWritePre *.rust lua vim.lsp.buf.formatting()
 -- format code
 vim.cmd([[
 augroup FormatGroup
 	au!
-	autocmd BufWritePre *.go lua vim.lsp.buf.formatting()
-	autocmd BufWritePre *.go lua goimports(1000)
-	autocmd BufWritePre *.rust lua vim.lsp.buf.formatting()
+	autocmd BufWritePre *.go lua vim.lsp.buf.formatting_seq_sync()
 augroup END
 ]])
