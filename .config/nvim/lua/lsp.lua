@@ -70,8 +70,14 @@ for _, lsp in ipairs(servers) do
                     shadow = true,
                 },
                 staticcheck = true,
+                codelenses = {
+                    test = true,
+                }
             },
         },
+        flags = {
+            debounce_text_changes = 200,
+        }
     }
 end
 

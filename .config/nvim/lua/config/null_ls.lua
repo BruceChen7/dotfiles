@@ -23,7 +23,5 @@ nls.setup({
     log = {
         enable =  true,
     },
-    sources = {
-        nls.builtins.formatting.gofmt,
-    }
+    sources = sources,
 })
