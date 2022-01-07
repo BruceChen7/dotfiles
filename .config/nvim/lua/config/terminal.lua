@@ -32,8 +32,35 @@ end
 vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
 
 local Terminal = require("toggleterm.terminal").Terminal
-local tig = Terminal:new({ cmd = 'tig', hidden = true} )
+
+
+local lspconfig_util = require "lspconfig.util"
+local find_root = lspconfig_util.root_pattern(".git")
 
 function _Tig_TOGGLE()
+    local tig = Terminal:new({ cmd = 'tig', hidden = true} )
     tig:toggle()
 end
+
+function _Tig_Blame()
+    local tig_name_file_blame = Terminal:new({ cmd = 'tig -C '..find_root(vim.fn.expand("%:p")).." "..vim.fn.expand("%:p")})
+    tig_name_file_blame:toggle()
+end
+
+function _Git_Status()
+    require'toggleterm'.exec("git status", 1, 12)
+end
+
+function _Git_Diff_Name_Only()
+    require'toggleterm'.exec("git diff --name-only", 1, 12)
+end
+
+function _Git_Diff()
+    require'toggleterm'.exec("git diff ", 1, 12)
+end
+
+local u = require("util")
+u.map('n', '<leader>tg', ':lua _Tig_TOGGLE()<CR>')
+u.map('n', '<leader>gs', ":lua  _Git_Status()<CR>")
+u.map('n', '<leader>gdd', ":lua  _Git_Diff_Name_Only()<CR>")
+u.map('n', '<leader>gdn', ":lua  _Git_Diff()<CR>")
