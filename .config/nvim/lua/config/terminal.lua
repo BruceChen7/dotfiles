@@ -13,14 +13,15 @@ require("toggleterm").setup{
 	shade_terminals = true,
 	insert_mappings = true, -- whether or not the open mapping applies in insert mode
 	--  persist_size = true,
-	direction = 'vertical',
+	-- direction = 'vertical',
+	direction = 'float',
 	close_on_exit = true -- close the terminal window when the process exits
 }
 
 function _G.set_terminal_keymaps()
 	local opts = {noremap = true}
 	vim.api.nvim_buf_set_keymap(0, 't', '<esc>', [[<C-\><C-n>]], opts)
-	vim.api.nvim_buf_set_keymap(0, 't', 'jk', [[<C-\><C-n>]], opts)
+	-- vim.api.nvim_buf_set_keymap(0, 't', 'jk', [[<C-\><C-n>]], opts)
 	vim.api.nvim_buf_set_keymap(0, 't', '<tab>h', [[<C-\><C-n><C-W>h]], opts)
 	vim.api.nvim_buf_set_keymap(0, 't', '<tab>j', [[<C-\><C-n><C-W>j]], opts)
 	vim.api.nvim_buf_set_keymap(0, 't', '<tab>k', [[<C-\><C-n><C-W>k]], opts)
@@ -29,3 +30,10 @@ end
 
 -- if you only want these mappings for toggle term use term://*toggleterm#* instead
 vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
+
+local Terminal = require("toggleterm.terminal").Terminal
+local tig = Terminal:new({ cmd = 'tig', hidden = true} )
+
+function _Tig_TOGGLE()
+    tig:toggle()
+end
