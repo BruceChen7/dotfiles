@@ -38,7 +38,7 @@ local lspconfig_util = require "lspconfig.util"
 local find_root = lspconfig_util.root_pattern(".git")
 
 function _Tig_TOGGLE()
-    local tig = Terminal:new({ cmd = 'tig', hidden = true} )
+    local tig = Terminal:new({ cmd = 'tig -C '..find_root(vim.fn.expand("%:p")), hidden = true} )
     tig:toggle()
 end
 
