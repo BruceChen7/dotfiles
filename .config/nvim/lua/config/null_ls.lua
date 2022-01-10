@@ -2,9 +2,6 @@ local nls = require('null-ls')
 
 local fmt = nls.builtins.formatting
 
-
-local null_ls = require("null-ls")
-
 -- register any number of sources simultaneously
 local sources = {
     -- null_ls.builtins.formatting.prettier,
@@ -19,9 +16,9 @@ local sources = {
 
 -- Configuring null-ls
 nls.setup({
-    debug = true,
+    debug = false,
     log = {
-        enable =  true,
+        enable =  false,
     },
     sources = sources,
 })

@@ -38,7 +38,7 @@ local lspconfig_util = require "lspconfig.util"
 local find_root = lspconfig_util.root_pattern(".git")
 
 function _Tig_TOGGLE()
-    root = find_root(vim.fn.expand("%:p"))
+    local root = find_root(vim.fn.expand("%:p"))
     if not root then
         return
     end
@@ -47,12 +47,13 @@ function _Tig_TOGGLE()
 end
 
 function _Tig_Blame()
-    root = find_root(vim.fn.expand("%:p"))
+    local root = find_root(vim.fn.expand("%:p"))
     if not root then
         return
     end
     file_name = vim.fn.expand("%:p")
     if not file_name then
+        return
     end
     local tig_name_file_blame = Terminal:new({ cmd = 'tig -C '..root.." "..file_name})
     tig_name_file_blame:toggle()
