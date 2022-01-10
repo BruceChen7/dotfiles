@@ -60,17 +60,6 @@ u.map("n", "<space>.", ":vertical resize +5<cr>")
 u.map('n', "<m-;>", ":PreviewTag<CR>")
 u.map('n', "<m-:", ":PreviewClose<CR>")
 
-vim.cmd([[
-function! TermExit(code)
-    echom "terminal exit code: ". a:code
-endfunc
-
-let g:quickui_color_scheme = 'papercol dark'
-let opts = {'w':600, 'h':800, 'callback':'TermExit'}
-let opts.title = 'TIG POP'
-noremap <leader>tg :call quickui#terminal#open('tig', opts)<CR>
-]])
-
 -- 自动打开 quickfix window ，高度为 10
 vim.g.asyncrun_open = 10
 
