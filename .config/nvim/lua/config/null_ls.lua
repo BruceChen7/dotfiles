@@ -11,8 +11,19 @@ local sources = {
     fmt.goimports,
     fmt.rustfmt,
     fmt.zigfmt,
-}
+    fmt.trim_whitespace.with(
+        {
+            filetypes = {"go", "rust", "zig", "markdown", "lua"},
+        }
+    ),
 
+
+    fmt.trim_newlines.with(
+        {
+            filetypes = {"go", "rust", "zig", "markdown", "lua"},
+        }
+    ),
+}
 
 -- Configuring null-ls
 nls.setup({

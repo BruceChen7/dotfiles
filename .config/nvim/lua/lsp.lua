@@ -200,5 +200,9 @@ vim.cmd([[
 augroup FormatGroup
     au!
     autocmd BufWritePre *.go lua vim.lsp.buf.formatting_seq_sync()
+    autocmd BufWritePre *.md lua vim.lsp.buf.formatting_seq_sync()
+    autocmd BufWritePre *.rs lua vim.lsp.buf.formatting_seq_sync()
+    autocmd BufWritePre *.zig lua vim.lsp.buf.formatting_seq_sync()
+    autocmd BufWritePre *.lua lua vim.lsp.buf.formatting_seq_sync()
 augroup END
 ]])
