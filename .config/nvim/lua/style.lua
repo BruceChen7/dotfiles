@@ -15,6 +15,9 @@ o.showtabline = 2
 o.errorformat:append('[%f:%l] -> %m,[%f:%l]:%m')
 
 -- 设置buffer
+o.relativenumber = true
+o.mouse = 'n'
+
 -- TODO: 重写这部分代码
 vim.cmd([[
 	highlight clear SignColumn
@@ -22,6 +25,7 @@ vim.cmd([[
 	augroup VimInitStyle
 		au!
 		au FileType qf setlocal nonumber
+		au FileType qf setlocal norelativenumber
 	augroup END
 
 	" 修正补全目录的色彩：默认太难看
@@ -166,16 +170,16 @@ augroup END
 ]])
 
 function getColorscheme()
-	local colorschemes = {"vscode", "nvcode"}
-	local u = require('util')
-	local len = u.tableLength(colorschemes)
-	i = U.random(len)
-	scheme = colorschemes[i]
+    local colorschemes = {"vscode", "nvcode"}
+    local u = require('util')
+    local len = u.tableLength(colorschemes)
+    i = U.random(len)
+    scheme = colorschemes[i]
 
-	if scheme == 'vscode' then
-		vim.g.vscode_style ='dark'
-	end
-	return scheme
+    if scheme == 'vscode' then
+	vim.g.vscode_style ='dark'
+    end
+    return scheme
 end
 
 
@@ -187,12 +191,12 @@ vim.cmd([[
 
 function status_encoding()
     if vim.o.fenc ~= "" then
-        code = vim.o.fenc
+	code = vim.o.fenc
     else
-        code = vim.o.enc
+	code = vim.o.enc
     end
     if vim.o.bomb then
-        code = code .. ",BOM"
+	code = code .. ",BOM"
     end
     return code
 end
