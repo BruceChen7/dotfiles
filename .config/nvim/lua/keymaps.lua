@@ -165,3 +165,11 @@ if vim.fn.exists(":VemTablineGo") then
     -- quit window
     u.map("n", "Q", ":lua quitWindow()<cr>")
 end
+
+if vim.fn.exists(":Pounce") then
+    u.map("n", "s", ":Pounce<CR>")
+    u.map("n", "S", ":PounceRepeat<CR>")
+    u.map("v", "s", ":Pounce<CR>")
+    u.map("o", "gs", ":Pounce<CR>")
+end
+

@@ -215,13 +215,15 @@ return packer.startup(function()
     }
 
     -- use 'ggandor/lightspeed.nvim'
+    use {
+        'rlane/pounce.nvim',
+    }
+
 
     use {
-        'phaazon/hop.nvim',
-        branch = 'v1', -- optional but strongly recommended
+        'karb94/neoscroll.nvim',
         config = function()
-            -- you can configure Hop the way you like here; see :h hop-config
-            require'hop'.setup { keys = 'etovxqpdygfblzhckisuran' }
+            require("config/neoscroll")
         end
     }
 
@@ -236,4 +238,3 @@ return packer.startup(function()
         packer.sync()
     end
 end)
-

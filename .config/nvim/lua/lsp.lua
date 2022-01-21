@@ -138,9 +138,17 @@ cmp.setup {
     sources = {
         { name = "nvim_lsp" },
         { name = "path" },
-        { name = "nvim_lua" },
+        { name = "nvim_lua" }, -- wit vim.api complete
         { name = "luasnip" },
-        { name = "buffer", keyword_length = 3 },
+        {
+            name = "buffer",
+            keyword_length = 3,
+            option = {
+                get_bufnrs = function()
+                    return vim.api.nvim_list_bufs()
+                end,
+            },
+        },
     },
     sorting = {
         -- TODO: Would be cool to add stuff like "See variable names before method names" in rust, or something like that.
@@ -192,10 +200,9 @@ cmp.setup {
 local cmp_autopairs = require('nvim-autopairs.completion.cmp')
 cmp.event:on( 'confirm_done', cmp_autopairs.on_confirm_done({  map_char = { tex = '' } }))
 
--- format code
--- " autocmd BufWritePre *.go lua goimports(1000)
--- " autocmd BufWritePre *.rust lua vim.lsp.buf.formatting()
--- format code
+
+
+
 vim.cmd([[
 augroup FormatGroup
     au!
