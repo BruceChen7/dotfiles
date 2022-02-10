@@ -60,7 +60,7 @@ unsetopt correct
 DISABLE_CORRECTION="true"
 
 # Enable 256 color to make auto-suggestions look nice
-export TERM="xterm-256color"
+# export TERM="xterm-256color"
 
 ZSH_AUTOSUGGEST_USE_ASYNC=1
 
