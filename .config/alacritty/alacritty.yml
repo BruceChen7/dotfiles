@@ -82,6 +82,8 @@ key_bindings:
   - { key: Key6,      mods: Alt|Shift, chars: "\x1b^"                       } # Alt + ^
   - { key: Backslash, mods: Alt,       chars: "\x1b\\"                      } # Alt + \
   - { key: Backslash, mods: Alt|Shift, chars: "\x1b|"                       } # Alt + |
+  - { key: Equals,     mods: Alt,               chars: "\x1b="    }
+  - { key: Equals,     mods: Alt|Shift,         chars: "\x1b+"    }
 font:
   normal:
     family: FiraCode Nerd Font
