@@ -38,7 +38,7 @@ U.map('n', '<m-t>', ':LeaderfTag<cr>')
 U.map('n', '<c-p>', ':LeaderfFile<cr>')
 
 vim.cmd([[
-    noremap <space>s :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>
+    noremap <space>lf :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>
 ]])
 
 -- leaderf config
