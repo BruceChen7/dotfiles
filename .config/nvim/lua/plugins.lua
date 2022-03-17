@@ -124,7 +124,7 @@ return packer.startup(function()
     use 'tpope/vim-repeat'
 
 
-    use 'Chiel92/vim-autoformat'
+    -- use 'Chiel92/vim-autoformat'
 
     -- 自动调整窗口
     use 'camspiers/lens.vim'
@@ -219,7 +219,16 @@ return packer.startup(function()
         'rlane/pounce.nvim',
     }
 
+    -- Lua
+    use {
+        "folke/todo-comments.nvim",
+        requires = "nvim-lua/plenary.nvim",
+        config = function()
+            require("todo-comments").setup {
 
+            }
+        end
+    }
     use {
         'karb94/neoscroll.nvim',
         config = function()
