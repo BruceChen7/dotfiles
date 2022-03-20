@@ -214,7 +214,14 @@ return packer.startup(function()
         'ryanoasis/vim-devicons'
     }
 
-    -- use 'ggandor/lightspeed.nvim'
+    use {
+        'TimUntersberger/neogit',
+        requires = 'nvim-lua/plenary.nvim',
+        config = function()
+            require("config/neogit")
+        end
+    }
+
     use {
         'rlane/pounce.nvim',
     }

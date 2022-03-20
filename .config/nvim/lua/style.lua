@@ -14,8 +14,7 @@ o.showtabline = 2
 --o.errorformat = vim.opt.errorformat + '%f|%l col %c|%m'
 o.errorformat:append('[%f:%l] -> %m,[%f:%l]:%m')
 
--- 设置buffer
-o.relativenumber = true
+o.relativenumber = false
 o.mouse = 'n'
 
 -- TODO: 重写这部分代码
@@ -191,9 +190,9 @@ vim.cmd([[
 
 function status_encoding()
     if vim.o.fenc ~= "" then
-	code = vim.o.fenc
+        code = vim.o.fenc
     else
-	code = vim.o.enc
+        code = vim.o.enc
     end
     if vim.o.bomb then
 	code = code .. ",BOM"
