@@ -138,7 +138,7 @@ cmp.setup {
     sources = {
         { name = "nvim_lsp" },
         { name = "path" },
-        { name = "nvim_lua" }, -- wit vim.api complete
+        { name = "nvim_lua" }, -- with vim.api complete
         { name = "luasnip" },
         {
             name = "buffer",
@@ -149,6 +149,7 @@ cmp.setup {
                 end,
             },
         },
+        { name = "crates" },
     },
     sorting = {
         -- TODO: Would be cool to add stuff like "See variable names before method names" in rust, or something like that.
@@ -199,9 +200,6 @@ cmp.setup {
 -- insert `(` after select function or method item
 local cmp_autopairs = require('nvim-autopairs.completion.cmp')
 cmp.event:on( 'confirm_done', cmp_autopairs.on_confirm_done({  map_char = { tex = '' } }))
-
-
-
 
 vim.cmd([[
 augroup FormatGroup
