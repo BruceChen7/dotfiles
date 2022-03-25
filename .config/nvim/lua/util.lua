@@ -58,8 +58,8 @@ function M.tableLength(T)
 end
 
 function M.random(n)
-	time = os.time()
-	return m.random(n)
+    math.randomseed(os.time())
+    return m.random(n)
 end
 
 function M.getFileFullPath()

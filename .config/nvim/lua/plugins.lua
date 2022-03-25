@@ -69,7 +69,7 @@ return packer.startup(function()
 
     use {
         'Yggdroot/LeaderF',
-        keys = {"<m-n>", "<m-p>", "<m-m>", "<c-p>"},
+        -- keys = {"<m-n>", "<m-p>", "<m-m>", "<c-p>"},
         config = function()
             require("config/leaderf")
         end,
@@ -183,9 +183,10 @@ return packer.startup(function()
 
     -- colorscheme
     use {'Mofiqul/vscode.nvim'}
-    use {'christianchiarulli/nvcode-color-schemes.vim'}
-    use {"bluz71/vim-moonfly-colors"}
-    use {"lukas-reineke/onedark.nvim" }
+    -- use {'christianchiarulli/nvcode-color-schemes.vim'}
+    -- use {"bluz71/vim-moonfly-colors"}
+    -- use {"lukas-reineke/onedark.nvim" }
+    use {"EdenEast/nightfox.nvim"}
 
     -- bracket, brace auto complete
     use ({

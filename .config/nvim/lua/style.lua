@@ -172,11 +172,11 @@ function getColorscheme()
     local colorschemes = {"vscode", "nvcode"}
     local u = require('util')
     local len = u.tableLength(colorschemes)
-    i = U.random(len)
+    i = u.random(len)
     scheme = colorschemes[i]
 
     if scheme == 'vscode' then
-	vim.g.vscode_style ='dark'
+        vim.g.vscode_style ='dark'
     end
     return scheme
 end
