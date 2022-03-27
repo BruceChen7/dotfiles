@@ -39,11 +39,8 @@ local find_root = lspconfig_util.root_pattern ".git"
 function _Tig_TOGGLE()
   local root = find_root(vim.fn.expand "%:p")
   if not root then
-  if not root then
     -- FIXME(ming.chen): use vim.notify()
     -- vim.notify("use working directory instead", vim.log.levels.INFO)
-    root = vim.fn.getcwd()
-  end
     root = vim.fn.getcwd()
   end
   local tig = Terminal:new { cmd = "tig -C " .. root, hidden = true }
