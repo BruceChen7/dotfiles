@@ -224,13 +224,13 @@ return packer.startup(function()
   }
 
   -- Lua
-  use {
-    "folke/todo-comments.nvim",
-    requires = "nvim-lua/plenary.nvim",
-    config = function()
-      require("todo-comments").setup {}
-    end,
-  }
+  -- use {
+  --   "folke/todo-comments.nvim",
+  --   requires = "nvim-lua/plenary.nvim",
+  --   config = function()
+  --     require("todo-comments").setup {}
+  --   end,
+  -- }
   use {
     "karb94/neoscroll.nvim",
     config = function()

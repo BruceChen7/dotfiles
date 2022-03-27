@@ -65,7 +65,8 @@ vim.g.asyncrun_open = 10
 vim.g.asyncrun_bell = 1
 
 -- AsyncTask
-u.map("n", "g1", ":AsyncTask grep-cword<CR>")
+vim.keymap.set("n", "g1", ":AsyncTask grep-cword<CR>")
+vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>")
 -- quickfix 手动打开
 u.map("n", "<space>q", ":call asyncrun#quickfix_toggle(10)<cr>")
 
