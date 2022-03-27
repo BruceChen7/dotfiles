@@ -1,11 +1,11 @@
 -- fern.vim
-u = require("util")
-u.map('n', 'ne', ":Fern .  -reveal=% <CR>")
-u.map('n', 'nE', ":Fern . -opener=vsplit -reveal=% <CR>")
-u.map('n', 'nc', ":Fern %:h  -reveal=% <CR>")
-u.map('n', 'nC', ':Fern %:h -opener=vsplit -reveal=% <CR>')
+u = require "util"
+u.map("n", "ne", ":Fern .  -reveal=% <CR>")
+u.map("n", "nE", ":Fern . -opener=vsplit -reveal=% <CR>")
+u.map("n", "nc", ":Fern %:h  -reveal=% <CR>")
+u.map("n", "nC", ":Fern %:h -opener=vsplit -reveal=% <CR>")
 
-vim.cmd([[
+vim.cmd [[
     function! InitFern() abort
         " Define NERDTree like mappings
         nmap <buffer> o <Plug>(fern-action-open:edit)
@@ -37,4 +37,4 @@ vim.cmd([[
        autocmd FileType fern call InitFern()
     augroup END
 
-]])
+]]

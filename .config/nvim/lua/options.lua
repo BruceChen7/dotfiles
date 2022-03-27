@@ -1,6 +1,6 @@
 local o = vim.o
 local g = vim.g
-local U = require('util')
+local U = require "util"
 
 -- 自动缩进
 o.autoindent = true
@@ -13,10 +13,10 @@ o.termguicolors = true
 
 o.ttimeout = true
 o.ttimeoutlen = 50
-o.tags= [[ ./.tags;,.tags ]]
+o.tags = [[ ./.tags;,.tags ]]
 
 -- global line status
-o.laststatus=3
+o.laststatus = 3
 
 -- 智能搜索大小写判断，默认忽略大小写，除非搜索内容包含大写字母
 o.ignorecase = true
@@ -42,41 +42,39 @@ o.expandtab = true
 --  如果后面设置了 expandtab 那么展开 tab 为多少字符
 o.softtabstop = 4
 
-
 o.backup = true
 o.writebackup = true
 o.undofile = false
 o.swapfile = false
-o.backupdir = '/tmp/'
-o.directory = '/tmp/'
-o.undodir = '/tmp/'
-o.backupext='.bak'
+o.backupdir = "/tmp/"
+o.directory = "/tmp/"
+o.undodir = "/tmp/"
+o.backupext = ".bak"
 
 --在右边vsplit
 o.splitright = true
 
-
 -- 设置leader key
-U.map('n', '<space>', '<Nop>')
-g.mapleader = ' '
-g.maplocalleader = ' '
+U.map("n", "<space>", "<Nop>")
+g.mapleader = " "
+g.maplocalleader = " "
 
 -- 设置分隔符可视
-o.listchars='tab:|  ,trail:.,extends:>,precedes:<'
+o.listchars = "tab:|  ,trail:.,extends:>,precedes:<"
 
 -- 文件换行符，默认使用 unix 换行符
-o.ffs='unix,dos,mac'
+o.ffs = "unix,dos,mac"
 -- 允许代码折叠
-o.foldenable= true
+o.foldenable = true
 
 -- 代码折叠默认使用缩进
-o.fdm="indent"
+o.fdm = "indent"
 
 -- 默认打开所有缩进
-o.foldlevel=99
+o.foldlevel = 99
 
 --文件搜索和补全时忽略下面扩展名
-o.suffixes=".bak,~,.o,.h,.info,.swp,.obj,.pyc,.pyo,.egg-info,.class"
+o.suffixes = ".bak,~,.o,.h,.info,.swp,.obj,.pyc,.pyo,.egg-info,.class"
 
 o.wildignore = [[
 	.git,.hg,.svn
@@ -93,4 +91,4 @@ o.wildignore = [[
 ]]
 
 local cmd = vim.api.nvim_command
-cmd('filetype plugin indent on')
+cmd "filetype plugin indent on"

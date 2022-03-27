@@ -12,13 +12,13 @@ o.splitright = true
 
 o.showtabline = 2
 --o.errorformat = vim.opt.errorformat + '%f|%l col %c|%m'
-o.errorformat:append('[%f:%l] -> %m,[%f:%l]:%m')
+o.errorformat:append "[%f:%l] -> %m,[%f:%l]:%m"
 
 o.relativenumber = false
-o.mouse = 'n'
+o.mouse = "n"
 
 -- TODO: 重写这部分代码
-vim.cmd([[
+vim.cmd [[
 	highlight clear SignColumn
 	"quickfix 设置，隐藏行号
 	augroup VimInitStyle
@@ -126,9 +126,9 @@ vim.cmd([[
 	endfunc
 
 	-- set tabline=%!VimNeatTabLine()
-]])
+]]
 
-vim.cmd([[
+vim.cmd [[
 augroup InitFileTypesGroup
 
 	" 清除同组的历史 autocommand
@@ -166,52 +166,50 @@ augroup InitFileTypesGroup
 	au BufNewFile,BufRead *.asc setlocal filetype=asciidoc
 	au BufNewFile,BufRead *.vl setlocal filetype=verilog
 augroup END
-]])
+]]
 
 function getColorscheme()
-    local colorschemes = {"vscode", "nvcode"}
-    local u = require('util')
-    local len = u.tableLength(colorschemes)
-    i = u.random(len)
-    scheme = colorschemes[i]
+  local colorschemes = { "vscode", "nvcode" }
+  local u = require "util"
+  local len = u.tableLength(colorschemes)
+  i = u.random(len)
+  scheme = colorschemes[i]
 
-    if scheme == 'vscode' then
-        vim.g.vscode_style ='dark'
-    end
-    return scheme
+  if scheme == "vscode" then
+    vim.g.vscode_style = "dark"
+  end
+  return scheme
 end
 
-
-vim.cmd([[
+vim.cmd [[
 	let scheme = v:lua.getColorscheme()
 	execute 'colorscheme ' . scheme
-]])
-
+]]
 
 function status_encoding()
-    if vim.o.fenc ~= "" then
-        code = vim.o.fenc
-    else
-        code = vim.o.enc
-    end
-    if vim.o.bomb then
-	code = code .. ",BOM"
-    end
-    return code
+  if vim.o.fenc ~= "" then
+    code = vim.o.fenc
+  else
+    code = vim.o.enc
+  end
+  if vim.o.bomb then
+    code = code .. ",BOM"
+  end
+  return code
 end
 
 -- help statusline
 function status_line()
-    file_name = "%F "
-    git_status = "%{fugitive#statusline()}"
-    buffer_status = "[%1*%M%*%n%R%H]" -- [buffer number and buffer status]
-    -- 右对齐
-    seg = "%="
-    file_type = "%y " -- lua/go/rust
-    -- " 最右边显示文件编码和行号等信息，并且固定在一个 group 中，优先占位
-    file_encoding = "%0(%{&fileformat} [%{v:lua.status_encoding()}] %v:%l/%L%) "
-    res = file_name..git_status..buffer_status..seg..file_type..file_encoding
-    return res
+  file_name = "%F "
+  git_status = "%{fugitive#statusline()}"
+  buffer_status = "[%1*%M%*%n%R%H]" -- [buffer number and buffer status]
+  -- 右对齐
+  seg = "%="
+  file_type = "%y " -- lua/go/rust
+  -- " 最右边显示文件编码和行号等信息，并且固定在一个 group 中，优先占位
+  file_encoding = "%0(%{&fileformat} [%{v:lua.status_encoding()}] %v:%l/%L%) "
+  res = file_name .. git_status .. buffer_status .. seg .. file_type .. file_encoding
+  return res
 end
 
 vim.o.statusline = status_line()
