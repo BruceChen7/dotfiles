@@ -42,9 +42,6 @@ ls.config.set_config {
 
 -- u.map("i", "<c-u>", require "luasnip.extras.select_choice")
 
--- shorcut to source my luasnips file again, which will reload my snippets
-vim.keymap.set("n", "<leader>ll", ":source ~/.config/nvim/lua/config/lua_snip.lua<CR>")
-
 -- <c-l> is selecting within a list of options.
 vim.keymap.set("i", "<c-l>", function()
   if ls.choice_active() then

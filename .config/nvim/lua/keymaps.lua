@@ -170,3 +170,12 @@ if vim.fn.exists ":Pounce" then
   u.map("v", "s", ":Pounce<CR>")
   u.map("o", "gs", ":Pounce<CR>")
 end
+
+vim.keymap.set("n", "<leader>ll", function()
+  file = vim.fn.expand "%:p"
+  if file:find(vim.fn.expand "~/.config/nvim/", 1, true) == 1 then
+    cmd = ":source " .. file
+    vim.cmd(cmd)
+    print(cmd .. " done")
+  end
+end)

@@ -39,7 +39,12 @@ local find_root = lspconfig_util.root_pattern ".git"
 function _Tig_TOGGLE()
   local root = find_root(vim.fn.expand "%:p")
   if not root then
-    return
+  if not root then
+    -- FIXME(ming.chen): use vim.notify()
+    -- vim.notify("use working directory instead", vim.log.levels.INFO)
+    root = vim.fn.getcwd()
+  end
+    root = vim.fn.getcwd()
   end
   local tig = Terminal:new { cmd = "tig -C " .. root, hidden = true }
   tig:toggle()
@@ -49,6 +54,8 @@ end
 function _Tig_Blame()
   local root = find_root(vim.fn.expand "%:p")
   if not root then
+    -- FIXME(ming.chen): use notify instead
+    root = vim.fn.getcwd()
     return
   end
   file_name = vim.fn.expand "%:p"
@@ -78,12 +85,18 @@ function _Git_Diff_test()
     "--abbrev-ref",
     "HEAD",
   }
+
   -- TODO: when not have test branch do not diff
+  allBrach = vim.fn.system {
+    "git",
+    "branch",
+    "-a",
+  }
   require("toggleterm").exec("git diff test.." .. branch)
 end
 
 local u = require "util"
-u.map("n", "<leader>tg", ":lua _Tig_TOGGLE()<CR>")
+vim.keymap.set("n", "<leader>tg", ":lua _Tig_TOGGLE()<CR>")
 u.map("n", "<leader>tb", ":lua _Tig_Blame()<CR>")
 u.map("n", "<leader>gs", ":lua  _Git_Status()<CR>")
 u.map("n", "<leader>gdd", ":lua  _Git_Diff_Name_Only()<CR>")
