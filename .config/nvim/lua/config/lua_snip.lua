@@ -47,6 +47,7 @@ vim.keymap.set("i", "<c-l>", function()
   if ls.choice_active() then
     ls.change_choice(1)
   end
+end)
 
 -- https://github.com/L3MON4D3/LuaSnip/issues/81
 -- https://github.com/rafamadriz/friendly-snippets/blob/main/snippets/go.json

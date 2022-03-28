@@ -4,7 +4,6 @@ local fmt = nls.builtins.formatting
 
 -- register any number of sources simultaneously
 local sources = {
-  -- use gofmt
   fmt.gofmt,
   fmt.goimports,
   -- run cargo install stylua
