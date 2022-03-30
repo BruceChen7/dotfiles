@@ -179,9 +179,6 @@ return packer.startup(function()
 
   -- colorscheme
   use { "Mofiqul/vscode.nvim" }
-  -- use {'christianchiarulli/nvcode-color-schemes.vim'}
-  -- use {"bluz71/vim-moonfly-colors"}
-  -- use {"lukas-reineke/onedark.nvim" }
   use { "EdenEast/nightfox.nvim" }
 
   -- bracket, brace auto complete
@@ -244,6 +241,13 @@ return packer.startup(function()
     requires = { "nvim-lua/plenary.nvim" },
     config = function()
       require("crates").setup()
+    end,
+  }
+
+  use {
+    "j-hui/fidget.nvim",
+    config = function()
+      require("fidget").setup {}
     end,
   }
 
