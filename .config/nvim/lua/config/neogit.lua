@@ -7,6 +7,7 @@ function open_neogit()
   if not cwd then
     cwd = vim.fn.getcwd()
   end
+  print("open " .. cwd .. " repository")
   neogit.open { kind = "split_above", cwd = cwd }
 end
 
@@ -24,7 +25,7 @@ vim.cmd [[
     autocmd FileType NeogitStatus lua set_window_key_map()
 ]]
 
-vim.keymap.set("n", "<space>gg", ":lua open_neogit()<CR>")
+vim.keymap.set("n", "<space>gg", ":lua open_neogit()<CR>", { silent = true })
 neogit.setup {
   disable_signs = false,
   disable_hint = false,
@@ -78,6 +79,7 @@ neogit.setup {
       -- Adds a mapping with "B" as key that does the "BranchPopup" command
       ["B"] = "BranchPopup",
       ["="] = "Toggle",
+      ["<tab>"] = "",
     },
   },
 }
