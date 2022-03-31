@@ -172,6 +172,14 @@ if present then
   u.map("v", "s", ":Pounce<CR>")
   u.map("o", "gs", ":Pounce<CR>")
 end
+function change_colorscheme()
+  file = "~/.config/nvim/lua/style.lua"
+  cmd = ":source " .. file
+  vim.cmd(cmd)
+  print(cmd .. " done")
+end
+
+vim.keymap.set("n", "<leader>c", change_colorscheme)
 vim.keymap.set("n", "<leader>ll", function()
   file = vim.fn.expand "%:p"
   if file:find(vim.fn.expand "~/.config/nvim/", 1, true) == 1 then

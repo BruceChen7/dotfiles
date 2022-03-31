@@ -125,7 +125,7 @@ vim.cmd [[
 		return s
 	endfunc
 
-	-- set tabline=%!VimNeatTabLine()
+	" set tabline=%!VimNeatTabLine()
 ]]
 
 vim.cmd [[
@@ -169,10 +169,10 @@ augroup END
 ]]
 
 function getColorscheme()
-  local colorschemes = { "vscode", "dayfox", "dawnfox", "nordfox", "nightfox" }
+  local colorschemes = { "vscode", "nightfox", "dayfox", "nordfox", "duskfox", "terafox" }
   local u = require "util"
   local len = u.tableLength(colorschemes)
-  i = u.random(len - 1)
+  i = u.random(len)
   scheme = colorschemes[i]
 
   if scheme == "vscode" then
@@ -198,10 +198,25 @@ function status_encoding()
   return code
 end
 
+function git_branch()
+  local lspconfig_util = require "lspconfig.util"
+  local find_root = lspconfig_util.root_pattern ".git"
+  local cwd = find_root(vim.fn.expand "%:p")
+  if not cwd then
+    cwd = vim.fn.getcwd()
+  end
+  local branch = vim.fn.system { "git", "-C", cwd, "branch", "--show-current" }
+  if vim.v.shell_error ~= 0 then
+    return ""
+  end
+  branch = branch:gsub("%s+", "")
+  return branch
+end
+
 -- help statusline
 function status_line()
   file_name = "%F "
-  git_status = "%{fugitive#statusline()}"
+  git_status = "%{v:lua.git_branch()}"
   buffer_status = "[%1*%M%*%n%R%H]" -- [buffer number and buffer status]
   -- 右对齐
   seg = "%="
