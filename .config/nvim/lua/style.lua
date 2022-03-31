@@ -216,14 +216,14 @@ end
 -- help statusline
 function status_line()
   file_name = "%F "
-  git_status = "%{v:lua.git_branch()}"
+  -- git_status = "%{v:lua.git_branch()}"
   buffer_status = "[%1*%M%*%n%R%H]" -- [buffer number and buffer status]
   -- 右对齐
   seg = "%="
   file_type = "%y " -- lua/go/rust
   -- " 最右边显示文件编码和行号等信息，并且固定在一个 group 中，优先占位
   file_encoding = "%0(%{&fileformat} [%{v:lua.status_encoding()}] %v:%l/%L%) "
-  res = file_name .. git_status .. buffer_status .. seg .. file_type .. file_encoding
+  res = file_name .. buffer_status .. seg .. file_type .. file_encoding
   return res
 end
 
