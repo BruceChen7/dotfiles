@@ -7,10 +7,10 @@ diffview.setup {
     hooks = {
       diff_buf_read = function(bufnr) end,
       view_opened = function(view)
-        -- vim.keymap.set("n", "<tab>h", "<c-w>h")
-        -- vim.keymap.set("n", "<tab>j", "<c-w>j")
-        -- vim.keymap.set("n", "<tab>k", "<c-w>k")
-        -- vim.keymap.set("n", "<tab>l", "<c-w>l")
+        vim.keymap.set("n", "<tab>h", "<c-w>h")
+        vim.keymap.set("n", "<tab>j", "<c-w>j")
+        vim.keymap.set("n", "<tab>k", "<c-w>k")
+        vim.keymap.set("n", "<tab>l", "<c-w>l")
       end,
     },
 
