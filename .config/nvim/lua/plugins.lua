@@ -253,45 +253,42 @@ return packer.startup(function()
 
   --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
   -- use 't9md/vim-choosewin'
-    use {
-        'simrat39/rust-tools.nvim'
-    }
+  use {
+    "simrat39/rust-tools.nvim",
+  }
 
-    -- Lua
-    use {
-        "folke/todo-comments.nvim",
-        requires = "nvim-lua/plenary.nvim",
-        config = function()
-            require("todo-comments").setup {
+  -- Lua
+  use {
+    "folke/todo-comments.nvim",
+    requires = "nvim-lua/plenary.nvim",
+    config = function()
+      require("todo-comments").setup {}
+    end,
+  }
+  use {
+    "karb94/neoscroll.nvim",
+    config = function()
+      require "config/neoscroll"
+    end,
+  }
 
-            }
-        end
-    }
-    use {
-        'karb94/neoscroll.nvim',
-        config = function()
-            require("config/neoscroll")
-        end
-    }
+  use {
+    "saecki/crates.nvim",
+    tag = "v0.1.0",
+    requires = { "nvim-lua/plenary.nvim" },
+    config = function()
+      require("crates").setup()
+    end,
+  }
 
-    use {
-        'saecki/crates.nvim',
-        tag = 'v0.1.0',
-        requires = { 'nvim-lua/plenary.nvim' },
-        config = function()
-            require('crates').setup()
-        end,
-    }
+  --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
+  -- use 't9md/vim-choosewin'
 
-
-    --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
-    -- use 't9md/vim-choosewin'
-
-    -- use {
-    --     'nvim-telescope/telescope.nvim',
-    --     requires = { {'nvim-lua/plenary.nvim'} }
-    -- }
-    if util_packer.first_install then
-        packer.sync()
-    end
+  -- use {
+  --     'nvim-telescope/telescope.nvim',
+  --     requires = { {'nvim-lua/plenary.nvim'} }
+  -- }
+  if util_packer.first_install then
+    packer.sync()
+  end
 end)
