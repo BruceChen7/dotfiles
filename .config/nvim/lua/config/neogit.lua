@@ -79,6 +79,7 @@ neogit.setup {
       -- Adds a mapping with "B" as key that does the "BranchPopup" command
       ["B"] = "BranchPopup",
       ["="] = "Toggle",
+      -- use tod tab h to switch window
       ["<tab>"] = "",
     },
   },

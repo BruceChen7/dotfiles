@@ -35,12 +35,12 @@ return packer.startup(function()
 
   use "bronson/vim-trailing-whitespace"
 
-  use {
-    "tpope/vim-fugitive",
-    config = function()
-      require "config/fugtive"
-    end,
-  }
+  -- use {
+  --   "tpope/vim-fugitive",
+  --   config = function()
+  --     require "config/fugtive"
+  --   end,
+  -- }
 
   use {
     "lambdalisue/fern.vim",
@@ -209,9 +209,7 @@ return packer.startup(function()
 
   use {
     "pacha/vem-tabline",
-  }
-  use {
-    "ryanoasis/vim-devicons",
+    requires = "ryanoasis/vim-devicons",
   }
 
   use {
@@ -250,7 +248,10 @@ return packer.startup(function()
 
   use {
     "sindrets/diffview.nvim",
-    requires = { "nvim-lua/plenary.nvim" },
+    requires = { "nvim-lua/plenary.nvim", "kyazdani42/nvim-web-devicons", opt = true },
+    config = function()
+      require "config/diff"
+    end,
   }
   use {
     "karb94/neoscroll.nvim",
