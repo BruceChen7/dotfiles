@@ -169,10 +169,10 @@ augroup END
 ]]
 
 function getColorscheme()
-  local colorschemes = { "vscode", "nvcode" }
+  local colorschemes = { "vscode", "dayfox", "dawnfox", "nordfox", "nightfox" }
   local u = require "util"
   local len = u.tableLength(colorschemes)
-  i = u.random(len)
+  i = u.random(len - 1)
   scheme = colorschemes[i]
 
   if scheme == "vscode" then

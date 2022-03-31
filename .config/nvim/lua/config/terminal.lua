@@ -53,7 +53,6 @@ function _Tig_Blame()
   if not root then
     -- FIXME(ming.chen): use notify instead
     root = vim.fn.getcwd()
-    return
   end
   file_name = vim.fn.expand "%:p"
   if not file_name then

@@ -272,14 +272,6 @@ return packer.startup(function()
     end,
   }
 
-  use {
-    "saecki/crates.nvim",
-    tag = "v0.1.0",
-    requires = { "nvim-lua/plenary.nvim" },
-    config = function()
-      require("crates").setup()
-    end,
-  }
 
   --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
   -- use 't9md/vim-choosewin'
