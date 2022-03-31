@@ -1,10 +1,15 @@
-if vim.fn.exists ":Gclog" then
-  return
-end
 local neogit = require "neogit"
-local u = require "util"
-u.map("n", "<space>gg", ":Neogit <CR>")
+local lspconfig_util = require "lspconfig.util"
+local find_root = lspconfig_util.root_pattern ".git"
 
+function open_neogit()
+  local cwd = find_root(vim.fn.expand "%:p")
+  if not cwd then
+    cwd = vim.fn.getcwd()
+  end
+  neogit.open { kind = "split_above", cwd = cwd }
+end
+vim.keymap.set("n", "<space>gg", ":lua open_neogit()<CR>")
 neogit.setup {
   disable_signs = false,
   disable_hint = false,
@@ -25,19 +30,7 @@ neogit.setup {
     hunk = { "", "" },
   },
   integrations = {
-    -- Neogit only provides inline diffs. If you want a more traditional way to look at diffs, you can use `sindrets/diffview.nvim`.
-    -- The diffview integration enables the diff popup, which is a wrapper around `sindrets/diffview.nvim`.
-    --
-    -- Requires you to have `sindrets/diffview.nvim` installed.
-    -- use {
-    --   'TimUntersberger/neogit',
-    --   requires = {
-    --     'nvim-lua/plenary.nvim',
-    --     'sindrets/diffview.nvim'
-    --   }
-    -- }
-    --
-    diffview = false,
+    diffview = true,
   },
   -- Setting any section to `false` will make the section not render at all
   sections = {
@@ -69,6 +62,7 @@ neogit.setup {
     status = {
       -- Adds a mapping with "B" as key that does the "BranchPopup" command
       ["B"] = "BranchPopup",
+      ["="] = "Toggle",
     },
   },
 }

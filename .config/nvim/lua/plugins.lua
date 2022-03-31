@@ -180,6 +180,12 @@ return packer.startup(function()
   -- colorscheme
   use { "Mofiqul/vscode.nvim" }
   use { "EdenEast/nightfox.nvim" }
+  use {
+    "daschw/leaf.nvim",
+    config = function()
+      require("leaf").setup { theme = "dark" }
+    end,
+  }
 
   -- bracket, brace auto complete
   use {
@@ -219,22 +225,6 @@ return packer.startup(function()
   use {
     "rlane/pounce.nvim",
   }
-
-  -- Lua
-  -- use {
-  --   "folke/todo-comments.nvim",
-  --   requires = "nvim-lua/plenary.nvim",
-  --   config = function()
-  --     require("todo-comments").setup {}
-  --   end,
-  -- }
-  use {
-    "karb94/neoscroll.nvim",
-    config = function()
-      require "config/neoscroll"
-    end,
-  }
-
   use {
     "saecki/crates.nvim",
     tag = "v0.1.0",
@@ -257,13 +247,10 @@ return packer.startup(function()
     "simrat39/rust-tools.nvim",
   }
 
-  -- Lua
+
   use {
-    "folke/todo-comments.nvim",
-    requires = "nvim-lua/plenary.nvim",
-    config = function()
-      require("todo-comments").setup {}
-    end,
+    "sindrets/diffview.nvim",
+    requires = { "nvim-lua/plenary.nvim" },
   }
   use {
     "karb94/neoscroll.nvim",
