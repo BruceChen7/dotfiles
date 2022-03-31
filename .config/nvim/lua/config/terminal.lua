@@ -82,7 +82,7 @@ function _Git_Diff_test()
     "HEAD",
   }
 
-  -- TODO: when not have test branch do not diff
+  -- TODO(ming.chen): get current branch name
   allBrach = vim.fn.system {
     "git",
     "branch",

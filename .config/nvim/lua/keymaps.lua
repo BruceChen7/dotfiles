@@ -68,10 +68,10 @@ vim.g.asyncrun_bell = 1
 vim.keymap.set("n", "g1", ":AsyncTask grep-cword<CR>")
 vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>")
 -- quickfix 手动打开
-u.map("n", "<space>q", ":call asyncrun#quickfix_toggle(10)<cr>")
+u.map("n", "<space>q", ":call asyncrun#quickfix_toggle(20)<cr>")
 
 -- tab keymap
-u.map("n", "<m-1>", ":tabn 1<cr>")
+vim.keymap.set("n", "<m-1>", ":tabn 1<cr>")
 u.map("n", "<m-2>", ":tabn 2<cr>")
 u.map("n", "<m-3>", ":tabn 3<cr>")
 u.map("n", "<m-4>", ":tabn 4<cr>")
@@ -165,13 +165,13 @@ if vim.fn.exists ":VemTablineGo" then
   u.map("n", "Q", ":lua quitWindow()<cr>")
 end
 
-if vim.fn.exists ":Pounce" then
+local present, pounce = pcall(require, "pounce")
+if present then
   u.map("n", "s", ":Pounce<CR>")
   u.map("n", "S", ":PounceRepeat<CR>")
   u.map("v", "s", ":Pounce<CR>")
   u.map("o", "gs", ":Pounce<CR>")
 end
-
 vim.keymap.set("n", "<leader>ll", function()
   file = vim.fn.expand "%:p"
   if file:find(vim.fn.expand "~/.config/nvim/", 1, true) == 1 then
