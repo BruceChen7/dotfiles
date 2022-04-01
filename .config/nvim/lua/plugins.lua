@@ -245,7 +245,6 @@ return packer.startup(function()
     "simrat39/rust-tools.nvim",
   }
 
-
   use {
     "sindrets/diffview.nvim",
     requires = { "nvim-lua/plenary.nvim", "kyazdani42/nvim-web-devicons", opt = true },

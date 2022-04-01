@@ -198,25 +198,46 @@ function status_encoding()
   return code
 end
 
-function git_branch()
+function git_branch_name(bufnr, windid)
+  local cache_util = require "util.cache_util"
   local lspconfig_util = require "lspconfig.util"
-  local find_root = lspconfig_util.root_pattern ".git"
-  local cwd = find_root(vim.fn.expand "%:p")
-  if not cwd then
-    cwd = vim.fn.getcwd()
+
+  local find_root = function(cache_key)
+    local find_root_func = lspconfig_util.root_pattern ".git"
+    local cwd = find_root_func(vim.fn.expand "%:p")
+    if cwd == nil then
+      cache_util.set_cache(cache_key, cwd)
+    end
+    return cwd, 0
   end
-  local branch = vim.fn.system { "git", "-C", cwd, "branch", "--show-current" }
-  if vim.v.shell_error ~= 0 then
-    return ""
+
+  local branch_name = function(cache_key)
+    local key = vim.fn.getcwd() .. "_" .. vim.fn.expand "%:p" .. "_root"
+    root = cache_util.cache_on_buffer("statusline", key, find_root)
+    if not root then
+      cache_util.set_cache(cache_key, "")
+      return ""
+    end
+
+    local name = vim.fn.system { "git", "-C", root, "branch", "--show-current" }
+    if vim.v.shell_error ~= 0 then
+      cache_util.set_cache(cache_key, "")
+      return "", -1
+    end
+    name = name:gsub("%s+", "")
+    cache_util.set_cache(cache_key, name)
+    return name, 0
   end
-  branch = branch:gsub("%s+", "")
-  return branch
+
+  local branch_key = vim.fn.getcwd() .. "_" .. vim.fn.expand "%:p" .. "_branch"
+  local name_str = cache_util.cache_on_buffer("statusline", branch_key, branch_name)
+  return name_str
 end
 
 -- help statusline
 function status_line()
   file_name = "%F "
-  -- git_status = "%{v:lua.git_branch()}"
+  git_status = "%{v:lua.git_branch_name()}"
   buffer_status = "[%1*%M%*%n%R%H]" -- [buffer number and buffer status]
   -- 右对齐
   seg = "%="

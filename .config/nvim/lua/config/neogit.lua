@@ -10,6 +10,7 @@ function open_neogit()
   print("open " .. cwd .. " repository")
   neogit.open { kind = "split_above", cwd = cwd }
 end
+vim.keymap.set("n", "<space>gg", ":lua open_neogit()<CR>")
 
 function set_window_key_map()
   if vim.o.filetype == "DiffviewFiles" or vim.o.filetype == "NeogitStatus" then
@@ -34,10 +35,10 @@ neogit.setup {
   auto_refresh = true,
   disable_builtin_notifications = false,
   commit_popup = {
-    kind = "split",
+    kind = "split_above",
   },
   -- Change the default way of opening neogit
-  kind = "tab",
+  kind = "split_above",
   -- customize displayed signs
   signs = {
     -- { CLOSED, OPENED }
