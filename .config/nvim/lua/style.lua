@@ -205,9 +205,6 @@ function git_branch_name(bufnr, windid)
   local find_root = function(cache_key)
     local find_root_func = lspconfig_util.root_pattern ".git"
     local cwd = find_root_func(vim.fn.expand "%:p")
-    if cwd == nil then
-      cache_util.set_cache(cache_key, cwd)
-    end
     return cwd, 0
   end
 
@@ -215,14 +212,12 @@ function git_branch_name(bufnr, windid)
     local key = vim.fn.getcwd() .. "_" .. vim.fn.expand "%:p" .. "_root"
     root = cache_util.cache_on_buffer("statusline", key, find_root)
     if not root then
-      cache_util.set_cache(cache_key, "")
-      return ""
+      return "", 0
     end
 
     local name = vim.fn.system { "git", "-C", root, "branch", "--show-current" }
     if vim.v.shell_error ~= 0 then
-      cache_util.set_cache(cache_key, "")
-      return "", -1
+      return "", 0
     end
     name = name:gsub("%s+", "")
     cache_util.set_cache(cache_key, name)
@@ -238,13 +233,14 @@ end
 function status_line()
   file_name = "%F "
   git_status = "%{v:lua.git_branch_name()}"
+
   buffer_status = "[%1*%M%*%n%R%H]" -- [buffer number and buffer status]
   -- 右对齐
   seg = "%="
   file_type = "%y " -- lua/go/rust
   -- " 最右边显示文件编码和行号等信息，并且固定在一个 group 中，优先占位
   file_encoding = "%0(%{&fileformat} [%{v:lua.status_encoding()}] %v:%l/%L%) "
-  res = file_name .. buffer_status .. seg .. file_type .. file_encoding
+  res = file_name .. git_status.. buffer_status .. seg .. file_type .. file_encoding
   return res
 end
 
