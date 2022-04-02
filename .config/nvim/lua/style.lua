@@ -220,7 +220,6 @@ function git_branch_name(bufnr, windid)
       return "", 0
     end
     name = name:gsub("%s+", "")
-    cache_util.set_cache(cache_key, name)
     return name, 0
   end
 
@@ -240,7 +239,7 @@ function status_line()
   file_type = "%y " -- lua/go/rust
   -- " 最右边显示文件编码和行号等信息，并且固定在一个 group 中，优先占位
   file_encoding = "%0(%{&fileformat} [%{v:lua.status_encoding()}] %v:%l/%L%) "
-  res = file_name .. git_status.. buffer_status .. seg .. file_type .. file_encoding
+  res = file_name .. git_status .. buffer_status .. seg .. file_type .. file_encoding
   return res
 end
 
