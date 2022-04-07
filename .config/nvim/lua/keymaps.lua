@@ -109,7 +109,7 @@ u.map("n", "\\0", ":tabn 10<cr>")
 
 function quitWindow()
   local buf_total_num = vim.fn.len(vim.fn.getbufinfo { buflisted = 1 })
-  if buf_total_num ~= 1 then
+  local buf_name = vim.fn.bufname()
   if buf_name:find "^diffview" then
     vim.api.nvim_command "DiffviewClose"
     vim.api.nvim_command "VemTablineDelete"
@@ -176,6 +176,7 @@ if present then
   u.map("v", "s", ":Pounce<CR>")
   u.map("o", "gs", ":Pounce<CR>")
 end
+
 function change_colorscheme()
   file = "~/.config/nvim/lua/style.lua"
   cmd = ":source " .. file
