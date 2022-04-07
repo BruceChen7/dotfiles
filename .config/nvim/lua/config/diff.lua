@@ -56,3 +56,5 @@ diffview.setup {
     },
   },
 }
+-- open file change list
+vim.keymap.set("n", ",df", ":DiffviewOpen<CR>")

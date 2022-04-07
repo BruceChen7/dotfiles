@@ -110,6 +110,10 @@ u.map("n", "\\0", ":tabn 10<cr>")
 function quitWindow()
   local buf_total_num = vim.fn.len(vim.fn.getbufinfo { buflisted = 1 })
   if buf_total_num ~= 1 then
+  if buf_name:find "^diffview" then
+    vim.api.nvim_command "DiffviewClose"
+    vim.api.nvim_command "VemTablineDelete"
+  elseif buf_total_num ~= 1 then
     vim.api.nvim_command "VemTablineDelete"
   else
     vim.api.nvim_command "quit!"
