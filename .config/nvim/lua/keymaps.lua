@@ -184,7 +184,7 @@ function change_colorscheme()
   print(cmd .. " done")
 end
 
-vim.keymap.set("n", "<leader>c", change_colorscheme)
+vim.keymap.set("n", "g3", change_colorscheme)
 vim.keymap.set("n", "<leader>ll", function()
   file = vim.fn.expand "%:p"
   if file:find(vim.fn.expand "~/.config/nvim/", 1, true) == 1 then

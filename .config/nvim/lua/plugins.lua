@@ -94,12 +94,6 @@ return packer.startup(function()
   }
   use "antoinemadec/FixCursorHold.nvim"
 
-  -- use {
-  --     'mhinz/vim-signify',
-  --     config = function()
-  --         require 'config/signify'
-  --     end
-  -- }
 
   use {
     "lewis6991/gitsigns.nvim",
@@ -241,6 +235,7 @@ return packer.startup(function()
 
   --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
   -- use 't9md/vim-choosewin'
+
   use {
     "simrat39/rust-tools.nvim",
   }
@@ -252,6 +247,7 @@ return packer.startup(function()
       require "config/diff"
     end,
   }
+
   use {
     "karb94/neoscroll.nvim",
     config = function()

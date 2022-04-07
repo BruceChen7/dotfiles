@@ -89,6 +89,3 @@ o.wildignore = [[
 	*.swp,.lock,.DS_Store,._*
 	*/tmp/*,*.so,*.swp,*.zip,**/node_modules/**,**/target/**,**.terraform/**"
 ]]
-
-local cmd = vim.api.nvim_command
-cmd "filetype plugin indent on"
