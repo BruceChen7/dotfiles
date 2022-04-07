@@ -4,20 +4,10 @@ local cb = require("diffview.config").diffview_callback
 diffview.setup {
   key_bindings = {
     disable_defaults = true,
-    hooks = {
-      diff_buf_read = function(bufnr) end,
-      view_opened = function(view)
-        vim.keymap.set("n", "<tab>h", "<c-w>h")
-        vim.keymap.set("n", "<tab>j", "<c-w>j")
-        vim.keymap.set("n", "<tab>k", "<c-w>k")
-        vim.keymap.set("n", "<tab>l", "<c-w>l")
-      end,
-    },
-
     view = {
       ["n"] = cb "select_next_entry", -- Open the diff for the next file
       ["p"] = cb "select_prev_entry", -- Open the diff for the previous file
-      ["<tab>l"] = cb "focus_entry",
+      -- ["<tab>l"] = cb "focus_entry",
       ["<tab>"] = "",
       ["<s-tab>"] = "",
       -- ["gf"] = cb "goto_file", -- Open the file in a new split in previous tabpage
@@ -28,7 +18,7 @@ diffview.setup {
     },
     file_panel = {
       ["n"] = cb "select_next_entry",
-      ["<tab>l"] = cb "focus_entry",
+      -- ["<tab>l"] = cb "focus_entry",
       ["p"] = cb "select_prev_entry",
       ["<cr>"] = cb "select_entry",
       ["<up>"] = cb "prev_entry",
@@ -49,6 +39,27 @@ diffview.setup {
       ["<leader>b"] = cb "toggle_files",
       ["<tab>"] = "",
       ["<s-tab>"] = "",
+    },
+    file_history_panel = {
+      ["g!"] = cb "options", -- Open the option panel
+      ["<C-A-d>"] = cb "open_in_diffview", -- Open the entry under the cursor in a diffview
+      ["y"] = cb "copy_hash", -- Copy the commit hash of the entry under the cursor
+      ["zR"] = cb "open_all_folds",
+      ["zM"] = cb "close_all_folds",
+      ["j"] = cb "next_entry",
+      ["<down>"] = cb "next_entry",
+      ["k"] = cb "prev_entry",
+      ["<up>"] = cb "prev_entry",
+      ["<cr>"] = cb "select_entry",
+      ["o"] = cb "select_entry",
+      ["<2-LeftMouse>"] = cb "select_entry",
+      ["n"] = cb "select_next_entry",
+      ["p"] = cb "select_prev_entry",
+      ["gf"] = cb "goto_file",
+      ["<C-w><C-f>"] = cb "goto_file_split",
+      ["<C-w>gf"] = cb "goto_file_tab",
+      ["<leader>e"] = cb "focus_files",
+      ["<leader>b"] = cb "toggle_files",
     },
     option_panel = {
       ["n"] = cb "select",
