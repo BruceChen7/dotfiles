@@ -172,7 +172,6 @@ return packer.startup(function()
   }
 
   -- colorscheme
-  use { "Mofiqul/vscode.nvim" }
   use { "EdenEast/nightfox.nvim" }
   use {
     "daschw/leaf.nvim",
@@ -204,6 +203,9 @@ return packer.startup(function()
   use {
     "pacha/vem-tabline",
     requires = "ryanoasis/vim-devicons",
+    config = function()
+      require "config/tabline"
+    end,
   }
 
   use {
@@ -226,6 +228,7 @@ return packer.startup(function()
     end,
   }
 
+  -- used to show lsp init progress
   use {
     "j-hui/fidget.nvim",
     config = function()
