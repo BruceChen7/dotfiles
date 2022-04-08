@@ -11,9 +11,6 @@ lspkind.init()
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
-  local function buf_set_keymap(...)
-    vim.api.nvim_buf_set_keymap(bufnr, ...)
-  end
   local function buf_set_option(...)
     vim.api.nvim_buf_set_option(bufnr, ...)
   end
@@ -38,10 +35,10 @@ local on_attach = function(client, bufnr)
   u.map("n", "<space>rn", "<cmd>lua vim.lsp.buf.rename()<CR>", opts)
   u.map("n", "<space>ca", "<cmd>lua vim.lsp.buf.code_action()<CR>", opts)
   u.map("n", "gr", "<cmd>lua vim.lsp.buf.references()<CR>", opts)
-  u.map("n", "<space>e", "<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>", opts)
-  u.map("n", "[d", "<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>", opts)
-  u.map("n", "]d", "<cmd>lua vim.lsp.diagnostic.goto_next()<CR>", opts)
-  u.map("n", "<space>d", "<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>", opts)
+  u.map("n", "<space>e", "<cmd>lua vim.diagnostic.show_line_diagnostics()<CR>", opts)
+  u.map("n", "[d", "<cmd>lua vim.diagnostic.goto_prev()<CR>", opts)
+  u.map("n", "]d", "<cmd>lua vim.diagnostic.goto_next()<CR>", opts)
+  u.map("n", "<space>d", "<cmd>lua vim.diagnostic.set_loclist()<CR>", opts)
   u.map("n", "<space>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
   u.map("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
   u.map("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", opts)
@@ -58,7 +55,8 @@ end
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
 local capabilities = vim.lsp.protocol.make_client_capabilities()
-local servers = { "pyright", "gopls", "clangd", "rust_analyzer", "zls" }
+-- local servers = { "pyright", "gopls", "clangd", "rust_analyzer", "zls" }
+local servers = { "pyright", "gopls", "clangd", "zls" }
 capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
 capabilities.textDocument.completion.completionItem.snippetSupport = true
 
@@ -85,10 +83,84 @@ for _, lsp in ipairs(servers) do
   }
 end
 
+-- use rust-tools to
+require("rust-tools").setup {
+  tools = {
+    autoSetHints = true,
+    hover_with_actions = true,
+    inlay_hints = {
+      only_current_line = false,
+      show_parameter_hints = true,
+      parameter_hints_prefix = "",
+      other_hints_prefix = "",
+    },
+    hover_actions = {
+      auto_focus = true,
+    },
+  },
+  server = {
+    on_attach = on_attach,
+    capabilities = capabilities,
+    standalone = false,
+    -- cmd = rust_server:get_default_options().cmd,
+    settings = {
+      ["rust-analyzer"] = {
+        assist = {
+          importPrefix = "by_self",
+        },
+        diagnostics = {
+          -- https://github.com/rust-analyzer/rust-analyzer/issues/6835
+          disabled = { "unresolved-macro-call" },
+          enableExperimental = true,
+        },
+        completion = {
+          autoimport = {
+            enable = true,
+          },
+          postfix = {
+            enable = true,
+          },
+        },
+        cargo = {
+          loadOutDirsFromCheck = true,
+          autoreload = true,
+          runBuildScripts = true,
+        },
+        procMacro = {
+          enable = true,
+        },
+        lens = {
+          enable = true,
+          run = true,
+          methodReferences = true,
+          implementations = true,
+        },
+        hoverActions = {
+          enable = true,
+        },
+        inlayHints = {
+          chainingHintsSeparator = "‣ ",
+          typeHintsSeparator = "‣ ",
+          typeHints = true,
+        },
+        checkOnSave = {
+          enable = true,
+          -- https://github.com/rust-analyzer/rust-analyzer/issues/9768
+          -- command = 'clippy',
+          allFeatures = true,
+        },
+      },
+    },
+  },
+}
 -- luasnip setup
 local luasnip = require "luasnip"
 
 -- Set completeopt to have a better completion experience
+-- " :help completeopt
+-- " menuone: popup even when there's only one match
+-- " noinsert: Do not insert text until a selection is made
+-- " noselect: Do not select, force user to select one from the menu
 vim.o.completeopt = "menuone,noselect"
 
 -- nvim-cmp setup
@@ -205,6 +277,7 @@ cmp.setup {
 local cmp_autopairs = require "nvim-autopairs.completion.cmp"
 cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done { map_char = { tex = "" } })
 
+-- https://github.com/jose-elias-alvarez/null-ls.nvim/wiki/Avoiding-LSP-formatting-conflictsclient
 vim.cmd [[
 augroup FormatGroup
     au!
@@ -213,5 +286,21 @@ augroup FormatGroup
     autocmd BufWritePre *.rs lua vim.lsp.buf.formatting_seq_sync()
     autocmd BufWritePre *.zig lua vim.lsp.buf.formatting_seq_sync()
     autocmd BufWritePre *.lua lua vim.lsp.buf.formatting_seq_sync()
+augroup END
+]]
+
+-- https://github.com/sharksforarms/neovim-rust/blob/master/neovim-init-lsp.vim
+function inlay_hints()
+  require("lsp_extensions").inlay_hints {
+    prefix = "",
+    highlight = "Comment",
+    enabled = { "TypeHint", "ChainingHint", "ParameterHint" },
+  }
+end
+
+vim.cmd [[
+augroup TypeHintsGroup
+    au!
+    autocmd CursorMoved,InsertLeave,BufEnter,BufWinEnter,TabEnter,BufWritePost *.rs lua inlay_hints()
 augroup END
 ]]
