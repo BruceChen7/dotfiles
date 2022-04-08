@@ -35,10 +35,10 @@ local on_attach = function(client, bufnr)
   u.map("n", "<space>rn", "<cmd>lua vim.lsp.buf.rename()<CR>", opts)
   u.map("n", "<space>ca", "<cmd>lua vim.lsp.buf.code_action()<CR>", opts)
   u.map("n", "gr", "<cmd>lua vim.lsp.buf.references()<CR>", opts)
-  u.map("n", "<space>e", "<cmd>lua vim.diagnostic.show_line_diagnostics()<CR>", opts)
+  u.map("n", "<space>e", "<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>", opts)
   u.map("n", "[d", "<cmd>lua vim.diagnostic.goto_prev()<CR>", opts)
   u.map("n", "]d", "<cmd>lua vim.diagnostic.goto_next()<CR>", opts)
-  u.map("n", "<space>d", "<cmd>lua vim.diagnostic.set_loclist()<CR>", opts)
+  u.map("n", "<space>d", "<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>", opts)
   u.map("n", "<space>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
   u.map("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
   u.map("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", opts)
@@ -90,12 +90,16 @@ require("rust-tools").setup {
     hover_with_actions = true,
     inlay_hints = {
       only_current_line = false,
+      only_current_line_autocmd = "CursorHold",
       show_parameter_hints = true,
-      parameter_hints_prefix = "",
-      other_hints_prefix = "",
+      parameter_hints_prefix = "<- ",
+      -- prefix for all the other hints (type, chaining)
+      -- default: "=>"
+      other_hints_prefix = "=> ",
+      highlight = "Comment",
     },
     hover_actions = {
-      auto_focus = true,
+      auto_focus = false,
     },
   },
   server = {

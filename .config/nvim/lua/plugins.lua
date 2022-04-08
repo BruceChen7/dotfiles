@@ -94,7 +94,6 @@ return packer.startup(function()
   }
   use "antoinemadec/FixCursorHold.nvim"
 
-
   use {
     "lewis6991/gitsigns.nvim",
     requires = {
@@ -219,6 +218,10 @@ return packer.startup(function()
   use {
     "rlane/pounce.nvim",
   }
+
+  use {
+    "nvim-lua/lsp_extensions.nvim",
+  }
   use {
     "saecki/crates.nvim",
     tag = "v0.1.0",
@@ -257,7 +260,6 @@ return packer.startup(function()
       require "config/neoscroll"
     end,
   }
-
 
   --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
   -- use 't9md/vim-choosewin'
