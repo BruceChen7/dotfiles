@@ -93,3 +93,27 @@ neogit.setup {
     },
   },
 }
+
+set_tabkey_for_neogit = 0
+function not_use_tab_key_map()
+  if set_tabkey_for_neogit == 1 then
+    return
+  end
+  status = require "neogit.status"
+  if status == nil or status.commit_view == nil or not status.commit_view.buffer then
+    return
+  end
+  local commit_view = status.commit_view
+  -- dump(status.commit_view)
+  local mappings = commit_view.buffer.mmanager.mappings["<tab>"]
+  if mappings == nil then
+    commit_view.buffer.mmanager.register()
+    return
+  end
+  local opts = { noremap = true }
+  vim.api.nvim_buf_set_keymap(0, "n", "<tab>", "<Nop>", opts)
+  commit_view.buffer.mmanager.mappings["="] = mappings
+  commit_view.buffer.mmanager.mappings["<tab>"] = nil
+  commit_view.buffer.mmanager.register()
+  set_tabkey_for_neogit = 1
+end
