@@ -31,8 +31,8 @@ end
 -- end
 
 vim.cmd [[
-    autocmd FileType DiffviewFiles lua set_window_key_map()
     autocmd FileType NeogitStatus lua set_window_key_map()
+    autocmd CursorMoved NeogitCommitView lua not_use_tab_key_map()
 ]]
 
 neogit.setup {

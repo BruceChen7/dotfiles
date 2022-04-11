@@ -2,8 +2,30 @@ local diffview = require "diffview"
 local cb = require("diffview.config").diffview_callback
 
 diffview.setup {
+  hooks = {
+    diff_buf_read = function(bufnr)
+      vim.api.nvim_buf_del_keymap(bufnr, "n", "<tab>")
+      local opts = { noremap = true }
+      vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>l", "<c-w>l", opts)
+      vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>j", "<c-w>j", opts)
+      vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>k", "<c-w>k", opts)
+      vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>h", "<c-w>h", opts)
+    end,
+    view_opened = function(view)
+      -- dump(view)
+      bufnr = view.panel.bufid
+      print(bufnr)
+      vim.api.nvim_buf_del_keymap(bufnr, "n", "<tab>")
+      local opts = { noremap = true }
+      vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>l", "<c-w>l", opts)
+      vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>j", "<c-w>j", opts)
+      vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>k", "<c-w>k", opts)
+      vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>h", "<c-w>h", opts)
+    end,
+  },
   key_bindings = {
     disable_defaults = true,
+
     view = {
       ["n"] = cb "select_next_entry", -- Open the diff for the next file
       ["p"] = cb "select_prev_entry", -- Open the diff for the previous file
@@ -39,6 +61,7 @@ diffview.setup {
       ["<leader>b"] = cb "toggle_files",
       ["<tab>"] = "",
       ["<s-tab>"] = "",
+      ["q"] = cb "close",
     },
     file_history_panel = {
       ["g!"] = cb "options", -- Open the option panel
