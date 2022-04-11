@@ -33,14 +33,6 @@ return packer.startup(function()
 
   use "nathom/filetype.nvim"
 
-  use "bronson/vim-trailing-whitespace"
-
-  -- use {
-  --   "tpope/vim-fugitive",
-  --   config = function()
-  --     require "config/fugtive"
-  --   end,
-  -- }
 
   use {
     "lambdalisue/fern.vim",
@@ -255,6 +247,17 @@ return packer.startup(function()
   }
 
   use {
+    "haringsrob/nvim_context_vt",
+  }
+
+  use {
+    "lewis6991/spellsitter.nvim",
+    config = function()
+      require("spellsitter").setup()
+    end,
+  }
+
+  use {
     "karb94/neoscroll.nvim",
     config = function()
       require "config/neoscroll"
@@ -264,10 +267,10 @@ return packer.startup(function()
   --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
   -- use 't9md/vim-choosewin'
 
-  -- use {
-  --     'nvim-telescope/telescope.nvim',
-  --     requires = { {'nvim-lua/plenary.nvim'} }
-  -- }
+  use {
+      'nvim-telescope/telescope.nvim',
+      requires = { {'nvim-lua/plenary.nvim'} }
+  }
   if util_packer.first_install then
     packer.sync()
   end
