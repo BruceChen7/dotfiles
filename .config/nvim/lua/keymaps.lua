@@ -9,14 +9,14 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 -- 窗口快捷键映射
-u.map("n", "<c-h>", "<c-w>h")
-u.map("n", "<c-l>", "<c-w>l")
-u.map("n", "<c-j>", "<c-w>j")
-u.map("n", "<c-k>", "<c-w>k")
--- u.map("n", "<tab>h", "<c-w>h")
--- u.map("n", "<tab>l", "<c-w>l")
--- u.map("n", "<tab>j", "<c-w>j")
--- u.map("n", "<tab>k", "<c-w>k")
+-- u.map("n", "<c-h>", "<c-w>h")
+-- u.map("n", "<c-l>", "<c-w>l")
+-- u.map("n", "<c-j>", "<c-w>j")
+-- u.map("n", "<c-k>", "<c-w>k")
+u.map("n", "<tab>h", "<c-w>h")
+u.map("n", "<tab>l", "<c-w>l")
+u.map("n", "<tab>j", "<c-w>j")
+u.map("n", "<tab>k", "<c-w>k")
 
 -- 编辑模式
 u.map("i", "<c-a>", "<home>")
