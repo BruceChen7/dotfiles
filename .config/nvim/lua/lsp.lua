@@ -305,6 +305,6 @@ end
 vim.cmd [[
 augroup TypeHintsGroup
     au!
-    autocmd CursorMoved,InsertLeave,BufEnter,BufWinEnter,TabEnter,BufWritePost *.rs lua inlay_hints()
+    autocmd CursorHold, InsertLeave, BufEnter,BufWinEnter,TabEnter,BufWritePost *.rs lua inlay_hints()
 augroup END
 ]]
