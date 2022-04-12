@@ -22,7 +22,6 @@ function set_window_key_map()
 end
 
 vim.cmd [[
-    autocmd FileType NeogitStatus lua set_window_key_map()
     autocmd CursorMoved NeogitCommitView lua not_use_tab_key_map()
 ]]
 
