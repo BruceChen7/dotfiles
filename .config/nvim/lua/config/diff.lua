@@ -14,7 +14,7 @@ diffview.setup {
     view_opened = function(view)
       -- dump(view)
       bufnr = view.panel.bufid
-      print(bufnr)
+      -- print(bufnr)
       vim.api.nvim_buf_del_keymap(bufnr, "n", "<tab>")
       local opts = { noremap = true }
       vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>l", "<c-w>l", opts)

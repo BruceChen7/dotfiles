@@ -13,22 +13,13 @@ end
 vim.keymap.set("n", "<space>gg", ":lua open_neogit()<CR>", { silent = true })
 
 function set_window_key_map()
-  if vim.o.filetype == "NeogitCommitView" or vim.o.filetype == "NeogitStatus" then
+  if vim.o.filetype == "NeogitStatus" then
     vim.keymap.set("n", "<tab>h", "<c-w>h")
     vim.keymap.set("n", "<tab>j>", "<c-w>j")
     vim.keymap.set("n", "<tab>k", "<c-w>k")
     vim.keymap.set("n", "<tab>l", "<c-w>l")
   end
 end
-
--- function set_commit_view_window()
---   if vim.o.filetype == "NeogitCommitView" or vim.o.filetype == "NeogitStatus" then
---     vim.keymap.set("n", "<c-h", "<c-w>h")
---     vim.keymap.set("n", "<c-j>", "<c-w>j")
---     vim.keymap.set("n", "<c-k>", "<c-w>k")
---     vim.keymap.set("n", "<c-l>", "<c-w>l")
---   end
--- end
 
 vim.cmd [[
     autocmd FileType NeogitStatus lua set_window_key_map()
