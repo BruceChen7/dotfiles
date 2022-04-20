@@ -88,7 +88,9 @@ key_bindings:
   - { key: Grave,      mods: Alt|Shift,         chars: "\x1b~"    }
 font:
   normal:
-    family: Iosevka Nerd Font
+    # family: Iosevka Nerd Font
+    # family: iosevka
+    family: JetBrainsMono Nerd Font
     style: normal
   size: 15
 
