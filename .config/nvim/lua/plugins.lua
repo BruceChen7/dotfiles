@@ -247,12 +247,13 @@ return packer.startup(function()
     end,
   }
 
-  use {
-    "gelguy/wilder.nvim",
-    config = function()
-      require "config/wilder"
-    end,
-  }
+  -- not used because of performance
+  -- use {
+  --   "gelguy/wilder.nvim",
+  --   config = function()
+  --     require "config/wilder"
+  --   end,
+  -- }
 
   -- use {
   --   "haringsrob/nvim_context_vt",
