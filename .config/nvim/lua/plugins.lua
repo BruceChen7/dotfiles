@@ -31,8 +31,9 @@ return packer.startup(function()
     end,
   }
 
+  -- performance
+  use "antoinemadec/FixCursorHold.nvim"
   use "nathom/filetype.nvim"
-
 
   use {
     "lambdalisue/fern.vim",
@@ -84,7 +85,6 @@ return packer.startup(function()
       require "config/lua_snip"
     end,
   }
-  use "antoinemadec/FixCursorHold.nvim"
 
   use {
     "lewis6991/gitsigns.nvim",
@@ -160,6 +160,7 @@ return packer.startup(function()
     config = function()
       require "config/terminal"
     end,
+    branch = "main",
   }
 
   -- colorscheme
@@ -247,8 +248,15 @@ return packer.startup(function()
   }
 
   use {
-    "haringsrob/nvim_context_vt",
+    "gelguy/wilder.nvim",
+    config = function()
+      require "config/wilder"
+    end,
   }
+
+  -- use {
+  --   "haringsrob/nvim_context_vt",
+  -- }
 
   use {
     "lewis6991/spellsitter.nvim",
@@ -268,8 +276,8 @@ return packer.startup(function()
   -- use 't9md/vim-choosewin'
 
   use {
-      'nvim-telescope/telescope.nvim',
-      requires = { {'nvim-lua/plenary.nvim'} }
+    "nvim-telescope/telescope.nvim",
+    requires = { { "nvim-lua/plenary.nvim" } },
   }
   if util_packer.first_install then
     packer.sync()
