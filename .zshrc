@@ -231,3 +231,9 @@ fi
 eval "$(lua /usr/local/bin/z.lua  --init zsh once enhanced)"    # ZSH 初始化
 export VISUAL=vim;
 export EDITOR=vim;
+
+# not use default c-r or up key bindings
+export ATUIN_NOBIND="true"
+eval "$(atuin init zsh)"
+
+bindkey '^r' _atuin_search_widget
