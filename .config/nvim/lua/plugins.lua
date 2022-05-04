@@ -31,9 +31,8 @@ return packer.startup(function()
     end,
   }
 
-  -- performance
   use "antoinemadec/FixCursorHold.nvim"
-  use "nathom/filetype.nvim"
+  -- use "nathom/filetype.nvim"
 
   use {
     "lambdalisue/fern.vim",
@@ -68,7 +67,6 @@ return packer.startup(function()
   use "neovim/nvim-lspconfig"
   -- adds vscode-like pictograms to neovim built-in lsp
   use "onsails/lspkind-nvim"
-  use "hrsh7th/nvim-cmp" -- Autocompletion plugin
 
   use "hrsh7th/cmp-nvim-lsp" -- LSP source for nvim-cmp
   use "hrsh7th/cmp-cmdline"
@@ -84,6 +82,14 @@ return packer.startup(function()
     config = function()
       require "config/lua_snip"
     end,
+  }
+
+  use { "saadparwaiz1/cmp_luasnip" }
+
+  -- used to avoid leaderf conflict
+  use {
+    "hrsh7th/nvim-cmp", -- Autocompletion plugin
+    commit = "bba6fb67fdafc0af7c5454058dfbabc2182741f4",
   }
 
   use {

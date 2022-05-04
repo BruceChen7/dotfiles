@@ -15,8 +15,7 @@ o.ttimeout = true
 o.ttimeoutlen = 50
 o.tags = [[ ./.tags;,.tags ]]
 
--- global line status
-o.laststatus = 3
+
 
 -- 智能搜索大小写判断，默认忽略大小写，除非搜索内容包含大写字母
 o.ignorecase = true
@@ -59,6 +58,10 @@ U.map("n", "<space>", "<Nop>")
 g.mapleader = " "
 g.maplocalleader = " "
 
+-- use filtype.lua
+g.do_filetype_lua = 1
+g.did_load_filetypes = 0
+
 -- 设置分隔符可视
 o.listchars = "tab:|  ,trail:.,extends:>,precedes:<"
 
@@ -75,6 +78,9 @@ o.foldlevel = 99
 
 --文件搜索和补全时忽略下面扩展名
 o.suffixes = ".bak,~,.o,.h,.info,.swp,.obj,.pyc,.pyo,.egg-info,.class"
+
+-- global line status
+o.laststatus = 3
 
 o.wildignore = [[
 	.git,.hg,.svn

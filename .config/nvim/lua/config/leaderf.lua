@@ -26,6 +26,7 @@ vim.g.Lf_WildIgnore = {
   file = { "*.sw?", "~$*", "*.bak", "*.exe", "*.o", "*.so", "*.py[co]" },
 }
 
+vim.g.Lf_WindowPosition = "popup"
 -- ALT+m 打开最近使用的文件 MRU，进行模糊匹配
 U.map("n", "<m-m>", ":LeaderfMru<cr>")
 U.map("n", "<m-p>", ":LeaderfFunction<cr>")
