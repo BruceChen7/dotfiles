@@ -31,8 +31,8 @@ return packer.startup(function()
     end,
   }
 
-  use "antoinemadec/FixCursorHold.nvim"
   -- use "nathom/filetype.nvim"
+  use "antoinemadec/FixCursorHold.nvim"
 
   use {
     "lambdalisue/fern.vim",
@@ -76,7 +76,6 @@ return packer.startup(function()
   use "hrsh7th/cmp-nvim-lsp-document-symbol"
   use "tamago324/cmp-zsh"
 
-  use "saadparwaiz1/cmp_luasnip" -- Snippets source for nvim-cmp
   use {
     "L3MON4D3/LuaSnip",
     config = function()
@@ -276,6 +275,13 @@ return packer.startup(function()
     "karb94/neoscroll.nvim",
     config = function()
       require "config/neoscroll"
+    end,
+  }
+
+  use {
+    "stevearc/aerial.nvim",
+    config = function()
+      require "config/aerial"
     end,
   }
 
