@@ -64,7 +64,10 @@ return packer.startup(function()
     end,
   }
 
-  use "neovim/nvim-lspconfig"
+  use {
+    "neovim/nvim-lspconfig",
+    tag = "v0.1.3",
+  }
   -- adds vscode-like pictograms to neovim built-in lsp
   use "onsails/lspkind-nvim"
 
