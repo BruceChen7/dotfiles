@@ -224,6 +224,7 @@ PROMPT='%n in ${PWD/#$HOME/~} ${vcs_info_msg_0_} > '
 
 alias taw="tmux attach -t working"
 alias tas="tmux new -s working"
+alias vim=nvim
 
 if [[ `uname` == "darwin" ]] || [[ `uname` == "Darwin" ]]; then
 	export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles/bottles
@@ -231,9 +232,14 @@ fi
 eval "$(lua /usr/local/bin/z.lua  --init zsh once enhanced)"    # ZSH 初始化
 export VISUAL=vim;
 export EDITOR=vim;
+export LANG=zh_CN.UTF-8
+export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
+export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
 
 # not use default c-r or up key bindings
 export ATUIN_NOBIND="true"
 eval "$(atuin init zsh)"
-
 bindkey '^r' _atuin_search_widget
+
+export CARGO_HTTP_MULTIPLEXING=false
+alias vf="vim \`fzf\`"
