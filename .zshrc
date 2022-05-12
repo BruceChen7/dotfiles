@@ -230,6 +230,8 @@ if [[ `uname` == "darwin" ]] || [[ `uname` == "Darwin" ]]; then
 	export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles/bottles
 fi
 eval "$(lua /usr/local/bin/z.lua  --init zsh once enhanced)"    # ZSH 初始化
+
+
 export VISUAL=vim;
 export EDITOR=vim;
 export LANG=zh_CN.UTF-8
@@ -242,4 +244,6 @@ eval "$(atuin init zsh)"
 bindkey '^r' _atuin_search_widget
 
 export CARGO_HTTP_MULTIPLEXING=false
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+export FZF_DEFAULT_OPTS="--layout=reverse --inline-info"
 alias vf="vim \`fzf\`"
