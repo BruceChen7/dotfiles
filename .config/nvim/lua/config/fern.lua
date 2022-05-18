@@ -36,5 +36,4 @@ vim.cmd [[
        autocmd! *
        autocmd FileType fern call InitFern()
     augroup END
-
 ]]

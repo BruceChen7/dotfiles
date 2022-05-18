@@ -8,7 +8,6 @@ u.map("n", "<space>", "<Nop>")
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- 窗口快捷键映射
 u.map("n", "<tab>h", "<c-w>h")
 u.map("n", "<tab>l", "<c-w>l")
 u.map("n", "<tab>j", "<c-w>j")

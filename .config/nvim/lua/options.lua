@@ -15,8 +15,6 @@ o.ttimeout = true
 o.ttimeoutlen = 50
 o.tags = [[ ./.tags;,.tags ]]
 
-
-
 -- 智能搜索大小写判断，默认忽略大小写，除非搜索内容包含大写字母
 o.ignorecase = true
 o.smartcase = true
