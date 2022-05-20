@@ -1,0 +1,22 @@
+format = '$directory$git_branch$git_commit$git_state$git_status$golang$python$rust$custom$cmd_duration$memory_usage$lua$line_break$jobs$time$status$shell$character'
+
+[directory]
+truncation_length = 4
+truncation_symbol = "…/"
+truncate_to_repo = false
+
+
+[git_commit]
+tag_disabled = true
+only_detached = false
+disabled = false
+commit_hash_length = 8
+
+[memory_usage]
+disabled = false
+threshold = -1
+symbol = " "
+style = "bold dimmed green"
+
+[line_break]
+disabled = false

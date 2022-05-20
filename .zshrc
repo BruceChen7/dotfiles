@@ -148,8 +148,6 @@ FAST_HIGHLIGHT[chroma-git]="chroma/-ogit.ch"
 # options
 unsetopt correct_all
 unsetopt share_history
-setopt prompt_subst
-unsetopt prompt_cr prompt_sp
 
 setopt BANG_HIST                 # Treat the '!' character specially during expansion.
 setopt INC_APPEND_HISTORY        # Write to the history file immediately, not when the shell exits.
@@ -204,8 +202,6 @@ zstyle ':completion:*:complete:-command-:*:*' ignored-patterns '*.pdf|*.exe|*.dl
 zstyle ':completion:*:*sh:*:' tag-order files
 
 alias ll="ls -al"
-export CLICOLOR=1
-export LSCOLORS=ExGxFxdaCxDaDahbadeche
 export GOFLAGS=-mod=vendor
 export GO111MODULE=on
 
@@ -219,12 +215,13 @@ precmd() { vcs_info }
 # Format the vcs_info_msg_0_ variable
 zstyle ':vcs_info:git:*' formats ' %b'
 
-setopt PROMPT_SUBST
-PROMPT='%n in ${PWD/#$HOME/~} ${vcs_info_msg_0_} > '
+# setopt PROMPT_SUBST
+# PROMPT='%n in ${PWD/#$HOME/~} ${vcs_info_msg_0_} > '
 
 alias taw="tmux attach -t working"
 alias tas="tmux new -s working"
 alias vim=nvim
+alias cat=bat
 
 if [[ `uname` == "darwin" ]] || [[ `uname` == "Darwin" ]]; then
 	export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles/bottles
@@ -232,11 +229,6 @@ fi
 eval "$(lua /usr/local/bin/z.lua  --init zsh once enhanced)"    # ZSH 初始化
 
 
-export VISUAL=vim;
-export EDITOR=vim;
-export LANG=zh_CN.UTF-8
-export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
-export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
 
 # not use default c-r or up key bindings
 export ATUIN_NOBIND="true"
@@ -247,3 +239,12 @@ export CARGO_HTTP_MULTIPLEXING=false
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
 export FZF_DEFAULT_OPTS="--layout=reverse --inline-info"
 alias vf="vim \`fzf\`"
+
+export VISUAL=nvim;
+export EDITOR=nvim;
+export LANG=zh_CN.UTF-8
+export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
+export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
+
+# export STARSHIP_CONFIG="~/.config/starship/starship.toml"
+eval "$(starship init zsh)"
