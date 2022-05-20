@@ -88,7 +88,6 @@ return packer.startup(function()
 
   use { "saadparwaiz1/cmp_luasnip" }
 
-  -- used to avoid leaderf conflict
   use {
     "hrsh7th/nvim-cmp", -- Autocompletion plugin
     -- commit = "bba6fb67fdafc0af7c5454058dfbabc2182741f4",
@@ -113,6 +112,7 @@ return packer.startup(function()
   -- 参数文本对象：i,/a, 包括参数或者列表元素
   use "sgur/vim-textobj-parameter"
 
+  -- 提供cs'"这种快捷键
   use "tpope/vim-surround"
 
   use "tpope/vim-repeat"
@@ -165,6 +165,7 @@ return packer.startup(function()
   -- terminal
   use {
     "akinsho/toggleterm.nvim",
+    branch = "main",
     config = function()
       require "config/terminal"
     end,
@@ -254,14 +255,6 @@ return packer.startup(function()
       require "config/diff"
     end,
   }
-
-  -- not used because of performance
-  -- use {
-  --   "gelguy/wilder.nvim",
-  --   config = function()
-  --     require "config/wilder"
-  --   end,
-  -- }
 
   -- use {
   --   "haringsrob/nvim_context_vt",

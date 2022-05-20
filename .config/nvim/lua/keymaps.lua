@@ -68,20 +68,6 @@ vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>")
 -- quickfix 手动打开
 u.map("n", "<space>q", ":call asyncrun#quickfix_toggle(20)<cr>")
 
-u.map("n", "\\t", ":tabnew<CR>")
-u.map("n", "\\d", ":tabclose<cr>")
-u.map("n", "\\1", ":tabn 1<cr>")
-u.map("n", "\\2", ":tabn 2<cr>")
-u.map("n", "\\3", ":tabn 3<cr>")
-u.map("n", "\\4", ":tabn 4<cr>")
-u.map("n", "\\5", ":tabn 5<cr>")
-u.map("n", "\\6", ":tabn 6<cr>")
-u.map("n", "\\7", ":tabn 7<cr>")
-u.map("n", "\\8", ":tabn 8<cr>")
-u.map("n", "\\9", ":tabn 9<cr>")
--- avoid slowly to wait to parse \\1
-u.map("n", "\\0", ":tabn 10<cr>")
-
 local present, pounce = pcall(require, "pounce")
 if present then
   u.map("n", "s", ":Pounce<CR>")
@@ -98,8 +84,8 @@ function change_colorscheme()
 end
 
 vim.keymap.set("n", "g3", change_colorscheme)
-vim.keymap.set("n", ",v", ":vsplit<CR>")
-vim.keymap.set("n", ",s", ":split<CR>")
+vim.keymap.set("n", ",vv", ":vsplit<CR>")
+vim.keymap.set("n", ",ss", ":split<CR>")
 vim.keymap.set("n", "<leader>ll", function()
   file = vim.fn.expand "%:p"
   if file:find(vim.fn.expand "~/.config/nvim/", 1, true) == 1 then
