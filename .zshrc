@@ -91,7 +91,7 @@ antigen use prezto
 
 
 # default bundles
-antigen bundle rupa/z z.sh
+# antigen bundle rupa/z z.sh
 antigen bundle Vifon/deer
 antigen bundle zdharma/fast-syntax-highlighting
 antigen bundle zsh-users/zsh-autosuggestions
@@ -201,27 +201,18 @@ DISABLE_CORRECTION="true"
 zstyle ':completion:*:complete:-command-:*:*' ignored-patterns '*.pdf|*.exe|*.dll'
 zstyle ':completion:*:*sh:*:' tag-order files
 
-alias ll="ls -al"
-export GOFLAGS=-mod=vendor
-export GO111MODULE=on
-
 
 [[ -s "/Users/ming.chen/.gvm/scripts/gvm" ]] && source "/Users/ming.chen/.gvm/scripts/gvm"
 
 # Load version control information
-autoload -Uz vcs_info
-precmd() { vcs_info }
+# autoload -Uz vcs_info
+# precmd() { vcs_info }
 
 # Format the vcs_info_msg_0_ variable
-zstyle ':vcs_info:git:*' formats ' %b'
+# zstyle ':vcs_info:git:*' formats ' %b'
 
 # setopt PROMPT_SUBST
 # PROMPT='%n in ${PWD/#$HOME/~} ${vcs_info_msg_0_} > '
-
-alias taw="tmux attach -t working"
-alias tas="tmux new -s working"
-alias vim=nvim
-alias cat=bat
 
 if [[ `uname` == "darwin" ]] || [[ `uname` == "Darwin" ]]; then
 	export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles/bottles
@@ -246,5 +237,14 @@ export LANG=zh_CN.UTF-8
 export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
 export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
 
+
 # export STARSHIP_CONFIG="~/.config/starship/starship.toml"
 eval "$(starship init zsh)"
+
+export GO111MODULE=on
+alias taw="tmux attach -t working"
+alias tas="tmux new -s working"
+alias vim=nvim
+alias cat=bat
+alias ll="ls -al"
+
