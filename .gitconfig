@@ -3,10 +3,11 @@
     name = BruceChen7
 
 [pager]
-    diff = delta
-    log = delta
-    reflog = delta
-    show = delta
+    ; diff = delta
+    ; log = delta
+    ; reflog = delta
+    ; show = delta
+     difftool = true
 
 ; {{{ delta配置 用于查看diff
 ; https://github.com/yan42685/dotfiles/blob/master/.gitconfig
@@ -48,24 +49,42 @@
 
 [core]
     quotepath = false
+    editor = nvim
 # https://www.lazy-electron.com/2021/07/29/git-aliases.html
 [alias]
-	amend = commit --amend --reuse-message=HEAD
-	glg = log --oneline --decorate --all --graph
+    amend = commit --amend --reuse-message=HEAD
+    glg = log --oneline --decorate --all --graph
+    ; https://www.jessesquires.com/blog/2021/10/24/git-aliases-to-improve-productivity/
+    aliases = "!f() { git config --global -l | grep alias | sort; }; f"
+    st = status
+    smartlog = log --graph --pretty=format:'commit: %C(bold red)%h%Creset %C(red)<%H>%Creset %C(bold magenta)%d %Creset%ndate: %C(bold yellow)%cd %Creset%C(yellow)%cr%Creset%nauthor: %C(bold blue)%an%Creset %C(blue)<%ae>%Creset%n%C(cyan)%s%n%Creset'
+    ls = log --oneline
+    authors-list = shortlog -e -s -n
+    pr = pull --rebase origin master
+    ps = push
+    st = status
+    co = checkout
+    cb = checkout -b
+    br = branch
+    cm = commit -s -m
+    ca = commit --amend -s --no-edit
+    d = diff
+    ds = diff --staged
+    dc = diff --cached
 
 ; see https://stackoverflow.com/questions/8801729/is-it-possible-to-have-different-git-configuration-for-different-projects
 ; how to set up user name in differenct project
 [github]
 	user = BruceChen7
 
-; https://www.jessesquires.com/blog/2021/10/24/git-aliases-to-improve-productivity/
-
-[alias]
-	aliases = "!f() { git config --global -l | grep alias | sort; }; f"
-	st = status
-	smartlog = log --graph --pretty=format:'commit: %C(bold red)%h%Creset %C(red)<%H>%Creset %C(bold magenta)%d %Creset%ndate: %C(bold yellow)%cd %Creset%C(yellow)%cr%Creset%nauthor: %C(bold blue)%an%Creset %C(blue)<%ae>%Creset%n%C(cyan)%s%n%Creset'
-	ls = log --oneline
-	authors-list = shortlog -e -s -n
 
 [net]
     git-fetch-with-cli = true
+
+[diff]
+    external = difft
+    tool = difftastic
+[difftool]
+    prompt = false
+[difftool "difftastic"]
+    cmd = difft "$LOCAL" "$REMOTE"
