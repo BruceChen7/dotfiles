@@ -14,8 +14,7 @@ diffview.setup {
     view_opened = function(view)
       -- dump(view)
       bufnr = view.panel.bufid
-      -- print(bufnr)
-      vim.api.nvim_buf_del_keymap(bufnr, "n", "<tab>")
+      -- vim.api.nvim_buf_del_keymap(bufnr, "n", "<tab>")
       local opts = { noremap = true }
       vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>l", "<c-w>l", opts)
       vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>j", "<c-w>j", opts)
@@ -92,3 +91,4 @@ diffview.setup {
 }
 -- open file change list
 vim.keymap.set("n", ",df", ":DiffviewOpen<CR>")
+vim.keymap.set("n", ",dh", ":DiffviewFileHistory<CR>")
