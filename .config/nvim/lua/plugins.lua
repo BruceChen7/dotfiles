@@ -117,8 +117,6 @@ return packer.startup(function()
 
   use "tpope/vim-repeat"
 
-  -- use 'Chiel92/vim-autoformat'
-
   -- 自动调整窗口
   use "camspiers/lens.vim"
 
@@ -224,6 +222,7 @@ return packer.startup(function()
   use {
     "nvim-lua/lsp_extensions.nvim",
   }
+
   use {
     "saecki/crates.nvim",
     tag = "v0.1.0",

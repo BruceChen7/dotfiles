@@ -46,7 +46,6 @@
 
 [interactive]
     diffFilter = delta --color-only
-
 [core]
     quotepath = false
     editor = nvim
@@ -75,9 +74,7 @@
 ; see https://stackoverflow.com/questions/8801729/is-it-possible-to-have-different-git-configuration-for-different-projects
 ; how to set up user name in differenct project
 [github]
-	user = BruceChen7
-
-
+    user = BruceChen7
 [net]
     git-fetch-with-cli = true
 
@@ -86,5 +83,7 @@
     tool = difftastic
 [difftool]
     prompt = false
+
 [difftool "difftastic"]
+
     cmd = difft "$LOCAL" "$REMOTE"
