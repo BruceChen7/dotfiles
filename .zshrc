@@ -82,9 +82,8 @@ zstyle ':prezto:load' pmodule \
 	'completion' \
 	'history-substring-search' \
 	'autosuggestions' \
-	'prompt' \
-
-	# 'autosuggestions' \
+	'autosuggestions' \
+	# 'prompt' \
 
 # Initialize prezto
 antigen use prezto

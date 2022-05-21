@@ -1,4 +1,4 @@
-local U = require "util"
+local u = require "util"
 -- leaderf config
 -- CTRL+p 打开文件模糊匹配
 vim.g.Lf_ShortcutF = "<C-p>"
@@ -27,18 +27,20 @@ vim.g.Lf_WildIgnore = {
 }
 
 vim.g.Lf_WindowPosition = "popup"
--- ALT+m 打开最近使用的文件 MRU，进行模糊匹配
-U.map("n", "<m-m>", ":LeaderfMru<cr>")
-U.map("n", "<m-p>", ":LeaderfFunction<cr>")
--- " ALT+SHIFT+p 打开 tag 列表，i 进入模糊匹配，ESC退出
-U.map("n", "<m-P>", ":LeaderfBufTag<cr>")
--- ALT+n 打开 buffer 列表进行模糊匹配
-U.map("n", "<m-n>", ":LeaderfBuffer<cr>")
--- " ALT+t 全局 tags 模糊匹配
-U.map("n", "<m-t>", ":LeaderfTag<cr>")
-U.map("n", "<c-p>", ":LeaderfFile<cr>")
 
-vim.cmd [[
-    noremap <space>lf :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>
-]]
--- leaderf config
+-- ALT+m 打开最近使用的文件 MRU，进行模糊匹配
+u.map("n", "<m-m>", ":LeaderfMru<cr>")
+u.map("n", "<m-p>", ":LeaderfFunction<cr>")
+-- " ALT+SHIFT+p 打开 tag 列表，i 进入模糊匹配，ESC退出
+u.map("n", "<m-P>", ":LeaderfBufTag<cr>")
+-- ALT+n 打开 buffer 列表进行模糊匹配
+u.map("n", "<m-n>", ":LeaderfBuffer<cr>")
+-- " ALT+t 全局 tags 模糊匹配
+u.map("n", "<m-t>", ":LeaderfTag<cr>")
+u.map("n", "<c-p>", ":LeaderfFile<cr>")
+
+-- vim.cmd [[
+--     noremap <space><space> :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>
+-- ]]
+-- vim.keymap.set("n", "<space><space>", ':<c-u><c-r>=printf("leaderf! rg -e  .. vim.fn.expand("<cword>"))<cr>')
+vim.keymap.set("n", "<space><space>", [[:<C-U><C-R>=printf('Leaderf! rg -e '. expand("<cword>"))<CR><CR>]])
