@@ -14,7 +14,7 @@ o.showtabline = 2
 --o.errorformat = vim.opt.errorformat + '%f|%l col %c|%m'
 o.errorformat:append "[%f:%l] -> %m,[%f:%l]:%m"
 
-o.relativenumber = false
+o.relativenumber = true
 o.mouse = "n"
 
 -- TODO: 重写这部分代码
@@ -24,6 +24,8 @@ vim.cmd [[
 	augroup VimInitStyle
 		au!
 		au FileType qf setlocal nonumber
+		au FileType fern setlocal nonumber
+		au FileType fern setlocal norelativenumber
 		au FileType qf setlocal norelativenumber
 	augroup END
 
@@ -169,7 +171,13 @@ augroup END
 ]]
 
 function getColorscheme()
-  local colorschemes = { "vscode", "nightfox", "dayfox", "nordfox", "duskfox", "terafox" }
+  local colorschemes = { --"vscode",
+    "nightfox",
+    "dayfox",
+    "nordfox",
+    "duskfox",
+    "terafox",
+  }
   local u = require "util"
   local len = u.tableLength(colorschemes)
   i = u.random(len)

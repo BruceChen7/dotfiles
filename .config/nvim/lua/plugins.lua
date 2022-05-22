@@ -22,17 +22,17 @@ augroup end
 
 --
 return packer.startup(function()
-  -- Packer can manage itself
-  use "wbthomason/packer.nvim"
   use {
     "lewis6991/impatient.nvim",
     config = function()
       require "impatient"
     end,
   }
+  -- Packer can manage itself
+  use "wbthomason/packer.nvim"
 
   -- use "nathom/filetype.nvim"
-  use "antoinemadec/FixCursorHold.nvim"
+  -- use "antoinemadec/FixCursorHold.nvim"
 
   use {
     "lambdalisue/fern.vim",
@@ -151,7 +151,7 @@ return packer.startup(function()
     end,
   }
 
-  use "dstein64/vim-startuptime"
+  use { "dstein64/vim-startuptime", cmd = "StartupTime" }
 
   use {
     "numToStr/Comment.nvim",
@@ -286,6 +286,15 @@ return packer.startup(function()
   use {
     "nvim-telescope/telescope.nvim",
     requires = { { "nvim-lua/plenary.nvim" } },
+    config = function()
+      require "config/telescope"
+    end,
+  }
+  use {
+    "kevinhwang91/nvim-hlslens",
+    config = function()
+      require "config/hlslen"
+    end,
   }
   if util_packer.first_install then
     packer.sync()
