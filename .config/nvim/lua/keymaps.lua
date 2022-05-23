@@ -19,6 +19,8 @@ u.map("i", "<c-a>", "<home>")
 u.map("i", "<c-e>", "<end>")
 u.map("i", "<c-d>", "<del>")
 u.map("i", "<c-_>", "<c-k>")
+u.map("n", "<space>p", 'viw"0p')
+u.map("n", "<space>y", "yiw")
 
 u.map("v", "<", "<gv", default_options)
 u.map("v", ">", ">gv", default_options)
