@@ -245,5 +245,5 @@ alias taw="tmux attach -t working"
 alias tas="tmux new -s working"
 alias vim=nvim
 alias cat=bat
-alias ll="ls -al"
+alias ll="exa -al"
 

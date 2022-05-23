@@ -13,7 +13,7 @@ vim.g.Lf_HideHelp = 0
 
 vim.g.Lf_MruMaxFiles = 2048
 -- " 如何识别项目目录，从当前文件目录向父目录递归知道碰到下面的文件/目录
-vim.g.Lf_RootMarkers = { ".project", ".root", ".svn", ".git" }
+vim.g.Lf_RootMarkers = { ".project", ".root", ".svn", ".git", "go.mod"}
 vim.g.Lf_WorkingDirectoryMode = "Ac"
 vim.g.Lf_WindowHeight = 0.40
 vim.g.Lf_CacheDirectory = vim.fn.expand "~/.vim/cache"
@@ -27,6 +27,7 @@ vim.g.Lf_WildIgnore = {
 }
 
 vim.g.Lf_WindowPosition = "popup"
+vim.g.Lf_PreviewInPopup = 1
 
 -- ALT+m 打开最近使用的文件 MRU，进行模糊匹配
 u.map("n", "<m-m>", ":LeaderfMru<cr>")
@@ -43,4 +44,4 @@ u.map("n", "<c-p>", ":LeaderfFile<cr>")
 --     noremap <space><space> :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>
 -- ]]
 -- vim.keymap.set("n", "<space><space>", ':<c-u><c-r>=printf("leaderf! rg -e  .. vim.fn.expand("<cword>"))<cr>')
-vim.keymap.set("n", "<space><space>", [[:<C-U><C-R>=printf('Leaderf! rg -e '. expand("<cword>"))<CR><CR>]])
+vim.keymap.set("n", "<space><space>", [[:<C-U><C-R>=printf('Leaderf! rg -e '. expand("<cword>"))<CR>]])
