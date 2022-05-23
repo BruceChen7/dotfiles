@@ -84,8 +84,8 @@ diffview.setup {
       ["<leader>b"] = actions.toggle_files,
     },
     option_panel = {
-      -- ["n"] = actions.select,
-      -- ["q"] = actions.close,
+      ["n"] = actions.select_entry,
+      ["q"] = actions.close,
       ["<tab>"] = false,
       ["<s-tab>"] = false,
     },
