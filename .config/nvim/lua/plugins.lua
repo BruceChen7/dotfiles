@@ -296,6 +296,17 @@ return packer.startup(function()
       require "config/hlslen"
     end,
   }
+  -- Lua
+  use {
+    "abecodes/tabout.nvim",
+    config = function()
+      require "config/tabout"
+    end,
+  }
+
+  use {
+    "p00f/nvim-ts-rainbow",
+  }
   if util_packer.first_install then
     packer.sync()
   end
