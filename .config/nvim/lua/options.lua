@@ -1,6 +1,6 @@
 local o = vim.o
 local g = vim.g
-local U = require "util"
+local u = require "util"
 
 -- 自动缩进
 o.autoindent = true
@@ -52,7 +52,7 @@ o.backupext = ".bak"
 o.splitright = true
 
 -- 设置leader key
-U.map("n", "<space>", "<Nop>")
+u.map("n", "<space>", "<Nop>")
 g.mapleader = " "
 g.maplocalleader = " "
 
