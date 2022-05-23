@@ -9,7 +9,7 @@ diffview.setup {
       -- vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>l", "<c-w>l", opts)
       -- vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>j", "<c-w>j", opts)
       -- vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>k", "<c-w>k", opts)
-      vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>h", "<c-w>h", opts)
+      -- vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>h", "<c-w>h", opts)
     end,
     view_opened = function(view)
       -- dump(view)
