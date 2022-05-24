@@ -85,5 +85,6 @@
     prompt = false
 
 [difftool "difftastic"]
-    cmd = difft  --display side-by-side "$LOCAL" "$REMOTE"
+    cmd = difft --byte-limit 100000 --display side-by-side "$LOCAL" "$REMOTE"
+    ; cmd = difft  --display side-by-side "$LOCAL" "$REMOTE"
     ; cmd = difft "$LOCAL" "$REMOTE"
