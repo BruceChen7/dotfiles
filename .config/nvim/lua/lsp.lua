@@ -75,6 +75,7 @@ for _, lsp in ipairs(servers) do
         codelenses = {
           test = true,
         },
+        gofumpt = true,
       },
     },
     flags = {
