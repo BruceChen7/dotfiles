@@ -247,3 +247,5 @@ alias vim=nvim
 alias cat=bat
 alias ll="exa -al"
 
+export DFT_BYTE_LIMIT=500000
+export DFT_NODE_LIMIT=20000
