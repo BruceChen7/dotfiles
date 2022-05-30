@@ -2,6 +2,7 @@ local diffview = require "diffview"
 local actions = require("diffview.config").actions
 
 diffview.setup {
+  diff_binaries = false,
   hooks = {
     diff_buf_read = function(bufnr)
       vim.api.nvim_buf_del_keymap(bufnr, "n", "<tab>")

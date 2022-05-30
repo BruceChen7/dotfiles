@@ -156,6 +156,7 @@ augroup InitFileTypesGroup
 	" haskell 进行微调
 	au FileType haskell setlocal et
 
+	au FileType proto setlocal ts=2 sw=2
 	" quickfix 隐藏行号
 	"au FileType qf setlocal nonumber
 	autocmd FileType qf nnoremap <silent><buffer> p :PreviewQuickfix<cr>
