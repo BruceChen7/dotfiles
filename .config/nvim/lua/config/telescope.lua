@@ -207,6 +207,22 @@ telescope.setup {
         -- even more opts
       },
     },
+    cder = {
+      previewer_command = "exa "
+        .. "-a "
+        .. "--color=always "
+        .. "-T "
+        .. "--level=3 "
+        .. "--icons "
+        .. "--git-ignore "
+        .. "--long "
+        .. "--no-permissions "
+        .. "--no-user "
+        .. "--no-filesize "
+        .. "--git "
+        .. "--ignore-glob=.git",
+      dir_command = { "fd", "--type=d", ".", os.getenv "PWD" },
+    },
   },
 }
 
@@ -215,3 +231,7 @@ telescope.setup {
 -- telescope.load_extension "ui-select"
 -- telescope.load_extension "dap"
 -- telescope.load_extension "vim_bookmarks"
+telescope.load_extension "projects"
+telescope.load_extension "cder"
+vim.keymap.set("n", ",tg", ":Telescope live_grep<CR>")
+vim.keymap.set("n", ",tc", ":Telescope cder<CR>")

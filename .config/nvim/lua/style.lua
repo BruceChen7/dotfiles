@@ -14,7 +14,7 @@ o.showtabline = 2
 --o.errorformat = vim.opt.errorformat + '%f|%l col %c|%m'
 o.errorformat:append "[%f:%l] -> %m,[%f:%l]:%m"
 
-o.relativenumber = true
+o.relativenumber = false
 o.mouse = "n"
 
 -- TODO: 重写这部分代码

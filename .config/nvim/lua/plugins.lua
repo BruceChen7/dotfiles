@@ -307,6 +307,8 @@ return packer.startup(function()
   use {
     "p00f/nvim-ts-rainbow",
   }
+
+  use "zane-/cder.nvim"
   if util_packer.first_install then
     packer.sync()
   end
