@@ -151,6 +151,8 @@ return packer.startup(function()
     end,
   }
 
+  use "nvim-treesitter/nvim-treesitter-context"
+
   use { "dstein64/vim-startuptime", cmd = "StartupTime" }
 
   use {
