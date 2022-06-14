@@ -46,11 +46,10 @@
 
 [interactive]
     ; diffFilter = delta --color-only
-    ; diffFilter = diffr
+    
 [core]
     quotepath = false
     editor = nvim
-    pager = diffr | less -R
 
 # https://www.lazy-electron.com/2021/07/29/git-aliases.html
 [alias]
@@ -78,15 +77,16 @@
 ; how to set up user name in differenct project
 [github]
     user = BruceChen7
+
 [net]
     git-fetch-with-cli = true
 
 [diff]
     external = difft
     tool = difftastic
+
 [difftool]
     prompt = false
 
 [difftool "difftastic"]
     cmd = difft --byte-limit 100000 --node-limit 10000 --display side-by-side "$LOCAL" "$REMOTE"
-    ; cmd = difft --byte-limit 100000 --display side-by-side "$LOCAL" "$REMOTE"
