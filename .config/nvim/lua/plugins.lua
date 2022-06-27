@@ -196,6 +196,7 @@ return packer.startup(function()
     end,
     requires = { "nvim-lua/plenary.nvim" },
   }
+
   -- show signature
   use {
     "ray-x/lsp_signature.nvim",
@@ -292,6 +293,7 @@ return packer.startup(function()
       require "config/telescope"
     end,
   }
+
   use {
     "kevinhwang91/nvim-hlslens",
     config = function()
@@ -322,6 +324,19 @@ return packer.startup(function()
     "ziontee113/syntax-tree-surfer",
     config = function()
       require "config/surfer"
+    end,
+  }
+  use {
+    "nmac427/guess-indent.nvim",
+    config = function()
+      require("guess-indent").setup {}
+    end,
+  }
+  use {
+    "kevinhwang91/nvim-ufo",
+    requires = "kevinhwang91/promise-async",
+    config = function()
+      require "config/ufo"
     end,
   }
   if util_packer.first_install then

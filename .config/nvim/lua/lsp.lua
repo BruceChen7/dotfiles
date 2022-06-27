@@ -59,6 +59,11 @@ local capabilities = vim.lsp.protocol.make_client_capabilities()
 local servers = { "pyright", "gopls", "clangd", "zls" }
 capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
 capabilities.textDocument.completion.completionItem.snippetSupport = true
+-- for folding
+capabilities.textDocument.foldingRange = {
+  dynamicRegistration = false,
+  lineFoldingOnly = true,
+}
 
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
@@ -158,6 +163,7 @@ require("rust-tools").setup {
     },
   },
 }
+
 -- luasnip setup
 local luasnip = require "luasnip"
 
@@ -170,6 +176,7 @@ vim.o.completeopt = "menuone,noselect"
 
 -- nvim-cmp setup
 local cmp = require "cmp"
+
 --
 function select_next_item(fallback)
   if cmp.visible() then
@@ -190,6 +197,7 @@ function select_prev_item(fallback)
     fallback()
   end
 end
+
 cmp.setup {
   snippet = {
     expand = function(args)
