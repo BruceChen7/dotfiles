@@ -311,6 +311,19 @@ return packer.startup(function()
   }
 
   use "zane-/cder.nvim"
+
+  use {
+    "nacro90/numb.nvim",
+    config = function()
+      require("numb").setup()
+    end,
+  }
+  use {
+    "ziontee113/syntax-tree-surfer",
+    config = function()
+      require "config/surfer"
+    end,
+  }
   if util_packer.first_install then
     packer.sync()
   end
