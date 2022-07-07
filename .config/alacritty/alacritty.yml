@@ -94,3 +94,6 @@ font:
     style: normal
   size: 15
 
+window:
+  opacity: 0.90
+

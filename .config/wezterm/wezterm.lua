@@ -16,4 +16,6 @@ return {
 		{ key = "c", mods = "CTRL", action = wezterm.action({ CopyTo = "ClipboardAndPrimarySelection" }) },
 		{ key = " ", mods = "ALT", action = "Nop" },
 	},
+
+	window_background_opacity = 0.9,
 }
