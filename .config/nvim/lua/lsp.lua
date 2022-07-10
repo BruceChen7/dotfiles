@@ -72,19 +72,41 @@ for _, lsp in ipairs(servers) do
     settings = {
       gopls = {
         experimentalPostfixCompletions = true,
+        completeUnimported = true,
+        -- seems  not working
+        hints = {
+          assignVariableTypes = true,
+          compositeLiteralFields = true,
+          compositeLiteralTypes = true,
+          constantValues = true,
+          functionTypeParameters = true,
+          parameterNames = true,
+          rangeVariableTypes = true,
+        },
         analyses = {
+          fieldalignment = true,
           unusedparams = true,
           shadow = true,
+          unusedwrite = true, -- checks for unused writes, an instances of writes to struct fields and arrays that are never read
+          nonewvars = true,
+          fillreturns = true,
+          nilness = true, -- check for redundant or impossible nil comparisons
         },
         staticcheck = true,
         codelenses = {
           test = true,
+          gc_details = true, -- Toggle the calculation of gc annotations
+          generate = true, -- Runs go generate for a given directory
+          regenerate_cgo = true, -- Regenerates cgo definitions
+          tidy = true, -- Runs go mod tidy for a module
+          upgrade_dependency = true, -- Upgrades a dependency in the go.mod file for a module
+          vendor = true, -- Runs go mod vendor for a module
         },
         gofumpt = true,
       },
     },
     flags = {
-      debounce_text_changes = 500,
+      debounce_text_changes = 150,
     },
   }
 end
