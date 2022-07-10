@@ -84,7 +84,7 @@ for _, lsp in ipairs(servers) do
       },
     },
     flags = {
-      debounce_text_changes = 200,
+      debounce_text_changes = 500,
     },
   }
 end
@@ -302,18 +302,3 @@ augroup FormatGroup
 augroup END
 ]]
 
--- https://github.com/sharksforarms/neovim-rust/blob/master/neovim-init-lsp.vim
-function inlay_hints()
-  require("lsp_extensions").inlay_hints {
-    prefix = "",
-    highlight = "Comment",
-    enabled = { "TypeHint", "ChainingHint", "ParameterHint" },
-  }
-end
-
-vim.cmd [[
-augroup TypeHintsGroup
-    au!
-    autocmd CursorHold, InsertLeave, BufEnter,BufWinEnter,TabEnter,BufWritePost *.rs lua inlay_hints()
-augroup END
-]]

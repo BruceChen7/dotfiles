@@ -258,16 +258,6 @@ return packer.startup(function()
     end,
   }
 
-  -- use {
-  --   "haringsrob/nvim_context_vt",
-  -- }
-
-  use {
-    "lewis6991/spellsitter.nvim",
-    config = function()
-      require("spellsitter").setup()
-    end,
-  }
 
   use {
     "karb94/neoscroll.nvim",
@@ -359,6 +349,7 @@ return packer.startup(function()
       }
     end,
   }
+
   if util_packer.first_install then
     packer.sync()
   end
