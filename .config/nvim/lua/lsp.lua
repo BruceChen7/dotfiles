@@ -59,6 +59,8 @@ local capabilities = vim.lsp.protocol.make_client_capabilities()
 local servers = { "pyright", "gopls", "clangd", "zls" }
 capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
 capabilities.textDocument.completion.completionItem.snippetSupport = true
+capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
+capabilities.textDocument.completion.completionItem.preselectSupport = true
 -- for folding
 capabilities.textDocument.foldingRange = {
   dynamicRegistration = false,
@@ -324,3 +326,14 @@ augroup FormatGroup
 augroup END
 ]]
 
+local inlay_hints = require "config/inlay_hints"
+
+function set_inlay_hints()
+  inlay_hints.set_inlay_hints()
+end
+vim.cmd [[
+augroup GoInlayhintsGroup
+    au!
+    autocmd CursorMoved,CursorHold,CursorHoldI *.go lua set_inlay_hints()
+augroup END
+]]
