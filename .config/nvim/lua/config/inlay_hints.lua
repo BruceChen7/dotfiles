@@ -1,3 +1,4 @@
+-- https://github.com/WhoIsSethDaniel/goldsmith.nvim
 local M = {}
 
 local namespace = vim.api.nvim_create_namespace "experimental/inlayHints"
