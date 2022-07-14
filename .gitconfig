@@ -89,4 +89,4 @@
     prompt = false
 
 [difftool "difftastic"]
-    cmd = difft --byte-limit 100000 --node-limit 10000 --display side-by-side "$LOCAL" "$REMOTE"
+    cmd = difft --byte-limit 100000 --graph-limit 10000 --display side-by-side "$LOCAL" "$REMOTE"
