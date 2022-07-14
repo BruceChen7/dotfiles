@@ -95,6 +95,7 @@ antigen bundle Vifon/deer
 antigen bundle zdharma/fast-syntax-highlighting
 antigen bundle zsh-users/zsh-autosuggestions
 antigen bundle git
+antigen bundle fzf
 
 antigen bundle willghatch/zsh-cdr
 # antigen bundle zsh-users/zaw
@@ -229,6 +230,7 @@ export CARGO_HTTP_MULTIPLEXING=false
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
 export FZF_DEFAULT_OPTS="--layout=reverse --inline-info"
 alias vf="vim \`fzf\`"
+export FZF_COMPLETION_TRIGGER='~~'
 
 export VISUAL=nvim;
 export EDITOR=nvim;
@@ -248,4 +250,14 @@ alias cat=bat
 alias ll="exa -al"
 
 export DFT_BYTE_LIMIT=500000
-export DFT_NODE_LIMIT=20000
+export DFT_GRAPH_LIMIT=30000
+
+function wk {
+    if [[ -n "$TMUX" ]]
+    then
+        return 0
+    fi
+    tmux ls -F '#{session_name}' |
+    fzf --bind=enter:replace-query+print-query |
+    read session && tmux attach -t ${session:-default} || tmux new -s ${session:-default}
+}
