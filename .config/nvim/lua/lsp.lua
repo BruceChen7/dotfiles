@@ -229,10 +229,10 @@ cmp.setup {
     end,
   },
   mapping = {
-    ["<C-p>"] = select_prev_item,
+    -- ["<C-p>"] = select_prev_item,
     ["<C-k>"] = select_prev_item,
     ["<C-j>"] = select_next_item,
-    ["<C-n>"] = select_next_item,
+    -- ["<C-n>"] = select_next_item,
     ["<C-d>"] = cmp.mapping.scroll_docs(-4),
     ["<C-f>"] = cmp.mapping.scroll_docs(4),
     ["<M-CR>"] = cmp.mapping.complete(),
@@ -248,6 +248,10 @@ cmp.setup {
       },
       { "i", "c" }
     ),
+  },
+  experimental = {
+    ghost_text = true,
+    native_menu = false,
   },
   sources = {
     { name = "nvim_lsp" },
