@@ -3,6 +3,8 @@ local ftMap = {
   go = "indent",
   python = { "indent" },
   git = "",
+  yaml = "",
+  markdown = "",
 }
 local fold_handler = function(virtText, lnum, endLnum, width, truncate)
   local newVirtText = {}
@@ -34,6 +36,9 @@ end
 
 require("ufo").setup {
   provider_selector = function(bufnr, filetype)
+    if vim.bo[bufnr].bt == "nofile" then
+      return ""
+    end
     -- return a string type use ufo providers
     -- return a string in a table like a string type
     -- return empty string '' will disable any providers
