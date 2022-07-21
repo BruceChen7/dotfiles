@@ -207,6 +207,7 @@ function status_encoding()
   return code
 end
 
+-- https://github.com/cseickel/dotfiles/blob/main/config/nvim/lua/status.lua
 vim.cmd [[
   function! GitBranch()
     return trim(system("git -C " . getcwd() . " branch --show-current 2>/dev/null"))
@@ -215,7 +216,7 @@ vim.cmd [[
   augroup GitBranchGroup
       autocmd!
       autocmd BufEnter * let b:git_branch = GitBranch()
-      autocmd CmdlineLeave * let b:git_branch = GitBranch()
+      autocmd FileChangedShellPost * let b:git_branch = GitBranch()
   augroup END
 ]]
 
