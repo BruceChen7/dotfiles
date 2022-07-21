@@ -207,34 +207,29 @@ function status_encoding()
   return code
 end
 
-function git_branch_name(bufnr, windid)
-  local cache_util = require "util.cache_util"
-  local lspconfig_util = require "lspconfig.util"
+vim.cmd [[
+  function! GitBranch()
+    return trim(system("git -C " . getcwd() . " branch --show-current 2>/dev/null"))
+  endfunction
 
-  local find_root = function(cache_key)
-    local find_root_func = lspconfig_util.root_pattern ".git"
-    local cwd = find_root_func(vim.fn.expand "%:p")
-    return cwd, 0
+  augroup GitBranchGroup
+      autocmd!
+      autocmd BufEnter * let b:git_branch = GitBranch()
+      autocmd CmdlineLeave * let b:git_branch = GitBranch()
+  augroup END
+]]
+
+local isempty = function(s)
+  return s == nil or s == ""
+end
+
+function git_branch_name()
+  local branch = vim.b.git_branch
+  if isempty(branch) then
+    return ""
+  else
+    return branch
   end
-
-  local branch_name = function(cache_key)
-    local key = vim.fn.getcwd() .. "_" .. vim.fn.expand "%:p" .. "_root"
-    root = cache_util.cache_on_buffer("statusline", key, find_root)
-    if not root then
-      return "", 0
-    end
-
-    local name = vim.fn.system { "git", "-C", root, "branch", "--show-current" }
-    if vim.v.shell_error ~= 0 then
-      return "", 0
-    end
-    name = name:gsub("%s+", "")
-    return name, 0
-  end
-
-  local branch_key = vim.fn.getcwd() .. "_" .. vim.fn.expand "%:p" .. "_branch"
-  local name_str = cache_util.cache_on_buffer("statusline", branch_key, branch_name)
-  return name_str
 end
 
 -- help statusline
