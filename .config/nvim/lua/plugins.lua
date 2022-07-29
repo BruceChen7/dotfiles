@@ -212,13 +212,13 @@ return packer.startup(function()
     "ray-x/lsp_signature.nvim",
   }
 
-  use {
-    "pacha/vem-tabline",
-    requires = "ryanoasis/vim-devicons",
-    config = function()
-      require "config/tabline"
-    end,
-  }
+  -- use {
+  --   "pacha/vem-tabline",
+  --   requires = "ryanoasis/vim-devicons",
+  --   config = function()
+  --     require "config/tabline"
+  --   end,
+  -- }
 
   use {
     "TimUntersberger/neogit",
@@ -338,6 +338,15 @@ return packer.startup(function()
       require "config/ufo"
     end,
   }
+
+  use {
+    "noib3/nvim-cokeline",
+    requires = "kyazdani42/nvim-web-devicons", -- If you want devicons
+    config = function()
+      require("cokeline").setup()
+    end,
+  }
+
   use {
     "xiyaowong/nvim-transparent",
     config = function()
