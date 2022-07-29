@@ -101,6 +101,7 @@ return packer.startup(function()
     config = function()
       require "config/gitsigns"
     end,
+    event = { "BufRead", "BufNewFile" },
   }
 
   -- 基础插件：提供让用户方便的自定义文本对象的接口
@@ -123,7 +124,16 @@ return packer.startup(function()
   -- 复制剪切板
   use "ojroques/vim-oscyank"
 
-  use "mg979/vim-visual-multi"
+  use {
+    "glepnir/galaxyline.nvim",
+    branch = "main",
+    -- your statusline
+    config = function()
+      require "config/galaxy"
+    end,
+    -- some optional icons
+    requires = { "kyazdani42/nvim-web-devicons", opt = true },
+  }
 
   -- indent-line
   use {
@@ -257,7 +267,6 @@ return packer.startup(function()
       require "config/diff"
     end,
   }
-
 
   use {
     "karb94/neoscroll.nvim",
