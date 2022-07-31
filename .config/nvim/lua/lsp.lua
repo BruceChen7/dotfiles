@@ -297,20 +297,64 @@ cmp.setup {
     },
   },
 
+  -- formatting = {
+  --   -- Youtube: How to set up nice formatting for your sources.
+  --   format = lspkind.cmp_format {
+  --     with_text = true,
+  --     menu = {
+  --       buffer = "[buf]",
+  --       nvim_lsp = "[LSP]",
+  --       nvim_lua = "[api]",
+  --       path = "[path]",
+  --       luasnip = "[snip]",
+  --       -- gh_issues = "[issues]",
+  --       -- tn = "[TabNine]",
+  --     },
+  --   },
+  -- },
   formatting = {
-    -- Youtube: How to set up nice formatting for your sources.
-    format = lspkind.cmp_format {
-      with_text = true,
-      menu = {
-        buffer = "[buf]",
-        nvim_lsp = "[LSP]",
-        nvim_lua = "[api]",
-        path = "[path]",
-        luasnip = "[snip]",
-        -- gh_issues = "[issues]",
-        -- tn = "[TabNine]",
-      },
-    },
+    fields = { "kind", "abbr", "menu" },
+    format = function(entry, vim_item)
+      local lspkind_icons = {
+        Text = "",
+        Method = " ",
+        Function = "",
+        Constructor = " ",
+        Field = " ",
+        Variable = " ",
+        Class = "",
+        Interface = "",
+        Module = "硫",
+        Property = "",
+        Unit = " ",
+        Value = "",
+        Enum = " ",
+        Keyword = "ﱃ",
+        Snippet = " ",
+        Color = " ",
+        File = " ",
+        Reference = "Ꮢ",
+        Folder = " ",
+        EnumMember = " ",
+        Constant = " ",
+        Struct = " ",
+        Event = "",
+        Operator = "",
+        TypeParameter = " ",
+      }
+      local meta_type = vim_item.kind
+      -- load lspkind icons
+      vim_item.kind = lspkind_icons[vim_item.kind] .. ""
+
+      vim_item.menu = ({
+        buffer = " Buffer",
+        nvim_lsp = meta_type,
+        path = " Path",
+        luasnip = " LuaSnip",
+      })[entry.source.name]
+
+      return vim_item
+    end,
   },
 }
 

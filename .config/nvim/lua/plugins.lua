@@ -32,7 +32,7 @@ return packer.startup(function()
   use "wbthomason/packer.nvim"
 
   -- use "nathom/filetype.nvim"
-  -- use "antoinemadec/FixCursorHold.nvim"
+  use "antoinemadec/FixCursorHold.nvim"
 
   use {
     "lambdalisue/fern.vim",
@@ -108,7 +108,7 @@ return packer.startup(function()
   use "kana/vim-textobj-user"
 
   -- indent 文本对象：ii/ai 表示当前缩进，vii 选中当缩进，cii 改写缩进
-  use "kana/vim-textobj-indent"
+  -- use "kana/vim-textobj-indent"
 
   -- 参数文本对象：i,/a, 包括参数或者列表元素
   use "sgur/vim-textobj-parameter"
