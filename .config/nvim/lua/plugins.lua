@@ -358,7 +358,7 @@ return packer.startup(function()
     "noib3/nvim-cokeline",
     requires = "kyazdani42/nvim-web-devicons", -- If you want devicons
     config = function()
-      require("cokeline").setup()
+      require "config/cokeline"
     end,
   }
 
