@@ -34,13 +34,13 @@ return packer.startup(function()
   -- use "nathom/filetype.nvim"
   use "antoinemadec/FixCursorHold.nvim"
 
-  use {
-    "lambdalisue/fern.vim",
-    keys = { "nc", "nC", "ne", "nE" },
-    config = function()
-      require "config/fern"
-    end,
-  }
+  -- use {
+  --   "lambdalisue/fern.vim",
+  --   keys = { "nc", "nC", "ne", "nE" },
+  --   config = function()
+  --     require "config/fern"
+  --   end,
+  -- }
 
   use "ludovicchabant/vim-gutentags"
 
@@ -339,6 +339,21 @@ return packer.startup(function()
     end,
   }
 
+  use {
+    "nvim-neo-tree/neo-tree.nvim",
+    branch = "v2.x",
+    keys = { "nc", "nC", "ne", "nb" },
+    requires = {
+      "nvim-lua/plenary.nvim",
+      "kyazdani42/nvim-web-devicons", -- not strictly required, but recommended
+      "MunifTanjim/nui.nvim",
+    },
+    config = function()
+      require "config/neotree"
+    end,
+  }
+
+  -- ...
   use {
     "noib3/nvim-cokeline",
     requires = "kyazdani42/nvim-web-devicons", -- If you want devicons
