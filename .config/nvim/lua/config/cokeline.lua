@@ -1,8 +1,7 @@
 require("cokeline").setup {
   -- Only show the bufferline when there are at least this many visible buffers.
   -- default: `1`.
-  show_if_buffers_are_at_least = int,
-
+  show_if_buffers_are_at_least = 1,
   buffers = {
     -- A function to filter out unwanted buffers. Takes a buffer table as a
     -- parameter (see the following section for more infos) and has to return
