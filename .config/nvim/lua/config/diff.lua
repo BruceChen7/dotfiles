@@ -6,7 +6,7 @@ diffview.setup {
   hooks = {
     diff_buf_read = function(bufnr)
       vim.api.nvim_buf_del_keymap(bufnr, "n", "<tab>")
-      local opts = { noremap = true }
+      local opts = { noremap = true, silent = true }
       vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>l", "<c-w>l", opts)
       vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>j", "<c-w>j", opts)
       vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>k", "<c-w>k", opts)
@@ -14,8 +14,9 @@ diffview.setup {
     end,
     view_opened = function(view)
       -- dump(view)
+      local opts = { noremap = true, silent = true }
       bufnr = view.panel.bufid
-      vim.api.nvim_buf_del_keymap(bufnr, "n", "<tab>")
+      vim.api.nvim_buf_del_keymap(bufnr, "n", "<tab>", opts)
       local opts = { noremap = true }
       vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>l", "<c-w>l", opts)
       vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>j", "<c-w>j", opts)

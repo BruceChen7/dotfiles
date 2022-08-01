@@ -58,9 +58,13 @@ function quitWindow()
   local buf_total_num = vim.fn.len(vim.fn.getbufinfo { buflisted = 1 })
   local buf_name = vim.fn.bufname()
   local buf_id = vim.fn.bufnr()
+  if vim.o.filetype == "neo-tree" then
+    vim.api.nvim_command "NeoTreeClose"
+    return
+  end
   if buf_name:find "^diffview" then
     vim.api.nvim_command "DiffviewClose"
-    vim.api.nvim_command("bdelete %s"):format(buf_id)
+    -- vim.api.nvim_command("bdelete %s"):format(buf_id)
     print "hell world"
   elseif buf_total_num ~= 1 then
     vim.api.nvim_command "bdelete"
