@@ -339,6 +339,15 @@ return packer.startup(function()
     end,
   }
 
+  -- using packer.nvim
+  use {
+    "akinsho/bufferline.nvim",
+    tag = "v2.*",
+    requires = "kyazdani42/nvim-web-devicons",
+    config = function()
+      require "config/bufferline"
+    end,
+  }
   use {
     "nvim-neo-tree/neo-tree.nvim",
     branch = "v2.x",
@@ -353,14 +362,13 @@ return packer.startup(function()
     end,
   }
 
-  -- ...
-  use {
-    "noib3/nvim-cokeline",
-    requires = "kyazdani42/nvim-web-devicons", -- If you want devicons
-    config = function()
-      require "config/cokeline"
-    end,
-  }
+  -- use {
+  --   "noib3/nvim-cokeline",
+  --   requires = "kyazdani42/nvim-web-devicons", -- If you want devicons
+  --   config = function()
+  --     require "config/cokeline"
+  --   end,
+  -- }
 
   use {
     "xiyaowong/nvim-transparent",

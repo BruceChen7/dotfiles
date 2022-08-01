@@ -55,7 +55,6 @@ require("neo-tree").setup {
         nowait = false, -- disable `nowait` if you have existing combos starting with this char that you want to use
       },
       ["<cr>"] = "open",
-      ["o"] = "open",
       ["v"] = "open_split",
       ["s"] = "open_vsplit",
       -- ["S"] = "split_with_window_picker",
@@ -97,7 +96,6 @@ require("neo-tree").setup {
 
 local opts = { noremap = true }
 
-vim.keymap.set("n", "nc", ":NeoTreeShowToggle<CR>", opts)
-vim.keymap.set("n", "nC", ":vsplit .<CR>", opts)
-vim.keymap.set("n", "ne", ":Neotree filesystem reveal right<CR>", opts)
+vim.keymap.set("n", "ne", ":NeoTreeShowToggle<CR>", opts)
+vim.keymap.set("n", "nc", ":Neotree filesystem reveal_force_cwd right<CR>", opts)
 vim.keymap.set("n", "nb", ":Neotree buffers<CR>", opts)

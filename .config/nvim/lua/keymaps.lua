@@ -55,7 +55,6 @@ u.map("n", "<space>-", ":resize -3<cr>")
 u.map("n", "<space>,", ":vertical resize -5<cr>")
 u.map("n", "<space>.", ":vertical resize +5<cr>")
 
-u.map("n", "Q", ":q!<cr>")
 
 -- vim-preview
 u.map("n", "<m-;>", ":PreviewTag<CR>")
