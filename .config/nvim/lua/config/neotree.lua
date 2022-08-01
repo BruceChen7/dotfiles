@@ -96,6 +96,6 @@ require("neo-tree").setup {
 
 local opts = { noremap = true }
 
-vim.keymap.set("n", "ne", ":NeoTreeShowToggle<CR>", opts)
+vim.keymap.set("n", "nC", ":Neotree filesystem reveal_force_cwd right <CR>", opts)
 vim.keymap.set("n", "nc", ":Neotree filesystem reveal_force_cwd right<CR>", opts)
 vim.keymap.set("n", "nb", ":Neotree buffers<CR>", opts)
