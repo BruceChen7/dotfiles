@@ -175,7 +175,6 @@ return packer.startup(function()
   -- terminal
   use {
     "akinsho/toggleterm.nvim",
-    branch = "main",
     config = function()
       require "config/terminal"
     end,

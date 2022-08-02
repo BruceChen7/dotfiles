@@ -17,6 +17,7 @@ o.errorformat:append "[%f:%l] -> %m,[%f:%l]:%m"
 o.relativenumber = false
 o.mouse = "n"
 
+
 vim.cmd [[
 augroup InitFileTypesGroup
 
