@@ -65,6 +65,7 @@ o.listchars = "tab:|  ,trail:.,extends:>,precedes:<"
 
 -- 文件换行符，默认使用 unix 换行符
 o.ffs = "unix,dos,mac"
+
 -- 允许代码折叠
 o.foldenable = true
 
@@ -92,4 +93,8 @@ o.wildignore = [[
 	*.zip,*.tar.gz,*.tar.bz2,*.rar,*.tar.xz,*.kgb
 	*.swp,.lock,.DS_Store,._*
 	*/tmp/*,*.so,*.swp,*.zip,**/node_modules/**,**/target/**,**.terraform/**"
+]]
+
+vim.cmd [[
+ set clipboard+=unnamedplus
 ]]
