@@ -75,7 +75,6 @@ for _, lsp in ipairs(servers) do
       gopls = {
         experimentalPostfixCompletions = true,
         completeUnimported = true,
-        -- seems  not working
         hints = {
           assignVariableTypes = true,
           compositeLiteralFields = true,
@@ -86,6 +85,7 @@ for _, lsp in ipairs(servers) do
           rangeVariableTypes = true,
         },
         analyses = {
+          -- find structs that would use less memory if their fields were sorted
           fieldalignment = true,
           unusedparams = true,
           shadow = true,
@@ -141,6 +141,7 @@ require("rust-tools").setup {
       ["rust-analyzer"] = {
         assist = {
           importPrefix = "by_self",
+          importGranularity = "module",
         },
         diagnostics = {
           -- https://github.com/rust-analyzer/rust-analyzer/issues/6835
@@ -268,6 +269,7 @@ cmp.setup {
       },
     },
     { name = "crates" },
+    { name = "rg" },
   },
   sorting = {
     -- TODO: Would be cool to add stuff like "See variable names before method names" in rust, or something like that.
@@ -351,6 +353,7 @@ cmp.setup {
         nvim_lsp = meta_type,
         path = " Path",
         luasnip = " LuaSnip",
+        rg = "Rg",
       })[entry.source.name]
 
       return vim_item
@@ -382,6 +385,6 @@ end
 vim.cmd [[
 augroup GoInlayhintsGroup
     au!
-    autocmd CursorMoved,CursorHold,CursorHoldI *.go lua set_inlay_hints()
+    autocmd CursorHold,CursorHoldI *.go lua set_inlay_hints()
 augroup END
 ]]

@@ -78,6 +78,7 @@ return packer.startup(function()
   use "hrsh7th/cmp-nvim-lua"
   use "hrsh7th/cmp-nvim-lsp-document-symbol"
   use "tamago324/cmp-zsh"
+  use "lukas-reineke/cmp-rg"
 
   use {
     "L3MON4D3/LuaSnip",
