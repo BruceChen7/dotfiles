@@ -117,7 +117,7 @@ end
 require("rust-tools").setup {
   tools = {
     autoSetHints = true,
-    hover_with_actions = true,
+    -- hover_with_actions = true,
     inlay_hints = {
       only_current_line = false,
       only_current_line_autocmd = "CursorHold",
@@ -269,7 +269,7 @@ cmp.setup {
       },
     },
     { name = "crates" },
-    { name = "rg" },
+    -- { name = "rg" },
   },
   sorting = {
     -- TODO: Would be cool to add stuff like "See variable names before method names" in rust, or something like that.
