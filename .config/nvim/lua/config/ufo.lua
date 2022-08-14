@@ -1,7 +1,7 @@
 local ftMap = {
   vim = "indent",
-  go = "indent",
   python = { "indent" },
+  lua = "",
   git = "",
   yaml = "",
   markdown = "",
@@ -36,9 +36,10 @@ end
 
 require("ufo").setup {
   provider_selector = function(bufnr, filetype)
-    if vim.bo[bufnr].bt == "nofile" then
-      return ""
-    end
+    return { "treesitter", "indent" }
+    -- if vim.bo[bufnr].bt == "nofile" then
+    --   return ""
+    -- end
     -- return a string type use ufo providers
     -- return a string in a table like a string type
     -- return empty string '' will disable any providers

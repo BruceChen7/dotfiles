@@ -65,7 +65,7 @@ function quitWindow()
   if buf_name:find "^diffview" then
     vim.api.nvim_command "DiffviewClose"
     -- vim.api.nvim_command("bdelete %s"):format(buf_id)
-    print "hell world"
+    -- print "hell world"
   elseif buf_total_num ~= 1 then
     vim.api.nvim_command "bdelete"
   else

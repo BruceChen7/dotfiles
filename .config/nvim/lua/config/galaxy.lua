@@ -6,7 +6,7 @@ end
 local colors = require("galaxyline.theme").default
 local condition = require "galaxyline.condition"
 local gls = galaxyline.section
-galaxyline.short_line_list = { "NvimTree", "vista", "dbui", "packer", "lspsagaoutline" }
+-- galaxyline.short_line_list = { "NvimTree", "vista", "dbui", "packer", "lspsagaoutline" }
 
 gls.left[1] = {
   RainbowRed = {
@@ -69,7 +69,7 @@ gls.left[5] = {
   FileName = {
     condition = condition.buffer_not_empty,
     highlight = { colors.fg, colors.bg, "bold" },
-    provider = "FileName",
+    provider = "FilePath",
   },
 }
 
@@ -123,20 +123,20 @@ gls.left[11] = {
   },
 }
 
-gls.mid[1] = {
-  ShowLspClient = {
-    condition = function()
-      local tbl = { ["dashboard"] = true, [""] = true }
-      if tbl[vim.bo.filetype] then
-        return false
-      end
-      return true
-    end,
-    highlight = { colors.yellow, colors.bg, "bold" },
-    icon = " LSP:",
-    provider = "GetLspClient",
-  },
-}
+-- gls.mid[1] = {
+--   ShowLspClient = {
+--     condition = function()
+--       local tbl = { ["dashboard"] = true, [""] = true }
+--       if tbl[vim.bo.filetype] then
+--         return false
+--       end
+--       return true
+--     end,
+--     highlight = { colors.yellow, colors.bg, "bold" },
+--     icon = " LSP:",
+--     provider = "GetLspClient",
+--   },
+-- }
 
 gls.right[1] = {
   FileEncode = {

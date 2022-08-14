@@ -3,7 +3,7 @@ require("neo-tree").setup {
   enable_git_status = true,
   enable_diagnostics = true,
   sort_case_insensitive = false,
-  hijack_netrw_behavior = "open_current",
+  -- hijack_netrw_behavior = "open_current",
   use_libuv_file_watcher = true,
 
   filesystem = {
@@ -43,7 +43,7 @@ require("neo-tree").setup {
   },
 
   window = {
-    position = "current",
+    -- position = "current",
     width = 40,
     mapping_options = {
       noremap = true,
@@ -97,5 +97,9 @@ require("neo-tree").setup {
 local opts = { noremap = true }
 
 vim.keymap.set("n", "nC", ":Neotree filesystem reveal_force_cwd right <CR>", opts)
-vim.keymap.set("n", "nc", ":Neotree filesystem reveal_force_cwd right<CR>", opts)
+vim.keymap.set("n", "nc", ":Neotree filesystem reveal_force_cwd current<CR>", opts)
+vim.keymap.set("n", "ne", function()
+  vim.api.nvim_command "vsplit"
+  vim.api.nvim_command "NeoTreeShowInSplit"
+end, opts)
 vim.keymap.set("n", "nb", ":Neotree buffers<CR>", opts)
