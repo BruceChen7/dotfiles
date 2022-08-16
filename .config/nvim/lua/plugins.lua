@@ -91,6 +91,16 @@ return packer.startup(function()
 
   use {
     "hrsh7th/nvim-cmp", -- Autocompletion plugin
+    requires = {
+      {
+        "quangnguyen30192/cmp-nvim-tags",
+        -- if you want the sources is available for some file types
+        ft = {
+          "go",
+          "rust",
+        },
+      },
+    },
     -- commit = "bba6fb67fdafc0af7c5454058dfbabc2182741f4",
   }
 
@@ -115,9 +125,18 @@ return packer.startup(function()
   use "sgur/vim-textobj-parameter"
 
   -- 提供cs'"这种快捷键
-  use "tpope/vim-surround"
+  -- use "tpope/vim-surround"
+  --
+  -- use "tpope/vim-repeat"
 
-  use "tpope/vim-repeat"
+  use {
+    "kylechui/nvim-surround",
+    config = function()
+      require("nvim-surround").setup {
+        -- Configuration here, or leave empty to use defaults
+      }
+    end,
+  }
 
   -- 自动调整窗口
   use "camspiers/lens.vim"

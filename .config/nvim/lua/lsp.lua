@@ -116,17 +116,16 @@ end
 -- use rust-tools to
 require("rust-tools").setup {
   tools = {
-    autoSetHints = true,
     -- hover_with_actions = true,
     inlay_hints = {
       only_current_line = false,
-      only_current_line_autocmd = "CursorHold",
       show_parameter_hints = true,
       parameter_hints_prefix = "<- ",
       -- prefix for all the other hints (type, chaining)
       -- default: "=>"
       other_hints_prefix = "=> ",
       highlight = "Comment",
+      auto = true,
     },
     hover_actions = {
       auto_focus = false,
@@ -269,6 +268,7 @@ cmp.setup {
       },
     },
     { name = "crates" },
+    { name = "tags" },
     -- { name = "rg" },
   },
   sorting = {
@@ -353,7 +353,8 @@ cmp.setup {
         nvim_lsp = meta_type,
         path = " Path",
         luasnip = " LuaSnip",
-        rg = "Rg",
+        tags = " Tags",
+        -- rg = "Rg",
       })[entry.source.name]
 
       return vim_item
