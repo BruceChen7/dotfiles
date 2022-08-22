@@ -23,6 +23,14 @@ o.incsearch = true
 
 -- 显示匹配的括号
 o.showmatch = true
+o.showtabline = 2
+o.smartindent = true
+
+o.splitright = true
+o.splitbelow = true
+o.cursorline = true
+o.title = true
+o.numberwidth = 4
 
 -- 显示关标位置
 o.ruler = true
@@ -38,7 +46,6 @@ o.ts = 4
 o.expandtab = true
 --  如果后面设置了 expandtab 那么展开 tab 为多少字符
 o.softtabstop = 4
-
 o.backup = true
 o.writebackup = true
 o.undofile = false
