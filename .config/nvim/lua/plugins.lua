@@ -101,7 +101,6 @@ return packer.startup(function()
         },
       },
     },
-    -- commit = "bba6fb67fdafc0af7c5454058dfbabc2182741f4",
   }
 
   use {
@@ -142,7 +141,7 @@ return packer.startup(function()
   use "camspiers/lens.vim"
 
   -- 复制剪切板
-  use "ojroques/vim-oscyank"
+  -- use "ojroques/vim-oscyank"
 
   use {
     "glepnir/galaxyline.nvim",
@@ -288,6 +287,13 @@ return packer.startup(function()
   }
 
   use {
+    "RRethy/vim-illuminate",
+    config = function()
+      require "config/illuminate"
+    end,
+  }
+
+  use {
     "karb94/neoscroll.nvim",
     config = function()
       require "config/neoscroll"
@@ -367,6 +373,7 @@ return packer.startup(function()
       require "config/bufferline"
     end,
   }
+
   use {
     "nvim-neo-tree/neo-tree.nvim",
     branch = "v2.x",
@@ -380,14 +387,6 @@ return packer.startup(function()
       require "config/neotree"
     end,
   }
-
-  -- use {
-  --   "noib3/nvim-cokeline",
-  --   requires = "kyazdani42/nvim-web-devicons", -- If you want devicons
-  --   config = function()
-  --     require "config/cokeline"
-  --   end,
-  -- }
 
   use {
     "xiyaowong/nvim-transparent",

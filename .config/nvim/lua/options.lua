@@ -12,12 +12,13 @@ o.wrap = false
 o.termguicolors = true
 
 o.ttimeout = true
-o.ttimeoutlen = 50
+o.ttimeoutlen = 100
 o.tags = [[ ./.tags;,.tags ]]
 
 -- 智能搜索大小写判断，默认忽略大小写，除非搜索内容包含大写字母
 o.ignorecase = true
 o.smartcase = true
+-- highlight all matches on previous search pattern
 o.hlsearch = true
 o.incsearch = true
 
@@ -104,4 +105,5 @@ o.wildignore = [[
 
 vim.cmd [[
  set clipboard+=unnamedplus
+ set foldcolumn=0
 ]]

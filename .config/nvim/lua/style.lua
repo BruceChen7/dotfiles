@@ -17,7 +17,6 @@ o.errorformat:append "[%f:%l] -> %m,[%f:%l]:%m"
 o.relativenumber = false
 o.mouse = "n"
 
-
 vim.cmd [[
 augroup InitFileTypesGroup
 
@@ -34,7 +33,8 @@ augroup InitFileTypesGroup
 	" lisp 进行微调
 	au FileType lisp setlocal ts=8 sts=2 sw=2 et
 
-	au FileType go setlocal ts=8 sw=8 et
+	-- au FileType go setlocal ts=8 sw=8 et
+	au FileType go setlocal ts=8 sw=8 et foldcolumn=0
 
 	au FileType lua setlocal ts=4 sw=4 et
 
@@ -62,7 +62,7 @@ augroup END
 function getColorscheme()
   local colorschemes = { --"vscode",
     "nightfox",
-    "dayfox",
+    -- "dayfox",
     "nordfox",
     "duskfox",
     "terafox",
