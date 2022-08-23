@@ -9,7 +9,10 @@ require("bufferline").setup {
     -- NOTE: this plugin is designed with this icon in mind,
     -- and so changing this is NOT recommended, this is intended
     -- as an escape hatch for people who cannot bear it for whatever reason
-    indicator_icon = "▎",
+    indicator = {
+      icon = "▎",
+      style = "underline",
+    },
     buffer_close_icon = "",
     modified_icon = "●",
     close_icon = "",
@@ -65,7 +68,6 @@ function quitWindow()
   if buf_name:find "^diffview" then
     vim.api.nvim_command "DiffviewClose"
     -- vim.api.nvim_command("bdelete %s"):format(buf_id)
-    -- print "hell world"
   elseif buf_total_num ~= 1 then
     vim.api.nvim_command "bdelete"
   else
