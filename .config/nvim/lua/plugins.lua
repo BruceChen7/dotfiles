@@ -10,7 +10,7 @@ local use = packer.use
 
 local ok, err = pcall(require, "compiled")
 if not ok then
-  error "Run :PackerCompile!"
+  print "Run :PackerCompile!"
 end
 
 vim.cmd [[
