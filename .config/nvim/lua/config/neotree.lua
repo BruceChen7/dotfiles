@@ -96,8 +96,8 @@ require("neo-tree").setup {
 
 local opts = { noremap = true }
 
-vim.keymap.set("n", "nC", ":Neotree filesystem reveal_force_cwd right <CR>", opts)
-vim.keymap.set("n", "nc", ":Neotree filesystem reveal_force_cwd current<CR>", opts)
+vim.keymap.set("n", "nC", ":Neotree toggle right reveal_force_cwd <CR>", opts)
+vim.keymap.set("n", "nc", ":Neotree toggle current reveal_force_cwd <CR>", opts)
 vim.keymap.set("n", "ne", function()
   vim.api.nvim_command "vsplit"
   vim.api.nvim_command "NeoTreeShowInSplit"
