@@ -24,7 +24,7 @@ augroup InitFileTypesGroup
 	au!
 
 	" C/C++ 文件使用 // 作为注释
-	au FileType c,cpp setlocal commentstring=//\ %s
+	au FileType c,cpp setlocal commentstring=//\ %s foldcolumn=0
 
 	au FileType zig setlocal ts=4 sw=4 et
 	" markdown 允许自动换行
@@ -33,7 +33,6 @@ augroup InitFileTypesGroup
 	" lisp 进行微调
 	au FileType lisp setlocal ts=8 sts=2 sw=2 et
 
-	-- au FileType go setlocal ts=8 sw=8 et
 	au FileType go setlocal ts=8 sw=8 et foldcolumn=0
 
 	au FileType lua setlocal ts=4 sw=4 et
