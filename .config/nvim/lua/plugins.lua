@@ -386,6 +386,14 @@ return packer.startup(function()
       require "config/neotree"
     end,
   }
+  use {
+    "mfussenegger/nvim-dap",
+    config = function()
+      require "config/dap"
+    end,
+  }
+
+  use { "rcarriga/nvim-dap-ui", requires = { "mfussenegger/nvim-dap" } }
 
   use {
     "xiyaowong/nvim-transparent",
