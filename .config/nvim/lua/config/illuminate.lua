@@ -1,4 +1,13 @@
 -- default configuration
+-- https://github.com/ayamir/nvimdots/blob/main/lua/modules/editor/config.lua
+if vim.api.nvim_get_hl_by_name("Visual", true).background then
+  local illuminate_bg = string.format("#%06x", vim.api.nvim_get_hl_by_name("Visual", true).background)
+  print "hello nvim_get_hl_by_name"
+  vim.api.nvim_set_hl(0, "IlluminatedWordText", { bg = illuminate_bg })
+  vim.api.nvim_set_hl(0, "IlluminatedWordRead", { bg = illuminate_bg })
+  vim.api.nvim_set_hl(0, "IlluminatedWordWrite", { bg = illuminate_bg })
+end
+
 require("illuminate").configure {
   -- providers: provider used to get references in the buffer, ordered by priority
   providers = {
