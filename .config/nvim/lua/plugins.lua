@@ -13,14 +13,12 @@ if not ok then
   print "Run :PackerCompile!"
 end
 
-vim.cmd [[
-augroup packer_user_config
-    autocmd!
-    autocmd BufWritePost init.lua source <afile> | PackerCompile
-augroup end
-]]
+local packer_group = vim.api.nvim_create_augroup("Packer", { clear = true })
+vim.api.nvim_create_autocmd(
+  "BufWritePost",
+  { command = "source <afile> | PackerCompile", group = packer_group, pattern = "init.lua" }
+)
 
---
 return packer.startup(function()
   use {
     "lewis6991/impatient.nvim",
@@ -28,11 +26,9 @@ return packer.startup(function()
       require "impatient"
     end,
   }
+
   -- Packer can manage itself
   use "wbthomason/packer.nvim"
-
-  -- use "nathom/filetype.nvim"
-  use "antoinemadec/FixCursorHold.nvim"
 
   -- use {
   --   "lambdalisue/fern.vim",
@@ -335,8 +331,6 @@ return packer.startup(function()
     "p00f/nvim-ts-rainbow",
   }
 
-  use "zane-/cder.nvim"
-
   use {
     "nacro90/numb.nvim",
     config = function()
@@ -363,13 +357,22 @@ return packer.startup(function()
     end,
   }
 
-  -- using packer.nvim
   use {
     "akinsho/bufferline.nvim",
     tag = "v2.*",
     requires = "kyazdani42/nvim-web-devicons",
     config = function()
       require "config/bufferline"
+    end,
+  }
+
+  use {
+    "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
+    config = function()
+      require("lsp_lines").setup {}
+      vim.diagnostic.config {
+        virtual_text = false,
+      }
     end,
   }
 
@@ -386,6 +389,7 @@ return packer.startup(function()
       require "config/neotree"
     end,
   }
+
   use {
     "mfussenegger/nvim-dap",
     config = function()
@@ -396,24 +400,7 @@ return packer.startup(function()
   use { "rcarriga/nvim-dap-ui", requires = { "mfussenegger/nvim-dap" } }
 
   use {
-    "xiyaowong/nvim-transparent",
-    config = function()
-      require("transparent").setup {
-        enable = true, -- boolean: enable transparent
-        extra_groups = { -- table/string: additional groups that should be cleared
-          -- In particular, when you set it to 'all', that means all available groups
-
-          -- example of akinsho/nvim-bufferline.lua
-          -- "BufferLineTabClose",
-          -- "BufferlineBufferSelected",
-          -- "BufferLineFill",
-          -- "BufferLineBackground",
-          -- "BufferLineSeparator",
-          -- "BufferLineIndicatorSelected",
-        },
-        exclude = {}, -- table: groups you don't want to clear
-      }
-    end,
+    "gennaro-tedesco/nvim-peekup",
   }
 
   if util_packer.first_install then
