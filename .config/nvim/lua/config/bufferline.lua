@@ -1,7 +1,7 @@
 require("bufferline").setup {
   options = {
     mode = "buffers", -- set to "tabs" to only show tabpages instead
-    numbers = "ordinal",
+    -- numbers = "ordinal",
     close_command = "bdelete! %d", -- can be a string | function, see "Mouse actions"
     right_mouse_command = "bdelete! %d", -- can be a string | function, see "Mouse actions"
     left_mouse_command = "buffer %d", -- can be a string | function, see "Mouse actions"
@@ -48,6 +48,13 @@ require("bufferline").setup {
     separator_style = "thin",
     enforce_regular_tabs = false,
     always_show_bufferline = false,
+
+    -- filter some buffer
+    offsets = {
+      { filetype = "NvimTree", text = "", padding = 1 },
+      { filetype = "neo-tree", text = "", padding = 1 },
+      { filetype = "Outline", text = "", padding = 1 },
+    },
   },
 }
 
