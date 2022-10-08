@@ -2,9 +2,13 @@
 -- https://github.com/ayamir/nvimdots/blob/main/lua/modules/editor/config.lua
 if vim.api.nvim_get_hl_by_name("Visual", true).background then
   local illuminate_bg = string.format("#%06x", vim.api.nvim_get_hl_by_name("Visual", true).background)
-  vim.api.nvim_set_hl(0, "IlluminatedWordText", { bg = illuminate_bg })
-  vim.api.nvim_set_hl(0, "IlluminatedWordRead", { bg = illuminate_bg })
-  vim.api.nvim_set_hl(0, "IlluminatedWordWrite", { bg = illuminate_bg })
+  -- vim.api.nvim_set_hl(0, "IlluminatedWordText", { bg = illuminate_bg })
+  -- vim.api.nvim_set_hl(0, "IlluminatedWordRead", { bg = illuminate_bg })
+  -- vim.api.nvim_set_hl(0, "IlluminatedWordWrite", { bg = illuminate_bg })
+  --
+  vim.api.nvim_set_hl(0, "IlluminatedWordText", { link = "LspReferenceText" })
+  vim.api.nvim_set_hl(0, "IlluminatedWordRead", { link = "LspReferenceRead" })
+  vim.api.nvim_set_hl(0, "IlluminatedWordWrite", { link = "LspReferenceWrite" })
 end
 
 require("illuminate").configure {
@@ -42,5 +46,5 @@ require("illuminate").configure {
   -- Use :echom synIDattr(synIDtrans(synID(line('.'), col('.'), 1)), 'name')
   providers_regex_syntax_allowlist = {},
   -- under_cursor: whether or not to illuminate under the cursor
-  under_cursor = true,
+  under_cursor = false,
 }
