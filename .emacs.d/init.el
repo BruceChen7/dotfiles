@@ -18,6 +18,8 @@
 (setq inhibit-startup-screen t
       initial-buffer-choice  nil)
 
+(setq inhibit-splash-screen t)
+
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
@@ -25,6 +27,11 @@
 (setq package-archives '(("gnu"   . "http://mirrors.cloud.tencent.com/elpa/gnu/")
                          ("melpa" . "http://mirrors.cloud.tencent.com/elpa/melpa/")))
 (package-initialize)
+
+;; (use-package awesome-tab
+;;   :load-path "~/.emacs.d/elpa/awesome-tab"
+;;   :config
+;;   (awesome-tab-mode t))
 
 
 (eval-when-compile
@@ -34,6 +41,14 @@
 (use-package counsel
   :ensure t)
 
+(use-package all-the-icons
+  :ensure t)
+
+(use-package doom-modeline
+  :ensure t
+  :config
+  (setq doom-modeline-support-imenu t) 
+  :init (doom-modeline-mode 1))
 (use-package ivy
   :diminish
   :ensure t            
@@ -52,6 +67,26 @@
 
 
 (load-theme 'atom-one-dark t)
+
+
+(use-package projectile
+  :ensure t
+  :config
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  (projectile-mode +1))
+
+(use-package company
+  :hook ((prog-mode . company-mode)
+         (inferior-emacs-lisp-mode . company-mode))
+  :config (setq company-minimum-prefix-length 1
+                company-show-quick-access nil))
+
+
+(use-package ivy-posframe
+ :ensure t
+ :config
+ (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-window-center)))
+ (ivy-posframe-mode 1))
 
 ;; used to move cursor fastly
 (use-package avy
