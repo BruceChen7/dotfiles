@@ -96,6 +96,8 @@
          (inferior-emacs-lisp-mode . company-mode))
   :config (setq company-minimum-prefix-length 1
                 company-show-quick-access nil))
+	  (define-key company-active-map (kbd "C-j") 'company-select-next)
+          (define-key company-active-map (kbd "C-k") 'company-select-previous))
 
 
 (use-package ivy-posframe
