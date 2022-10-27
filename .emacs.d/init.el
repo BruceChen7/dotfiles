@@ -15,12 +15,12 @@
 (when (display-graphic-p) (toggle-scroll-bar -1)) ; 图形界面时关闭滚动条
 
 (savehist-mode 0)                            ; （可选）打开 Buffer 历史记录保存
+(setq display-line-numbers-type 'relative)   ; （可选）显示相对行号
 
 ;; make :q just kill the buffer
 (global-set-key [remap evil-quit] 'kill-buffer-and-window)
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 (fset 'yes-or-no-p 'y-or-n-p)
-
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
@@ -67,6 +67,7 @@
   :ensure t
   :config
   (setq doom-modeline-support-imenu t) 
+  (setq doom-modeline-project-detection 'auto)
   :init (doom-modeline-mode 1))
 
 (use-package ivy
@@ -90,6 +91,11 @@
 (load-theme 'atom-one-dark t)
 
 
+(use-package projectile
+  :ensure t
+  :config
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  (projectile-mode +1))
 
 (use-package company
   :hook ((prog-mode . company-mode)

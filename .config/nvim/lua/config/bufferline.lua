@@ -54,6 +54,8 @@ require("bufferline").setup {
       { filetype = "NvimTree", text = "", padding = 1 },
       { filetype = "neo-tree", text = "", padding = 1 },
       { filetype = "Outline", text = "", padding = 1 },
+      { filetype = "NeogitStatus", text = "", padding = 1 },
+      { filetype = "DiffviewFiles", text = "", padding = 1 },
     },
   },
 }
@@ -71,6 +73,12 @@ function quitWindow()
   if vim.o.filetype == "neo-tree" then
     vim.api.nvim_command "NeoTreeClose"
     return
+  end
+  if vim.o.filetype == "vim" then
+    vim.api.nvim_command "close"
+  end
+  if vim.o.filetype == "packer" then
+    vim.api.nvim_command "close"
   end
   if buf_name:find "^diffview" then
     vim.api.nvim_command "DiffviewClose"

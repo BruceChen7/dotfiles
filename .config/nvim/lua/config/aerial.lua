@@ -19,8 +19,6 @@ require("aerial").setup {
   },
   highlight_on_hover = true,
   ignore = { filetypes = { "gomod" } },
-  min_width = 30,
-  placement_editor_edge = true,
   update_events = "TextChanged,InsertLeave",
   lsp = {
     update_when_errors = true,
@@ -32,6 +30,11 @@ require("aerial").setup {
   },
   markdown = {
     update_delay = update_delay,
+  },
+  layout = {
+    min_width = 30,
+    placement_editor_edge = true,
+    default_direction = "right",
   },
   on_attach = function(bufnr)
     -- Toggle the aerial window with <leader>a
