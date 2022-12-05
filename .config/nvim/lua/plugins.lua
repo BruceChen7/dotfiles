@@ -376,6 +376,10 @@ return packer.startup(function()
     end,
   }
 
+  -- packer example:
+  use {
+    "LunarVim/bigfile.nvim",
+  }
   use {
     "nvim-neo-tree/neo-tree.nvim",
     branch = "v2.x",
