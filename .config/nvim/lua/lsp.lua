@@ -366,11 +366,11 @@ cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done { map_char = { tex = 
 vim.cmd [[
 augroup FormatGroup
     au!
-    autocmd BufWritePre *.go lua vim.lsp.buf.formatting_seq_sync()
-    autocmd BufWritePre *.md lua vim.lsp.buf.formatting_seq_sync()
-    autocmd BufWritePre *.rs lua vim.lsp.buf.formatting_seq_sync()
-    autocmd BufWritePre *.zig lua vim.lsp.buf.formatting_seq_sync()
-    autocmd BufWritePre *.lua lua vim.lsp.buf.formatting_seq_sync()
+    autocmd BufWritePre *.go lua vim.lsp.buf.format()
+    autocmd BufWritePre *.md lua vim.lsp.buf.format()
+    autocmd BufWritePre *.rs lua vim.lsp.buf.format()
+    autocmd BufWritePre *.zig lua vim.lsp.buf.format()
+    autocmd BufWritePre *.lua lua vim.lsp.buf.format()
 augroup END
 ]]
 
