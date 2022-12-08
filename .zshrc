@@ -92,7 +92,7 @@ antigen use prezto
 # default bundles
 # antigen bundle rupa/z z.sh
 antigen bundle Vifon/deer
-antigen bundle zdharma/fast-syntax-highlighting
+#antigen bundle zdharma/fast-syntax-highlighting
 antigen bundle zsh-users/zsh-autosuggestions
 antigen bundle git
 antigen bundle fzf
@@ -143,7 +143,7 @@ ZSH_HIGHLIGHT_STYLES[assign]=none
 antigen apply
 
 # work around: fast syntax highlighting may crash zsh without this
-FAST_HIGHLIGHT[chroma-git]="chroma/-ogit.ch"
+# FAST_HIGHLIGHT[chroma-git]="chroma/-ogit.ch"
 
 # options
 unsetopt correct_all
@@ -261,3 +261,7 @@ function wk {
     fzf --bind=enter:replace-query+print-query |
     read session && tmux attach -t ${session:-default} || tmux new -s ${session:-default}
 }
+. "$HOME/.cargo/env"
+export LC_CTYPE=en_US.UTF-8 
+export LANG=zh_CN.UTF-8
+export LANGUAGE=zh_CN:en_US

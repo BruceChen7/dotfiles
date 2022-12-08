@@ -65,8 +65,8 @@ g.mapleader = " "
 g.maplocalleader = " "
 
 -- use filtype.lua
-g.do_filetype_lua = 1
-g.did_load_filetypes = 0
+-- g.do_filetype_lua = 1
+-- g.did_load_filetypes = 0
 
 -- 设置分隔符可视
 o.listchars = "tab:|  ,trail:.,extends:>,precedes:<"
