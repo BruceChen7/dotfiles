@@ -232,6 +232,6 @@ telescope.setup {
 -- telescope.load_extension "dap"
 -- telescope.load_extension "vim_bookmarks"
 -- telescope.load_extension "projects"
-telescope.load_extension "cder"
+-- telescope.load_extension "cder"
 vim.keymap.set("n", ",tg", ":Telescope live_grep<CR>")
 vim.keymap.set("n", ",tc", ":Telescope cder<CR>")
