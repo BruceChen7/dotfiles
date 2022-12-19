@@ -217,9 +217,8 @@ zstyle ':completion:*:*sh:*:' tag-order files
 if [[ `uname` == "darwin" ]] || [[ `uname` == "Darwin" ]]; then
 	export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles/bottles
 fi
+
 eval "$(lua /usr/local/bin/z.lua  --init zsh once enhanced)"    # ZSH 初始化
-
-
 
 # not use default c-r or up key bindings
 export ATUIN_NOBIND="true"
@@ -265,3 +264,4 @@ function wk {
 export LC_CTYPE=en_US.UTF-8
 export LANG=zh_CN.UTF-8
 export LANGUAGE=zh_CN:en_US
+export TERM="xterm-256color"
