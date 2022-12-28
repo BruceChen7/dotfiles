@@ -62,9 +62,13 @@ function getColorscheme()
   local colorschemes = { --"vscode",
     "nightfox",
     -- "dayfox",
-    "nordfox",
-    "duskfox",
-    "terafox",
+    -- "nordfox",
+    -- "duskfox",
+    -- "terafox",
+    "tokyonight",
+    "tokyonight-storm",
+    "tokyonight-day",
+    "tokyonight-moon",
   }
   local u = require "util"
   local len = u.tableLength(colorschemes)

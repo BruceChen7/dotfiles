@@ -12,12 +12,12 @@ end
 vim.opt.runtimepath:prepend(lazypath)
 
 require("lazy").setup {
-  {
-    "lewis6991/impatient.nvim",
-    config = function()
-      require "impatient"
-    end,
-  },
+  -- {
+  --   "lewis6991/impatient.nvim",
+  --   config = function()
+  --     require "impatient"
+  --   end,
+  -- },
 
   { "ludovicchabant/vim-gutentags" },
 
@@ -137,9 +137,9 @@ require("lazy").setup {
   {
     "lukas-reineke/indent-blankline.nvim",
     config = function()
-      vim.opt.list = true
-      vim.opt.listchars:append "space:⋅"
-      vim.opt.listchars:append "eol:↴"
+      -- vim.opt.list = true
+      -- vim.opt.listchars:append "space:⋅"
+      -- vim.opt.listchars:append "eol:↴"
       require("indent_blankline").setup {
         space_char_blankline = " ",
         show_current_context = true,
@@ -346,6 +346,7 @@ require("lazy").setup {
   --   end,
   -- },
 
+  { "folke/tokyonight.nvim" },
   {
     "nvim-neo-tree/neo-tree.nvim",
     branch = "v2.x",
