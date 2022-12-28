@@ -1,99 +1,85 @@
-local u = require "util"
-local present, util_packer = pcall(require, "util.packer")
-
-if not present then
-  return false
+local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system {
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "--single-branch",
+    "https://github.com/folke/lazy.nvim.git",
+    lazypath,
+  }
 end
+vim.opt.runtimepath:prepend(lazypath)
 
-local packer = util_packer.packer
-local use = packer.use
-
-local ok, err = pcall(require, "compiled")
-if not ok then
-  print "Run :PackerCompile!"
-end
-
-local packer_group = vim.api.nvim_create_augroup("Packer", { clear = true })
-vim.api.nvim_create_autocmd(
-  "BufWritePost",
-  { command = "source <afile> | PackerCompile", group = packer_group, pattern = "init.lua" }
-)
-
-return packer.startup(function()
-  use {
+require("lazy").setup {
+  {
     "lewis6991/impatient.nvim",
     config = function()
       require "impatient"
     end,
-  }
+  },
 
-  -- Packer can manage itself
-  use "wbthomason/packer.nvim"
+  { "ludovicchabant/vim-gutentags" },
 
-  -- use {
-  --   "lambdalisue/fern.vim",
-  --   keys = { "nc", "nC", "ne", "nE" },
-  --   config = function()
-  --     require "config/fern"
-  --   end,
-  -- }
-
-  use "ludovicchabant/vim-gutentags"
-
-  use {
+  {
     "skywind3000/gutentags_plus",
     config = function()
       require "config/gtags"
     end,
-  }
+  },
 
-  use "skywind3000/vim-preview"
-  use "skywind3000/vim-quickui"
-  use "skywind3000/asynctasks.vim"
-  use "skywind3000/asyncrun.vim"
+  --
+  { "skywind3000/vim-preview" },
+  { "skywind3000/vim-quickui" },
+  { "skywind3000/asynctasks.vim" },
+  { "skywind3000/asyncrun.vim" },
 
-  use {
+  {
     "Yggdroot/LeaderF",
     -- keys = {"<m-n>", "<m-p>", "<m-m>", "<c-p>"},
     config = function()
       require "config/leaderf"
     end,
-  }
+  },
 
-  use {
+  {
     "neovim/nvim-lspconfig",
     tag = "v0.1.3",
-  }
-  -- adds vscode-like pictograms to neovim built-in lsp
-  use "onsails/lspkind-nvim"
+  },
 
-  use "hrsh7th/cmp-nvim-lsp" -- LSP source for nvim-cmp
-  use "hrsh7th/cmp-cmdline"
-  use "hrsh7th/cmp-buffer"
-  use "hrsh7th/cmp-path"
-  use "hrsh7th/cmp-nvim-lua"
-  use "hrsh7th/cmp-nvim-lsp-document-symbol"
-  use "tamago324/cmp-zsh"
-  use "lukas-reineke/cmp-rg"
+  -- -- adds vscode-like pictograms to neovim built-in lsp
+  { "onsails/lspkind-nvim" },
 
-  use {
+  -- LSP source for nvim-cmp
+  { "hrsh7th/cmp-nvim-lsp" },
+  { "hrsh7th/cmp-cmdline" },
+
+  { "hrsh7th/cmp-buffer" },
+  { "hrsh7th/cmp-path" },
+  { "hrsh7th/cmp-nvim-lua" },
+  { "hrsh7th/cmp-nvim-lsp-document-symbol" },
+  { "tamago324/cmp-zsh" },
+  { "lukas-reineke/cmp-rg" },
+
+  --
+  {
     "L3MON4D3/LuaSnip",
     config = function()
       require "config/lua_snip"
     end,
-  }
+  },
 
-  use {
+  {
     "rafamadriz/friendly-snippets",
     config = function()
       require("luasnip.loaders.from_vscode").lazy_load()
     end,
-  }
-  use { "saadparwaiz1/cmp_luasnip" }
+  },
+  { "saadparwaiz1/cmp_luasnip" },
 
-  use {
+  {
     "hrsh7th/nvim-cmp", -- Autocompletion plugin
-    requires = {
+    dependencies = {
       {
         "quangnguyen30192/cmp-nvim-tags",
         -- if you want the sources is available for some file types
@@ -103,42 +89,41 @@ return packer.startup(function()
         },
       },
     },
-  }
+  },
 
-  use {
+  {
     "lewis6991/gitsigns.nvim",
-    requires = {
+    dependencies = {
       "nvim-lua/plenary.nvim",
     },
     config = function()
       require "config/gitsigns"
     end,
     event = { "BufRead", "BufNewFile" },
-  }
+  },
 
-  -- 基础插件：提供让用户方便的自定义文本对象的接口
-  use "kana/vim-textobj-user"
   -- 参数文本对象：i,/a, 包括参数或者列表元素
-  use "sgur/vim-textobj-parameter"
+  { "sgur/vim-textobj-parameter", dependencies = { "kana/vim-textobj-user" } },
 
   -- 提供cs'"这种快捷键
   -- use "tpope/vim-surround"
   --
   -- use "tpope/vim-repeat"
-
-  use {
+  --
+  {
     "kylechui/nvim-surround",
     config = function()
       require("nvim-surround").setup {
         -- Configuration here, or leave empty to use defaults
       }
     end,
-  }
+  },
 
-  -- 自动调整窗口
-  use "camspiers/lens.vim"
+  -- -- 自动调整窗口
+  -- replaced with window.nvim
+  { "camspiers/lens.vim" },
 
-  use {
+  {
     "glepnir/galaxyline.nvim",
     branch = "main",
     -- your statusline
@@ -146,245 +131,226 @@ return packer.startup(function()
       require "config/galaxy"
     end,
     -- some optional icons
-    requires = { "kyazdani42/nvim-web-devicons", opt = true },
-  }
+    dependencies = { "kyazdani42/nvim-web-devicons", opt = true },
+  },
 
-  -- indent-line
-  use {
+  {
     "lukas-reineke/indent-blankline.nvim",
     config = function()
+      vim.opt.list = true
+      vim.opt.listchars:append "space:⋅"
+      vim.opt.listchars:append "eol:↴"
       require("indent_blankline").setup {
         space_char_blankline = " ",
         show_current_context = true,
         show_end_of_line = true,
       }
     end,
-  }
+  },
 
   -- treesitter
-  use {
+  {
     "nvim-treesitter/nvim-treesitter",
-    run = ":TSUpdate",
-  }
+    build = ":TSUpdate",
+  },
 
   -- https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-  use {
+  {
     "nvim-treesitter/nvim-treesitter-textobjects",
     config = function()
       require "config/text_obj"
     end,
-  }
+  },
 
-  use "nvim-treesitter/nvim-treesitter-context"
+  { "nvim-treesitter/nvim-treesitter-context" },
 
-  use { "dstein64/vim-startuptime", cmd = "StartupTime" }
+  { "dstein64/vim-startuptime", cmd = "StartupTime" },
 
-  use {
+  {
     "numToStr/Comment.nvim",
     config = function()
       require("Comment").setup()
     end,
-  }
+  },
 
   -- terminal
-  use {
+  {
     "akinsho/toggleterm.nvim",
     config = function()
       require "config/terminal"
     end,
     branch = "main",
-  }
+  },
 
   -- colorscheme
-  use { "EdenEast/nightfox.nvim" }
-  use {
+  { "EdenEast/nightfox.nvim" },
+  {
     "daschw/leaf.nvim",
     config = function()
       require("leaf").setup { theme = "dark" }
     end,
-  }
+  },
 
   -- bracket, brace auto complete
-  use {
+  {
     "windwp/nvim-autopairs",
     config = function()
       require("nvim-autopairs").setup {}
     end,
-  }
+  },
 
-  use {
+  {
     "jose-elias-alvarez/null-ls.nvim",
     config = function()
       require "config/null_ls"
     end,
-    requires = { "nvim-lua/plenary.nvim" },
-  }
+    dependencies = { "nvim-lua/plenary.nvim" },
+  },
 
   -- show signature
-  use {
+  {
     "ray-x/lsp_signature.nvim",
-  }
+  },
 
-  -- use {
-  --   "pacha/vem-tabline",
-  --   requires = "ryanoasis/vim-devicons",
-  --   config = function()
-  --     require "config/tabline"
-  --   end,
-  -- }
-
-  use {
+  {
     "TimUntersberger/neogit",
-    requires = "nvim-lua/plenary.nvim",
+    dependencies = "nvim-lua/plenary.nvim",
     config = function()
       require "config/neogit"
     end,
-  }
+  },
 
-  use {
+  {
     "rlane/pounce.nvim",
-  }
+  },
 
-  use {
+  {
     "nvim-lua/lsp_extensions.nvim",
-  }
+  },
 
-  use {
+  {
     "saecki/crates.nvim",
     tag = "v0.1.0",
-    requires = { "nvim-lua/plenary.nvim" },
+    dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
       require("crates").setup()
     end,
-  }
+  },
 
   -- used to show lsp init progress
-  use {
-    "j-hui/fidget.nvim",
-    config = function()
-      require("fidget").setup {}
-    end,
-  }
+  -- use {
+  --   "j-hui/fidget.nvim",
+  --   config = function()
+  --     require("fidget").setup {}
+  --   end,
+  -- }
 
   --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
-  -- use 't9md/vim-choosewin'
+  -- use "t9md/vim-choosewin"
 
-  use {
+  {
     "simrat39/rust-tools.nvim",
-  }
+  },
 
-  use {
+  {
     "sindrets/diffview.nvim",
-    requires = { "nvim-lua/plenary.nvim", "kyazdani42/nvim-web-devicons", opt = true },
+    dependencies = { "nvim-lua/plenary.nvim", "kyazdani42/nvim-web-devicons", opt = true },
     config = function()
       require "config/diff"
     end,
-  }
+  },
 
-  use {
+  --
+  {
     "RRethy/vim-illuminate",
     config = function()
       require "config/illuminate"
     end,
-  }
+  },
 
-  use {
+  {
     "karb94/neoscroll.nvim",
     config = function()
       require "config/neoscroll"
     end,
-  }
+  },
 
-  use {
-    "stevearc/aerial.nvim",
-    config = function()
-      require "config/aerial"
-    end,
-  }
-
-  --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
-  -- use 't9md/vim-choosewin'
-
-  use {
-    "nvim-telescope/telescope.nvim",
-    requires = { { "nvim-lua/plenary.nvim" } },
-    config = function()
-      require "config/telescope"
-    end,
-  }
-
-  use {
+  {
     "kevinhwang91/nvim-hlslens",
     config = function()
       require "config/hlslen"
     end,
-  }
-  -- Lua
-  use {
+  },
+
+  {
     "abecodes/tabout.nvim",
     config = function()
       require "config/tabout"
     end,
-  }
+    dependencies = {
+      "hrsh7th/nvim-cmp", -- Autocompletion plugin
+      "nvim-treesitter/nvim-treesitter",
+    },
+  },
 
-  use {
+  --
+  {
     "p00f/nvim-ts-rainbow",
-  }
-
-  use {
+  },
+  --
+  {
     "nacro90/numb.nvim",
     config = function()
       require("numb").setup()
     end,
-  }
-  use {
+  },
+
+  {
     "ziontee113/syntax-tree-surfer",
     config = function()
       require "config/surfer"
     end,
-  }
-  use {
+  },
+  {
     "nmac427/guess-indent.nvim",
     config = function()
       require("guess-indent").setup {}
     end,
-  }
-  use {
+  },
+
+  {
     "kevinhwang91/nvim-ufo",
-    requires = "kevinhwang91/promise-async",
+    dependencies = { "kevinhwang91/promise-async" },
     config = function()
       require "config/ufo"
     end,
-  }
+  },
 
-  use {
+  --
+  {
     "akinsho/bufferline.nvim",
-    tag = "v2.*",
-    requires = "kyazdani42/nvim-web-devicons",
+    -- tag = "v2.*",
+    dependencies = { "kyazdani42/nvim-web-devicons" },
     config = function()
       require "config/bufferline"
     end,
-  }
+  },
 
-  use {
-    "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
-    config = function()
-      require("lsp_lines").setup {}
-      vim.diagnostic.config {
-        virtual_text = false,
-      }
-    end,
-  }
+  -- {
+  --   "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
+  --   config = function()
+  --     require("lsp_lines").setup {}
+  --     vim.diagnostic.config {
+  --       virtual_text = false,
+  --     }
+  --   end,
+  -- },
 
-  -- packer example:
-  use {
-    "LunarVim/bigfile.nvim",
-  }
-  use {
+  {
     "nvim-neo-tree/neo-tree.nvim",
     branch = "v2.x",
-    keys = { "nc", "nC", "ne", "nb" },
-    requires = {
+    keys = { { "nc", "nC", "ne", "nb" } },
+    dependencies = {
       "nvim-lua/plenary.nvim",
       "kyazdani42/nvim-web-devicons", -- not strictly required, but recommended
       "MunifTanjim/nui.nvim",
@@ -392,23 +358,18 @@ return packer.startup(function()
     config = function()
       require "config/neotree"
     end,
-  }
+  },
 
-  --
-  use {
+  {
     "mfussenegger/nvim-dap",
     config = function()
       require "config/dap"
     end,
-  }
+  },
 
-  use { "rcarriga/nvim-dap-ui", requires = { "mfussenegger/nvim-dap" } }
+  { "rcarriga/nvim-dap-ui", dependencies = { "mfussenegger/nvim-dap" } },
 
-  use {
+  {
     "gennaro-tedesco/nvim-peekup",
-  }
-
-  if util_packer.first_install then
-    packer.sync()
-  end
-end)
+  },
+}

@@ -1,4 +1,8 @@
 require("tabout").setup {
+local ok, _ = pcall(require, "tabout")
+if not ok then
+  return
+end
   tabkey = "<Tab>", -- key to trigger tabout, set to an empty string to disable
   backwards_tabkey = "<S-Tab>", -- key to trigger backwards tabout, set to an empty string to disable
   act_as_tab = true, -- shift content if tab out is not possible
