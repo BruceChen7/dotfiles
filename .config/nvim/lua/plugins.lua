@@ -44,7 +44,7 @@ require("lazy").setup {
 
   {
     "neovim/nvim-lspconfig",
-    tag = "v0.1.3",
+    tag = "v0.1.4",
   },
 
   -- -- adds vscode-like pictograms to neovim built-in lsp
@@ -67,6 +67,7 @@ require("lazy").setup {
     config = function()
       require "config/lua_snip"
     end,
+    ft = { "go", "lua", "c", "rust", "cpp", "yaml", "json" },
   },
 
   {
@@ -74,8 +75,12 @@ require("lazy").setup {
     config = function()
       require("luasnip.loaders.from_vscode").lazy_load()
     end,
+    ft = { "go", "lua", "c", "rust", "cpp" },
   },
-  { "saadparwaiz1/cmp_luasnip" },
+  {
+    "saadparwaiz1/cmp_luasnip",
+    ft = { "go", "lua", "c", "rust", "cpp", "yaml", "json" },
+  },
 
   {
     "hrsh7th/nvim-cmp", -- Autocompletion plugin
@@ -103,7 +108,11 @@ require("lazy").setup {
   },
 
   -- 参数文本对象：i,/a, 包括参数或者列表元素
-  { "sgur/vim-textobj-parameter", dependencies = { "kana/vim-textobj-user" } },
+  {
+    "sgur/vim-textobj-parameter",
+    dependencies = { "kana/vim-textobj-user" },
+    ft = { "go", "zig", "rust", "lua", "c", "cpp" },
+  },
 
   -- 提供cs'"这种快捷键
   -- use "tpope/vim-surround"
@@ -162,9 +171,10 @@ require("lazy").setup {
     end,
   },
 
-  { "nvim-treesitter/nvim-treesitter-context" },
-
-  { "dstein64/vim-startuptime", cmd = "StartupTime" },
+  {
+    "nvim-treesitter/nvim-treesitter-context",
+    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
+  },
 
   {
     "numToStr/Comment.nvim",
@@ -205,6 +215,7 @@ require("lazy").setup {
       require "config/null_ls"
     end,
     dependencies = { "nvim-lua/plenary.nvim" },
+    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
   },
 
   -- show signature
@@ -218,6 +229,7 @@ require("lazy").setup {
     config = function()
       require "config/neogit"
     end,
+    keys = { { "<space>gg", mode = "n" } },
   },
 
   {
@@ -235,6 +247,7 @@ require("lazy").setup {
     config = function()
       require("crates").setup()
     end,
+    ft = { "rust" },
   },
 
   -- used to show lsp init progress
@@ -250,6 +263,7 @@ require("lazy").setup {
 
   {
     "simrat39/rust-tools.nvim",
+    ft = { "rust" },
   },
 
   {
@@ -258,6 +272,7 @@ require("lazy").setup {
     config = function()
       require "config/diff"
     end,
+    keys = { { "<space>gg", mode = "n" } },
   },
 
   --
@@ -266,6 +281,7 @@ require("lazy").setup {
     config = function()
       require "config/illuminate"
     end,
+    event = "InsertEnter",
   },
 
   {
@@ -280,23 +296,13 @@ require("lazy").setup {
     config = function()
       require "config/hlslen"
     end,
-  },
-
-  {
-    "abecodes/tabout.nvim",
-    config = function()
-      require "config/tabout"
-    end,
-    dependencies = {
-      "hrsh7th/nvim-cmp", -- Autocompletion plugin
-      "nvim-treesitter/nvim-treesitter",
-    },
+    event = "InsertEnter",
   },
 
   --
-  {
-    "p00f/nvim-ts-rainbow",
-  },
+  -- {
+  --   "p00f/nvim-ts-rainbow",
+  -- },
   --
   {
     "nacro90/numb.nvim",
@@ -310,17 +316,20 @@ require("lazy").setup {
     config = function()
       require "config/surfer"
     end,
+    ft = { "go", "c", "cpp", "zig" },
   },
   {
     "nmac427/guess-indent.nvim",
     config = function()
       require("guess-indent").setup {}
     end,
+    event = "InsertEnter",
   },
 
   {
     "kevinhwang91/nvim-ufo",
     dependencies = { "kevinhwang91/promise-async" },
+    ft = { "go", "lua", "c", "rust", "cpp" },
     config = function()
       require "config/ufo"
     end,
@@ -366,11 +375,24 @@ require("lazy").setup {
     config = function()
       require "config/dap"
     end,
+    ft = { "go", "lua", "c", "rust", "cpp" },
   },
 
   { "rcarriga/nvim-dap-ui", dependencies = { "mfussenegger/nvim-dap" } },
 
   {
     "gennaro-tedesco/nvim-peekup",
+  },
+
+  {
+    "abecodes/tabout.nvim",
+    config = function()
+      require "config/tabout"
+    end,
+    dependencies = {
+      "hrsh7th/nvim-cmp", -- Autocompletion plugin
+      "nvim-treesitter/nvim-treesitter",
+    },
+    event = "InsertEnter",
   },
 }
