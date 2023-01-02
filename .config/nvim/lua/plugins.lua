@@ -111,7 +111,7 @@ require("lazy").setup {
   {
     "sgur/vim-textobj-parameter",
     dependencies = { "kana/vim-textobj-user" },
-    ft = { "go", "zig", "rust", "lua", "c", "cpp" },
+    ft = { "go", "zig", "rust", "lua", "c", "cpp", "python" },
   },
 
   -- 提供cs'"这种快捷键
@@ -126,6 +126,7 @@ require("lazy").setup {
         -- Configuration here, or leave empty to use defaults
       }
     end,
+    event = { "BufRead", "BufNewFile" },
   },
 
   -- -- 自动调整窗口
@@ -155,12 +156,14 @@ require("lazy").setup {
         show_end_of_line = true,
       }
     end,
+    ft = { "go", "zig", "rust", "lua", "c", "cpp", "python" },
   },
 
   -- treesitter
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
+    ft = { "go", "c", "cpp", "rust", "zig", "lua", "yaml", "json", "proto" },
   },
 
   -- https://github.com/nvim-treesitter/nvim-treesitter-textobjects
@@ -169,6 +172,7 @@ require("lazy").setup {
     config = function()
       require "config/text_obj"
     end,
+    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
   },
 
   {
@@ -190,6 +194,7 @@ require("lazy").setup {
       require "config/terminal"
     end,
     branch = "main",
+    keys = { { "<m-=>", mode = "n" } },
   },
 
   -- colorscheme
@@ -382,6 +387,15 @@ require("lazy").setup {
 
   {
     "gennaro-tedesco/nvim-peekup",
+  },
+
+  {
+    "ojroques/nvim-osc52",
+    config = function()
+      vim.keymap.set("n", "<leader>c", require("osc52").copy_operator, { expr = true })
+      vim.keymap.set("n", "<leader>cc", "<leader>c_", { remap = true })
+      vim.keymap.set("x", "<leader>c", require("osc52").copy_visual)
+    end,
   },
 
   {
