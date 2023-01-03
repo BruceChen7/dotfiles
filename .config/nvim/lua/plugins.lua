@@ -362,6 +362,11 @@ require("lazy").setup {
 
   { "folke/tokyonight.nvim" },
   {
+    "LunarVim/bigfile.nvim",
+  },
+
+  {
+
     "nvim-neo-tree/neo-tree.nvim",
     branch = "v2.x",
     keys = { { "nc", "nC", "ne", "nb" } },
