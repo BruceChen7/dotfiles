@@ -8,19 +8,7 @@ local nvim_lsp = require "lspconfig"
 local lspkind = require "lspkind"
 lspkind.init()
 
--- Use an on_attach function to only map the following keys
--- after the language server attaches to the current buffer
-local on_attach = function(client, bufnr)
-  local function buf_set_option(...)
-    vim.api.nvim_buf_set_option(bufnr, ...)
-  end
-  -- https://github.com/jose-elias-alvarez/null-ls.nvim/wiki/Avoiding-LSP-formatting-conflictsclient
-  client.server_capabilities.document_formatting = false
-  client.server_capabilities.document_range_formatting = false
-
-  -- Enable completion triggered by <c-x><c-o>
-  buf_set_option("omnifunc", "v:lua.vim.lsp.omnifunc")
-
+function set_key()
   -- Mappings.
   local opts = { noremap = true, silent = true }
 
@@ -42,7 +30,25 @@ local on_attach = function(client, bufnr)
   u.map("n", "<space>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
   u.map("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
   u.map("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", opts)
+end
 
+-- Use an on_attach function to only map the following keys
+-- after the language server attaches to the current buffer
+local on_attach = function(client, bufnr)
+  local function buf_set_option(...)
+    vim.api.nvim_buf_set_option(bufnr, ...)
+  end
+  -- https://github.com/jose-elias-alvarez/null-ls.nvim/wiki/Avoiding-LSP-formatting-conflictsclient
+  client.server_capabilities.document_formatting = false
+  client.server_capabilities.document_range_formatting = false
+
+  -- Enable completion triggered by <c-x><c-o>
+  buf_set_option("omnifunc", "v:lua.vim.lsp.omnifunc")
+  if vim.loop.os_uname().sysname == "Linux" then
+    set_key()
+  end
+
+  -- Mappings.
   require("lsp_signature").on_attach({
     bind = true,
     handler_opts = {
@@ -52,6 +58,10 @@ local on_attach = function(client, bufnr)
   }, bufnr)
 end
 
+-- if not set, macos not working
+if vim.loop.os_uname().sysname ~= "Linux" then
+  set_key()
+end
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
 -- local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -116,7 +126,6 @@ end
 -- use rust-tools to
 require("rust-tools").setup {
   tools = {
-    -- hover_with_actions = true,
     inlay_hints = {
       only_current_line = false,
       show_parameter_hints = true,
