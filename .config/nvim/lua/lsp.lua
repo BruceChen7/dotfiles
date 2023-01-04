@@ -382,15 +382,3 @@ augroup FormatGroup
     autocmd BufWritePre *.lua lua vim.lsp.buf.format()
 augroup END
 ]]
-
-local inlay_hints = require "config/inlay_hints"
-
-function set_inlay_hints()
-  inlay_hints.set_inlay_hints()
-end
-vim.cmd [[
-augroup GoInlayhintsGroup
-    au!
-    autocmd CursorHold,CursorHoldI *.go lua set_inlay_hints()
-augroup END
-]]
