@@ -62,11 +62,12 @@ end
 if vim.loop.os_uname().sysname ~= "Linux" then
   set_key()
 end
+
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
 -- local capabilities = vim.lsp.protocol.make_client_capabilities()
 -- local servers = { "pyright", "gopls", "clangd", "rust_analyzer", "zls" }
-local servers = { "pyright", "gopls", "clangd", "zls" }
+local servers = { "pyright", "gopls", "zls" }
 capabilities = require("cmp_nvim_lsp").default_capabilities()
 capabilities.textDocument.completion.completionItem.snippetSupport = true
 capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
@@ -75,6 +76,31 @@ capabilities.textDocument.completion.completionItem.preselectSupport = true
 capabilities.textDocument.foldingRange = {
   dynamicRegistration = false,
   lineFoldingOnly = true,
+}
+
+nvim_lsp["clangd"].setup {
+  capabilities = capabilities,
+  on_attach = on_attach,
+  init_options = {
+    onlyAnalyzeProjectsWithOpenFiles = true,
+    suggestFromUnimportedLibraries = false,
+    closingLabels = true,
+  },
+  handlers = {
+    ["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+      -- Disable inline diagnostics
+      virtual_text = false,
+    }),
+  },
+  cmd = {
+    "clangd",
+    "--background-index",
+    "--pch-storage=memory",
+    "--completion-style=detailed",
+    "-j=8",
+    "--clang-tidy",
+  },
+  filetypes = { "c", "cpp" },
 }
 
 for _, lsp in ipairs(servers) do
@@ -273,7 +299,7 @@ cmp.setup {
       },
     },
     { name = "crates" },
-    { name = "tags" },
+    -- { name = "tags" },
     -- { name = "rg" },
   },
   sorting = {
