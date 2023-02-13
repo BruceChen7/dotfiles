@@ -12,12 +12,6 @@ end
 vim.opt.runtimepath:prepend(lazypath)
 
 require("lazy").setup {
-  -- {
-  --   "lewis6991/impatient.nvim",
-  --   config = function()
-  --     require "impatient"
-  --   end,
-  -- },
 
   { "ludovicchabant/vim-gutentags" },
 
@@ -194,7 +188,7 @@ require("lazy").setup {
       require "config/terminal"
     end,
     branch = "main",
-    keys = { { "<m-=>", mode = "n" } },
+    keys = { { "<m-=>", mode = "n" }, { "<space>tb", mode = "n" } },
   },
 
   -- colorscheme
@@ -361,6 +355,7 @@ require("lazy").setup {
   { "folke/tokyonight.nvim" },
   {
     "LunarVim/bigfile.nvim",
+    ft = { "go", "lua", "c", "rust", "cpp", "proto" },
   },
 
   {
@@ -378,15 +373,15 @@ require("lazy").setup {
     end,
   },
 
-  {
-    "mfussenegger/nvim-dap",
-    config = function()
-      require "config/dap"
-    end,
-    ft = { "go", "lua", "c", "rust", "cpp" },
-  },
-
-  { "rcarriga/nvim-dap-ui", dependencies = { "mfussenegger/nvim-dap" } },
+  -- {
+  --   "mfussenegger/nvim-dap",
+  --   config = function()
+  --     require "config/dap"
+  --   end,
+  --   ft = { "go", "lua", "c", "rust", "cpp" },
+  -- },
+  --
+  -- { "rcarriga/nvim-dap-ui", dependencies = { "mfussenegger/nvim-dap" } },
 
   {
     "gennaro-tedesco/nvim-peekup",
