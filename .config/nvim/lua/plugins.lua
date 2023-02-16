@@ -250,18 +250,18 @@ require("lazy").setup {
   },
 
   -- used to show lsp init progress
-  use {
-      "j-hui/fidget.nvim",
-      config = function()
-        require("fidget").setup {}
-      end,
-    }
-    --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
-    -- use "t9md/vim-choosewin"
-    {
-      "simrat39/rust-tools.nvim",
-      ft = { "rust" },
-    },
+  {
+    "j-hui/fidget.nvim",
+    config = function()
+      require("fidget").setup {}
+    end,
+  },
+  --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
+  -- use "t9md/vim-choosewin"
+  {
+    "simrat39/rust-tools.nvim",
+    ft = { "rust" },
+  },
 
   {
     "sindrets/diffview.nvim",
