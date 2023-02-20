@@ -373,15 +373,18 @@ require("lazy").setup {
     end,
   },
 
-  -- {
-  --   "mfussenegger/nvim-dap",
-  --   config = function()
-  --     require "config/dap"
-  --   end,
-  --   ft = { "go", "lua", "c", "rust", "cpp" },
-  -- },
-  --
-  -- { "rcarriga/nvim-dap-ui", dependencies = { "mfussenegger/nvim-dap" } },
+  {
+    "m4xshen/smartcolumn.nvim",
+    opts = {},
+  },
+
+  {
+    "mfussenegger/nvim-dap",
+    config = function()
+      require "config/dap"
+    end,
+    ft = { "go", "lua", "c", "rust", "cpp" },
+  },
 
   {
     "gennaro-tedesco/nvim-peekup",
