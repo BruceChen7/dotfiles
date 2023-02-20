@@ -378,13 +378,13 @@ require("lazy").setup {
     opts = {},
   },
 
-  {
-    "mfussenegger/nvim-dap",
-    config = function()
-      require "config/dap"
-    end,
-    ft = { "go", "lua", "c", "rust", "cpp" },
-  },
+  -- {
+  --   "mfussenegger/nvim-dap",
+  --   config = function()
+  --     require "config/dap"
+  --   end,
+  --   ft = { "go", "lua", "c", "rust", "cpp" },
+  -- },
 
   {
     "gennaro-tedesco/nvim-peekup",
