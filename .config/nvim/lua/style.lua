@@ -40,6 +40,7 @@ augroup InitFileTypesGroup
 	" scala 微调
 	au FileType scala setlocal sts=4 sw=4 noet
 
+	au FileType markdown setlocal sts=4 sw=4 et
 	" haskell 进行微调
 	au FileType haskell setlocal et
 
@@ -94,6 +95,6 @@ end
 vim.cmd [[
 augroup GoInlayhintsGroup
     au!
-    autocmd CursorHold,CursorHoldI,CursorMoved *.go lua set_inlay_hints()
+    autocmd CursorHold,CursorHoldI*.go lua set_inlay_hints()
 augroup END
 ]]
