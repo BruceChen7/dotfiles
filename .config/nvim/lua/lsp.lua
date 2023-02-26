@@ -277,7 +277,7 @@ cmp.setup {
         behavior = cmp.ConfirmBehavior.Insert,
         select = true,
       },
-      { "i", "c" }
+      { "i" }
     ),
   },
   experimental = {

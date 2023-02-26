@@ -51,6 +51,7 @@ require("lazy").setup {
     end,
     keys = { { "nc" }, { "ne" }, { "nC" }, { "nE" } },
   },
+  --
   -- LSP source for nvim-cmp
   { "hrsh7th/cmp-nvim-lsp" },
   { "hrsh7th/cmp-cmdline" },
@@ -60,7 +61,7 @@ require("lazy").setup {
   { "hrsh7th/cmp-nvim-lua" },
   { "hrsh7th/cmp-nvim-lsp-document-symbol" },
   { "tamago324/cmp-zsh" },
-  { "lukas-reineke/cmp-rg" },
+  -- { "lukas-reineke/cmp-rg" },
 
   --
   {
@@ -85,16 +86,6 @@ require("lazy").setup {
 
   {
     "hrsh7th/nvim-cmp", -- Autocompletion plugin
-    dependencies = {
-      {
-        "quangnguyen30192/cmp-nvim-tags",
-        -- if you want the sources is available for some file types
-        ft = {
-          "go",
-          "rust",
-        },
-      },
-    },
   },
 
   {
@@ -134,17 +125,40 @@ require("lazy").setup {
   -- replaced with window.nvim
   { "camspiers/lens.vim" },
 
-  {
-    "glepnir/galaxyline.nvim",
-    branch = "main",
-    -- your statusline
-    config = function()
-      require "config/galaxy"
-    end,
-    -- some optional icons
-    dependencies = { "kyazdani42/nvim-web-devicons", opt = true },
-  },
+  -- {
+  --   "glepnir/galaxyline.nvim",
+  --   branch = "main",
+  --   -- your statusline
+  --   config = function()
+  --     require "config/galaxy"
+  --   end,
+  --   -- some optional icons
+  --   dependencies = { "kyazdani42/nvim-web-devicons", opt = true },
+  -- },
 
+  {
+    "ojroques/nvim-hardline",
+    config = function()
+      require("hardline").setup {
+        bufferline = false, -- disable bufferline
+        bufferline_settings = {
+          exclude_terminal = false, -- don't show terminal buffers in bufferline
+          show_index = false, -- show buffer indexes (not the actual buffer numbers) in bufferline
+        },
+        theme = "default", -- change theme
+        sections = { -- define sections
+          { class = "mode", item = require("hardline.parts.mode").get_item },
+          { class = "med", item = require("hardline.parts.filename").get_item },
+          { class = "high", item = require("hardline.parts.filetype").get_item },
+          "%<",
+          { class = "med", item = "%=" },
+          { class = "error", item = require("hardline.parts.lsp").get_error },
+          { class = "warning", item = require("hardline.parts.lsp").get_warning },
+          { class = "high", item = require("hardline.parts.git").get_item, hide = 100 },
+        },
+      }
+    end,
+  },
   {
     "lukas-reineke/indent-blankline.nvim",
     config = function()
