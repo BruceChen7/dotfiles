@@ -44,6 +44,13 @@ require("lazy").setup {
   -- -- adds vscode-like pictograms to neovim built-in lsp
   { "onsails/lspkind-nvim" },
 
+  {
+    "lambdalisue/fern.vim",
+    config = function()
+      require "config/fern"
+    end,
+    keys = { { "nc" }, { "ne" }, { "nC" }, { "nE" } },
+  },
   -- LSP source for nvim-cmp
   { "hrsh7th/cmp-nvim-lsp" },
   { "hrsh7th/cmp-cmdline" },
@@ -154,20 +161,20 @@ require("lazy").setup {
   },
 
   -- treesitter
-  {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    ft = { "go", "c", "cpp", "rust", "zig", "lua", "yaml", "json", "proto" },
-  },
+  -- {
+  --   "nvim-treesitter/nvim-treesitter",
+  --   build = ":TSUpdate",
+  --   ft = { "go", "c", "cpp", "rust", "zig", "lua", "yaml", "json", "proto" },
+  -- },
 
   -- https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-  {
-    "nvim-treesitter/nvim-treesitter-textobjects",
-    config = function()
-      require "config/text_obj"
-    end,
-    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
-  },
+  -- {
+  --   "nvim-treesitter/nvim-treesitter-textobjects",
+  --   config = function()
+  --     require "config/text_obj"
+  --   end,
+  --   ft = { "go", "c", "cpp", "rust", "zig", "lua" },
+  -- },
 
   {
     "nvim-treesitter/nvim-treesitter-context",
@@ -308,13 +315,13 @@ require("lazy").setup {
     end,
   },
 
-  {
-    "ziontee113/syntax-tree-surfer",
-    config = function()
-      require "config/surfer"
-    end,
-    ft = { "go", "c", "cpp", "zig" },
-  },
+  -- {
+  --   "ziontee113/syntax-tree-surfer",
+  --   config = function()
+  --     require "config/surfer"
+  --   end,
+  --   ft = { "go", "c", "cpp", "zig" },
+  -- },
   {
     "nmac427/guess-indent.nvim",
     config = function()
@@ -353,25 +360,26 @@ require("lazy").setup {
   -- },
 
   { "folke/tokyonight.nvim" },
+
   {
     "LunarVim/bigfile.nvim",
     ft = { "go", "lua", "c", "rust", "cpp", "proto" },
   },
 
-  {
-
-    "nvim-neo-tree/neo-tree.nvim",
-    branch = "v2.x",
-    keys = { { "nc", "nC", "ne", "nb" } },
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "kyazdani42/nvim-web-devicons", -- not strictly required, but recommended
-      "MunifTanjim/nui.nvim",
-    },
-    config = function()
-      require "config/neotree"
-    end,
-  },
+  -- {
+  --
+  --   "nvim-neo-tree/neo-tree.nvim",
+  --   branch = "v2.x",
+  --   keys = { { "nc", "nC", "ne", "nb" } },
+  --   dependencies = {
+  --     "nvim-lua/plenary.nvim",
+  --     "kyazdani42/nvim-web-devicons", -- not strictly required, but recommended
+  --     "MunifTanjim/nui.nvim",
+  --   },
+  --   config = function()
+  --     require "config/neotree"
+  --   end,
+  -- },
 
   {
     "m4xshen/smartcolumn.nvim",
@@ -399,15 +407,15 @@ require("lazy").setup {
     end,
   },
 
-  {
-    "abecodes/tabout.nvim",
-    config = function()
-      require "config/tabout"
-    end,
-    dependencies = {
-      "hrsh7th/nvim-cmp", -- Autocompletion plugin
-      "nvim-treesitter/nvim-treesitter",
-    },
-    event = "InsertEnter",
-  },
+  -- {
+  --   "abecodes/tabout.nvim",
+  --   config = function()
+  --     require "config/tabout"
+  --   end,
+  --   dependencies = {
+  --     "hrsh7th/nvim-cmp", -- Autocompletion plugin
+  --     "nvim-treesitter/nvim-treesitter",
+  --   },
+  --   event = "InsertEnter",
+  -- },
 }
