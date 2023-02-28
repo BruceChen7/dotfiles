@@ -2,9 +2,26 @@
 -- https://github.com/nvim-lua/kickstart.nvim/blob/master/init.lua
 local tc = require "nvim-treesitter.configs"
 tc.setup {
+  ensure_installed = {
+    "c",
+    "cpp",
+    "lua",
+    "rust",
+    "python",
+    "make",
+    "cmake",
+    "bash",
+    "markdown",
+    "toml",
+    "vim",
+    "yaml",
+  },
   highlight = {
     enable = true, -- false will disable the whole extension
     additional_vim_regex_highlighting = false,
+    disable = function(lang, bufnr) -- Disable in large C++ buffers
+      return lang == ("cpp" or lang == "go") and api.nvim_buf_line_count(bufnr) > 20000
+    end,
   },
   incremental_selection = {
     enable = true,
@@ -28,7 +45,7 @@ tc.setup {
     -- termcolors = {} -- table of colour name strings
   },
   indent = {
-    enable = true,
+    enable = false,
   },
   textobjects = {
     select = {

@@ -38,7 +38,8 @@ require("lazy").setup {
 
   {
     "neovim/nvim-lspconfig",
-    tag = "v0.1.4",
+    tag = "v0.1.6",
+    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
   },
 
   -- -- adds vscode-like pictograms to neovim built-in lsp
@@ -118,7 +119,8 @@ require("lazy").setup {
         -- Configuration here, or leave empty to use defaults
       }
     end,
-    event = { "BufRead", "BufNewFile" },
+    -- event = { "BufRead", "BufNewFile" },
+    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
   },
 
   -- -- 自动调整窗口
@@ -175,20 +177,20 @@ require("lazy").setup {
   },
 
   -- treesitter
-  -- {
-  --   "nvim-treesitter/nvim-treesitter",
-  --   build = ":TSUpdate",
-  --   ft = { "go", "c", "cpp", "rust", "zig", "lua", "yaml", "json", "proto" },
-  -- },
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+    ft = { "go", "c", "cpp", "rust", "zig", "lua", "yaml", "json", "proto" },
+  },
 
   -- https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-  -- {
-  --   "nvim-treesitter/nvim-treesitter-textobjects",
-  --   config = function()
-  --     require "config/text_obj"
-  --   end,
-  --   ft = { "go", "c", "cpp", "rust", "zig", "lua" },
-  -- },
+  {
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    config = function()
+      require "config/text_obj"
+    end,
+    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
+  },
 
   {
     "nvim-treesitter/nvim-treesitter-context",
@@ -200,6 +202,7 @@ require("lazy").setup {
     config = function()
       require("Comment").setup()
     end,
+    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
   },
 
   -- terminal
@@ -241,6 +244,7 @@ require("lazy").setup {
   -- show signature
   {
     "ray-x/lsp_signature.nvim",
+    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
   },
 
   {
@@ -258,6 +262,7 @@ require("lazy").setup {
 
   {
     "nvim-lua/lsp_extensions.nvim",
+    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
   },
 
   {
@@ -375,10 +380,10 @@ require("lazy").setup {
 
   { "folke/tokyonight.nvim" },
 
-  {
-    "LunarVim/bigfile.nvim",
-    ft = { "go", "lua", "c", "rust", "cpp", "proto" },
-  },
+  -- {
+  --   "LunarVim/bigfile.nvim",
+  --   ft = { "go", "lua", "c", "rust", "cpp", "proto" },
+  -- },
 
   -- {
   --
@@ -415,21 +420,21 @@ require("lazy").setup {
   {
     "ojroques/nvim-osc52",
     config = function()
-      vim.keymap.set("n", "<leader>c", require("osc52").copy_operator, { expr = true })
-      vim.keymap.set("n", "<leader>cc", "<leader>c_", { remap = true })
-      vim.keymap.set("x", "<leader>c", require("osc52").copy_visual)
+      vim.keymap.set("n", ",c", require("osc52").copy_operator, { expr = true })
+      -- vim.keymap.set("n", "<leader>cc", "<leader>c_", { remap = true })
+      vim.keymap.set("x", ",c", require("osc52").copy_visual)
     end,
   },
 
-  -- {
-  --   "abecodes/tabout.nvim",
-  --   config = function()
-  --     require "config/tabout"
-  --   end,
-  --   dependencies = {
-  --     "hrsh7th/nvim-cmp", -- Autocompletion plugin
-  --     "nvim-treesitter/nvim-treesitter",
-  --   },
-  --   event = "InsertEnter",
-  -- },
+  {
+    "abecodes/tabout.nvim",
+    config = function()
+      require "config/tabout"
+    end,
+    dependencies = {
+      "hrsh7th/nvim-cmp", -- Autocompletion plugin
+      "nvim-treesitter/nvim-treesitter",
+    },
+    event = "InsertEnter",
+  },
 }
