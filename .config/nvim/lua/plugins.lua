@@ -161,20 +161,21 @@ require("lazy").setup {
       }
     end,
   },
-  {
-    "lukas-reineke/indent-blankline.nvim",
-    config = function()
-      -- vim.opt.list = true
-      -- vim.opt.listchars:append "space:⋅"
-      -- vim.opt.listchars:append "eol:↴"
-      require("indent_blankline").setup {
-        space_char_blankline = " ",
-        show_current_context = true,
-        show_end_of_line = true,
-      }
-    end,
-    ft = { "go", "zig", "rust", "lua", "c", "cpp", "python" },
-  },
+
+  -- {
+  --   "lukas-reineke/indent-blankline.nvim",
+  --   config = function()
+  --     -- vim.opt.list = true
+  --     -- vim.opt.listchars:append "space:⋅"
+  --     -- vim.opt.listchars:append "eol:↴"
+  --     require("indent_blankline").setup {
+  --       space_char_blankline = " ",
+  --       show_current_context = true,
+  --       show_end_of_line = true,
+  --     }
+  --   end,
+  --   ft = { "go", "zig", "rust", "lua", "c", "cpp", "python" },
+  -- },
 
   -- treesitter
   {
@@ -402,7 +403,9 @@ require("lazy").setup {
 
   {
     "m4xshen/smartcolumn.nvim",
-    opts = {},
+    opts = {
+      scope = "line",
+    },
   },
 
   -- {
