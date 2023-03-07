@@ -401,12 +401,12 @@ require("lazy").setup {
   --   end,
   -- },
 
-  {
-    "m4xshen/smartcolumn.nvim",
-    opts = {
-      scope = "line",
-    },
-  },
+  -- {
+  --   "m4xshen/smartcolumn.nvim",
+  --   opts = {
+  --     scope = "line",
+  --   },
+  -- },
 
   -- {
   --   "mfussenegger/nvim-dap",
