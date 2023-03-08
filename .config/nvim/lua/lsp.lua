@@ -398,6 +398,22 @@ local cmp_autopairs = require "nvim-autopairs.completion.cmp"
 cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done { map_char = { tex = "" } })
 
 -- https://github.com/jose-elias-alvarez/null-ls.nvim/wiki/Avoiding-LSP-formatting-conflictsclient
+format_group = vim.api.nvim_create_augroup("FormatGroup", { clear = true })
+format_file_type = { "go", "zig", "md", "rs", "lua", "py" }
+for _, v in ipairs(format_file_type) do
+  vim.api.nvim_create_autocmd({ "BufWritePre" }, {
+    pattern = string.format("*.%s", v),
+    group = format_group,
+    callback = function()
+      vim.lsp.buf.format()
+    end,
+  })
+end
+
+local inlay_hints = require "config/inlay_hints"
+function set_inlay_hints()
+  inlay_hints.set_inlay_hints()
+end
 vim.cmd [[
 augroup FormatGroup
     au!
