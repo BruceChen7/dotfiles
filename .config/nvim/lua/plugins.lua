@@ -39,7 +39,7 @@ require("lazy").setup {
   {
     "neovim/nvim-lspconfig",
     tag = "v0.1.6",
-    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
+    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
   },
 
   -- -- adds vscode-like pictograms to neovim built-in lsp
@@ -239,7 +239,7 @@ require("lazy").setup {
       require "config/null_ls"
     end,
     dependencies = { "nvim-lua/plenary.nvim" },
-    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
+    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
   },
 
   -- show signature

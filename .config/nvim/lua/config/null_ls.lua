@@ -8,6 +8,7 @@ local sources = {
   fmt.goimports,
   -- run cargo install stylua
   fmt.stylua,
+  fmt.black,
 
   fmt.rustfmt.with {
     extra_args = { "--edition=2021" },
