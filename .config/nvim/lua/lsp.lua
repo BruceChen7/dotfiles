@@ -414,13 +414,3 @@ local inlay_hints = require "config/inlay_hints"
 function set_inlay_hints()
   inlay_hints.set_inlay_hints()
 end
-vim.cmd [[
-augroup FormatGroup
-    au!
-    autocmd BufWritePre *.go lua vim.lsp.buf.format()
-    autocmd BufWritePre *.md lua vim.lsp.buf.format()
-    autocmd BufWritePre *.rs lua vim.lsp.buf.format()
-    autocmd BufWritePre *.zig lua vim.lsp.buf.format()
-    autocmd BufWritePre *.lua lua vim.lsp.buf.format()
-augroup END
-]]
