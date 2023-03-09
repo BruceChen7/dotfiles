@@ -13,14 +13,19 @@ vim.opt.runtimepath:prepend(lazypath)
 
 require("lazy").setup {
 
-  { "ludovicchabant/vim-gutentags" },
-
   {
-    "skywind3000/gutentags_plus",
+    "ludovicchabant/vim-gutentags",
     config = function()
       require "config/gtags"
     end,
   },
+
+  -- {
+  --   "skywind3000/gutentags_plus",
+  --   config = function()
+  --     require "config/gtags"
+  --   end,
+  -- },
 
   --
   { "skywind3000/vim-preview" },
