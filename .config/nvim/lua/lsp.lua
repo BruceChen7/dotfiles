@@ -29,6 +29,7 @@ function set_key()
   u.map("n", "<space>d", "<cmd>lua vim.diagnostic.setloclist()<CR>", opts)
   u.map("n", "<space>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
   u.map("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
+  u.map("n", "gsd", "<cmd> vsplit | lua vim.lsp.buf.definition()<CR>", opts)
   u.map("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", opts)
 end
 
