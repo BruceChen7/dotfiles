@@ -56,9 +56,15 @@ require("bufferline").setup {
       { filetype = "Outline", text = "", padding = 1 },
       { filetype = "NeogitStatus", text = "", padding = 1 },
       { filetype = "DiffviewFiles", text = "", padding = 1 },
+      { filetype = "qf", text = "", padding = 1 },
     },
   },
 }
+
+close_all_buffer_except_current = function()
+  vim.api.nvim_command "BufferLineCloseLeft"
+  vim.api.nvim_command "BufferLineCloseRight"
+end
 
 local map = vim.api.nvim_set_keymap
 for i = 1, 9 do
@@ -66,6 +72,7 @@ for i = 1, 9 do
   map("n", ("\\$"):format(i), (":lua require('bufferline').go_to_buffer(-1, true)<CR>"):format(i), { silent = true })
 end
 
+map("n", ",cl", ":lua close_all_buffer_except_current()<CR>", { silent = true })
 function quitWindow()
   local buf_total_num = vim.fn.len(vim.fn.getbufinfo { buflisted = 1 })
   local buf_name = vim.fn.bufname()
@@ -84,7 +91,7 @@ function quitWindow()
     vim.api.nvim_command "DiffviewClose"
     -- vim.api.nvim_command("bdelete %s"):format(buf_id)
   elseif buf_total_num ~= 1 then
-    vim.api.nvim_command "bdelete"
+    vim.api.nvim_command "bdelete!"
   else
     vim.api.nvim_command "quit!"
   end
