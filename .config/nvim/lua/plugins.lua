@@ -35,7 +35,7 @@ require("lazy").setup {
 
   {
     "Yggdroot/LeaderF",
-    -- keys = {"<m-n>", "<m-p>", "<m-m>", "<c-p>"},
+    keys = { "<m-n>", "<m-p>", "<m-m>", "<c-p>" },
     config = function()
       require "config/leaderf"
     end,
@@ -186,7 +186,7 @@ require("lazy").setup {
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
-    ft = { "go", "c", "cpp", "rust", "zig", "lua", "yaml", "json", "proto" },
+    ft = { "go", "c", "cpp", "rust", "zig", "lua", "yaml", "json", "proto", "markdown" },
   },
 
   -- https://github.com/nvim-treesitter/nvim-treesitter-textobjects
@@ -426,6 +426,16 @@ require("lazy").setup {
   },
 
   {
+    "Exafunction/codeium.vim",
+    config = function()
+      require "config/codeium"
+    end,
+    ft = { "go", "lua", "c", "rust", "cpp", "zig", "cpp", "python" },
+  },
+
+  { "dpayne/CodeGPT.nvim", dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" } },
+
+  {
     "ojroques/nvim-osc52",
     config = function()
       vim.keymap.set("n", ",c", require("osc52").copy_operator, { expr = true })
@@ -444,5 +454,6 @@ require("lazy").setup {
       "nvim-treesitter/nvim-treesitter",
     },
     event = "InsertEnter",
+    ft = { "go", "lua", "c", "rust", "cpp", "zig", "cpp", "python", "markdown" },
   },
 }
