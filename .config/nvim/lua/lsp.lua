@@ -28,54 +28,38 @@ function set_key()
   u.map("n", "]d", "<cmd>lua vim.diagnostic.goto_next()<CR>", opts)
   u.map("n", "<space>d", "<cmd>lua vim.diagnostic.setloclist()<CR>", opts)
   u.map("n", "<space>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
-  -- u.map("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
-  u.map("n", "gd", "<cmd> vsplit | lua vim.lsp.buf.definition()<CR>", opts)
-  -- u.map("n", "gd", "<cmd> lua jump_to_lsp_definition()<CR>", opts)
+  u.map("n", "gpd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
+  -- u.map("n", "gsd", "<cmd> vsplit | lua vim.lsp.buf.definition()<CR>", opts)
+  u.map("n", "gd", "<cmd> lua jump_to_definition()<CR>", opts)
   u.map("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", opts)
 end
 
--- function jump_to_lsp_definition()
---   -- Check if an LSP server is running
---   if not vim.lsp.buf.server_ready() then
---     return
---   end
---
---   -- Get the definition location for the word under the cursor
---   local params = vim.lsp.util.make_position_params()
---   local result = vim.lsp.buf_request_sync(0, "textDocument/definition", params, 1000)
---
---   -- If no definition found, return
---   if not result or vim.tbl_isempty(result) then
---     return
---   end
---
---   -- print(vim.inspect(result))
---
---   local uri = ""
---   for _, value in pairs(result) do
---     if value ~= nil and not vim.tbl_isempty(value.result) then
---       for _, v in pairs(value.result) do
---         uri = v.targetUri
---       end
---     end
---   end
---
---   if uri == "" then
---     return
---   end
---   -- Jump to the definition, either in the same buffer or in a new one
---   local bufnr = vim.uri_to_bufnr(uri)
---   if vim.api.nvim_buf_is_loaded(bufnr) then
---     vim.cmd("buffer " .. bufnr)
---     -- require('bufferline').go_to_buffer(%s, true)<
---     vim.lsp.buf.definition()
---     return
---   else
---     vim.api.nvim_command "vsplit|lua vim.lsp.buf.definition()"
---     return
---   end
--- end
+function jump_to_definition()
+  local params = vim.lsp.util.make_position_params()
+  vim.lsp.buf_request(0, "textDocument/definition", params, function(err, result)
+    if err then
+      print("Error when jumping to definition: " .. err)
+      return
+    end
 
+    if result == nil or #result == 0 then
+      return
+    end
+
+    local uri = result[1].uri
+    local buffer_number = vim.uri_to_bufnr(uri)
+
+    if buffer_number == vim.fn.bufnr() then
+      -- The target buffer is already open, so just jump to the definition
+      vim.fn.cursor(result[1].range.start.line + 1, result[1].range.start.character + 1)
+    else
+      -- The target buffer is not open, so open it in a new split and jump to the definition
+      vim.cmd "vsplit"
+      vim.cmd("buffer " .. buffer_number)
+      vim.fn.cursor(result[1].range.start.line + 1, result[1].range.start.character + 1)
+    end
+  end)
+end
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
