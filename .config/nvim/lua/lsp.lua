@@ -50,16 +50,19 @@ function jump_to_definition()
     local buffer_number = vim.uri_to_bufnr(uri)
 
     if buffer_number == vim.fn.bufnr() then
+      local range = result[1].range or result[1].targetRange
       -- The target buffer is already open, so just jump to the definition
-      vim.fn.cursor(result[1].range.start.line + 1, result[1].range.start.character + 1)
+      vim.fn.cursor(range.start.line + 1, range.start.character + 1)
     else
       -- The target buffer is not open, so open it in a new split and jump to the definition
       vim.cmd "vsplit"
       vim.cmd("buffer " .. buffer_number)
-      vim.fn.cursor(result[1].range.start.line + 1, result[1].range.start.character + 1)
+      local range = result[1].range or result[1].targetRange
+      vim.fn.cursor(range.start.line + 1, range.start.character + 1)
     end
   end)
 end
+
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
