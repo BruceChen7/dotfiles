@@ -46,10 +46,28 @@ function jump_to_definition()
       return
     end
 
-    local uri = result[1].uri
+    -- print(vim.inspect(result[1]))
+    local uri = result[1].uri or result[1].targetUri
     local buffer_number = vim.uri_to_bufnr(uri)
+    local jump_buf_name = vim.fn.bufname(buffer_number)
+    -- print("uri.." .. uri)
+    -- print("jump_buf_name.." .. jump_buf_name)
+    local found_buffer = false
+    local jump_win = 0
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      -- print("win " .. win)
+      local buf = vim.api.nvim_win_get_buf(win)
+      -- print("buf name " .. vim.api.nvim_buf_get_name(buf))
+      bufname = vim.api.nvim_buf_get_name(buf)
+      if bufname == jump_buf_name then
+        found_buffer = true
+        jump_win = win
+        break
+      end
+    end
 
-    if buffer_number == vim.fn.bufnr() then
+    if found_buffer then
+      vim.api.nvim_set_current_win(jump_win)
       local range = result[1].range or result[1].targetRange
       -- The target buffer is already open, so just jump to the definition
       vim.fn.cursor(range.start.line + 1, range.start.character + 1)

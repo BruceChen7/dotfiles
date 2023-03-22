@@ -65,6 +65,16 @@ vim.g.asyncrun_open = 10
 -- 任务结束时候响铃提醒
 vim.g.asyncrun_bell = 1
 
+local function home()
+  local head = (vim.api.nvim_get_current_line():find "[^%s]" or 1) - 1
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  cursor[2] = cursor[2] == head and 0 or head
+  vim.api.nvim_win_set_cursor(0, cursor)
+end
+
+vim.keymap.set({ "i", "n" }, "<Home>", home)
+vim.keymap.set("n", "0", home)
+
 -- AsyncTask
 vim.keymap.set("n", "g1", ":AsyncTask grep-cword<CR>")
 vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>")
