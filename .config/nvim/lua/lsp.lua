@@ -52,6 +52,10 @@ function jump_to_definition()
     local jump_buf_name = vim.fn.bufname(buffer_number)
     -- print("uri.." .. uri)
     -- print("jump_buf_name.." .. jump_buf_name)
+    if string.sub(jump_buf_name, 1, 1) ~= "/" then
+      -- print "relative direcotry"
+      jump_buf_name = vim.fn.getcwd() .. "/" .. jump_buf_name
+    end
     local found_buffer = false
     local jump_win = 0
     for _, win in ipairs(vim.api.nvim_list_wins()) do
