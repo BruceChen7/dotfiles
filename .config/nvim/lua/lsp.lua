@@ -28,61 +28,61 @@ function set_key()
   u.map("n", "]d", "<cmd>lua vim.diagnostic.goto_next()<CR>", opts)
   u.map("n", "<space>d", "<cmd>lua vim.diagnostic.setloclist()<CR>", opts)
   u.map("n", "<space>f", "<cmd>lua vim.lsp.buf.formatting()<CR>", opts)
-  u.map("n", "gpd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
+  -- u.map("n", "gpd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
   -- u.map("n", "gsd", "<cmd> vsplit | lua vim.lsp.buf.definition()<CR>", opts)
-  u.map("n", "gd", "<cmd> lua jump_to_definition()<CR>", opts)
-  u.map("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", opts)
+  -- u.map("n", "gd", "<cmd> lua jump_to_definition()<CR>", opts)
+  -- u.map("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", opts)
 end
 
-function jump_to_definition()
-  local params = vim.lsp.util.make_position_params()
-  vim.lsp.buf_request(0, "textDocument/definition", params, function(err, result)
-    if err then
-      print("Error when jumping to definition: " .. err)
-      return
-    end
-
-    if result == nil or #result == 0 then
-      return
-    end
-
-    local uri = result[1].uri or result[1].targetUri
-    local buffer_number = vim.uri_to_bufnr(uri)
-    local jump_buf_name = vim.fn.bufname(buffer_number)
-    -- print("uri.." .. uri)
-    -- print("jump_buf_name.." .. jump_buf_name)
-    if string.sub(jump_buf_name, 1, 1) ~= "/" then
-      -- print "relative direcotry"
-      jump_buf_name = vim.fn.getcwd() .. "/" .. jump_buf_name
-    end
-    local found_buffer = false
-    local jump_win = 0
-    for _, win in ipairs(vim.api.nvim_list_wins()) do
-      -- print("win " .. win)
-      local buf = vim.api.nvim_win_get_buf(win)
-      -- print("buf name " .. vim.api.nvim_buf_get_name(buf))
-      bufname = vim.api.nvim_buf_get_name(buf)
-      if bufname == jump_buf_name then
-        found_buffer = true
-        jump_win = win
-        break
-      end
-    end
-
-    if found_buffer then
-      vim.api.nvim_set_current_win(jump_win)
-      local range = result[1].range or result[1].targetRange
-      -- The target buffer is already open, so just jump to the definition
-      vim.fn.cursor(range.start.line + 1, range.start.character + 1)
-    else
-      -- The target buffer is not open, so open it in a new split and jump to the definition
-      vim.cmd "vsplit"
-      vim.cmd("buffer " .. buffer_number)
-      local range = result[1].range or result[1].targetRange
-      vim.fn.cursor(range.start.line + 1, range.start.character + 1)
-    end
-  end)
-end
+-- function jump_to_definition()
+--   local params = vim.lsp.util.make_position_params()
+--   vim.lsp.buf_request(0, "textDocument/definition", params, function(err, result)
+--     if err then
+--       print("Error when jumping to definition: " .. err)
+--       return
+--     end
+--
+--     if result == nil or #result == 0 then
+--       return
+--     end
+--
+--     local uri = result[1].uri or result[1].targetUri
+--     local buffer_number = vim.uri_to_bufnr(uri)
+--     local jump_buf_name = vim.fn.bufname(buffer_number)
+--     -- print("uri.." .. uri)
+--     -- print("jump_buf_name.." .. jump_buf_name)
+--     if string.sub(jump_buf_name, 1, 1) ~= "/" then
+--       -- print "relative direcotry"
+--       jump_buf_name = vim.fn.getcwd() .. "/" .. jump_buf_name
+--     end
+--     local found_buffer = false
+--     local jump_win = 0
+--     for _, win in ipairs(vim.api.nvim_list_wins()) do
+--       -- print("win " .. win)
+--       local buf = vim.api.nvim_win_get_buf(win)
+--       -- print("buf name " .. vim.api.nvim_buf_get_name(buf))
+--       bufname = vim.api.nvim_buf_get_name(buf)
+--       if bufname == jump_buf_name then
+--         found_buffer = true
+--         jump_win = win
+--         break
+--       end
+--     end
+--
+--     if found_buffer then
+--       vim.api.nvim_set_current_win(jump_win)
+--       local range = result[1].range or result[1].targetRange
+--       -- The target buffer is already open, so just jump to the definition
+--       vim.fn.cursor(range.start.line + 1, range.start.character + 1)
+--     else
+--       -- The target buffer is not open, so open it in a new split and jump to the definition
+--       vim.cmd "vsplit"
+--       vim.cmd("buffer " .. buffer_number)
+--       local range = result[1].range or result[1].targetRange
+--       vim.fn.cursor(range.start.line + 1, range.start.character + 1)
+--     end
+--   end)
+-- end
 
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
