@@ -20,13 +20,6 @@ require("lazy").setup {
     end,
   },
 
-  -- {
-  --   "skywind3000/gutentags_plus",
-  --   config = function()
-  --     require "config/gtags"
-  --   end,
-  -- },
-
   --
   { "skywind3000/vim-preview" },
   { "skywind3000/vim-quickui" },
@@ -49,6 +42,15 @@ require("lazy").setup {
 
   -- -- adds vscode-like pictograms to neovim built-in lsp
   { "onsails/lspkind-nvim" },
+
+  {
+    "rmagatti/goto-preview",
+    config = function()
+      require("goto-preview").setup {
+        default_mappings = true,
+      }
+    end,
+  },
 
   {
     "lambdalisue/fern.vim",
