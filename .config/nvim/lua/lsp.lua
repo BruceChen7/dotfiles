@@ -46,7 +46,6 @@ function jump_to_definition()
       return
     end
 
-    -- print(vim.inspect(result[1]))
     local uri = result[1].uri or result[1].targetUri
     local buffer_number = vim.uri_to_bufnr(uri)
     local jump_buf_name = vim.fn.bufname(buffer_number)
