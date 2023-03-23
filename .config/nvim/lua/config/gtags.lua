@@ -1,4 +1,4 @@
-vim.g.gutentags_project_root = { ".root", ".git" }
+vim.g.gutentags_project_root = { ".root", ".git", ".hg" }
 vim.g.gutentags_ctags_tagfile = ".tags"
 vim.g.gutentags_cache_dir = vim.fn.expand "~/.cache/tags"
 -- 禁止 gutentags 自动链接 gtags 数据库
