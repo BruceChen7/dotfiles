@@ -11,6 +11,8 @@ vim.g.Lf_ShowDevIcons = 1
 -- " 隐藏帮助
 vim.g.Lf_HideHelp = 0
 
+--  gtags database auto update
+vim.g.Lf_GtagsAutoUpdate = 1
 vim.g.Lf_MruMaxFiles = 2048
 -- " 如何识别项目目录，从当前文件目录向父目录递归知道碰到下面的文件/目录
 vim.g.Lf_RootMarkers = { ".project", ".root", ".svn", ".git", "go.mod", "cargo.toml" }
@@ -30,7 +32,7 @@ vim.g.Lf_WindowPosition = "popup"
 vim.g.Lf_PreviewInPopup = 1
 
 -- ALT+m 打开最近使用的文件 MRU，进行模糊匹配
-u.map("n", "<m-m>", ":LeaderfMru<cr>")
+u.map("n", "<m-m>", ":LeaderfMruCwd<cr>")
 u.map("n", "<m-p>", ":LeaderfFunction<cr>")
 -- " ALT+SHIFT+p 打开 tag 列表，i 进入模糊匹配，ESC退出
 u.map("n", "<m-P>", ":LeaderfBufTag<cr>")
