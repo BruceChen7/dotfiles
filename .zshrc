@@ -265,3 +265,11 @@ export LC_CTYPE=en_US.UTF-8
 export LANG=zh_CN.UTF-8
 export LANGUAGE=zh_CN:en_US
 export TERM="xterm-256color"
+
+
+if command -v pyenv 1>/dev/null 2>&1; then
+  eval "$(pyenv init -)"
+fi
+
+export PATH="/home/vagrant/go/bin":$PATH
+eval "$(zoxide init zsh)"
