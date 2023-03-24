@@ -74,6 +74,7 @@ function jump_to_definition()
       local range = result[1].range or result[1].targetRange
       -- The target buffer is already open, so just jump to the definition
       -- vim.fn.cursor(range.start.line + 1, range.start.character + 1)
+      -- https://stackoverflow.com/questions/19195160/push-a-location-to-the-jumplist
       vim.cmd("normal " .. range.start.line + 1 .. "G" .. range.start.character + 1 .. "|")
     else
       -- The target buffer is not open, so open it in a new split and jump to the definition
