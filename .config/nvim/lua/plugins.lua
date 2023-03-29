@@ -388,41 +388,6 @@ require("lazy").setup {
 
   { "folke/tokyonight.nvim" },
 
-  -- {
-  --   "LunarVim/bigfile.nvim",
-  --   ft = { "go", "lua", "c", "rust", "cpp", "proto" },
-  -- },
-
-  -- {
-  --
-  --   "nvim-neo-tree/neo-tree.nvim",
-  --   branch = "v2.x",
-  --   keys = { { "nc", "nC", "ne", "nb" } },
-  --   dependencies = {
-  --     "nvim-lua/plenary.nvim",
-  --     "kyazdani42/nvim-web-devicons", -- not strictly required, but recommended
-  --     "MunifTanjim/nui.nvim",
-  --   },
-  --   config = function()
-  --     require "config/neotree"
-  --   end,
-  -- },
-
-  -- {
-  --   "m4xshen/smartcolumn.nvim",
-  --   opts = {
-  --     scope = "line",
-  --   },
-  -- },
-
-  -- {
-  --   "mfussenegger/nvim-dap",
-  --   config = function()
-  --     require "config/dap"
-  --   end,
-  --   ft = { "go", "lua", "c", "rust", "cpp" },
-  -- },
-
   {
     "gennaro-tedesco/nvim-peekup",
   },

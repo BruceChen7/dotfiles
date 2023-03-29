@@ -346,7 +346,6 @@ cmp.setup {
     { name = "luasnip" },
     { name = "path" },
     { name = "nvim_lua" }, -- with vim.api complete
-    { name = "codeium" },
     {
       name = "buffer",
       keyword_length = 3,
@@ -356,6 +355,7 @@ cmp.setup {
         end,
       },
     },
+    { name = "codeium" },
     { name = "crates" },
     -- { name = "tags" },
     -- { name = "rg" },
