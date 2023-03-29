@@ -427,12 +427,23 @@ require("lazy").setup {
     "gennaro-tedesco/nvim-peekup",
   },
 
+  -- {
+  --   "Exafunction/codeium.vim",
+  --   config = function()
+  --     require "config/codeium"
+  --   end,
+  --   ft = { "go", "lua", "c", "rust", "cpp", "zig", "cpp", "python" },
+  -- },
+
   {
-    "Exafunction/codeium.vim",
+    "jcdickinson/codeium.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "hrsh7th/nvim-cmp",
+    },
     config = function()
-      require "config/codeium"
+      require("codeium").setup {}
     end,
-    ft = { "go", "lua", "c", "rust", "cpp", "zig", "cpp", "python" },
   },
 
   { "dpayne/CodeGPT.nvim", dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" } },
@@ -443,6 +454,27 @@ require("lazy").setup {
       vim.keymap.set("n", ",c", require("osc52").copy_operator, { expr = true })
       -- vim.keymap.set("n", "<leader>cc", "<leader>c_", { remap = true })
       vim.keymap.set("x", ",c", require("osc52").copy_visual)
+    end,
+  },
+
+  -- seems not working
+  {
+    "zbirenbaum/neodim",
+    event = "LspAttach",
+    config = function()
+      require("neodim").setup {
+        alpha = 0.7,
+        blend_color = "#000000",
+        update_in_insert = {
+          enable = true,
+          delay = 200,
+        },
+        hide = {
+          virtual_text = false,
+          signs = true,
+          underline = false,
+        },
+      }
     end,
   },
 

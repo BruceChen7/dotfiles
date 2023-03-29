@@ -195,6 +195,8 @@ for _, lsp in ipairs(servers) do
           upgrade_dependency = true, -- Upgrades a dependency in the go.mod file for a module
           vendor = true, -- Runs go mod vendor for a module
         },
+        -- enables placeholders for function parameters or struct fields in completion responses
+        usePlaceholders = false,
         gofumpt = true,
       },
     },
@@ -344,6 +346,7 @@ cmp.setup {
     { name = "luasnip" },
     { name = "path" },
     { name = "nvim_lua" }, -- with vim.api complete
+    { name = "codeium" },
     {
       name = "buffer",
       keyword_length = 3,
@@ -429,6 +432,7 @@ cmp.setup {
         Event = "",
         Operator = "",
         TypeParameter = " ",
+        Codeium = "",
       }
       local meta_type = vim_item.kind
       -- load lspkind icons
