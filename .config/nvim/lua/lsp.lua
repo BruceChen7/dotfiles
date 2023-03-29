@@ -8,6 +8,16 @@ local nvim_lsp = require "lspconfig"
 local lspkind = require "lspkind"
 lspkind.init()
 
+local signature_config = {
+  log_path = vim.fn.expand "$HOME" .. "/tmp/sig.log",
+  debug = false,
+  hint_enable = true,
+  handler_opts = { border = "double", floating_window = true },
+  max_width = 80,
+}
+
+require("lsp_signature").setup(signature_config)
+
 function set_key()
   -- Mappings.
   local opts = { noremap = true, silent = true }
@@ -15,7 +25,7 @@ function set_key()
   -- See `:help vim.lsp.*` for documentation on any of the below functions
   u.map("n", "K", "<cmd>lua vim.lsp.buf.hover()<CR>", opts)
   u.map("n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", opts)
-  -- u.map('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+  u.map("n", "<space>k", "<cmd>lua vim.lsp.buf.signature_help()<CR>", opts)
   u.map("n", "<space>wa", "<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>", opts)
   u.map("n", "<space>wr", "<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>", opts)
   u.map("n", "<space>wl", "<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>", opts)
@@ -104,13 +114,13 @@ local on_attach = function(client, bufnr)
   end
 
   -- Mappings.
-  require("lsp_signature").on_attach({
-    bind = true,
-    handler_opts = {
-      border = "double",
-      floating_window = true,
-    },
-  }, bufnr)
+  -- require("lsp_signature").on_attach({
+  --   bind = true,
+  --   handler_opts = {
+  --     border = "double",
+  --     floating_window = true,
+  --   },
+  -- }, bufnr)
 end
 
 -- if not set, macos not working
@@ -122,7 +132,7 @@ end
 -- map buffer local keybindings when the language server attaches
 -- local capabilities = vim.lsp.protocol.make_client_capabilities()
 -- local servers = { "pyright", "gopls", "clangd", "rust_analyzer", "zls" }
-local servers = { "pyright", "gopls", "zls" }
+local servers = { "pyright", "zls" }
 capabilities = require("cmp_nvim_lsp").default_capabilities()
 capabilities.textDocument.completion.completionItem.snippetSupport = true
 capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
@@ -158,51 +168,56 @@ nvim_lsp["clangd"].setup {
   filetypes = { "c", "cpp" },
 }
 
+nvim_lsp["gopls"].setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  settings = {
+    gopls = {
+      experimentalPostfixCompletions = true,
+      completeUnimported = true,
+      hints = {
+        assignVariableTypes = true,
+        compositeLiteralFields = true,
+        compositeLiteralTypes = true,
+        constantValues = true,
+        functionTypeParameters = true,
+        parameterNames = true,
+        rangeVariableTypes = true,
+      },
+      analyses = {
+        -- find structs that would use less memory if their fields were sorted
+        fieldalignment = true,
+        unusedparams = true,
+        shadow = true,
+        unusedwrite = true, -- checks for unused writes, an instances of writes to struct fields and arrays that are never read
+        nonewvars = true,
+        fillreturns = true,
+        nilness = true, -- check for redundant or impossible nil comparisons
+      },
+      staticcheck = true,
+      codelenses = {
+        test = true,
+        gc_details = true, -- Toggle the calculation of gc annotations
+        generate = true, -- Runs go generate for a given directory
+        regenerate_cgo = true, -- Regenerates cgo definitions
+        tidy = true, -- Runs go mod tidy for a module
+        upgrade_dependency = true, -- Upgrades a dependency in the go.mod file for a module
+        vendor = true, -- Runs go mod vendor for a module
+      },
+      -- enables placeholders for function parameters or struct fields in completion responses
+      usePlaceholders = false,
+      gofumpt = true,
+    },
+  },
+  flags = {
+    debounce_text_changes = 150,
+  },
+}
+
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
     capabilities = capabilities,
-    settings = {
-      gopls = {
-        experimentalPostfixCompletions = true,
-        completeUnimported = true,
-        hints = {
-          assignVariableTypes = true,
-          compositeLiteralFields = true,
-          compositeLiteralTypes = true,
-          constantValues = true,
-          functionTypeParameters = true,
-          parameterNames = true,
-          rangeVariableTypes = true,
-        },
-        analyses = {
-          -- find structs that would use less memory if their fields were sorted
-          fieldalignment = true,
-          unusedparams = true,
-          shadow = true,
-          unusedwrite = true, -- checks for unused writes, an instances of writes to struct fields and arrays that are never read
-          nonewvars = true,
-          fillreturns = true,
-          nilness = true, -- check for redundant or impossible nil comparisons
-        },
-        staticcheck = true,
-        codelenses = {
-          test = true,
-          gc_details = true, -- Toggle the calculation of gc annotations
-          generate = true, -- Runs go generate for a given directory
-          regenerate_cgo = true, -- Regenerates cgo definitions
-          tidy = true, -- Runs go mod tidy for a module
-          upgrade_dependency = true, -- Upgrades a dependency in the go.mod file for a module
-          vendor = true, -- Runs go mod vendor for a module
-        },
-        -- enables placeholders for function parameters or struct fields in completion responses
-        usePlaceholders = false,
-        gofumpt = true,
-      },
-    },
-    flags = {
-      debounce_text_changes = 150,
-    },
   }
 end
 
