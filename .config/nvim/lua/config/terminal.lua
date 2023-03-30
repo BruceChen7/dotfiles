@@ -74,6 +74,10 @@ function _Git_Diff()
   require("toggleterm").exec("git diff ", 1, 12)
 end
 
+function _Git_file_diff()
+  require("toggleterm").exec("git log -p " .. vim.fn.expand "%:p", 1, 12)
+end
+
 function _Git_Diff_test()
   local branch = vim.fn.system {
     "git",
@@ -94,6 +98,7 @@ end
 local u = require "util"
 vim.keymap.set("n", "<leader>tg", ":lua _Tig_TOGGLE()<CR>")
 u.map("n", "<leader>tb", ":lua _Tig_Blame()<CR>")
+u.map("n", "<leader>tf", ":lua _Git_file_diff()<CR>")
 u.map("n", "<leader>gs", ":lua  _Git_Status()<CR>")
 u.map("n", "<leader>gdd", ":lua  _Git_Diff_Name_Only()<CR>")
 u.map("n", "<leader>gdn", ":lua  _Git_Diff()<CR>")
