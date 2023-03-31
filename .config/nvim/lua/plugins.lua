@@ -61,8 +61,8 @@ require("lazy").setup {
   },
   --
   -- LSP source for nvim-cmp
-  { "hrsh7th/cmp-nvim-lsp" },
-  { "hrsh7th/cmp-cmdline" },
+  { "hrsh7th/cmp-nvim-lsp", event = "InsertEnter" },
+  { "hrsh7th/cmp-cmdline", event = "InsertEnter" },
 
   { "hrsh7th/cmp-buffer" },
   { "hrsh7th/cmp-path" },
@@ -225,6 +225,9 @@ require("lazy").setup {
 
   -- colorscheme
   { "EdenEast/nightfox.nvim" },
+
+  { "rebelot/kanagawa.nvim" },
+
   {
     "daschw/leaf.nvim",
     config = function()
@@ -275,7 +278,6 @@ require("lazy").setup {
 
   {
     "saecki/crates.nvim",
-    tag = "v0.1.0",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
       require("crates").setup()
@@ -330,33 +332,16 @@ require("lazy").setup {
     event = "InsertEnter",
   },
 
-  --
-  -- {
-  --   "p00f/nvim-ts-rainbow",
-  -- },
-  --
   {
-    "nacro90/numb.nvim",
-    config = function()
-      require("numb").setup()
+    "kevinhwang91/nvim-bqf",
+    ft = "qf",
+    build = function()
+      vim.fn["fzf#install"]()
     end,
+    dependencies = {
+      "junegunn/fzf",
+    },
   },
-
-  -- {
-  --   "ziontee113/syntax-tree-surfer",
-  --   config = function()
-  --     require "config/surfer"
-  --   end,
-  --   ft = { "go", "c", "cpp", "zig" },
-  -- },
-  {
-    "nmac427/guess-indent.nvim",
-    config = function()
-      require("guess-indent").setup {}
-    end,
-    event = "InsertEnter",
-  },
-
   {
     "kevinhwang91/nvim-ufo",
     dependencies = { "kevinhwang91/promise-async" },
