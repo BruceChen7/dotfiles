@@ -429,6 +429,13 @@ require("lazy").setup {
   },
 
   {
+    "lvimuser/lsp-inlayhints.nvim",
+    config = function()
+      require("lsp-inlayhints").setup()
+    end,
+  },
+
+  {
     "abecodes/tabout.nvim",
     config = function()
       require "config/tabout"

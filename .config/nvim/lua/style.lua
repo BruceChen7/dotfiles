@@ -86,15 +86,3 @@ vim.cmd [[
 	let scheme = v:lua.getColorscheme()
 	execute 'colorscheme ' . scheme
 ]]
-
-local inlay_hints = require "config/inlay_hints"
-function set_inlay_hints()
-  inlay_hints.set_inlay_hints()
-end
-
-vim.cmd [[
-augroup GoInlayhintsGroup
-    au!
-    autocmd CursorHold,CursorHoldI*.go lua set_inlay_hints()
-augroup END
-]]

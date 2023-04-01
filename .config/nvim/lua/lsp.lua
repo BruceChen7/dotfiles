@@ -112,15 +112,6 @@ local on_attach = function(client, bufnr)
   if vim.loop.os_uname().sysname == "Linux" then
     set_key()
   end
-
-  -- Mappings.
-  -- require("lsp_signature").on_attach({
-  --   bind = true,
-  --   handler_opts = {
-  --     border = "double",
-  --     floating_window = true,
-  --   },
-  -- }, bufnr)
 end
 
 -- if not set, macos not working
@@ -484,7 +475,16 @@ for _, v in ipairs(format_file_type) do
   })
 end
 
-local inlay_hints = require "config/inlay_hints"
-function set_inlay_hints()
-  inlay_hints.set_inlay_hints()
-end
+vim.api.nvim_create_augroup("LspAttach_inlayhints", {})
+vim.api.nvim_create_autocmd("LspAttach", {
+  group = "LspAttach_inlayhints",
+  callback = function(args)
+    if not (args.data and args.data.client_id) then
+      return
+    end
+
+    local bufnr = args.buf
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    require("lsp-inlayhints").on_attach(client, bufnr)
+  end,
+})
