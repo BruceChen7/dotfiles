@@ -394,21 +394,6 @@ cmp.setup {
     },
   },
 
-  -- formatting = {
-  --   -- Youtube: How to set up nice formatting for your sources.
-  --   format = lspkind.cmp_format {
-  --     with_text = true,
-  --     menu = {
-  --       buffer = "[buf]",
-  --       nvim_lsp = "[LSP]",
-  --       nvim_lua = "[api]",
-  --       path = "[path]",
-  --       luasnip = "[snip]",
-  --       -- gh_issues = "[issues]",
-  --       -- tn = "[TabNine]",
-  --     },
-  --   },
-  -- },
   formatting = {
     fields = { "kind", "abbr", "menu" },
     format = function(entry, vim_item)

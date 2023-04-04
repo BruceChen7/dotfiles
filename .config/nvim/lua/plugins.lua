@@ -408,6 +408,7 @@ require("lazy").setup {
   },
 
   -- seems not working
+  -- more config
   {
     "zbirenbaum/neodim",
     event = "LspAttach",
