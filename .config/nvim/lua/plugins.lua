@@ -269,6 +269,7 @@ require("lazy").setup {
 
   {
     "rlane/pounce.nvim",
+    event = "InsertEnter",
   },
 
   {
@@ -322,6 +323,7 @@ require("lazy").setup {
     config = function()
       require "config/neoscroll"
     end,
+    event = "InsertEnter",
   },
 
   {
@@ -394,9 +396,14 @@ require("lazy").setup {
     config = function()
       require("codeium").setup {}
     end,
+    ft = { "go", "lua", "c", "rust", "cpp", "zig", "cpp", "python" },
   },
 
-  { "dpayne/CodeGPT.nvim", dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" } },
+  {
+    "dpayne/CodeGPT.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" },
+    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
+  },
 
   {
     "ojroques/nvim-osc52",
@@ -405,6 +412,17 @@ require("lazy").setup {
       -- vim.keymap.set("n", "<leader>cc", "<leader>c_", { remap = true })
       vim.keymap.set("x", ",c", require("osc52").copy_visual)
     end,
+    event = "InsertEnter",
+  },
+
+  {
+    "nvim-telescope/telescope.nvim",
+    tag = "0.1.1",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      require "config/telescope"
+    end,
+    event = { "BufRead", "BufNewFile" },
   },
 
   -- seems not working
