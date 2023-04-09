@@ -223,7 +223,8 @@ require("rust-tools").setup {
       -- default: "=>"
       other_hints_prefix = "=> ",
       highlight = "Comment",
-      auto = true,
+      -- https://github.com/lvimuser/lsp-inlayhints.nvim#configuration
+      auto = false,
     },
     hover_actions = {
       auto_focus = false,
@@ -435,6 +436,7 @@ cmp.setup {
         path = " Path",
         luasnip = " LuaSnip",
         tags = " Tags",
+        codeium = " Codeium",
         -- rg = "Rg",
       })[entry.source.name]
 

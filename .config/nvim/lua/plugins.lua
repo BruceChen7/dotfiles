@@ -28,7 +28,7 @@ require("lazy").setup {
 
   {
     "Yggdroot/LeaderF",
-    keys = { "<m-n>", "<m-p>", "<m-m>", "<c-p>" },
+    keys = { { "<m-n>" }, { "<m-p>" }, { "<m-m>" }, { "<c-p>" } },
     config = function()
       require "config/leaderf"
     end,
@@ -379,13 +379,23 @@ require("lazy").setup {
     "gennaro-tedesco/nvim-peekup",
   },
 
-  -- {
-  --   "Exafunction/codeium.vim",
-  --   config = function()
-  --     require "config/codeium"
-  --   end,
-  --   ft = { "go", "lua", "c", "rust", "cpp", "zig", "cpp", "python" },
-  -- },
+  {
+    "AckslD/nvim-neoclip.lua",
+    dependencies = {
+      { "nvim-telescope/telescope.nvim" },
+    },
+    config = function()
+      require("neoclip").setup()
+    end,
+  },
+
+  {
+    "Exafunction/codeium.vim",
+    config = function()
+      require "config/codeium"
+    end,
+    ft = { "go", "lua", "c", "rust", "cpp", "zig", "cpp", "python" },
+  },
 
   {
     "jcdickinson/codeium.nvim",
