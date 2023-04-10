@@ -52,8 +52,6 @@ if not status_ok then
 end
 
 local opts = { noremap = true, silent = true }
-vim.api.nvim_set_keymap("n", ",ff", "<cmd>Telescope find_files<cr>", opts)
-
 local actions = require "telescope.actions"
 
 -- disable preview binaries
@@ -207,24 +205,11 @@ telescope.setup {
         -- even more opts
       },
     },
-    cder = {
-      previewer_command = "exa "
-        .. "-a "
-        .. "--color=always "
-        .. "-T "
-        .. "--level=3 "
-        .. "--icons "
-        .. "--git-ignore "
-        .. "--long "
-        .. "--no-permissions "
-        .. "--no-user "
-        .. "--no-filesize "
-        .. "--git "
-        .. "--ignore-glob=.git",
-      dir_command = { "fd", "--type=d", ".", os.getenv "PWD" },
-    },
   },
 }
 
 telescope.load_extension "neoclip"
+telescope.load_extension "session-lens"
 vim.keymap.set("n", ",tg", ":Telescope live_grep<CR>")
+vim.keymap.set("n", ",ts", ":Telescope session-lens search_session <CR>")
+vim.keymap.set("n", ",tf", "<cmd>Telescope find_files<cr>", opts)

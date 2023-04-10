@@ -335,16 +335,6 @@ require("lazy").setup {
   },
 
   {
-    "kevinhwang91/nvim-bqf",
-    ft = "qf",
-    build = function()
-      vim.fn["fzf#install"]()
-    end,
-    dependencies = {
-      "junegunn/fzf",
-    },
-  },
-  {
     "kevinhwang91/nvim-ufo",
     dependencies = { "kevinhwang91/promise-async" },
     ft = { "go", "lua", "c", "rust", "cpp" },
@@ -362,16 +352,6 @@ require("lazy").setup {
       require "config/bufferline"
     end,
   },
-
-  -- {
-  --   "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
-  --   config = function()
-  --     require("lsp_lines").setup {}
-  --     vim.diagnostic.config {
-  --       virtual_text = false,
-  --     }
-  --   end,
-  -- },
 
   { "folke/tokyonight.nvim" },
 
@@ -432,7 +412,7 @@ require("lazy").setup {
     config = function()
       require "config/telescope"
     end,
-    event = { "BufRead", "BufNewFile" },
+    keys = { { ",tg", mode = "n" }, { ",ts", mode = "n" } },
   },
 
   -- seems not working
@@ -462,6 +442,7 @@ require("lazy").setup {
     config = function()
       require("lsp-inlayhints").setup()
     end,
+    event = "LspAttach",
   },
 
   {
@@ -475,5 +456,22 @@ require("lazy").setup {
     },
     event = "InsertEnter",
     ft = { "go", "lua", "c", "rust", "cpp", "zig", "cpp", "python", "markdown" },
+  },
+
+  {
+    "rmagatti/auto-session",
+    config = function()
+      require("auto-session").setup {
+        log_level = "error",
+        auto_session_supress_dir = { "~/" },
+      }
+    end,
+  },
+  {
+    "rmagatti/session-lens",
+    dependencies = { "nvim-telescope/telescope.nvim", "rmagatti/auto-session" },
+    config = function()
+      require("session-lens").setup()
+    end,
   },
 }
