@@ -69,7 +69,7 @@ g.maplocalleader = " "
 -- g.did_load_filetypes = 0
 
 -- 设置分隔符可视
-o.listchars = "tab:|  ,trail:.,extends:>,precedes:<"
+o.listchars = "tab:|>-,trail:.,extends:>,precedes:<"
 
 -- 文件换行符，默认使用 unix 换行符
 o.ffs = "unix,dos,mac"
