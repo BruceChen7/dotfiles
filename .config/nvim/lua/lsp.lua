@@ -100,6 +100,18 @@ end
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
+  -- https://github.com/golang/go/issues/54531
+  if client.name == "gopls" and not client.server_capabilities.semanticTokensProvider then
+    local semantic = client.config.capabilities.textDocument.semanticTokens
+    client.server_capabilities.semanticTokensProvider = {
+      full = true,
+      legend = {
+        tokenModifiers = semantic.tokenModifiers,
+        tokenTypes = semantic.tokenTypes,
+      },
+      range = true,
+    }
+  end
   local function buf_set_option(...)
     vim.api.nvim_buf_set_option(bufnr, ...)
   end
@@ -198,6 +210,7 @@ nvim_lsp["gopls"].setup {
       -- enables placeholders for function parameters or struct fields in completion responses
       usePlaceholders = false,
       gofumpt = true,
+      semanticTokens = true,
     },
   },
   flags = {

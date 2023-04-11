@@ -78,6 +78,8 @@ local new_maker = function(filepath, bufnr, opts)
     :sync()
 end
 
+local z_utils = require "telescope._extensions.zoxide.utils"
+
 telescope.setup {
   defaults = {
     buffer_previewer_maker = new_maker,
@@ -178,6 +180,7 @@ telescope.setup {
     -- Now the picker_config_key will be applied every time you call this
     -- builtin picker
   },
+
   extensions = {
     -- Your extension configuration goes here:
     -- extension_name = {
@@ -205,11 +208,33 @@ telescope.setup {
         -- even more opts
       },
     },
+    zoxide = {
+      prompt_title = "zoxide",
+      mappings = {
+        default = {
+          after_action = function(selection)
+            print("Update to (" .. selection.z_score .. ") " .. selection.path)
+          end,
+        },
+        ["<C-s>"] = {
+          before_action = function(selection)
+            -- print "before C-s"
+          end,
+          action = function(selection)
+            vim.cmd.edit(selection.path)
+          end,
+        },
+        -- Opens the selected entry in a new split
+        ["<C-q>"] = { action = z_utils.create_basic_command "split" },
+      },
+    },
   },
 }
 
 telescope.load_extension "neoclip"
 telescope.load_extension "session-lens"
+telescope.load_extension "zoxide"
 vim.keymap.set("n", ",tg", ":Telescope live_grep<CR>")
 vim.keymap.set("n", ",ts", ":Telescope session-lens search_session <CR>")
 vim.keymap.set("n", ",tf", "<cmd>Telescope find_files<cr>", opts)
+vim.keymap.set("n", ",tz", "<cmd>Telescope zoxide list<cr>", opts)

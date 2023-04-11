@@ -17,7 +17,7 @@ tc.setup {
     "yaml",
   },
   highlight = {
-    enable = true, -- false will disable the whole extension
+    enable = false,
     additional_vim_regex_highlighting = false,
     disable = function(lang, bufnr) -- Disable in large C++ buffers
       return lang == ("cpp" or lang == "go") and api.nvim_buf_line_count(bufnr) > 20000
@@ -45,6 +45,7 @@ tc.setup {
     -- termcolors = {} -- table of colour name strings
   },
   indent = {
+    -- performance killer
     enable = false,
   },
   textobjects = {
