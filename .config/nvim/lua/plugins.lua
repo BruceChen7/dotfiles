@@ -28,7 +28,7 @@ require("lazy").setup {
 
   {
     "Yggdroot/LeaderF",
-    keys = { { "<m-n>" }, { "<m-p>" }, { "<m-m>" }, { "<c-p>" } },
+    keys = { { "<m-n>" }, { "<m-p>" }, { "<m-m>" }, { "<c-p>" }, { "<m-l>" } },
     config = function()
       require "config/leaderf"
     end,
@@ -464,5 +464,14 @@ require("lazy").setup {
     config = function()
       require("session-lens").setup()
     end,
+  },
+
+  {
+    "jvgrootveld/telescope-zoxide",
+    dependencies = {
+      "nvim-telescope/telescope.nvim",
+      "nvim-lua/popup.nvim",
+      "nvim-lua/plenary.nvim",
+    },
   },
 }

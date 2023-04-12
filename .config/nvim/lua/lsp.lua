@@ -288,6 +288,7 @@ require("rust-tools").setup {
           chainingHintsSeparator = "‣ ",
           typeHintsSeparator = "‣ ",
           typeHints = true,
+          auto = false,
         },
         checkOnSave = {
           enable = true,
