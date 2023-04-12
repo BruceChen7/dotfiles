@@ -134,17 +134,6 @@ require("lazy").setup {
   -- replaced with window.nvim
   { "camspiers/lens.vim" },
 
-  -- {
-  --   "glepnir/galaxyline.nvim",
-  --   branch = "main",
-  --   -- your statusline
-  --   config = function()
-  --     require "config/galaxy"
-  --   end,
-  --   -- some optional icons
-  --   dependencies = { "kyazdani42/nvim-web-devicons", opt = true },
-  -- },
-
   {
     "ojroques/nvim-hardline",
     config = function()
@@ -241,6 +230,7 @@ require("lazy").setup {
     config = function()
       require("nvim-autopairs").setup {}
     end,
+    event = "InsertEnter",
   },
 
   {
@@ -445,6 +435,7 @@ require("lazy").setup {
     event = "LspAttach",
   },
 
+  -- skip to inner bracket
   {
     "abecodes/tabout.nvim",
     config = function()
