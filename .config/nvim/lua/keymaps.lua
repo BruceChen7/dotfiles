@@ -27,7 +27,7 @@ u.map("v", "<", "<gv", default_options)
 u.map("v", ">", ">gv", default_options)
 
 -- paste over currently selected text without yanking it
-u.map("v", "p", '"_dP', default_options)
+-- u.map("v", "p", '"_dP', default_options)
 
 -- buffer switch
 u.map("n", "<tab>n", ":bNext<CR>", default_options)
