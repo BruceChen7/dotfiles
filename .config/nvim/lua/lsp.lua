@@ -125,6 +125,7 @@ local on_attach = function(client, bufnr)
       range = true,
     }
   end
+
   local function buf_set_option(...)
     vim.api.nvim_buf_set_option(bufnr, ...)
   end
@@ -145,6 +146,7 @@ capabilities = require("cmp_nvim_lsp").default_capabilities()
 capabilities.textDocument.completion.completionItem.snippetSupport = true
 capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
 capabilities.textDocument.completion.completionItem.preselectSupport = true
+
 -- for folding
 capabilities.textDocument.foldingRange = {
   dynamicRegistration = false,
