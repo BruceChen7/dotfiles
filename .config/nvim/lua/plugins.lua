@@ -18,6 +18,7 @@ require("lazy").setup {
     config = function()
       require "config/gtags"
     end,
+    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
   },
 
   --
@@ -357,6 +358,20 @@ require("lazy").setup {
     config = function()
       require("neoclip").setup {
         default_register = { '"', "+", "*" },
+      }
+    end,
+  },
+
+  {
+    "VidocqH/lsp-lens.nvim",
+    config = function()
+      require("lsp-lens").setup {
+        enable = true,
+        sections = { -- Enable / Disable specific request
+          definition = true,
+          references = true,
+          implementation = true,
+        },
       }
     end,
   },
