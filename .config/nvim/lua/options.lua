@@ -100,6 +100,6 @@ o.wildignore = [[
 ]]
 
 vim.cmd [[
-" set clipboard+=unnamedplus
+ set clipboard+=unnamedplus
  set foldcolumn=0
 ]]
