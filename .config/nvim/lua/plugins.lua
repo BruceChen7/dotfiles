@@ -472,6 +472,9 @@ require("lazy").setup {
     },
   },
 
+  -- protject notes
+  { "JellyApple102/flote.nvim" },
+
   {
     "mrjones2014/smart-splits.nvim",
     build = "./kitty/install-kittens.bash",
