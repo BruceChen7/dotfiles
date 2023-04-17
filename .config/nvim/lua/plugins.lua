@@ -21,7 +21,6 @@ require("lazy").setup {
     ft = { "go", "c", "cpp", "rust", "zig", "lua" },
   },
 
-  --
   { "skywind3000/vim-preview" },
   { "skywind3000/vim-quickui" },
   { "skywind3000/asynctasks.vim" },
@@ -90,7 +89,7 @@ require("lazy").setup {
   },
   {
     "saadparwaiz1/cmp_luasnip",
-    ft = { "go", "lua", "c", "rust", "cpp", "yaml", "json" },
+    ft = { "go", "lua", "c", "rust", "cpp", "yaml", "json", "python" },
   },
 
   {
@@ -159,21 +158,6 @@ require("lazy").setup {
     end,
   },
 
-  -- {
-  --   "lukas-reineke/indent-blankline.nvim",
-  --   config = function()
-  --     -- vim.opt.list = true
-  --     -- vim.opt.listchars:append "space:⋅"
-  --     -- vim.opt.listchars:append "eol:↴"
-  --     require("indent_blankline").setup {
-  --       space_char_blankline = " ",
-  --       show_current_context = true,
-  --       show_end_of_line = true,
-  --     }
-  --   end,
-  --   ft = { "go", "zig", "rust", "lua", "c", "cpp", "python" },
-  -- },
-
   -- treesitter
   {
     "nvim-treesitter/nvim-treesitter",
@@ -187,11 +171,6 @@ require("lazy").setup {
     config = function()
       require "config/text_obj"
     end,
-    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
-  },
-
-  {
-    "nvim-treesitter/nvim-treesitter-context",
     ft = { "go", "c", "cpp", "rust", "zig", "lua" },
   },
 
@@ -283,6 +262,7 @@ require("lazy").setup {
     config = function()
       require("fidget").setup {}
     end,
+    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
   },
   --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
   -- use "t9md/vim-choosewin"
@@ -490,5 +470,21 @@ require("lazy").setup {
       "nvim-lua/popup.nvim",
       "nvim-lua/plenary.nvim",
     },
+  },
+
+  {
+    "mrjones2014/smart-splits.nvim",
+    build = "./kitty/install-kittens.bash",
+    config = function()
+      require("smart-splits").setup {
+        multiplexer = "tmux",
+        -- use less ctrl + h/j/k/l for terminal key which has specific behavior
+        vim.keymap.set("n", "<C-h>", require("smart-splits").move_cursor_left),
+
+        -- vim.keymap.set("n", "<C-j>", require("smart-splits").move_cursor_down),
+        -- vim.keymap.set("n", "<C-k>", require("smart-splits").move_cursor_up),
+        -- vim.keymap.set("n", "<C-l>", require("smart-splits").move_cursor_right),
+      }
+    end,
   },
 }
