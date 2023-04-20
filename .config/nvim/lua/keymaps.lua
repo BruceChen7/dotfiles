@@ -109,3 +109,66 @@ vim.keymap.set("n", "<leader>ll", function()
     print(cmd .. " done")
   end
 end)
+
+local id = vim.api.nvim_create_augroup("startup", {
+  clear = false,
+})
+
+local persistbuffer = function(bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+  vim.fn.setbufvar(bufnr, "bufpersist", 1)
+end
+
+vim.api.nvim_create_autocmd({ "BufRead" }, {
+  group = id,
+  pattern = { "*" },
+  callback = function()
+    vim.api.nvim_create_autocmd({ "InsertEnter", "BufModifiedSet" }, {
+      buffer = 0,
+      once = true,
+      callback = function()
+        persistbuffer()
+      end,
+    })
+  end,
+})
+
+vim.keymap.set("n", "<space>cu", function()
+  local curbufnr = vim.api.nvim_get_current_buf()
+  local buflist = vim.api.nvim_list_bufs()
+  for _, bufnr in ipairs(buflist) do
+    if vim.bo[bufnr].buflisted and bufnr ~= curbufnr and (vim.fn.getbufvar(bufnr, "bufpersist") ~= 1) then
+      vim.cmd("bd " .. tostring(bufnr))
+    end
+  end
+end, { silent = true, desc = "Close unused buffers" })
+
+function retab_directory()
+  local current_dir = vim.fn.expand "%:p:h"
+
+  local function retab_file(file)
+    if vim.fn.isdirectory(file) == 0 then
+      vim.api.nvim_command(":e " .. file)
+      vim.api.nvim_command ":set expandtab | retab"
+      vim.api.nvim_command ":w"
+    end
+  end
+
+  local function retab_directory_helper(dir)
+    local files = vim.fn.readdir(dir)
+    for _, file in ipairs(files) do
+      if file ~= "." and file ~= ".." then
+        local full_path = dir .. "/" .. file
+        if vim.fn.isdirectory(full_path) ~= 0 then
+          retab_directory_helper(full_path)
+        else
+          retab_file(full_path)
+        end
+      end
+    end
+  end
+
+  retab_directory_helper(current_dir)
+end
+
+vim.keymap.set("n", "<leader>rt", retab_directory)
