@@ -321,7 +321,6 @@ require("lazy").setup {
     end,
   },
 
-  --
   {
     "akinsho/bufferline.nvim",
     -- tag = "v2.*",
@@ -409,28 +408,6 @@ require("lazy").setup {
     keys = { { ",tg", mode = "n" }, { ",ts", mode = "n" } },
   },
 
-  -- seems not working
-  -- more config
-  {
-    "zbirenbaum/neodim",
-    event = "LspAttach",
-    config = function()
-      require("neodim").setup {
-        alpha = 0.7,
-        blend_color = "#000000",
-        update_in_insert = {
-          enable = true,
-          delay = 200,
-        },
-        hide = {
-          virtual_text = false,
-          signs = true,
-          underline = false,
-        },
-      }
-    end,
-  },
-
   {
     "lvimuser/lsp-inlayhints.nvim",
     config = function()
@@ -468,6 +445,16 @@ require("lazy").setup {
     config = function()
       require("session-lens").setup()
     end,
+  },
+
+  {
+    "willothy/flatten.nvim",
+    config = true,
+    -- or pass configuration with
+    -- opts = {  }
+    -- Ensure that it runs first to minimize delay when opening file from terminal
+    lazy = false,
+    priority = 1001,
   },
 
   {
