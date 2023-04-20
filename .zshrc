@@ -82,7 +82,6 @@ zstyle ':prezto:load' pmodule \
 	'completion' \
 	'history-substring-search' \
 	'autosuggestions' \
-	'autosuggestions' \
 	# 'prompt' \
 
 # Initialize prezto
@@ -218,7 +217,8 @@ if [[ `uname` == "darwin" ]] || [[ `uname` == "Darwin" ]]; then
 	export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles/bottles
 fi
 
-eval "$(lua /usr/local/bin/z.lua  --init zsh once enhanced)"    # ZSH 初始化
+eval "$(zoxide init zsh)"
+
 
 # not use default c-r or up key bindings
 export ATUIN_NOBIND="true"
@@ -271,5 +271,5 @@ if command -v pyenv 1>/dev/null 2>&1; then
   eval "$(pyenv init -)"
 fi
 
-export PATH="/home/vagrant/go/bin":$PATH
-eval "$(zoxide init zsh)"
+export GOPATH=~/go
+export PATH=$HOME/.local/bin:$GOPATH/bin:/usr/local/bin:$PATH
