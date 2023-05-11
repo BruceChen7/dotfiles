@@ -385,8 +385,7 @@ cmp.setup {
     },
     { name = "codeium" },
     { name = "crates" },
-    -- { name = "tags" },
-    -- { name = "rg" },
+    { name = "cmp_tabnine" },
   },
   sorting = {
     -- TODO: Would be cool to add stuff like "See variable names before method names" in rust, or something like that.
@@ -446,6 +445,7 @@ cmp.setup {
         Operator = "",
         TypeParameter = " ",
         Codeium = "",
+        TabNine = "",
       }
       local meta_type = vim_item.kind
       -- load lspkind icons

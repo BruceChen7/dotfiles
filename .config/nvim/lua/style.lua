@@ -68,8 +68,8 @@ function getColorscheme()
     -- "terafox",
     "tokyonight",
     "tokyonight-storm",
-    "tokyonight-day",
     "tokyonight-moon",
+    "tokyonight-day",
   }
   local u = require "util"
   local len = u.tableLength(colorschemes)
