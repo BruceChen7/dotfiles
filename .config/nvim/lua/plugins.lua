@@ -122,6 +122,7 @@ require("lazy").setup {
   },
 
   { "tpope/vim-repeat", ft = { "go", "zig", "rust", "lua", "c", "cpp", "python" } },
+
   {
     "kylechui/nvim-surround",
     config = function()
@@ -465,10 +466,9 @@ require("lazy").setup {
   },
 
   {
-    'tzachar/cmp-tabnine',
-     build = './install.sh',
-     dependencies = 'hrsh7th/nvim-cmp',
-
+    "tzachar/cmp-tabnine",
+    build = "./install.sh",
+    dependencies = "hrsh7th/nvim-cmp",
   },
 
   -- protject notes
