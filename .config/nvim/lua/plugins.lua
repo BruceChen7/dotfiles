@@ -182,7 +182,7 @@ require("lazy").setup {
     config = function()
       require("Comment").setup()
     end,
-    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
+    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
   },
 
   -- terminal
@@ -207,6 +207,7 @@ require("lazy").setup {
     end,
   },
 
+  { "catppuccin/nvim", name = "catppuccin" },
   -- bracket, brace auto complete
   {
     "windwp/nvim-autopairs",
@@ -487,6 +488,13 @@ require("lazy").setup {
         -- vim.keymap.set("n", "<C-k>", require("smart-splits").move_cursor_up),
         -- vim.keymap.set("n", "<C-l>", require("smart-splits").move_cursor_right),
       }
+    end,
+    event = "VeryLazy",
+  },
+  {
+    "hardhackerlabs/theme-vim",
+    config = function()
+      vim.cmd.colorscheme "hardhacker"
     end,
   },
 }
