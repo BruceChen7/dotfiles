@@ -121,11 +121,7 @@ require("lazy").setup {
     ft = { "go", "zig", "rust", "lua", "c", "cpp", "python" },
   },
 
-  -- 提供cs'"这种快捷键
-  -- use "tpope/vim-surround"
-  --
-  -- use "tpope/vim-repeat"
-  --
+  { "tpope/vim-repeat", ft = { "go", "zig", "rust", "lua", "c", "cpp", "python" } },
   {
     "kylechui/nvim-surround",
     config = function()
@@ -164,7 +160,6 @@ require("lazy").setup {
       }
     end,
   },
-
   -- treesitter
   {
     "nvim-treesitter/nvim-treesitter",
@@ -330,6 +325,7 @@ require("lazy").setup {
     end,
   },
 
+  -- colorscheme
   { "folke/tokyonight.nvim" },
 
   {
@@ -392,7 +388,6 @@ require("lazy").setup {
     "ojroques/nvim-osc52",
     config = function()
       vim.keymap.set("n", ",c", require("osc52").copy_operator, { expr = true })
-      -- vim.keymap.set("n", "<leader>cc", "<leader>c_", { remap = true })
       vim.keymap.set("x", ",c", require("osc52").copy_visual)
     end,
     event = "InsertEnter",
@@ -411,7 +406,9 @@ require("lazy").setup {
   {
     "lvimuser/lsp-inlayhints.nvim",
     config = function()
-      require("lsp-inlayhints").setup()
+      require("lsp-inlayhints").setup {
+        debug_mode = false,
+      }
     end,
     event = "LspAttach",
   },
@@ -439,6 +436,7 @@ require("lazy").setup {
       }
     end,
   },
+
   {
     "rmagatti/session-lens",
     dependencies = { "nvim-telescope/telescope.nvim", "rmagatti/auto-session" },
