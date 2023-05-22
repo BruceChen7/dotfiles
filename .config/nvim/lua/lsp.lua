@@ -370,8 +370,8 @@ cmp.setup {
     native_menu = false,
   },
   sources = {
-    { name = "nvim_lsp" },
-    { name = "luasnip" },
+    { name = "nvim_lsp", priority = 1000 },
+    { name = "luasnip", priority = 900 },
     { name = "path" },
     { name = "nvim_lua" }, -- with vim.api complete
     {
@@ -383,9 +383,9 @@ cmp.setup {
         end,
       },
     },
-    { name = "codeium" },
+    { name = "codeium", priority = 800 },
     { name = "crates" },
-    { name = "cmp_tabnine" },
+    { name = "cmp_tabnine", priority = 700 },
   },
   sorting = {
     -- TODO: Would be cool to add stuff like "See variable names before method names" in rust, or something like that.
@@ -445,7 +445,7 @@ cmp.setup {
         Operator = "",
         TypeParameter = " ",
         Codeium = "",
-        TabNine = "",
+        TabNine = " ",
       }
       local meta_type = vim_item.kind
       -- load lspkind icons
@@ -483,7 +483,7 @@ for _, v in ipairs(format_file_type) do
   })
 end
 
-vim.api.nvim_create_augroup("LspAttach_inlayhints", {})
+vim.api.nvim_create_augroup("LspAttach_inlayhints", { clear = true })
 vim.api.nvim_create_autocmd("LspAttach", {
   group = "LspAttach_inlayhints",
   callback = function(args)
