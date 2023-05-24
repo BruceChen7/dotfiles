@@ -84,7 +84,8 @@ require("lazy").setup {
     config = function()
       require "config/lua_snip"
     end,
-    ft = { "go", "lua", "c", "rust", "cpp", "yaml", "json" },
+    build = "make install_jsregexp",
+    ft = { "go", "lua", "c", "rust", "cpp", "yaml", "json", "python" },
   },
 
   {
@@ -319,6 +320,18 @@ require("lazy").setup {
   },
 
   {
+    "ThePrimeagen/harpoon",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      mark = require "harpoon.mark"
+      vim.keymap.set("n", "<space>1", function()
+        mark.add_file()
+      end)
+    end,
+  },
+
+
+  {
     "akinsho/bufferline.nvim",
     -- tag = "v2.*",
     dependencies = { "kyazdani42/nvim-web-devicons" },
@@ -358,6 +371,7 @@ require("lazy").setup {
         },
       }
     end,
+    event = "LspAttach",
   },
 
   {

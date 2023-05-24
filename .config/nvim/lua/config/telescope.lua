@@ -232,8 +232,10 @@ telescope.setup {
 telescope.load_extension "neoclip"
 telescope.load_extension "session-lens"
 telescope.load_extension "zoxide"
+telescope.load_extension "harpoon"
 vim.keymap.set("n", ",tg", ":Telescope live_grep<CR>")
 vim.keymap.set("n", ",ts", ":Telescope session-lens search_session <CR>")
 vim.keymap.set("n", ",tf", "<cmd>Telescope find_files<cr>", opts)
 vim.keymap.set("n", ",tz", "<cmd>Telescope zoxide list<cr>", opts)
 vim.keymap.set("n", ",tn", "<cmd>Telescope neoclip<cr>", opts)
+vim.keymap.set("n", ",th", "<cmd>Telescope harpoon marks<cr>", opts)
