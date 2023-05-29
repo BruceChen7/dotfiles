@@ -11,6 +11,11 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.runtimepath:prepend(lazypath)
 
+-- make sure to set `mapleader` before lazy so your mappings are correct
+-- u.map("n", "<space>", "<Nop>")
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
 if os.getenv "NVIM" ~= nil then
   require("lazy").setup {
     { "willothy/flatten.nvim", config = true },
@@ -329,7 +334,6 @@ require("lazy").setup {
       end)
     end,
   },
-
 
   {
     "akinsho/bufferline.nvim",

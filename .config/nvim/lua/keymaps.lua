@@ -3,11 +3,6 @@ local u = require "util"
 local default_options = { noremap = true, silent = true }
 local expr_options = { noremap = true, expr = true, silent = true }
 
--- 设置leader key
-u.map("n", "<space>", "<Nop>")
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
-
 -- 窗口快捷键映射
 u.map("n", "<tab>h", "<c-w>h")
 u.map("n", "<tab>l", "<c-w>l")
