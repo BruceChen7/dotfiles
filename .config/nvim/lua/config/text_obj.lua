@@ -15,6 +15,7 @@ tc.setup {
     "toml",
     "vim",
     "yaml",
+    "go",
   },
   highlight = {
     enable = false,
@@ -26,14 +27,9 @@ tc.setup {
   incremental_selection = {
     enable = true,
     keymaps = {
-      -- init_selection = "gnn",
-      init_selection = "<CR>",
-      -- node_incremental = "grn",
-      node_incremental = "<TAB>",
+      node_incremental = "+",
       scope_incremental = "<CR>",
-      -- scope_incremental = "grc",
-      -- node_decremental = "grm",
-      node_decremental = "S-<TAB>",
+      node_decremental = "-",
     },
   },
   rainbow = {
