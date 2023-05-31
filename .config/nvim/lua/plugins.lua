@@ -401,7 +401,7 @@ require("lazy").setup {
   {
     "dpayne/CodeGPT.nvim",
     dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" },
-    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
+    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python", "markdown"  },
   },
 
   {
@@ -482,6 +482,7 @@ require("lazy").setup {
       "nvim-lua/popup.nvim",
       "nvim-lua/plenary.nvim",
     },
+    event = {"VeryLazy"},
   },
 
   {
@@ -509,6 +510,7 @@ require("lazy").setup {
     end,
     event = "VeryLazy",
   },
+  -- color scheme
   {
     "hardhackerlabs/theme-vim",
     config = function()

@@ -95,6 +95,16 @@ function _Git_Diff_test()
   require("toggleterm").exec("git diff test.." .. branch)
 end
 
+function _GitUi()
+  local root = find_root(vim.fn.expand "%:p")
+  if not root then
+    -- FIXME(ming.chen): use vim.notify()
+    -- vim.notify("use working directory instead", vim.log.levels.INFO)
+    root = vim.fn.getcwd()
+  end
+  local tig = Terminal:new { cmd = "gitui -d " .. root, hidden = true }
+  tig:toggle()
+end
 local u = require "util"
 vim.keymap.set("n", "<leader>tg", ":lua _Tig_TOGGLE()<CR>")
 u.map("n", "<leader>tb", ":lua _Tig_Blame()<CR>")
@@ -102,4 +112,3 @@ u.map("n", "<leader>tf", ":lua _Git_file_diff()<CR>")
 u.map("n", "<leader>gs", ":lua  _Git_Status()<CR>")
 u.map("n", "<leader>gdd", ":lua  _Git_Diff_Name_Only()<CR>")
 u.map("n", "<leader>gdn", ":lua  _Git_Diff()<CR>")
-u.map("n", "<leader>gdt", ":lua  _Git_Diff_Test()<CR>")
