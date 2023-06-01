@@ -72,8 +72,6 @@ function jump_to_definition()
     local uri = result[1].uri or result[1].targetUri
     local buffer_number = vim.uri_to_bufnr(uri)
     local jump_buf_name = vim.fn.bufname(buffer_number)
-    -- print("uri.." .. uri)
-    -- print("jump_buf_name.." .. jump_buf_name)
     if string.sub(jump_buf_name, 1, 1) ~= "/" then
       -- print "relative direcotry"
       jump_buf_name = vim.fn.getcwd() .. "/" .. jump_buf_name
@@ -141,7 +139,6 @@ end
 -- map buffer local keybindings when the language server attaches
 -- local capabilities = vim.lsp.protocol.make_client_capabilities()
 -- local servers = { "pyright", "gopls", "clangd", "rust_analyzer", "zls" }
-local servers = { "pyright", "zls" }
 capabilities = require("cmp_nvim_lsp").default_capabilities()
 capabilities.textDocument.completion.completionItem.snippetSupport = true
 capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
@@ -225,6 +222,7 @@ nvim_lsp["gopls"].setup {
   },
 }
 
+local servers = { "pyright", "zls" }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
