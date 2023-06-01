@@ -85,23 +85,26 @@ o.suffixes = ".bak,~,.o,.h,.info,.swp,.obj,.pyc,.pyo,.egg-info,.class"
 vim.api.nvim_create_augroup("warp_group", {})
 
 local function set_wrap()
-    local file_size = vim.fn.getfsize(vim.api.nvim_buf_get_name(0))
-    if file_size > 1024 * 1024 then
-        vim.wo.wrap = true
-    else
-        vim.wo.wrap = false
-    end
+  local file_size = vim.fn.getfsize(vim.api.nvim_buf_get_name(0))
+  if file_size > 1024 * 1024 then
+    vim.wo.wrap = true
+  else
+    vim.wo.wrap = false
+  end
 end
 
-vim.api.nvim_create_autocmd('BufRead', {
-  pattern='*',
-  group="warp_group",
-  callback = function() set_wrap() end
+vim.api.nvim_create_autocmd("BufRead", {
+  pattern = "*",
+  group = "warp_group",
+  callback = function()
+    set_wrap()
+  end,
 })
 
 -- global line status
 o.laststatus = 3
 
+vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 o.wildignore = [[
 	.git,.hg,.svn
 	*.aux,*.out,*.toc
