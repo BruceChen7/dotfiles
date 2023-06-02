@@ -30,7 +30,7 @@ require("lazy").setup {
     config = function()
       require "config/gtags"
     end,
-    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
+    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
   },
 
   { "skywind3000/vim-preview" },
@@ -71,17 +71,23 @@ require("lazy").setup {
     end,
     keys = { { "nc" }, { "ne" }, { "nC" }, { "nE" } },
   },
-  --
-  -- LSP source for nvim-cmp
-  { "hrsh7th/cmp-nvim-lsp", event = "InsertEnter" },
-  { "hrsh7th/cmp-cmdline", event = "InsertEnter" },
 
-  { "hrsh7th/cmp-buffer" },
-  { "hrsh7th/cmp-path" },
-  { "hrsh7th/cmp-nvim-lua" },
-  { "hrsh7th/cmp-nvim-lsp-document-symbol" },
-  { "tamago324/cmp-zsh" },
-  -- { "lukas-reineke/cmp-rg" },
+  {
+    "hrsh7th/nvim-cmp", -- Autocompletion plugin
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-cmdline",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+      "hrsh7th/cmp-nvim-lua",
+      "hrsh7th/cmp-nvim-lsp-document-symbol",
+      "tamago324/cmp-zsh",
+    },
+    event = "InsertEnter",
+    config = function()
+      require "config/cmp"
+    end,
+  },
 
   --
   {
@@ -103,10 +109,6 @@ require("lazy").setup {
   {
     "saadparwaiz1/cmp_luasnip",
     ft = { "go", "lua", "c", "rust", "cpp", "yaml", "json", "python" },
-  },
-
-  {
-    "hrsh7th/nvim-cmp", -- Autocompletion plugin
   },
 
   {
@@ -175,13 +177,13 @@ require("lazy").setup {
   },
 
   -- https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-  {
-    "nvim-treesitter/nvim-treesitter-textobjects",
-    config = function()
-      require "config/text_obj"
-    end,
-    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
-  },
+  -- {
+  --   "nvim-treesitter/nvim-treesitter-textobjects",
+  --   config = function()
+  --     require "config/text_obj"
+  --   end,
+  --   ft = { "go", "c", "cpp", "rust", "zig", "lua" },
+  -- },
 
   {
     "numToStr/Comment.nvim",
@@ -401,7 +403,7 @@ require("lazy").setup {
   {
     "dpayne/CodeGPT.nvim",
     dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" },
-    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python", "markdown"  },
+    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python", "markdown" },
   },
 
   {
@@ -430,6 +432,7 @@ require("lazy").setup {
         debug_mode = false,
       }
     end,
+    branch = "anticonceal",
     event = "LspAttach",
   },
 
@@ -482,7 +485,7 @@ require("lazy").setup {
       "nvim-lua/popup.nvim",
       "nvim-lua/plenary.nvim",
     },
-    event = {"VeryLazy"},
+    event = { "VeryLazy" },
   },
 
   {
@@ -515,6 +518,64 @@ require("lazy").setup {
     "hardhackerlabs/theme-vim",
     config = function()
       vim.cmd.colorscheme "hardhacker"
+    end,
+  },
+
+  {
+    "junnplus/lsp-setup.nvim",
+    dependencies = {
+      "neovim/nvim-lspconfig",
+      "williamboman/mason.nvim", -- optional
+      "williamboman/mason-lspconfig.nvim", -- optional
+    },
+    branch = "inlay-hints",
+    config = function()
+      local rounded = { border = "rounded" }
+      vim.diagnostic.config { float = rounded }
+      vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, rounded)
+      vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, rounded)
+      require("lsp-setup").setup {
+        inlay_hints = {
+          enabled = true,
+        },
+        servers = {
+          gopls = {
+            settings = {
+              gopls = {
+                gofumpt = true,
+                -- staticcheck = true,
+                usePlaceholders = true,
+                codelenses = {
+                  gc_details = true,
+                },
+                analyses = {
+                  -- find structs that would use less memory if their fields were sorted
+                  fieldalignment = true,
+                  unusedparams = true,
+                  shadow = true,
+                  unusedwrite = true, -- checks for unused writes, an instances of writes to struct fields and arrays that are never read
+                  nonewvars = true,
+                  fillreturns = true,
+                  nilness = true, -- check for redundant or impossible nil comparisons
+                },
+                staticcheck = true,
+                hints = {
+                  rangeVariableTypes = true,
+                  parameterNames = true,
+                  constantValues = true,
+                  assignVariableTypes = true,
+                  compositeLiteralFields = true,
+                  compositeLiteralTypes = true,
+                  functionTypeParameters = true,
+                },
+                usePlaceholders = false,
+                gofumpt = true,
+                semanticTokens = true,
+              },
+            },
+          },
+        },
+      }
     end,
   },
 }
