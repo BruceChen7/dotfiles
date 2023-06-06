@@ -7,6 +7,39 @@ require("lsp-setup").setup {
     enabled = true,
   },
   servers = {
+    lua_ls = {
+      settings = {
+        Lua = {
+          workspace = {
+            checkThirdParty = false,
+          },
+          hint = {
+            enable = false,
+          },
+          format = {
+            enable = false,
+          },
+        },
+      },
+    },
+    zls = {
+      settings = {
+        zls = {
+          enable_inlay_hints = true,
+          inlay_hints_show_builtin = true,
+          inlay_hints_exclude_single_argument = true,
+          inlay_hints_hide_redundant_param_names = true,
+          inlay_hints_hide_redundant_param_names_last_token = true,
+        },
+      },
+    },
+    yamlls = {
+      settings = {
+        yaml = {
+          keyOrdering = false,
+        },
+      },
+    },
     gopls = {
       settings = {
         gopls = {
@@ -36,8 +69,6 @@ require("lsp-setup").setup {
             compositeLiteralTypes = true,
             functionTypeParameters = true,
           },
-          usePlaceholders = false,
-          gofumpt = true,
           semanticTokens = true,
         },
       },
