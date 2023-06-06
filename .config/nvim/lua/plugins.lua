@@ -169,6 +169,7 @@ require("lazy").setup {
       }
     end,
   },
+
   -- treesitter
   {
     "nvim-treesitter/nvim-treesitter",
