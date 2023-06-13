@@ -182,6 +182,10 @@ if command -v pyenv 1>/dev/null 2>&1; then
   eval "$(pyenv init -)"
 fi
 
+SOCKS="socks5://127.0.0.1:1080"
+alias proxy="export http_proxy=${SOCKS} https_proxy=${SOCKS} all_proxy=${SOCKS}"
+alias unproxy='unset all_proxy http_proxy https_proxy'
+
 export GOPATH=~/go
 export PATH=$HOME/.local/bin:$GOPATH/bin:/usr/local/bin:$PATH
 alias nmr='cd $HOME/work/notes/ && python3 Script/query_text.py --query_text "$@" ' 
