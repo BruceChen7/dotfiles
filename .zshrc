@@ -273,3 +273,4 @@ fi
 
 export GOPATH=~/go
 export PATH=$HOME/.local/bin:$GOPATH/bin:/usr/local/bin:$PATH
+alias nmr='cd $HOME/work/notes/ && python3 Script/query_text.py --query_text "$@" ' 

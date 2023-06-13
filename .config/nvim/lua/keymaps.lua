@@ -25,8 +25,8 @@ u.map("v", ">", ">gv", default_options)
 -- u.map("v", "p", '"_dP', default_options)
 
 -- buffer switch
-u.map("n", "<tab>n", ":bNext<CR>", default_options)
-u.map("n", "<tab>p", ":bprevious<CR>", default_options)
+-- u.map("n", "<tab>n", ":bNext<CR>", default_options)
+-- u.map("n", "<tab>p", ":bprevious<CR>", default_options)
 
 -- Cancel search highlighting with ESC
 u.map("n", "<ESC>", ":nohlsearch<Bar>:echo<CR>", default_options)
