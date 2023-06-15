@@ -20,6 +20,8 @@ u.map("n", "<space>y", "yiw")
 
 u.map("v", "<", "<gv", default_options)
 u.map("v", ">", ">gv", default_options)
+-- not include last whitespace character
+u.map("x", "$", "g_", default_options)
 
 -- paste over currently selected text without yanking it
 -- u.map("v", "p", '"_dP', default_options)

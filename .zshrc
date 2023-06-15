@@ -1,35 +1,8 @@
-#export http_proxy=http://127.0.0.1:8889
-#export https_proxy=http://127.0.0.1:8889
-#Antigen: https://github.com/zsh-users/antigen
-ANTIGEN="$HOME/.local/bin/antigen.zsh"
-
-# http://www.skywind.me/blog/archives/2060
-# Install antigen.zsh if not exist
-if [ ! -f "$ANTIGEN" ]; then
-	echo "Installing antigen ..."
-	[ ! -d "$HOME/.local" ] && mkdir -p "$HOME/.local" 2> /dev/null
-	[ ! -d "$HOME/.local/bin" ] && mkdir -p "$HOME/.local/bin" 2> /dev/null
-	# [ ! -f "$HOME/.z" ] && touch "$HOME/.z"
-	URL="http://git.io/antigen"
-	TMPFILE="/tmp/antigen.zsh"
-	if [ -x "$(which curl)" ]; then
-		curl -L "$URL" -o "$TMPFILE"
-	elif [ -x "$(which wget)" ]; then
-		wget "$URL" -O "$TMPFILE"
-	else
-		echo "ERROR: please install curl or wget before installation !!"
-		exit
-	fi
-	if [ ! $? -eq 0 ]; then
-		echo ""
-		echo "ERROR: downloading antigen.zsh ($URL) failed !!"
-		exit
-	fi;
-	echo "move $TMPFILE to $ANTIGEN"
-	mv "$TMPFILE" "$ANTIGEN"
-fi
-
-
+[[ -e ${ZDOTDIR:-~}/.antidote ]] ||
+  git clone https://github.com/mattmc3/antidote.git ${ZDOTDIR:-~}/.antidote
+# Source antidote.
+source ${ZDOTDIR:-~}/.antidote/antidote.zsh
+antidote load ${ZDOTDIR:-$HOME}/.zsh_plugins.txt
 
 # Load local bash/zsh compatible settings
 INIT_SH_NOFUN=1
@@ -39,15 +12,6 @@ DISABLE_Z_PLUGIN=1
 
 # exit for non-interactive shell
 [[ $- != *i* ]] && return
-
-# WSL (aka Bash for Windows) doesn't work well with BG_NICE
-[ -d "/mnt/c" ] && [[ "$(uname -a)" == *Microsoft* ]] && unsetopt BG_NICE
-
-# Initialize command prompt
-#export PS1="%n@%m:%~%# "
-
-# Initialize antigen
-source "$ANTIGEN"
 
 # Setup dir stack
 DIRSTACKSIZE=10
@@ -63,41 +27,6 @@ DISABLE_CORRECTION="true"
 # export TERM="xterm-256color"
 
 ZSH_AUTOSUGGEST_USE_ASYNC=1
-
-# Declare modules
-zstyle ':prezto:*:*' color 'yes'
-zstyle ':prezto:module:editor' key-bindings 'emacs'
-zstyle ':prezto:module:git:alias' skip 'yes'
-zstyle ':prezto:module:prompt' theme 'redhat'
-zstyle ':prezto:module:prompt' pwd-length 'short'
-zstyle ':prezto:module:terminal' auto-title 'yes'
-zstyle ':prezto:module:autosuggestions' color 'yes'
-zstyle ':prezto:module:python' autovenv 'yes'
-zstyle ':prezto:load' pmodule \
-	'environment' \
-	'editor' \
-	'history' \
-	'git' \
-	'utility' \
-	'completion' \
-	'history-substring-search' \
-	'autosuggestions' \
-	# 'prompt' \
-
-# Initialize prezto
-antigen use prezto
-
-
-# default bundles
-# antigen bundle rupa/z z.sh
-antigen bundle Vifon/deer
-#antigen bundle zdharma/fast-syntax-highlighting
-antigen bundle zsh-users/zsh-autosuggestions
-antigen bundle git
-antigen bundle fzf
-
-antigen bundle willghatch/zsh-cdr
-# antigen bundle zsh-users/zaw
 
 # check login shell
 if [[ -o login ]]; then
@@ -139,11 +68,6 @@ ZSH_HIGHLIGHT_STYLES[assign]=none
 [ -f "$HOME/.local/etc/config.zsh" ] && source "$HOME/.local/etc/config.zsh"
 [ -f "$HOME/.local/etc/local.zsh" ] && source "$HOME/.local/etc/local.zsh"
 
-antigen apply
-
-# work around: fast syntax highlighting may crash zsh without this
-# FAST_HIGHLIGHT[chroma-git]="chroma/-ogit.ch"
-
 # options
 unsetopt correct_all
 unsetopt share_history
@@ -159,10 +83,6 @@ setopt HIST_IGNORE_SPACE         # Don't record an entry starting with a space.
 setopt HIST_SAVE_NO_DUPS         # Don't write duplicate entries in the history file.
 setopt HIST_REDUCE_BLANKS        # Remove superfluous blanks before recording entry.
 setopt HIST_VERIFY # Don't execute immediately upon history expansion.
-
-# setup for deer
-autoload -U deer
-zle -N deer
 
 # default keymap
 bindkey -s '\ee' 'vim\n'
@@ -203,22 +123,12 @@ zstyle ':completion:*:*sh:*:' tag-order files
 
 [[ -s "/Users/ming.chen/.gvm/scripts/gvm" ]] && source "/Users/ming.chen/.gvm/scripts/gvm"
 
-# Load version control information
-# autoload -Uz vcs_info
-# precmd() { vcs_info }
-
-# Format the vcs_info_msg_0_ variable
-# zstyle ':vcs_info:git:*' formats ' %b'
-
-# setopt PROMPT_SUBST
-# PROMPT='%n in ${PWD/#$HOME/~} ${vcs_info_msg_0_} > '
 
 if [[ `uname` == "darwin" ]] || [[ `uname` == "Darwin" ]]; then
 	export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles/bottles
 fi
 
 eval "$(zoxide init zsh)"
-
 
 # not use default c-r or up key bindings
 export ATUIN_NOBIND="true"
@@ -260,6 +170,7 @@ function wk {
     fzf --bind=enter:replace-query+print-query |
     read session && tmux attach -t ${session:-default} || tmux new -s ${session:-default}
 }
+
 . "$HOME/.cargo/env"
 export LC_CTYPE=en_US.UTF-8
 export LANG=zh_CN.UTF-8
