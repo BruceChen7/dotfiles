@@ -2,7 +2,12 @@ local rounded = { border = "rounded" }
 vim.diagnostic.config { float = rounded }
 vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, rounded)
 vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, rounded)
+local opts = { noremap = true, silent = true }
+vim.keymap.set("n", "gd", "<cmd>Telescope lsp_definitions<CR>", opts)
+vim.keymap.set("n", "gi", "<cmd>Telescope lsp_implementations<CR>", opts)
+vim.keymap.set("n", "gr", "<cmd>Telescope lsp_references<CR>", opts)
 require("lsp-setup").setup {
+  default_mappings = false,
   inlay_hints = {
     enabled = true,
   },
