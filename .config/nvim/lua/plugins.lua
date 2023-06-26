@@ -46,12 +46,6 @@ require("lazy").setup {
     end,
   },
 
-  {
-    "neovim/nvim-lspconfig",
-    tag = "v0.1.6",
-    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
-  },
-
   -- -- adds vscode-like pictograms to neovim built-in lsp
   { "onsails/lspkind-nvim" },
 
@@ -251,11 +245,6 @@ require("lazy").setup {
   },
 
   {
-    "rlane/pounce.nvim",
-    event = "InsertEnter",
-  },
-
-  {
     "nvim-lua/lsp_extensions.nvim",
     ft = { "go", "c", "cpp", "rust", "zig", "lua" },
   },
@@ -275,7 +264,8 @@ require("lazy").setup {
     config = function()
       require("fidget").setup {}
     end,
-    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
+    tag = "legacy",
+    event = "LspAttach",
   },
   --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
   -- use "t9md/vim-choosewin"
@@ -362,7 +352,25 @@ require("lazy").setup {
     config = function()
       require("neoclip").setup {
         default_register = { '"', "+", "*" },
+        keys = {
+          telescope = {
+            i = {
+              -- default key is <c-k> whici is conflict with telescope.nvim
+              -- https://github.com/AckslD/nvim-neoclip.lua
+              paste_behind = "<Nop>",
+            },
+          },
+        },
       }
+    end,
+    event = "InsertEnter",
+  },
+
+  {
+    "akinsho/git-conflict.nvim",
+    version = "*",
+    config = function()
+      require("git-conflict").setup {}
     end,
   },
 
@@ -386,7 +394,7 @@ require("lazy").setup {
     config = function()
       require "config/codeium"
     end,
-    ft = { "go", "lua", "c", "rust", "cpp", "zig", "cpp", "python" },
+    event = "InsertEnter",
   },
 
   {
@@ -398,7 +406,7 @@ require("lazy").setup {
     config = function()
       require("codeium").setup {}
     end,
-    ft = { "go", "lua", "c", "rust", "cpp", "zig", "cpp", "python" },
+    event = "InsertEnter",
   },
 
   {
@@ -437,6 +445,38 @@ require("lazy").setup {
     event = "LspAttach",
   },
 
+  {
+    "folke/flash.nvim",
+    event = "VeryLazy",
+    opts = {},
+    keys = {
+      {
+        "s",
+        mode = { "n", "x", "o" },
+        function()
+          require("flash").jump()
+        end,
+        desc = "Flash",
+      },
+      {
+        "S",
+        mode = { "n", "x", "o" },
+        function()
+          require("flash").treesitter()
+        end,
+        desc = "Flash Treesitter",
+      },
+      {
+        "r",
+        mode = "o",
+        function()
+          require("flash").remote()
+        end,
+        desc = "Remote Flash",
+      },
+    },
+  },
+
   -- skip to inner bracket
   {
     "abecodes/tabout.nvim",
@@ -448,7 +488,6 @@ require("lazy").setup {
       "nvim-treesitter/nvim-treesitter",
     },
     event = "InsertEnter",
-    ft = { "go", "lua", "c", "rust", "cpp", "zig", "cpp", "python", "markdown" },
   },
 
   {
