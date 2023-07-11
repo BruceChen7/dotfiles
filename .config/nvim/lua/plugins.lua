@@ -220,14 +220,14 @@ require("lazy").setup {
     event = "InsertEnter",
   },
 
-  {
-    "jose-elias-alvarez/null-ls.nvim",
-    config = function()
-      require "config/null_ls"
-    end,
-    dependencies = { "nvim-lua/plenary.nvim" },
-    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
-  },
+  -- {
+  --   "jose-elias-alvarez/null-ls.nvim",
+  --   config = function()
+  --     require "config/null_ls"
+  --   end,
+  --   dependencies = { "nvim-lua/plenary.nvim" },
+  --   ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
+  -- },
 
   -- show signature
   {
@@ -532,6 +532,14 @@ require("lazy").setup {
     "tzachar/cmp-tabnine",
     build = "./install.sh",
     dependencies = "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
+  },
+
+  {
+    "mhartington/formatter.nvim",
+    config = function()
+      require "config/format"
+    end,
     event = "InsertEnter",
   },
 
