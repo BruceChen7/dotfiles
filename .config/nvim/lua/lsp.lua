@@ -3,7 +3,6 @@ if not has_lsp then
   return
 end
 
-local u = require "util"
 local nvim_lsp = require "lspconfig"
 -- local lspkind = require "lspkind"
 -- lspkind.init()
