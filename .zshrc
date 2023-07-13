@@ -1,8 +1,34 @@
-[[ -e ${ZDOTDIR:-~}/.antidote ]] ||
-  git clone https://github.com/mattmc3/antidote.git ${ZDOTDIR:-~}/.antidote
+# [[ -e ${ZDOTDIR:-~}/.antidote ]] ||
+# git clone https://github.com/mattmc3/antidote.git ${ZDOTDIR:-~}/.antidote
 # Source antidote.
-source ${ZDOTDIR:-~}/.antidote/antidote.zsh
-antidote load ${ZDOTDIR:-$HOME}/.zsh_plugins.txt
+# source ${ZDOTDIR:-~}/.antidote/antidote.zsh
+# antidote load ${ZDOTDIR:-$HOME}/.zsh_plugins.txt
+
+# http://www.skywind.me/blog/archives/2060
+# Install antigen.zsh if not exist
+if [ ! -f "$ANTIGEN" ]; then
+	echo "Installing antigen ..."
+	[ ! -d "$HOME/.local" ] && mkdir -p "$HOME/.local" 2> /dev/null
+	[ ! -d "$HOME/.local/bin" ] && mkdir -p "$HOME/.local/bin" 2> /dev/null
+	# [ ! -f "$HOME/.z" ] && touch "$HOME/.z"
+	URL="http://git.io/antigen"
+	TMPFILE="/tmp/antigen.zsh"
+	if [ -x "$(which curl)" ]; then
+		curl -L "$URL" -o "$TMPFILE"
+	elif [ -x "$(which wget)" ]; then
+		wget "$URL" -O "$TMPFILE"
+	else
+		echo "ERROR: please install curl or wget before installation !!"
+		exit
+	fi
+	if [ ! $? -eq 0 ]; then
+		echo ""
+		echo "ERROR: downloading antigen.zsh ($URL) failed !!"
+		exit
+	fi;
+	echo "move $TMPFILE to $ANTIGEN"
+	mv "$TMPFILE" "$ANTIGEN"
+fi
 
 # Load local bash/zsh compatible settings
 INIT_SH_NOFUN=1
@@ -12,6 +38,8 @@ DISABLE_Z_PLUGIN=1
 
 # exit for non-interactive shell
 [[ $- != *i* ]] && return
+
+source "$ANTIGEN"
 
 # Setup dir stack
 DIRSTACKSIZE=10
@@ -28,6 +56,41 @@ DISABLE_CORRECTION="true"
 
 ZSH_AUTOSUGGEST_USE_ASYNC=1
 
+# Declare modules
+zstyle ':prezto:*:*' color 'yes'
+zstyle ':prezto:module:editor' key-bindings 'emacs'
+zstyle ':prezto:module:git:alias' skip 'yes'
+zstyle ':prezto:module:prompt' theme 'redhat'
+zstyle ':prezto:module:prompt' pwd-length 'short'
+zstyle ':prezto:module:terminal' auto-title 'yes'
+zstyle ':prezto:module:autosuggestions' color 'yes'
+zstyle ':prezto:module:python' autovenv 'yes'
+zstyle ':prezto:load' pmodule \
+	'environment' \
+	'editor' \
+	'history' \
+	'git' \
+	'utility' \
+	'completion' \
+	'history-substring-search' \
+	'autosuggestions' \
+	# 'prompt' \
+
+# Initialize prezto
+antigen use prezto
+
+
+# default bundles
+# antigen bundle rupa/z z.sh
+antigen bundle Vifon/deer
+#antigen bundle zdharma/fast-syntax-highlighting
+antigen bundle zsh-users/zsh-autosuggestions
+antigen bundle git
+antigen bundle fzf
+
+antigen bundle willghatch/zsh-cdr
+# antigen bundle zsh-users/zaw
+#
 # check login shell
 if [[ -o login ]]; then
 	[ -f "$HOME/.local/etc/login.sh" ] && source "$HOME/.local/etc/login.sh"
@@ -68,6 +131,7 @@ ZSH_HIGHLIGHT_STYLES[assign]=none
 [ -f "$HOME/.local/etc/config.zsh" ] && source "$HOME/.local/etc/config.zsh"
 [ -f "$HOME/.local/etc/local.zsh" ] && source "$HOME/.local/etc/local.zsh"
 
+antigen apply
 # options
 unsetopt correct_all
 unsetopt share_history
@@ -84,6 +148,9 @@ setopt HIST_SAVE_NO_DUPS         # Don't write duplicate entries in the history 
 setopt HIST_REDUCE_BLANKS        # Remove superfluous blanks before recording entry.
 setopt HIST_VERIFY # Don't execute immediately upon history expansion.
 
+# setup for deer
+autoload -U deer
+zle -N deer
 # default keymap
 bindkey -s '\ee' 'vim\n'
 bindkey '\eh' backward-char
