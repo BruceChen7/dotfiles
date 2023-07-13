@@ -11,6 +11,9 @@ require("lsp-setup").setup {
   inlay_hints = {
     enabled = true,
   },
+  on_attach = function(client, bufnr)
+      require("lsp-setup.utils").format_on_save(client)
+  end,
   servers = {
     lua_ls = {
       settings = {

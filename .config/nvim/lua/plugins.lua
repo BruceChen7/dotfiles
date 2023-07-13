@@ -210,7 +210,16 @@ require("lazy").setup {
     end,
   },
 
-  { "catppuccin/nvim", name = "catppuccin" },
+  {
+    "catppuccin/nvim",
+    name = "catppuccin",
+    build = ":CatppuccinCompile",
+    enabled = true,
+    opts = {
+      transparent = true,
+      term_clors = true,
+    },
+  },
   -- bracket, brace auto complete
   {
     "windwp/nvim-autopairs",
@@ -535,13 +544,13 @@ require("lazy").setup {
     event = "InsertEnter",
   },
 
-  {
-    "mhartington/formatter.nvim",
-    config = function()
-      require "config/format"
-    end,
-    event = "InsertEnter",
-  },
+  -- {
+  --   "mhartington/formatter.nvim",
+  --   config = function()
+  --     require "config/format"
+  --   end,
+  --   event = "InsertEnter",
+  -- },
 
   -- protject notes
   { "JellyApple102/flote.nvim" },
