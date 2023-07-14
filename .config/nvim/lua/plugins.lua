@@ -40,10 +40,10 @@ require("lazy").setup {
 
   {
     "Yggdroot/LeaderF",
-    keys = { { "<m-n>" }, { "<m-p>" }, { "<m-m>" }, { "<c-p>" }, { "<m-l>" } },
     config = function()
       require "config/leaderf"
     end,
+    event = "VeryLazy",
   },
 
   -- -- adds vscode-like pictograms to neovim built-in lsp
@@ -90,7 +90,7 @@ require("lazy").setup {
       require "config/lua_snip"
     end,
     build = "make install_jsregexp",
-    ft = { "go", "lua", "c", "rust", "cpp", "yaml", "json", "python" },
+    event = "InsertEnter",
   },
 
   {
@@ -98,7 +98,7 @@ require("lazy").setup {
     config = function()
       require("luasnip.loaders.from_vscode").lazy_load()
     end,
-    ft = { "go", "lua", "c", "rust", "cpp" },
+    event = "InsertEnter",
   },
   {
     "saadparwaiz1/cmp_luasnip",
@@ -113,7 +113,7 @@ require("lazy").setup {
     config = function()
       require "config/gitsigns"
     end,
-    event = { "BufRead", "BufNewFile" },
+    event = "VeryLazy",
   },
 
   -- 参数文本对象：i,/a, 包括参数或者列表元素
@@ -123,7 +123,7 @@ require("lazy").setup {
     ft = { "go", "zig", "rust", "lua", "c", "cpp", "python" },
   },
 
-  { "tpope/vim-repeat", ft = { "go", "zig", "rust", "lua", "c", "cpp", "python" } },
+  { "tpope/vim-repeat", event = "InsertEnter" },
 
   {
     "kylechui/nvim-surround",
@@ -170,21 +170,31 @@ require("lazy").setup {
     ft = { "go", "c", "cpp", "rust", "zig", "lua", "yaml", "json", "proto", "markdown" },
   },
 
-  -- https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-  -- {
-  --   "nvim-treesitter/nvim-treesitter-textobjects",
-  --   config = function()
-  --     require "config/text_obj"
-  --   end,
-  --   ft = { "go", "c", "cpp", "rust", "zig", "lua" },
-  -- },
+  {
+    "RRethy/nvim-treesitter-textsubjects",
+    depends = { "nvim-treesitter" },
+    config = function()
+      require("nvim-treesitter.configs").setup {
+        textsubjects = {
+          enable = true,
+          prev_selection = ",",
+          keymaps = {
+            ["<CR>"] = "textsubjects-smart",
+            [";"] = "textsubjects-container-outer",
+            ["i;"] = "textsubjects-container-inner",
+          },
+        },
+      }
+    end,
+    event = "INsertEnter",
+  },
 
   {
     "numToStr/Comment.nvim",
     config = function()
       require("Comment").setup()
     end,
-    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
+    event = "VeryLazy",
   },
 
   -- terminal
@@ -240,7 +250,7 @@ require("lazy").setup {
   -- show signature
   {
     "ray-x/lsp_signature.nvim",
-    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
+    event = "LspAttach",
   },
 
   {
@@ -249,7 +259,7 @@ require("lazy").setup {
     config = function()
       require "config/neogit"
     end,
-    keys = { { "<space>gg", mode = "n" } },
+    event = "VeryLazy",
   },
 
   {
@@ -330,8 +340,26 @@ require("lazy").setup {
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
       local mark = require "harpoon.mark"
-      vim.keymap.set("n", "<space>1", function()
+      local ui = require "harpoon.ui"
+      local term = require "harpoon.term"
+      vim.keymap.set("n", "<space>ha", function()
         mark.add_file()
+      end)
+      -- next marks
+      vim.keymap.set("n", "<space>hn", function()
+        ui.nav_next()
+      end)
+      --prev marks
+      vim.keymap.set("n", "<space>hp", function()
+        ui.nav_prev()
+      end)
+
+      vim.keymap.set("n", "<space>hf", function()
+        ui.toggle_quick_menu()
+      end)
+
+      vim.keymap.set("n", "<space>ht", function()
+        term.gotoTerminal(1)
       end)
     end,
   },

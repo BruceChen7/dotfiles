@@ -5,14 +5,16 @@ vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.s
 local opts = { noremap = true, silent = true }
 vim.keymap.set("n", "gd", "<cmd>Telescope lsp_definitions<CR>", opts)
 vim.keymap.set("n", "gi", "<cmd>Telescope lsp_implementations<CR>", opts)
+vim.keymap.set("n", "gs", "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", opts)
 vim.keymap.set("n", "gr", "<cmd>Telescope lsp_references<CR>", opts)
+vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
 require("lsp-setup").setup {
   default_mappings = false,
   inlay_hints = {
     enabled = true,
   },
   on_attach = function(client, bufnr)
-      require("lsp-setup.utils").format_on_save(client)
+    require("lsp-setup.utils").format_on_save(client)
   end,
   servers = {
     lua_ls = {
@@ -30,6 +32,33 @@ require("lsp-setup").setup {
         },
       },
     },
+    pyright = {},
+    -- pylsp = {
+    --   settings = {
+    --     pylsp = {
+    --       -- PylspInstall python-lsp-black
+    --       -- PylspInstall pyls-isort
+    --       configurationSources = { "flake8" },
+    --       plugins = {
+    --         pycodestyle = {
+    --           enabled = true,
+    --         },
+    --         mccabe = {
+    --           enabled = false,
+    --         },
+    --         pyflakes = {
+    --           enabled = true,
+    --         },
+    --         flake8 = {
+    --           enabled = true,
+    --         },
+    --         black = {
+    --           enabled = false,
+    --         },
+    --       },
+    --     },
+    --   },
+    -- },
     rust_analyzer = {
       settings = {
         ["rust-analyzer"] = {
@@ -91,7 +120,7 @@ require("lsp-setup").setup {
         gopls = {
           gofumpt = true,
           -- staticcheck = true,
-          usePlaceholders = true,
+          usePlaceholders = false,
           codelenses = {
             gc_details = true,
           },
