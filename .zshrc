@@ -1,35 +1,5 @@
-# [[ -e ${ZDOTDIR:-~}/.antidote ]] ||
-# git clone https://github.com/mattmc3/antidote.git ${ZDOTDIR:-~}/.antidote
-# Source antidote.
-# source ${ZDOTDIR:-~}/.antidote/antidote.zsh
-# antidote load ${ZDOTDIR:-$HOME}/.zsh_plugins.txt
-
-# http://www.skywind.me/blog/archives/2060
-# Install antigen.zsh if not exist
-if [ ! -f "$ANTIGEN" ]; then
-	echo "Installing antigen ..."
-	[ ! -d "$HOME/.local" ] && mkdir -p "$HOME/.local" 2> /dev/null
-	[ ! -d "$HOME/.local/bin" ] && mkdir -p "$HOME/.local/bin" 2> /dev/null
-	# [ ! -f "$HOME/.z" ] && touch "$HOME/.z"
-	URL="http://git.io/antigen"
-	TMPFILE="/tmp/antigen.zsh"
-	if [ -x "$(which curl)" ]; then
-		curl -L "$URL" -o "$TMPFILE"
-	elif [ -x "$(which wget)" ]; then
-		wget "$URL" -O "$TMPFILE"
-	else
-		echo "ERROR: please install curl or wget before installation !!"
-		exit
-	fi
-	if [ ! $? -eq 0 ]; then
-		echo ""
-		echo "ERROR: downloading antigen.zsh ($URL) failed !!"
-		exit
-	fi;
-	echo "move $TMPFILE to $ANTIGEN"
-	mv "$TMPFILE" "$ANTIGEN"
-fi
-
+export ZPLUG_HOME=/usr/local/opt/zplug
+source $ZPLUG_HOME/init.zsh
 # Load local bash/zsh compatible settings
 INIT_SH_NOFUN=1
 INIT_SH_NOLOG=1
@@ -72,25 +42,19 @@ zstyle ':prezto:load' pmodule \
 	'git' \
 	'utility' \
 	'completion' \
-	'history-substring-search' \
-	'autosuggestions' \
+	# 'history-substring-search' \
+	# 'autosuggestions' \
 	# 'prompt' \
 
-# Initialize prezto
-antigen use prezto
-
-
 # default bundles
-# antigen bundle rupa/z z.sh
-antigen bundle Vifon/deer
-#antigen bundle zdharma/fast-syntax-highlighting
-antigen bundle zsh-users/zsh-autosuggestions
-antigen bundle git
-antigen bundle fzf
+zplug Vifon/deer
+zplug zdharma/fast-syntax-highlighting, defer:2
+zplug zdharma/fast-syntax-highlighting, defer:2
+# zplug "plugins/git", from:prezto
+# zplug "modules/prompt", from:prezto
+zplug zsh-users/zsh-autosuggestions, defer:2
+# zplug "modules/fzf", from:prezto
 
-antigen bundle willghatch/zsh-cdr
-# antigen bundle zsh-users/zaw
-#
 # check login shell
 if [[ -o login ]]; then
 	[ -f "$HOME/.local/etc/login.sh" ] && source "$HOME/.local/etc/login.sh"
@@ -131,7 +95,8 @@ ZSH_HIGHLIGHT_STYLES[assign]=none
 [ -f "$HOME/.local/etc/config.zsh" ] && source "$HOME/.local/etc/config.zsh"
 [ -f "$HOME/.local/etc/local.zsh" ] && source "$HOME/.local/etc/local.zsh"
 
-antigen apply
+zplug load # --verbose
+
 # options
 unsetopt correct_all
 unsetopt share_history
