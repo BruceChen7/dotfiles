@@ -132,8 +132,7 @@ require("lazy").setup {
         -- Configuration here, or leave empty to use defaults
       }
     end,
-    -- event = { "BufRead", "BufNewFile" },
-    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
+    event = "InsertEnter",
   },
 
   -- -- 自动调整窗口
@@ -330,7 +329,7 @@ require("lazy").setup {
     "ThePrimeagen/harpoon",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
-      mark = require "harpoon.mark"
+      local mark = require "harpoon.mark"
       vim.keymap.set("n", "<space>1", function()
         mark.add_file()
       end)
@@ -544,13 +543,13 @@ require("lazy").setup {
     event = "InsertEnter",
   },
 
-  -- {
-  --   "mhartington/formatter.nvim",
-  --   config = function()
-  --     require "config/format"
-  --   end,
-  --   event = "InsertEnter",
-  -- },
+  {
+    "mhartington/formatter.nvim",
+    config = function()
+      require "config/format"
+    end,
+    event = "VeryLazy",
+  },
 
   -- protject notes
   { "JellyApple102/flote.nvim" },
