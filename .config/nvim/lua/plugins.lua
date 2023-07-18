@@ -186,7 +186,7 @@ require("lazy").setup {
         },
       }
     end,
-    event = "INsertEnter",
+    event = "InsertEnter",
   },
 
   {
@@ -470,17 +470,6 @@ require("lazy").setup {
     keys = { { ",tg", mode = "n" }, { ",ts", mode = "n" } },
   },
 
-  -- {
-  --   "lvimuser/lsp-inlayhints.nvim",
-  --   config = function()
-  --     require("lsp-inlayhints").setup {
-  --       debug_mode = false,
-  --     }
-  --   end,
-  --   branch = "anticonceal",
-  --   event = "LspAttach",
-  -- },
-  --
   {
     "folke/flash.nvim",
     event = "VeryLazy",
