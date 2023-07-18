@@ -102,7 +102,15 @@ require("lazy").setup {
   },
   {
     "saadparwaiz1/cmp_luasnip",
-    ft = { "go", "lua", "c", "rust", "cpp", "yaml", "json", "python" },
+    event = "InsertEnter",
+  },
+
+  {
+    "anuvyklack/hydra.nvim",
+    event = "VeryLazy",
+    config = function()
+      require "config/hydra"
+    end,
   },
 
   {
@@ -120,7 +128,7 @@ require("lazy").setup {
   {
     "sgur/vim-textobj-parameter",
     dependencies = { "kana/vim-textobj-user" },
-    ft = { "go", "zig", "rust", "lua", "c", "cpp", "python" },
+    event = "InsertEnter",
   },
 
   { "tpope/vim-repeat", event = "InsertEnter" },
