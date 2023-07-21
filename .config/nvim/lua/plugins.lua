@@ -169,6 +169,7 @@ require("lazy").setup {
         },
       }
     end,
+    event = "VeryLazy",
   },
 
   -- treesitter
@@ -212,7 +213,7 @@ require("lazy").setup {
       require "config/terminal"
     end,
     branch = "main",
-    keys = { { "<m-=>", mode = "n" }, { "<space>tb", mode = "n" } },
+    event = "VeryLazy",
   },
 
   -- colorscheme
@@ -470,7 +471,6 @@ require("lazy").setup {
 
   {
     "nvim-telescope/telescope.nvim",
-    tag = "0.1.1",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
       require "config/telescope"
@@ -601,6 +601,11 @@ require("lazy").setup {
     config = function()
       vim.cmd.colorscheme "hardhacker"
     end,
+  },
+
+  {
+    "zhenyangze/vim-bitoai",
+    event = "VeryLazy",
   },
 
   {

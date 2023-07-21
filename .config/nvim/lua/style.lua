@@ -20,42 +20,44 @@ o.mouse = "n"
 vim.cmd [[
 augroup InitFileTypesGroup
 
-	" 清除同组的历史 autocommand
-	au!
+  " 清除同组的历史 autocommand
+  au!
 
-	" C/C++ 文件使用 // 作为注释
-	au FileType c,cpp setlocal commentstring=//\ %s foldcolumn=0
+  " C/C++ 文件使用 // 作为注释
+  au FileType c,cpp setlocal commentstring=//\ %s foldcolumn=0
 
-	au FileType zig setlocal ts=4 sw=4 et
-	" markdown 允许自动换行
-	au FileType markdown setlocal wrap
+  au FileType zig setlocal ts=4 sw=4 et
+  " markdown 允许自动换行
+  au FileType markdown setlocal wrap
 
-	" lisp 进行微调
-	au FileType lisp setlocal ts=8 sts=2 sw=2 et
+  " lisp 进行微调
+  au FileType lisp setlocal ts=8 sts=2 sw=2 et
 
-	au FileType go setlocal ts=8 sw=8 et foldcolumn=0
+  au FileType go setlocal ts=8 sw=8 et foldcolumn=0
 
-	au FileType lua setlocal ts=4 sw=4 et
+  au FileType lua setlocal ts=2 sw=2 et
 
-	" scala 微调
-	au FileType scala setlocal sts=4 sw=4 noet
+  au FileType bito set wrap
 
-	au FileType markdown setlocal sts=4 sw=4 et
-	" haskell 进行微调
-	au FileType haskell setlocal et
+  " scala 微调
+  au FileType scala setlocal sts=4 sw=4 noet
 
-	au FileType proto setlocal ts=2 sw=2
-	" quickfix 隐藏行号
-	"au FileType qf setlocal nonumber
-	autocmd FileType qf nnoremap <silent><buffer> p :PreviewQuickfix<cr>
-	autocmd FileType qf nnoremap <silent><buffer> P :PreviewClose<cr>
+  au FileType markdown setlocal sts=4 sw=4 et
+  " haskell 进行微调
+  au FileType haskell setlocal et
 
-	" 强制对某些扩展名的 filetype 进行纠正
-	au BufNewFile,BufRead *.as setlocal filetype=actionscript
-	au BufNewFile,BufRead *.pro setlocal filetype=prolog
-	au BufNewFile,BufRead *.es setlocal filetype=erlang
-	au BufNewFile,BufRead *.asc setlocal filetype=asciidoc
-	au BufNewFile,BufRead *.vl setlocal filetype=verilog
+  au FileType proto setlocal ts=2 sw=2
+  " quickfix 隐藏行号
+  "au FileType qf setlocal nonumber
+  autocmd FileType qf nnoremap <silent><buffer> p :PreviewQuickfix<cr>
+  autocmd FileType qf nnoremap <silent><buffer> P :PreviewClose<cr>
+
+  " 强制对某些扩展名的 filetype 进行纠正
+  au BufNewFile,BufRead *.as setlocal filetype=actionscript
+  au BufNewFile,BufRead *.pro setlocal filetype=prolog
+  au BufNewFile,BufRead *.es setlocal filetype=erlang
+  au BufNewFile,BufRead *.asc setlocal filetype=asciidoc
+  au BufNewFile,BufRead *.vl setlocal filetype=verilog
 augroup END
 ]]
 
@@ -70,10 +72,14 @@ function getColorscheme()
     "tokyonight-storm",
     "tokyonight-moon",
     "tokyonight-day",
+    "kanagawa",
+    "kanagawa-dragon",
+    "catppuccin",
+    "catppuccin-frappe",
   }
   local u = require "util"
   local len = u.tableLength(colorschemes)
-  i = u.random(len)
+  local i = u.random(len)
   local scheme = colorschemes[i]
 
   if scheme == "vscode" then
@@ -83,6 +89,6 @@ function getColorscheme()
 end
 
 vim.cmd [[
-	let scheme = v:lua.getColorscheme()
-	execute 'colorscheme ' . scheme
+  let scheme = v:lua.getColorscheme()
+  execute 'colorscheme ' . scheme
 ]]

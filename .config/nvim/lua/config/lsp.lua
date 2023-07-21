@@ -14,7 +14,14 @@ require("lsp-setup").setup {
     enabled = true,
   },
   on_attach = function(client, bufnr)
-    require("lsp-setup.utils").format_on_save(client)
+    local filetype = vim.bo.filetype
+    local format = false
+    if filetype == "go" or "rust" or "python" or "lua" or "zig" then
+      format = true
+    end
+    if format then
+      require("lsp-setup.utils").format_on_save(client)
+    end
   end,
   servers = {
     lua_ls = {
@@ -119,7 +126,6 @@ require("lsp-setup").setup {
       settings = {
         gopls = {
           gofumpt = true,
-          -- staticcheck = true,
           usePlaceholders = false,
           codelenses = {
             gc_details = true,
