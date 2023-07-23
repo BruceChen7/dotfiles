@@ -526,9 +526,34 @@ require("lazy").setup {
   {
     "rmagatti/auto-session",
     config = function()
+      local close_not_in_working_dir = function()
+        local close_window_by_bufname = function(buffer_name)
+          local buf = vim.fn.bufnr(buffer_name)
+          if buf ~= -1 then
+            vim.api.nvim_buf_delete(buf, { force = true })
+          end
+        end
+        local cur_dir = vim.fn.getcwd()
+        for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
+          local buf_name = vim.api.nvim_buf_get_name(buffer)
+
+          if buf_name ~= "" then
+            local buf_dir = vim.fn.fnamemodify(buf_name, ":p:h")
+            if string.find(buf_name, "fern:") then
+              close_window_by_bufname(buf_name)
+            end
+            if not string.find(buf_dir, cur_dir) then
+              close_window_by_bufname(buf_name)
+            end
+          end
+        end
+      end
       require("auto-session").setup {
         log_level = "error",
         auto_session_supress_dir = { "~/" },
+        pre_save_cmds = {
+          close_not_in_working_dir,
+        },
       }
     end,
   },
