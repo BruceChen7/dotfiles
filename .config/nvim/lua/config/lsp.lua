@@ -9,12 +9,46 @@ vim.keymap.set("n", "gs", "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", op
 vim.keymap.set("n", "gr", "<cmd>Telescope lsp_references<CR>", opts)
 vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
 
+local function contains(table_name, value)
+  for _, v in pairs(table_name) do
+    if v == value then
+      return true
+    end
+  end
+end
+
 vim.api.nvim_create_autocmd({ 'InsertEnter' }, {
-  callback = function () vim.lsp.inlay_hint(0, true) end,
+  callback = function()
+    -- if filetype is go or rust or lua
+    -- pyright is not support textDocument/inlayHint
+    -- if vim.bo.filetype is go or rust or lua
+    -- thena vim.lsp.inlay_hint(0, true)
+    local lang = {
+      "go",
+      "rust",
+      "lua",
+      "zig",
+    }
+    local filetype = vim.bo.filetype
+    if contains(lang, filetype) then
+      vim.lsp.inlay_hint(0, true)
+    end
+  end,
 })
 vim.api.nvim_create_autocmd({ 'InsertLeave' }, {
-  callback = function () vim.lsp.inlay_hint(0, false) end,
+  callback = function()
+    local lang = {
+      "go",
+      "rust",
+      "lua",
+      "zig",
+    }
+    if contains(lang, vim.bo.filetype) then
+      vim.lsp.inlay_hint(0, false)
+    end
+  end,
 })
+
 require("lsp-setup").setup {
   default_mappings = false,
   --  manually set the inlay hints

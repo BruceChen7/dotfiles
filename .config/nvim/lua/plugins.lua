@@ -338,7 +338,7 @@ require("lazy").setup {
   {
     "kevinhwang91/nvim-ufo",
     dependencies = { "kevinhwang91/promise-async" },
-    ft = { "go", "lua", "c", "rust", "cpp" },
+    event = "VeryLazy",
     config = function()
       require "config/ufo"
     end,
@@ -584,9 +584,6 @@ require("lazy").setup {
   },
 
 
-  -- protject notes
-  { "JellyApple102/flote.nvim" },
-
   {
     "nvimdev/guard.nvim",
     config = function()
@@ -601,6 +598,7 @@ require("lazy").setup {
         stdin = true,
       }
       ft("go"):fmt "lsp"
+      ft("zig"):fmt "lsp"
       require("guard").setup {
         fmt_on_save = true,
       }
