@@ -8,6 +8,13 @@ vim.keymap.set("n", "gi", "<cmd>Telescope lsp_implementations<CR>", opts)
 vim.keymap.set("n", "gs", "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", opts)
 vim.keymap.set("n", "gr", "<cmd>Telescope lsp_references<CR>", opts)
 vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+
+vim.api.nvim_create_autocmd({ 'InsertEnter' }, {
+  callback = function () vim.lsp.inlay_hint(0, true) end,
+})
+vim.api.nvim_create_autocmd({ 'InsertLeave' }, {
+  callback = function () vim.lsp.inlay_hint(0, false) end,
+})
 require("lsp-setup").setup {
   default_mappings = false,
   --  manually set the inlay hints
