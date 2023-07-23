@@ -457,7 +457,7 @@ require("lazy").setup {
   {
     "dpayne/CodeGPT.nvim",
     dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" },
-    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python", "markdown" },
+    event = "VeryLazy",
   },
 
   {
@@ -542,16 +542,6 @@ require("lazy").setup {
   },
 
   {
-    "willothy/flatten.nvim",
-    config = true,
-    -- or pass configuration with
-    -- opts = {  }
-    -- Ensure that it runs first to minimize delay when opening file from terminal
-    lazy = false,
-    priority = 1001,
-  },
-
-  {
     "jvgrootveld/telescope-zoxide",
     dependencies = {
       "nvim-telescope/telescope.nvim",
@@ -568,16 +558,30 @@ require("lazy").setup {
     event = "InsertEnter",
   },
 
-  {
-    "mhartington/formatter.nvim",
-    config = function()
-      require "config/format"
-    end,
-    event = "VeryLazy",
-  },
 
   -- protject notes
   { "JellyApple102/flote.nvim" },
+
+  {
+    "nvimdev/guard.nvim",
+    config = function()
+      local ft = require "guard.filetype"
+      ft("lua"):fmt {
+        cmd = "stylua",
+        args = {
+          "--search-parent-directories",
+          "--",
+          "-",
+        },
+        stdin = true,
+      }
+      ft("go"):fmt "lsp"
+      require("guard").setup {
+        fmt_on_save = true,
+      }
+    end,
+    event = "VeryLazy",
+  },
 
   {
     "mrjones2014/smart-splits.nvim",
@@ -615,7 +619,7 @@ require("lazy").setup {
       "williamboman/mason.nvim", -- optional
       "williamboman/mason-lspconfig.nvim", -- optional
     },
-    branch = "inlay-hints",
+    -- branch = "inlay-hints",
     config = function()
       require "config/lsp"
     end,

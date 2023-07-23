@@ -10,8 +10,9 @@ vim.keymap.set("n", "gr", "<cmd>Telescope lsp_references<CR>", opts)
 vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
 require("lsp-setup").setup {
   default_mappings = false,
+  --  manually set the inlay hints
   inlay_hints = {
-    enabled = true,
+    enabled = false,
   },
   on_attach = function(client, bufnr)
     local filetype = vim.bo.filetype
@@ -20,7 +21,7 @@ require("lsp-setup").setup {
       format = true
     end
     if format then
-      require("lsp-setup.utils").format_on_save(client)
+      -- require("lsp-setup.utils").format_on_save(client)
     end
   end,
   servers = {
@@ -39,7 +40,7 @@ require("lsp-setup").setup {
         },
       },
     },
-    pyright = {},
+    pylsp = {},
     -- pylsp = {
     --   settings = {
     --     pylsp = {
@@ -66,6 +67,7 @@ require("lsp-setup").setup {
     --     },
     --   },
     -- },
+    pyright = {},
     rust_analyzer = {
       settings = {
         ["rust-analyzer"] = {
