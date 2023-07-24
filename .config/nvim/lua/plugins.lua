@@ -533,16 +533,34 @@ require("lazy").setup {
             vim.api.nvim_buf_delete(buf, { force = true })
           end
         end
+
+        local function isPartOfPath(path, potentialSubpath)
+          local normalizedPath = path:gsub("[/\\]$", "")
+          local normalizedSubpath = potentialSubpath:gsub("[/\\]$", "")
+
+          -- Check if the normalized subpath is contained within the normalized path
+          if string.find(normalizedSubpath, normalizedPath, 1, true) then
+            return true
+          end
+
+          return false
+        end
         local cur_dir = vim.fn.getcwd()
         for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
           local buf_name = vim.api.nvim_buf_get_name(buffer)
+          local buf_nr = vim.fn.bufnr(buf_name)
+          local filetype = vim.api.nvim_buf_get_option(buf_nr, "filetype")
 
           if buf_name ~= "" then
             local buf_dir = vim.fn.fnamemodify(buf_name, ":p:h")
             if string.find(buf_name, "fern:") then
               close_window_by_bufname(buf_name)
             end
-            if not string.find(buf_dir, cur_dir) then
+            if string.find(buf_name, "fern:") then
+              -- print("fern buffer", buf_name)
+              close_window_by_bufname(buf_name)
+            end
+            if isPartOfPath(cur_dir, buf_dir) == false then
               close_window_by_bufname(buf_name)
             end
           end

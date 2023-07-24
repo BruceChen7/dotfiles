@@ -15,7 +15,7 @@ vim.o.completeopt = "menuone,noselect"
 local cmp = require "cmp"
 
 --
-function select_next_item(fallback)
+local function select_next_item(fallback)
   if cmp.visible() then
     cmp.select_next_item()
   elseif luasnip.expand_or_jumpable() then
@@ -25,7 +25,7 @@ function select_next_item(fallback)
   end
 end
 
-function select_prev_item(fallback)
+local function select_prev_item(fallback)
   if cmp.visible() then
     cmp.select_prev_item()
   elseif luasnip.jumpable(-1) then
@@ -94,6 +94,10 @@ cmp.setup {
       cmp.config.compare.exact,
       cmp.config.compare.recently_used,
       cmp.config.compare.score,
+      cmp.config.compare.kind,
+      cmp.config.compare.sort_text,
+      cmp.config.compare.length,
+      cmp.config.compare.order,
     },
   },
 
