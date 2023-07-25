@@ -260,6 +260,10 @@ require("lazy").setup {
   {
     "ray-x/lsp_signature.nvim",
     event = "LspAttach",
+    opts = {},
+    config = function(_, opts)
+      require("lsp_signature").setup(opts)
+    end,
   },
 
   {
@@ -600,7 +604,6 @@ require("lazy").setup {
     dependencies = "hrsh7th/nvim-cmp",
     event = "InsertEnter",
   },
-
 
   {
     "nvimdev/guard.nvim",

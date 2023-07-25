@@ -64,6 +64,7 @@ require("lsp-setup").setup {
     if format then
       -- require("lsp-setup.utils").format_on_save(client)
     end
+    require("lsp_signature").on_attach({}, bufnr)
   end,
   servers = {
     lua_ls = {
