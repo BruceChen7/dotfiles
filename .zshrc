@@ -22,7 +22,7 @@ unsetopt correct
 DISABLE_CORRECTION="true"
 
 # Enable 256 color to make auto-suggestions look nice
-# export TERM="xterm-256color"
+export TERM="xterm-256color"
 
 ZSH_AUTOSUGGEST_USE_ASYNC=1
 
@@ -42,14 +42,19 @@ zstyle ':prezto:load' pmodule \
 	'git' \
 	'utility' \
 	'completion' \
-	# 'history-substring-search' \
-	# 'autosuggestions' \
-	# 'prompt' \
+	'history-substring-search' \
+	'autosuggestions' \
+	'prompt' \
+	'autosuggestions' \
+	'prompt' \
+    
+# Initialize prezto
+antigen use prezto
 
 # default bundles
 zplug Vifon/deer
 zplug zdharma/fast-syntax-highlighting, defer:2
-zplug zdharma/fast-syntax-highlighting, defer:2
+zplug bundle zdharma-continuum/fast-syntax-highlighting
 # zplug "plugins/git", from:prezto
 # zplug "modules/prompt", from:prezto
 zplug zsh-users/zsh-autosuggestions, defer:2
@@ -100,6 +105,8 @@ zplug load # --verbose
 # options
 unsetopt correct_all
 unsetopt share_history
+setopt prompt_subst
+unsetopt prompt_cr prompt_sp
 
 setopt BANG_HIST                 # Treat the '!' character specially during expansion.
 setopt INC_APPEND_HISTORY        # Write to the history file immediately, not when the shell exits.
