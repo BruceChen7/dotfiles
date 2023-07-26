@@ -1,5 +1,6 @@
 export ZPLUG_HOME=/usr/local/opt/zplug
 source $ZPLUG_HOME/init.zsh
+
 # Load local bash/zsh compatible settings
 INIT_SH_NOFUN=1
 INIT_SH_NOLOG=1
@@ -8,8 +9,6 @@ DISABLE_Z_PLUGIN=1
 
 # exit for non-interactive shell
 [[ $- != *i* ]] && return
-
-source "$ANTIGEN"
 
 # Setup dir stack
 DIRSTACKSIZE=10
@@ -45,16 +44,13 @@ zstyle ':prezto:load' pmodule \
 	'history-substring-search' \
 	'autosuggestions' \
 	'prompt' \
-	'autosuggestions' \
-	'prompt' \
     
 # Initialize prezto
-antigen use prezto
+# antigen use prezto
 
 # default bundles
 zplug Vifon/deer
 zplug zdharma/fast-syntax-highlighting, defer:2
-zplug bundle zdharma-continuum/fast-syntax-highlighting
 # zplug "plugins/git", from:prezto
 # zplug "modules/prompt", from:prezto
 zplug zsh-users/zsh-autosuggestions, defer:2
@@ -228,3 +224,5 @@ alias unproxy='unset all_proxy http_proxy https_proxy'
 export GOPATH=~/go
 export PATH=$HOME/.local/bin:$GOPATH/bin:/usr/local/bin:$PATH
 alias nmr='cd $HOME/work/notes/ && python3 Script/query_text.py --query_text "$@" ' 
+autoload -U compinit
+compinit -i

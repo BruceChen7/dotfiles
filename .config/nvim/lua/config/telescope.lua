@@ -106,6 +106,8 @@ telescope.setup {
         ["<C-k>"] = actions.move_selection_previous,
 
         ["<C-c>"] = actions.close,
+        -- used to clear prompt
+        ["<C-u>"] = false,
 
         ["<Down>"] = actions.move_selection_next,
         ["<Up>"] = actions.move_selection_previous,
@@ -115,8 +117,8 @@ telescope.setup {
         ["<C-v>"] = actions.select_vertical,
         ["<C-t>"] = actions.select_tab,
 
-        ["<C-u>"] = actions.preview_scrolling_up,
-        ["<C-d>"] = actions.preview_scrolling_down,
+        ["<C-h>"] = actions.preview_scrolling_up,
+        ["<C-l>"] = actions.preview_scrolling_down,
 
         ["<PageUp>"] = actions.results_scrolling_up,
         ["<PageDown>"] = actions.results_scrolling_down,
@@ -125,7 +127,7 @@ telescope.setup {
         ["<S-Tab>"] = actions.toggle_selection + actions.move_selection_better,
         ["<C-q>"] = actions.send_to_qflist + actions.open_qflist,
         ["<M-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
-        ["<C-l>"] = actions.complete_tag,
+        -- ["<C-l>"] = actions.complete_tag,
         -- ["<C-_>"] = actions.which_key, -- keys from pressing <C-/>
       },
 
@@ -228,6 +230,17 @@ telescope.setup {
     },
   },
 }
+
+telescope_last = 0
+function telescope_resume()
+  local builtin = require "telescope.builtin"
+  if telescope_last == 0 then
+    telescope_last = 1
+    builtin.live_grep()
+  else
+    builtin.resume()
+  end
+end
 
 telescope.load_extension "neoclip"
 telescope.load_extension "session-lens"
