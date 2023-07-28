@@ -412,7 +412,7 @@ require("lazy").setup {
         },
       }
     end,
-    event = "InsertEnter",
+    event = "VeryLazy",
   },
 
   {
@@ -459,12 +459,6 @@ require("lazy").setup {
   },
 
   {
-    "dpayne/CodeGPT.nvim",
-    dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" },
-    event = "VeryLazy",
-  },
-
-  {
     "ojroques/nvim-osc52",
     config = function()
       vim.keymap.set("n", ",c", require("osc52").copy_operator, { expr = true })
@@ -486,6 +480,14 @@ require("lazy").setup {
     "folke/flash.nvim",
     event = "VeryLazy",
     opts = {},
+    char = {
+      keys = {
+        "f",
+        "F",
+        "t",
+        "T",
+      },
+    },
     keys = {
       {
         "s",
