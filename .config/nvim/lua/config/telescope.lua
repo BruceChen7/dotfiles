@@ -231,22 +231,12 @@ telescope.setup {
   },
 }
 
-telescope_last = 0
-function telescope_resume()
-  local builtin = require "telescope.builtin"
-  if telescope_last == 0 then
-    telescope_last = 1
-    builtin.live_grep()
-  else
-    builtin.resume()
-  end
-end
-
 telescope.load_extension "neoclip"
 telescope.load_extension "session-lens"
 telescope.load_extension "zoxide"
 telescope.load_extension "harpoon"
 vim.keymap.set("n", ",tg", ":Telescope live_grep<CR>")
+vim.keymap.set("n", ",tr", ":Telescope resume<CR>")
 vim.keymap.set("n", ",ts", ":Telescope session-lens search_session <CR>")
 vim.keymap.set("n", ",tf", "<cmd>Telescope find_files<cr>", opts)
 vim.keymap.set("n", ",tz", "<cmd>Telescope zoxide list<cr>", opts)
