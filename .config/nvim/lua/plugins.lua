@@ -16,13 +16,6 @@ vim.opt.runtimepath:prepend(lazypath)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
-if os.getenv "NVIM" ~= nil then
-  require("lazy").setup {
-    { "willothy/flatten.nvim", config = true },
-  }
-  return
-end
-
 require("lazy").setup {
 
   {
@@ -307,7 +300,7 @@ require("lazy").setup {
 
   {
     "sindrets/diffview.nvim",
-    dependencies = { "nvim-lua/plenary.nvim", "kyazdani42/nvim-web-devicons", opt = true },
+    dependencies = { "nvim-lua/plenary.nvim", "nvim-tree/nvim-web-devicons", opt = true },
     config = function()
       require "config/diff"
     end,
@@ -380,7 +373,7 @@ require("lazy").setup {
   {
     "akinsho/bufferline.nvim",
     -- tag = "v2.*",
-    dependencies = { "kyazdani42/nvim-web-devicons" },
+    dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       require "config/bufferline"
     end,
@@ -551,7 +544,6 @@ require("lazy").setup {
 
           return false
         end
-        local cur_dir = vim.fn.getcwd()
         for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
           local buf_name = vim.api.nvim_buf_get_name(buffer)
           local buf_nr = vim.fn.bufnr(buf_name)
@@ -566,6 +558,7 @@ require("lazy").setup {
               -- print("fern buffer", buf_name)
               close_window_by_bufname(buf_name)
             end
+            local cur_dir = vim.fn.getcwd()
             if isPartOfPath(cur_dir, buf_dir) == false then
               close_window_by_bufname(buf_name)
             end
@@ -605,6 +598,22 @@ require("lazy").setup {
     build = "./install.sh",
     dependencies = "hrsh7th/nvim-cmp",
     event = "InsertEnter",
+    config = function()
+      local tabnine = require "cmp_tabnine.config"
+      tabnine:setup {
+        max_lines = 100,
+        max_num_results = 5,
+        sort = true,
+        run_on_every_keystroke = true,
+        snippet_placeholder = "..",
+        ignored_file_types = {
+          -- default is not to ignore
+          -- uncomment to ignore in lua:
+          -- lua = true
+        },
+        show_prediction_strength = false,
+      }
+    end,
   },
 
   {
@@ -620,8 +629,17 @@ require("lazy").setup {
         },
         stdin = true,
       }
-      ft("go"):fmt "lsp"
+      ft("go"):fmt({
+        cmd = "gofmt",
+        args = {},
+        stdin = true,
+      }):append {
+        cmd = "goimports",
+        args = {},
+      }
+
       ft("zig"):fmt "lsp"
+
       require("guard").setup {
         fmt_on_save = true,
       }
