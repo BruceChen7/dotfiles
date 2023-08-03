@@ -140,30 +140,30 @@ require("lazy").setup {
   -- replaced with window.nvim
   { "camspiers/lens.vim" },
 
-  {
-    "ojroques/nvim-hardline",
-    config = function()
-      require("hardline").setup {
-        bufferline = false, -- disable bufferline
-        bufferline_settings = {
-          exclude_terminal = false, -- don't show terminal buffers in bufferline
-          show_index = false, -- show buffer indexes (not the actual buffer numbers) in bufferline
-        },
-        theme = "default", -- change theme
-        sections = { -- define sections
-          { class = "mode", item = require("hardline.parts.mode").get_item },
-          { class = "med", item = require("hardline.parts.filename").get_item },
-          { class = "high", item = require("hardline.parts.filetype").get_item },
-          "%<",
-          { class = "med", item = "%=" },
-          { class = "error", item = require("hardline.parts.lsp").get_error },
-          { class = "warning", item = require("hardline.parts.lsp").get_warning },
-          { class = "high", item = require("hardline.parts.git").get_item, hide = 100 },
-        },
-      }
-    end,
-    event = "VeryLazy",
-  },
+  -- {
+  --   "ojroques/nvim-hardline",
+  --   config = function()
+  --     require("hardline").setup {
+  --       bufferline = false, -- disable bufferline
+  --       bufferline_settings = {
+  --         exclude_terminal = false, -- don't show terminal buffers in bufferline
+  --         show_index = false, -- show buffer indexes (not the actual buffer numbers) in bufferline
+  --       },
+  --       theme = "default", -- change theme
+  --       sections = { -- define sections
+  --         { class = "mode", item = require("hardline.parts.mode").get_item },
+  --         { class = "med", item = require("hardline.parts.filename").get_item },
+  --         { class = "high", item = require("hardline.parts.filetype").get_item },
+  --         "%<",
+  --         { class = "med", item = "%=" },
+  --         { class = "error", item = require("hardline.parts.lsp").get_error },
+  --         { class = "warning", item = require("hardline.parts.lsp").get_warning },
+  --         { class = "high", item = require("hardline.parts.git").get_item, hide = 100 },
+  --       },
+  --     }
+  --   end,
+  --   event = "VeryLazy",
+  -- },
 
   -- treesitter
   {
@@ -283,13 +283,20 @@ require("lazy").setup {
   },
 
   -- used to show lsp init progress
+  -- {
+  --   "j-hui/fidget.nvim",
+  --   config = function()
+  --     require("fidget").setup {}
+  --   end,
+  --   tag = "legacy",
+  --   event = "LspAttach",
+  -- },
   {
-    "j-hui/fidget.nvim",
+    "linrongbin16/lsp-progress.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
-      require("fidget").setup {}
+      require("lsp-progress").setup()
     end,
-    tag = "legacy",
-    event = "LspAttach",
   },
   --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
   -- use "t9md/vim-choosewin"
@@ -669,6 +676,15 @@ require("lazy").setup {
     config = function()
       vim.cmd.colorscheme "hardhacker"
     end,
+  },
+
+  {
+    "nvim-lualine/lualine.nvim",
+    requires = { "nvim-tree/nvim-web-devicons", "linrongbin16/lsp-progress.nvim" },
+    config = function()
+      require "config/lualine"
+    end,
+    event = "VeryLazy",
   },
 
   {
