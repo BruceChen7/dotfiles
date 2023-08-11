@@ -56,7 +56,7 @@ require("lazy").setup {
     config = function()
       require "config/fern"
     end,
-    keys = { { "nc" }, { "ne" }, { "nC" }, { "nE" } },
+    event = "VeryLazy",
   },
 
   {
@@ -169,7 +169,7 @@ require("lazy").setup {
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
-    ft = { "go", "c", "cpp", "rust", "zig", "lua", "yaml", "json", "proto", "markdown" },
+    event = "VeryLazy",
   },
 
   {
@@ -380,7 +380,7 @@ require("lazy").setup {
   {
     "akinsho/bufferline.nvim",
     -- tag = "v2.*",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    dependencies =  "nvim-tree/nvim-web-devicons" ,
     config = function()
       require "config/bufferline"
     end,
@@ -476,16 +476,23 @@ require("lazy").setup {
     keys = { { ",tg", mode = "n" }, { ",ts", mode = "n" } },
   },
 
+  -- https://github.com/Innei/nvim-config-lua/blob/2b311daa7841af52226fc9b75add357c03eac078/lua/plugins/motion.lua#L10
   {
     "folke/flash.nvim",
     event = "VeryLazy",
-    opts = {},
-    char = {
-      keys = {
-        "f",
-        "F",
-        "t",
-        "T",
+    opts = {
+      modes = {
+        search = {
+          enabled = false,
+        },
+        char = {
+          keys = {
+            "f",
+            "F",
+            "t",
+            "T",
+          },
+        },
       },
     },
     keys = {
@@ -561,7 +568,7 @@ require("lazy").setup {
             if string.find(buf_name, "fern:") then
               close_window_by_bufname(buf_name)
             end
-            if string.find(buf_name, "fern:") then
+            if string.find(buf_name, "gitcommit") then
               -- print("fern buffer", buf_name)
               close_window_by_bufname(buf_name)
             end
