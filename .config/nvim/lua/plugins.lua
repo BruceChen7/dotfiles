@@ -170,26 +170,29 @@ require("lazy").setup {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     event = "VeryLazy",
+    config = function()
+      require "config/text_obj"
+    end,
   },
 
-  {
-    "RRethy/nvim-treesitter-textsubjects",
-    depends = { "nvim-treesitter" },
-    config = function()
-      require("nvim-treesitter.configs").setup {
-        textsubjects = {
-          enable = true,
-          prev_selection = ",",
-          keymaps = {
-            ["<CR>"] = "textsubjects-smart",
-            [";"] = "textsubjects-container-outer",
-            ["i;"] = "textsubjects-container-inner",
-          },
-        },
-      }
-    end,
-    event = "InsertEnter",
-  },
+  -- {
+  --   "RRethy/nvim-treesitter-textsubjects",
+  --   depends = { "nvim-treesitter" },
+  --   config = function()
+  --     require("nvim-treesitter.configs").setup {
+  --       textsubjects = {
+  --         enable = true,
+  --         prev_selection = ",",
+  --         keymaps = {
+  --           ["<CR>"] = "textsubjects-smart",
+  --           [";"] = "textsubjects-container-outer",
+  --           ["i;"] = "textsubjects-container-inner",
+  --         },
+  --       },
+  --     }
+  --   end,
+  --   event = "InsertEnter",
+  -- },
 
   {
     "numToStr/Comment.nvim",
