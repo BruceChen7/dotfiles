@@ -175,24 +175,14 @@ require("lazy").setup {
     end,
   },
 
-  -- {
-  --   "RRethy/nvim-treesitter-textsubjects",
-  --   depends = { "nvim-treesitter" },
-  --   config = function()
-  --     require("nvim-treesitter.configs").setup {
-  --       textsubjects = {
-  --         enable = true,
-  --         prev_selection = ",",
-  --         keymaps = {
-  --           ["<CR>"] = "textsubjects-smart",
-  --           [";"] = "textsubjects-container-outer",
-  --           ["i;"] = "textsubjects-container-inner",
-  --         },
-  --       },
-  --     }
-  --   end,
-  --   event = "InsertEnter",
-  -- },
+  {
+    "sustech-data/wildfire.nvim",
+    event = "VeryLazy",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    config = function()
+      require("wildfire").setup()
+    end,
+  },
 
   {
     "numToStr/Comment.nvim",
@@ -358,7 +348,7 @@ require("lazy").setup {
       local mark = require "harpoon.mark"
       local ui = require "harpoon.ui"
       local term = require "harpoon.term"
-      vim.keymap.set("n", "<space>ha", function()
+      vim.keymap.set("n", "m1", function()
         mark.add_file()
       end)
       -- next marks
@@ -374,7 +364,7 @@ require("lazy").setup {
         ui.toggle_quick_menu()
       end)
 
-      vim.keymap.set("n", "<space>ht", function()
+      vim.keymap.set("n", "m2", function()
         term.gotoTerminal(1)
       end)
     end,
@@ -382,8 +372,7 @@ require("lazy").setup {
 
   {
     "akinsho/bufferline.nvim",
-    -- tag = "v2.*",
-    dependencies =  "nvim-tree/nvim-web-devicons" ,
+    dependencies = "nvim-tree/nvim-web-devicons" ,
     config = function()
       require "config/bufferline"
     end,

@@ -27,8 +27,6 @@ augroup InitFileTypesGroup
   au FileType c,cpp setlocal commentstring=//\ %s foldcolumn=0
 
   au FileType zig setlocal ts=4 sw=4 et
-  " markdown 允许自动换行
-  au FileType markdown setlocal wrap
 
   " lisp 进行微调
   au FileType lisp setlocal ts=8 sts=2 sw=2 et
@@ -58,6 +56,8 @@ augroup InitFileTypesGroup
   au BufNewFile,BufRead *.es setlocal filetype=erlang
   au BufNewFile,BufRead *.asc setlocal filetype=asciidoc
   au BufNewFile,BufRead *.vl setlocal filetype=verilog
+  au BufNewFile,BufRead *.md setlocal wrap
+  au BufNewFile,BufRead *.log setlocal wrap
 augroup END
 ]]
 
