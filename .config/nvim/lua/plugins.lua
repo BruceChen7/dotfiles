@@ -140,31 +140,6 @@ require("lazy").setup {
   -- replaced with window.nvim
   { "camspiers/lens.vim" },
 
-  -- {
-  --   "ojroques/nvim-hardline",
-  --   config = function()
-  --     require("hardline").setup {
-  --       bufferline = false, -- disable bufferline
-  --       bufferline_settings = {
-  --         exclude_terminal = false, -- don't show terminal buffers in bufferline
-  --         show_index = false, -- show buffer indexes (not the actual buffer numbers) in bufferline
-  --       },
-  --       theme = "default", -- change theme
-  --       sections = { -- define sections
-  --         { class = "mode", item = require("hardline.parts.mode").get_item },
-  --         { class = "med", item = require("hardline.parts.filename").get_item },
-  --         { class = "high", item = require("hardline.parts.filetype").get_item },
-  --         "%<",
-  --         { class = "med", item = "%=" },
-  --         { class = "error", item = require("hardline.parts.lsp").get_error },
-  --         { class = "warning", item = require("hardline.parts.lsp").get_warning },
-  --         { class = "high", item = require("hardline.parts.git").get_item, hide = 100 },
-  --       },
-  --     }
-  --   end,
-  --   event = "VeryLazy",
-  -- },
-
   -- treesitter
   {
     "nvim-treesitter/nvim-treesitter",
@@ -352,15 +327,15 @@ require("lazy").setup {
         mark.add_file()
       end)
       -- next marks
-      vim.keymap.set("n", "<space>hn", function()
+      vim.keymap.set("n", ",hn", function()
         ui.nav_next()
       end)
       --prev marks
-      vim.keymap.set("n", "<space>hp", function()
+      vim.keymap.set("n", ",hp", function()
         ui.nav_prev()
       end)
 
-      vim.keymap.set("n", "<space>hf", function()
+      vim.keymap.set("n", ",hf", function()
         ui.toggle_quick_menu()
       end)
 
