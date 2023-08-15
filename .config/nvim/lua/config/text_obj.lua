@@ -20,9 +20,9 @@ tc.setup {
   highlight = {
     enable = true,
     additional_vim_regex_highlighting = false,
-    disable = function(lang, bufnr) -- Disable in large C++ buffers
-      return lang == ("cpp" or lang == "go") and api.nvim_buf_line_count(bufnr) > 20000
-    end,
+    -- disable = function(lang, bufnr) -- Disable in large C++ buffers
+    --   return lang == ("cpp" or lang == "go") and api.nvim_buf_line_count(bufnr) > 20000
+    -- end,
   },
   incremental_selection = {
     enable = true,
