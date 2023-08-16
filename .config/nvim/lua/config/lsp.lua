@@ -28,6 +28,7 @@ vim.api.nvim_create_autocmd({ 'InsertEnter' }, {
       "rust",
       "lua",
       "zig",
+      "typescript",
     }
     local filetype = vim.bo.filetype
     if contains(lang, filetype) then
@@ -42,6 +43,7 @@ vim.api.nvim_create_autocmd({ 'InsertLeave' }, {
       "rust",
       "lua",
       "zig",
+      "typescript",
     }
     if contains(lang, vim.bo.filetype) then
       vim.lsp.inlay_hint(0, false)
@@ -82,7 +84,22 @@ require("lsp-setup").setup {
         },
       },
     },
-    pylsp = {},
+    tsserver = {
+      settings = {
+        typescript = {
+          inlayHints = {
+            includeInlayParameterNameHints = "all",
+            includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+            includeInlayFunctionParameterTypeHints = true,
+            includeInlayVariableTypeHints = true,
+            includeInlayVariableTypeHintsWhenTypeMatchesName = false,
+            includeInlayPropertyDeclarationTypeHints = true,
+            includeInlayFunctionLikeReturnTypeHints = true,
+            includeInlayEnumMemberValueHints = true,
+          },
+        },
+      },
+    },
     -- pylsp = {
     --   settings = {
     --     pylsp = {
