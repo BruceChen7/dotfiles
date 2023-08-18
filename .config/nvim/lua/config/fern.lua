@@ -28,6 +28,20 @@ function init_fern()
   vim.api.nvim_buf_set_keymap(0, "n", "q", ":quit<CR>", {})
   -- not using this, because i what use N to search
   vim.api.nvim_buf_set_keymap(0, "n", "N", "<NOP>", {})
+  vim.api.nvim_buf_set_keymap(
+    0,
+    "n",
+    "n",
+    [[<Cmd>execute('normal! ' . v:count1 . 'n')<CR><Cmd>lua require('hlslens').start()<CR>]],
+    {}
+  )
+  vim.api.nvim_buf_set_keymap(
+    0,
+    "n",
+    "N",
+    [[<Cmd>execute('normal! ' . v:count1 . 'N')<CR><Cmd>lua require('hlslens').start()<CR>]],
+    {}
+  )
 end
 
 vim.cmd [[
