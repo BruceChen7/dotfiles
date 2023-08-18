@@ -279,7 +279,7 @@ require("lazy").setup {
     config = function()
       require "config/diff"
     end,
-    keys = { { "<space>gg", mode = "n" } },
+    event = "VeryLazy",
   },
 
   --
@@ -665,6 +665,33 @@ require("lazy").setup {
     "zhenyangze/vim-bitoai",
     event = "VeryLazy",
   },
+
+  {
+    "folke/trouble.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    event = "VeryLazy",
+    config = function()
+      vim.keymap.set("n", ",xx", function()
+        require("trouble").open()
+      end)
+      vim.keymap.set("n", ",xw", function()
+        require("trouble").open "workspace_diagnostics"
+      end)
+      vim.keymap.set("n", ",xd", function()
+        require("trouble").open "document_diagnostics"
+      end)
+      vim.keymap.set("n", ",xq", function()
+        require("trouble").open "quickfix"
+      end)
+      vim.keymap.set("n", ",xl", function()
+        require("trouble").open "loclist"
+      end)
+      vim.keymap.set("n", ",gR", function()
+        require("trouble").open "lsp_references"
+      end)
+    end,
+  },
+
 
   {
     "junnplus/lsp-setup.nvim",

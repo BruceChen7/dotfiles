@@ -8,6 +8,7 @@ vim.keymap.set("n", "gi", "<cmd>Telescope lsp_implementations<CR>", opts)
 vim.keymap.set("n", "gs", "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", opts)
 vim.keymap.set("n", "gr", "<cmd>Telescope lsp_references<CR>", opts)
 vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+vim.keymap.set("n", ",gr", "<cmd>lua vim.lsp.buf.rename()<CR>")
 
 local function contains(table_name, value)
   for _, v in pairs(table_name) do
