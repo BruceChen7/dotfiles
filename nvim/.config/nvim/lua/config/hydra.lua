@@ -84,35 +84,35 @@ Hydra {
   },
 }
 
-Hydra {
-  name = "Window",
-  config = {
-    buffer = bufnr,
-    color = "pink",
-    invoke_on_body = true,
-    hint = {
-      border = "rounded",
-    },
-    on_enter = function()
-      print "hell world"
-    end,
-    on_exit = function() end,
-  },
-  mode = { "n" },
-  body = "<tab>h",
-  heads = {
-    {
-      "h",
-      function()
-        vim.cmd "wincmd h"
-      end,
-    },
-
-    {
-      "j",
-      function()
-        vim.cmd "wincmd j"
-      end,
-    },
-  },
-}
+-- Hydra {
+--   name = "Window",
+--   config = {
+--     buffer = bufnr,
+--     color = "pink",
+--     invoke_on_body = true,
+--     hint = {
+--       border = "rounded",
+--     },
+--     on_enter = function()
+--       print "hell world"
+--     end,
+--     on_exit = function() end,
+--   },
+--   mode = { "n" },
+--   body = "<tab>h",
+--   heads = {
+--     {
+--       "h",
+--       function()
+--         vim.cmd "wincmd h"
+--       end,
+--     },
+--
+--     {
+--       "j",
+--       function()
+--         vim.cmd "wincmd j"
+--       end,
+--     },
+--   },
+-- }

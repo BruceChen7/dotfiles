@@ -151,34 +151,3 @@ cmp.setup {
     end,
   },
 }
-
--- insert `(` after select function or method item
-local cmp_autopairs = require "nvim-autopairs.completion.cmp"
-cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done { map_char = { tex = "" } })
-
--- https://github.com/jose-elias-alvarez/null-ls.nvim/wiki/Avoiding-LSP-formatting-conflictsclient
--- format_group = vim.api.nvim_create_augroup("FormatGroup", { clear = true })
--- format_file_type = { "go", "zig", "md", "rs", "lua", "py" }
--- for _, v in ipairs(format_file_type) do
---   vim.api.nvim_create_autocmd({ "BufWritePre" }, {
---     pattern = string.format("*.%s", v),
---     group = format_group,
---     callback = function()
---       vim.lsp.buf.format()
---     end,
---   })
--- end
---
--- vim.api.nvim_create_augroup("LspAttach_inlayhints", {})
--- vim.api.nvim_create_autocmd("LspAttach", {
---   group = "LspAttach_inlayhints",
---   callback = function(args)
---     if not (args.data and args.data.client_id) then
---       return
---     end
---
---     local bufnr = args.buf
---     local client = vim.lsp.get_client_by_id(args.data.client_id)
---     require("lsp-inlayhints").on_attach(client, bufnr)
---   end,
--- })
