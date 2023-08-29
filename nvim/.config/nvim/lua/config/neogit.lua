@@ -67,7 +67,7 @@ neogit.setup {
     -- modify status buffer mappings
     status = {
       -- Adds a mapping with "B" as key that does the "BranchPopup" command
-      ["B"] = "BranchPopup",
+      -- ["B"] = "BranchPopup",
       ["="] = "Toggle",
       -- use tab h to switch buffers
       ["<tab>"] = "",

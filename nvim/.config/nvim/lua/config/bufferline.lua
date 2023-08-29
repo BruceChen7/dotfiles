@@ -34,7 +34,7 @@ bufferline.setup {
     truncate_names = true, -- whether or not tab names should be truncated
     tab_size = 18,
     diagnostics = "nvim_lsp",
-    diagnostics_update_in_insert = false,
+    diagnostics_update_in_insert = true,
     -- The diagnostics indicator can be set to nil to keep the buffer name highlight but delete the highlighting
     diagnostics_indicator = function(count, level, diagnostics_dict, context)
       return "(" .. count .. ")"
@@ -42,11 +42,15 @@ bufferline.setup {
     -- NOTE: this will be called a lot so don't do any heavy processing here
     custom_filter = function(buf_number, buf_numbers)
       -- filter out filetypes you don't want to see
-      if vim.bo[buf_number].filetype ~= "fern" then
+      if vim.bo[buf_number].filetype == "fern" then
+        return true
+      end
+
+      if vim.bo.filetype == "qf" then
         return true
       end
       -- filter out by buffer name
-      if vim.fn.bufname(buf_number) ~= "<buffer-name-I-dont-want>" then
+      if vim.fn.bufname(buf_number) ~= "" then
         return true
       end
       -- filter out based on arbitrary rules
