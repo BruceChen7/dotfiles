@@ -304,7 +304,7 @@ require("lazy").setup {
     config = function()
       require "config/hlslen"
     end,
-    event = "InsertEnter",
+    event = "VeryLazy",
   },
 
   {
@@ -347,7 +347,7 @@ require("lazy").setup {
 
   {
     "akinsho/bufferline.nvim",
-    dependencies = "nvim-tree/nvim-web-devicons" ,
+    dependencies = "nvim-tree/nvim-web-devicons",
     config = function()
       require "config/bufferline"
     end,
