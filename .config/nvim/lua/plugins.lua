@@ -42,14 +42,6 @@ require("lazy").setup {
   -- -- adds vscode-like pictograms to neovim built-in lsp
   { "onsails/lspkind-nvim" },
 
-  {
-    "rmagatti/goto-preview",
-    config = function()
-      require("goto-preview").setup {
-        default_mappings = true,
-      }
-    end,
-  },
 
   {
     "lambdalisue/fern.vim",
@@ -74,6 +66,9 @@ require("lazy").setup {
     config = function()
       require "config/cmp"
     end,
+    branch = "main",
+    -- https://www.reddit.com/r/neovim/comments/162q5ca/whats_your_favorite_unknown_nvimvim_plugin/
+    commit = "6c84bc75c64f778e9f1dcb798ed41c7fcb93b639",
   },
 
   --
@@ -115,25 +110,6 @@ require("lazy").setup {
       require "config/gitsigns"
     end,
     event = "VeryLazy",
-  },
-
-  -- 参数文本对象：i,/a, 包括参数或者列表元素
-  {
-    "sgur/vim-textobj-parameter",
-    dependencies = { "kana/vim-textobj-user" },
-    event = "InsertEnter",
-  },
-
-  { "tpope/vim-repeat", event = "InsertEnter" },
-
-  {
-    "kylechui/nvim-surround",
-    config = function()
-      require("nvim-surround").setup {
-        -- Configuration here, or leave empty to use defaults
-      }
-    end,
-    event = "InsertEnter",
   },
 
   -- -- 自动调整窗口
@@ -199,24 +175,6 @@ require("lazy").setup {
       term_clors = true,
     },
   },
-  -- bracket, brace auto complete
-  {
-    "windwp/nvim-autopairs",
-    config = function()
-      require("nvim-autopairs").setup {}
-    end,
-    event = "InsertEnter",
-  },
-
-  -- {
-  --   "jose-elias-alvarez/null-ls.nvim",
-  --   config = function()
-  --     require "config/null_ls"
-  --   end,
-  --   dependencies = { "nvim-lua/plenary.nvim" },
-  --   ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
-  -- },
-
   -- show signature
   {
     "ray-x/lsp_signature.nvim",
@@ -238,7 +196,7 @@ require("lazy").setup {
 
   {
     "nvim-lua/lsp_extensions.nvim",
-    ft = { "go", "c", "cpp", "rust", "zig", "lua" },
+    event = "VeryLazy",
   },
 
   {
@@ -250,15 +208,6 @@ require("lazy").setup {
     ft = { "rust" },
   },
 
-  -- used to show lsp init progress
-  -- {
-  --   "j-hui/fidget.nvim",
-  --   config = function()
-  --     require("fidget").setup {}
-  --   end,
-  --   tag = "legacy",
-  --   event = "LspAttach",
-  -- },
   {
     "linrongbin16/lsp-progress.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -266,8 +215,7 @@ require("lazy").setup {
       require("lsp-progress").setup()
     end,
   },
-  --使用 ALT+e 会在不同窗口/标签上显示 A/B/C 等编号，然后字母直接跳转
-  -- use "t9md/vim-choosewin"
+
   {
     "simrat39/rust-tools.nvim",
     ft = { "rust" },
@@ -282,21 +230,13 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
-  --
-  {
-    "RRethy/vim-illuminate",
-    config = function()
-      require "config/illuminate"
-    end,
-    event = "InsertEnter",
-  },
 
   {
     "karb94/neoscroll.nvim",
     config = function()
       require "config/neoscroll"
     end,
-    event = "InsertEnter",
+    event = "VeryLazy",
   },
 
   {
@@ -431,7 +371,7 @@ require("lazy").setup {
       vim.keymap.set("n", ",c", require("osc52").copy_operator, { expr = true })
       vim.keymap.set("x", ",c", require("osc52").copy_visual)
     end,
-    event = "InsertEnter",
+    event = "VeryLazy",
   },
 
   {
@@ -440,7 +380,7 @@ require("lazy").setup {
     config = function()
       require "config/telescope"
     end,
-    keys = { { ",tg", mode = "n" }, { ",ts", mode = "n" } },
+    event = "VeryLazy",
   },
 
   -- https://github.com/Innei/nvim-config-lua/blob/2b311daa7841af52226fc9b75add357c03eac078/lua/plugins/motion.lua#L10
@@ -500,7 +440,7 @@ require("lazy").setup {
       "hrsh7th/nvim-cmp", -- Autocompletion plugin
       "nvim-treesitter/nvim-treesitter",
     },
-    event = "InsertEnter",
+    event = "VeryLazy",
   },
 
   {
@@ -572,29 +512,6 @@ require("lazy").setup {
       "nvim-lua/plenary.nvim",
     },
     event = { "VeryLazy" },
-  },
-
-  {
-    "tzachar/cmp-tabnine",
-    build = "./install.sh",
-    dependencies = "hrsh7th/nvim-cmp",
-    event = "InsertEnter",
-    config = function()
-      local tabnine = require "cmp_tabnine.config"
-      tabnine:setup {
-        max_lines = 100,
-        max_num_results = 5,
-        sort = true,
-        run_on_every_keystroke = true,
-        snippet_placeholder = "..",
-        ignored_file_types = {
-          -- default is not to ignore
-          -- uncomment to ignore in lua:
-          -- lua = true
-        },
-        show_prediction_strength = false,
-      }
-    end,
   },
 
   {
@@ -690,6 +607,32 @@ require("lazy").setup {
         require("trouble").open "lsp_references"
       end)
     end,
+  },
+
+  {
+    "sourcegraph/sg.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    keys = {
+      {
+        ",as",
+        function()
+          require("sg.extensions.telescope").fuzzy_search_results()
+        end,
+        desc = "󰓁 SourceGraph Search",
+      },
+      { ",al", "<cmd>SourcegraphLink<CR>", desc = "󰓁 Copy SourceGraph URL" },
+      { ",aa", "<cmd>CodyAsk<CR>", desc = "󰓁 CodyAsk" },
+      { ",ad", "<cmd>CodyDo<CR>", desc = "󰓁 CodyDo" },
+    },
+  },
+
+  {
+    "echasnovski/mini.nvim",
+    version = false,
+    config = function()
+      require "config/mini"
+    end,
+    event = "VeryLazy",
   },
 
 
