@@ -1,6 +1,10 @@
 local neogit = require "neogit"
 local lspconfig_util = require "lspconfig.util"
 local find_root = lspconfig_util.root_pattern ".git"
+local neogit_config = require "neogit.config"
+local status = neogit_config.values.mappings.status
+status["<tab>"] = nil
+status["="] = "Toggle"
 
 function open_neogit()
   local cwd = find_root(vim.fn.expand "%:p")
@@ -35,11 +39,7 @@ neogit.setup {
     diffview = true,
   },
   mappings = {
-    -- status = default_mapping_values.mappings.status
-    status = {
-      ["<tab>"] = nil,
-      ["="] = "Toggle",
-    },
-  },
+    status = status,
+  }
 }
 
