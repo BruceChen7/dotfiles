@@ -26,10 +26,6 @@ u.map("x", "$", "g_", default_options)
 -- paste over currently selected text without yanking it
 -- u.map("v", "p", '"_dP', default_options)
 
--- buffer switch
--- u.map("n", "<tab>n", ":bNext<CR>", default_options)
--- u.map("n", "<tab>p", ":bprevious<CR>", default_options)
-
 -- Cancel search highlighting with ESC
 u.map("n", "<ESC>", ":nohlsearch<Bar>:echo<CR>", default_options)
 
@@ -134,7 +130,14 @@ vim.keymap.set("n", "<space>cu", function()
   local curbufnr = vim.api.nvim_get_current_buf()
   local buflist = vim.api.nvim_list_bufs()
   for _, bufnr in ipairs(buflist) do
-    if vim.bo[bufnr].buflisted and bufnr ~= curbufnr and (vim.fn.getbufvar(bufnr, "bufpersist") ~= 1) then
+    -- get buffer type of each buffer
+    local buftype = vim.bo[bufnr].buftype
+    if
+      vim.bo[bufnr].buflisted
+      and bufnr ~= curbufnr
+      and (vim.fn.getbufvar(bufnr, "bufpersist") ~= 1)
+      and buftype ~= "terminal"
+    then
       vim.cmd("bd " .. tostring(bufnr))
     end
   end

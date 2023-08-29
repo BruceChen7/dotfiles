@@ -18,7 +18,8 @@ local function contains(table_name, value)
   end
 end
 
-vim.api.nvim_create_autocmd({ 'InsertEnter' }, {
+local versionThan9 = vim.version().minor > 9
+vim.api.nvim_create_autocmd({ "InsertEnter" }, {
   callback = function()
     -- if filetype is go or rust or lua
     -- pyright is not support textDocument/inlayHint
@@ -31,13 +32,16 @@ vim.api.nvim_create_autocmd({ 'InsertEnter' }, {
       "zig",
       "typescript",
     }
-    local filetype = vim.bo.filetype
-    if contains(lang, filetype) then
-      vim.lsp.inlay_hint(0, true)
+
+    if versionThan9 then
+      local filetype = vim.bo.filetype
+      if contains(lang, filetype) then
+        vim.lsp.inlay_hint(0, true)
+      end
     end
   end,
 })
-vim.api.nvim_create_autocmd({ 'InsertLeave' }, {
+vim.api.nvim_create_autocmd({ "InsertLeave" }, {
   callback = function()
     local lang = {
       "go",
@@ -46,8 +50,10 @@ vim.api.nvim_create_autocmd({ 'InsertLeave' }, {
       "zig",
       "typescript",
     }
-    if contains(lang, vim.bo.filetype) then
-      vim.lsp.inlay_hint(0, false)
+    if versionThan9 then
+      if contains(lang, vim.bo.filetype) then
+        vim.lsp.inlay_hint(0, false)
+      end
     end
   end,
 })
@@ -64,9 +70,9 @@ require("lsp-setup").setup {
     if filetype == "go" or "rust" or "python" or "lua" or "zig" then
       format = true
     end
-    if format then
-      -- require("lsp-setup.utils").format_on_save(client)
-    end
+    -- if format then
+    --   require("lsp-setup.utils").format_on_save(client)
+    -- end
     require("lsp_signature").on_attach({}, bufnr)
   end,
   servers = {
@@ -101,6 +107,7 @@ require("lsp-setup").setup {
         },
       },
     },
+    pyright = {},
     -- pylsp = {
     --   settings = {
     --     pylsp = {
@@ -126,8 +133,6 @@ require("lsp-setup").setup {
     --       },
     --     },
     --   },
-    -- },
-    pyright = {},
     rust_analyzer = {
       settings = {
         ["rust-analyzer"] = {
@@ -185,6 +190,10 @@ require("lsp-setup").setup {
       },
     },
     gopls = {
+      cmd = {
+        "gopls",
+        -- "--debug=localhost:6060",
+      },
       settings = {
         gopls = {
           gofumpt = true,
@@ -218,3 +227,12 @@ require("lsp-setup").setup {
     },
   },
 }
+
+-- used to import go packages
+-- (https://github.com/golang/tools/blob/master/gopls/doc/vim.md#neovim-imports)
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*.go",
+  callback = function()
+    vim.lsp.buf.code_action { context = { only = { "source.organizeImports" } }, apply = true }
+  end,
+})

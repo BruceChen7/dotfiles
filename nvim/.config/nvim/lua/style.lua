@@ -17,6 +17,10 @@ o.errorformat:append "[%f:%l] -> %m,[%f:%l]:%m"
 o.relativenumber = false
 o.mouse = "n"
 
+-- expandtab选项确保缩进时使用空格而不是制表符
+-- tabstop 设置制表符等于多少个空格。
+-- shiftwidth设置每个缩进级别使用的空格数。
+-- softtabstop设置文本中制表符所代表的空格数
 vim.cmd [[
 augroup InitFileTypesGroup
 
@@ -68,7 +72,7 @@ function getColorscheme()
     -- "nordfox",
     -- "duskfox",
     -- "terafox",
-    "tokyonight",
+    -- "tokyonight",
     "tokyonight-storm",
     "tokyonight-moon",
     "tokyonight-day",
