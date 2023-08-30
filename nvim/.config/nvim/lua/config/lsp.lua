@@ -3,7 +3,22 @@ vim.diagnostic.config { float = rounded }
 vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, rounded)
 vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, rounded)
 local opts = { noremap = true, silent = true }
-vim.keymap.set("n", "gd", "<cmd>Telescope lsp_definitions<CR>", opts)
+
+function find_definition()
+  -- 如果当前的文件是c, cpp, h文件
+  if vim.bo.filetype == "c" or vim.bo.filetype == "cpp" or vim.bo.filetype == "h" then
+    -- get current cursor word
+    vim.cmd [[
+      let word = expand("<cword>")
+      execute 'Cscope find g ' . word
+    ]]
+    return
+  end
+  vim.cmd [[
+    execute 'Telescope lsp_definitions'
+  ]]
+end
+vim.keymap.set("n", "gd", "<cmd>lua find_definition()<CR>", opts)
 vim.keymap.set("n", "gi", "<cmd>Telescope lsp_implementations<CR>", opts)
 vim.keymap.set("n", "gs", "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", opts)
 vim.keymap.set("n", "gr", "<cmd>Telescope lsp_references<CR>", opts)

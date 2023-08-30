@@ -23,7 +23,7 @@ require("lazy").setup {
     config = function()
       require "config/gtags"
     end,
-    ft = { "go", "c", "cpp", "rust", "zig", "lua", "python" },
+    event = "VeryLazy",
   },
 
   { "skywind3000/vim-preview" },
@@ -41,7 +41,6 @@ require("lazy").setup {
 
   -- -- adds vscode-like pictograms to neovim built-in lsp
   { "onsails/lspkind-nvim" },
-
 
   {
     "lambdalisue/fern.vim",
@@ -200,6 +199,23 @@ require("lazy").setup {
   },
 
   {
+    "dhananjaylatkar/cscope_maps.nvim",
+    dependencies = {
+      "nvim-telescope/telescope.nvim", -- optional [for picker="telescope"]
+      "nvim-tree/nvim-web-devicons", -- optional [for devicons in telescope or fzf]
+    },
+    opts = {
+      skip_input_prompt = true,
+      cscope = {
+        exec = "gtags-cscope",
+        picker = "telescope",
+        skip_picker_for_single_result = true,
+        db_build_cmd_args = { "-bqkv" },
+      },
+    },
+  },
+
+  {
     "saecki/crates.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
@@ -229,7 +245,6 @@ require("lazy").setup {
     end,
     event = "VeryLazy",
   },
-
 
   {
     "karb94/neoscroll.nvim",
@@ -339,6 +354,11 @@ require("lazy").setup {
           definition = true,
           references = true,
           implementation = true,
+        },
+        ignore_filetype = {
+          "fern",
+          "NeogitStatus",
+          "DiffviewFiles",
         },
       }
     end,
@@ -634,7 +654,6 @@ require("lazy").setup {
     end,
     event = "VeryLazy",
   },
-
 
   {
     "junnplus/lsp-setup.nvim",

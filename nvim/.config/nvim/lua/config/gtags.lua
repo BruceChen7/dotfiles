@@ -4,6 +4,9 @@ vim.g.gutentags_cache_dir = vim.fn.expand "~/.cache/tags"
 -- 禁止 gutentags 自动链接 gtags 数据库
 vim.g.gutentags_auto_add_gtags_cscope = 0
 vim.g.gutentags_define_advanced_commands = 0
+vim.g.gutentags_file_list_command = "fd -e c -e h -e cpp -e cc"
+-- for debug
+vim.g.gutentags_trace = 0
 
 -- vim.g.gutentags_ctags_extra_args = {'--fields=+niazS', '--extras=+q', '--c++-kinds=+px', '--c-kinds=+px'}
 -- 使用 universal-ctags 的话需要下面这行，请反注释
@@ -18,6 +21,7 @@ if vim.fn.executable "ctags" then
     -- table.insert(modules, "gtags_cscope")
   end
 end
+table.insert(modules, "cscope_maps")
 vim.g.gutentags_modules = modules
 
 if vim.fn.executable "gtags" and vim.fn.executable "gtags-cscope" then
