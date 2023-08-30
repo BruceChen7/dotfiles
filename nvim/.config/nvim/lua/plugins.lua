@@ -560,9 +560,10 @@ require("lazy").setup {
 
       require("guard").setup {
         fmt_on_save = true,
+        lsp_as_default_formatter = false,
       }
     end,
-    event = "VeryLazy",
+    event = "BufReadPre",
   },
 
   {
