@@ -23,7 +23,7 @@ require("lazy").setup {
     config = function()
       require "config/gtags"
     end,
-    event = "VeryLazy",
+    -- event = "VeryLazy",
   },
 
   { "skywind3000/vim-preview" },
