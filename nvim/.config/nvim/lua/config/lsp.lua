@@ -8,10 +8,18 @@ function find_definition()
   -- 如果当前的文件是c, cpp, h文件
   if vim.bo.filetype == "c" or vim.bo.filetype == "cpp" or vim.bo.filetype == "h" then
     -- get current cursor word
+    local row, col = unpack(vim.api.nvim_win_get_cursor(0))
     vim.cmd [[
-      let word = expand("<cword>")
-      execute 'Cscope find g ' . word
+      execute 'Telescope lsp_definitions'
     ]]
+    local new_row, new_col = unpack(vim.api.nvim_win_get_cursor(0))
+    if new_row == row and new_col == col then
+      vim.cmd [[
+        let word = expand("<cword>")
+        execute 'Cscope find g ' . word
+      ]]
+      return
+    end
     return
   end
   vim.cmd [[
