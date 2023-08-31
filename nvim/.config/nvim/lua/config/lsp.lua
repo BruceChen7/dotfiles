@@ -18,6 +18,13 @@ function find_definition()
         let word = expand("<cword>")
         execute 'Cscope find g ' . word
       ]]
+      next_row, next_col = unpack(vim.api.nvim_win_get_cursor(0))
+      if next_row == row and next_col == col then
+        vim.cmd [[
+          let word = expand("<cword>")
+          execute "Cstag " . word
+        ]]
+      end
       return
     end
     return
