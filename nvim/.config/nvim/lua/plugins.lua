@@ -542,7 +542,8 @@ require("lazy").setup {
         cmd = "stylua",
         args = {
           "--search-parent-directories",
-          "--",
+          "--stdin-filepath",
+          "%",
           "-",
         },
         stdin = true,

@@ -40,6 +40,5 @@ neogit.setup {
   },
   mappings = {
     status = status,
-  }
+  },
 }
-
