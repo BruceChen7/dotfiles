@@ -1,12 +1,12 @@
 require("mini.cursorword").setup { delay = 0 }
 require("mini.surround").setup {
   mappings = {
-    add = "<Space>sa",
-    delete = "<Space>sd",
-    find = "<Space>sf",
-    replace = "<Space>sr",
-    highlight = "<Space>sh",
-    update_n_lines = "<Space>su",
+    add = ",sa",
+    delete = ",sd",
+    find = ",sf",
+    replace = ",sr",
+    highlight = ",sh",
+    update_n_lines = ",su",
   },
 }
 require("mini.trailspace").setup {}
