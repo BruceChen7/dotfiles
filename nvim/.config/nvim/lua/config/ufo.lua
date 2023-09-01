@@ -1,11 +1,3 @@
-local ftMap = {
-  vim = "indent",
-  python = { "indent" },
-  lua = "",
-  git = "",
-  yaml = "",
-  markdown = "",
-}
 local fold_handler = function(virtText, lnum, endLnum, width, truncate)
   local newVirtText = {}
   local suffix = (" 󰦸 %d "):format(endLnum - lnum)
@@ -37,14 +29,6 @@ end
 require("ufo").setup {
   provider_selector = function(bufnr, filetype)
     return { "treesitter", "indent" }
-    -- if vim.bo[bufnr].bt == "nofile" then
-    --   return ""
-    -- end
-    -- return a string type use ufo providers
-    -- return a string in a table like a string type
-    -- return empty string '' will disable any providers
-    -- return `nil` will use default value {'lsp', 'indent'}
-    -- return ftMap[filetype]
   end,
   fold_virt_text_handler = fold_handler,
   preview = {
