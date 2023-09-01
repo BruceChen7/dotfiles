@@ -42,9 +42,6 @@ u.map("n", "<m-n>", ":LeaderfBuffer<cr>")
 -- " ALT+t 全局 tags 模糊匹配
 u.map("n", "<m-t>", ":LeaderfTag<cr>")
 u.map("n", "<c-p>", ":LeaderfFile<cr>")
+u.map("n", "<space>f", "Nop")
 
--- vim.cmd [[
---     noremap <space><space> :<C-U><C-R>=printf("Leaderf! rg -e %s ", expand("<cword>"))<CR>
--- ]]
--- vim.keymap.set("n", "<space><space>", ':<c-u><c-r>=printf("leaderf! rg -e  .. vim.fn.expand("<cword>"))<cr>')
-vim.keymap.set("n", "<space><space>", [[:<C-U><C-R>=printf('Leaderf! rg -e '. expand("<cword>"))<CR>]])
+vim.keymap.set("n", "<space>fe", [[:<C-U><C-R>=printf('Leaderf! rg -e '. expand("<cword>"))<CR>]])
