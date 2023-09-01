@@ -16,6 +16,7 @@ tc.setup {
     "vim",
     "yaml",
     "go",
+    "vimdoc",
   },
   highlight = {
     enable = false,

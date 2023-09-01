@@ -275,29 +275,9 @@ require("lazy").setup {
     "ThePrimeagen/harpoon",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
-      local mark = require "harpoon.mark"
-      local ui = require "harpoon.ui"
-      local term = require "harpoon.term"
-      vim.keymap.set("n", "m1", function()
-        mark.add_file()
-      end)
-      -- next marks
-      vim.keymap.set("n", ",hn", function()
-        ui.nav_next()
-      end)
-      --prev marks
-      vim.keymap.set("n", ",hp", function()
-        ui.nav_prev()
-      end)
-
-      vim.keymap.set("n", ",hf", function()
-        ui.toggle_quick_menu()
-      end)
-
-      vim.keymap.set("n", "m2", function()
-        term.gotoTerminal(1)
-      end)
+      require "config/harpoon"
     end,
+    event = "VeryLazy",
   },
 
   {
