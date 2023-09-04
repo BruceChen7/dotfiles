@@ -207,7 +207,7 @@ require("lazy").setup {
     opts = {
       skip_input_prompt = true,
       cscope = {
-        -- exec = "gtags-cscope",
+        exec = "gtags-cscope",
         picker = "telescope",
         skip_picker_for_single_result = true,
         db_build_cmd_args = { "-bqkv" },
