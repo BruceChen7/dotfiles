@@ -208,6 +208,9 @@ require("lazy").setup {
       skip_input_prompt = true,
       cscope = {
         exec = "gtags-cscope",
+        -- build db file in current dir
+        -- how to set db_file in ~/.cache/tags/
+        -- db_file = "~/.cache/tags/",
         picker = "telescope",
         skip_picker_for_single_result = true,
         db_build_cmd_args = { "-bqkv" },
