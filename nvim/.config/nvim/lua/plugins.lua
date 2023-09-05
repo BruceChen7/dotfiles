@@ -539,6 +539,7 @@ require("lazy").setup {
         async_switch_im = true,
       }
     end,
+    event = "InsertEnter",
   },
 
   {
