@@ -57,6 +57,12 @@ vim.keymap.set("n", "m3", function()
   require("harpoon.term").gotoTerminal(1)
 end)
 
+vim.keymap.set("n", "m4", function()
+  term.sendCommand(1, "yazi")
+  require("harpoon.term").gotoTerminal(1)
+  vim.api.nvim_feedkeys("i", "n", false)
+end)
+
 require("harpoon").setup {
   global_settings = {
     enter_on_sendcmd = true,
