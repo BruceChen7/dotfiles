@@ -500,6 +500,48 @@ require("lazy").setup {
   },
 
   {
+    "keaising/im-select.nvim",
+    config = function()
+      local is_linux = function()
+        return vim.fn.has "unix" == 1
+      end
+      local get_im_select = function()
+        if is_linux() then
+          return "keyboard-us"
+        else
+          return "com.apple.keyboard.ABC"
+        end
+      end
+
+      local get_default_command = function()
+        if is_linux() then
+          return "fcitx5-remote"
+        else
+          return "im-select"
+        end
+      end
+
+      require("im_select").setup {
+        default_im_select = get_im_select(),
+        default_command = get_default_command(),
+        set_default_events = { "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" },
+
+        -- Restore the previous used input method state when the following events
+        -- are triggered, if you don't want to restore previous used im in Insert mode,
+        -- e.g. deprecated `disable_auto_restore = 1`, just let it empty
+        -- as `set_previous_events = {}`
+        set_previous_events = { "InsertEnter" },
+
+        -- Show notification about how to install executable binary when binary missed
+        keep_quiet_on_no_binary = false,
+
+        -- Async run `default_command` to switch IM or not
+        async_switch_im = true,
+      }
+    end,
+  },
+
+  {
     "rmagatti/session-lens",
     dependencies = { "nvim-telescope/telescope.nvim", "rmagatti/auto-session" },
     config = function()
