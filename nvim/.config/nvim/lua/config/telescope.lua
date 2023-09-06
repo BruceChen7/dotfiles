@@ -237,10 +237,15 @@ telescope.load_extension "neoclip"
 telescope.load_extension "session-lens"
 telescope.load_extension "zoxide"
 telescope.load_extension "harpoon"
-vim.keymap.set("n", ",tg", ":Telescope live_grep<CR>")
-vim.keymap.set("n", ",tr", ":Telescope resume<CR>")
-vim.keymap.set("n", ",ts", ":Telescope session-lens search_session <CR>")
-vim.keymap.set("n", ",tf", "<cmd>Telescope find_files<cr>", opts)
-vim.keymap.set("n", ",tz", "<cmd>Telescope zoxide list<cr>", opts)
-vim.keymap.set("n", ",tn", "<cmd>Telescope neoclip<cr>", opts)
-vim.keymap.set("n", ",th", "<cmd>Telescope harpoon marks<cr>", opts)
+vim.keymap.set("n", ",tg", ":Telescope live_grep<CR>", { desc = "Telescope live_grep" })
+vim.keymap.set("n", ",tr", ":Telescope resume<CR>", { desc = "Telescope resume" })
+vim.keymap.set(
+  "n",
+  ",ts",
+  ":Telescope session-lens search_session <CR>",
+  { desc = "Telescope session-lens search_session" }
+)
+vim.keymap.set("n", ",tf", "<cmd>Telescope find_files<cr>", { desc = "Telescope find_files" })
+vim.keymap.set("n", ",tz", "<cmd>Telescope zoxide list<cr>")
+vim.keymap.set("n", ",tn", "<cmd>Telescope neoclip<cr>", { desc = "Telescope neoclip" })
+vim.keymap.set("n", ",th", "<cmd>Telescope harpoon marks<cr>", { desc = "Telescope harpoon marks" })

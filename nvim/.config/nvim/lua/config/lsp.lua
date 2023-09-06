@@ -33,12 +33,27 @@ function find_definition()
     execute 'Telescope lsp_definitions'
   ]]
 end
-vim.keymap.set("n", "gd", "<cmd>lua find_definition()<CR>", opts)
-vim.keymap.set("n", "gi", "<cmd>Telescope lsp_implementations<CR>", opts)
-vim.keymap.set("n", "gs", "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", opts)
-vim.keymap.set("n", "gr", "<cmd>Telescope lsp_references<CR>", opts)
-vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-vim.keymap.set("n", ",gr", "<cmd>lua vim.lsp.buf.rename()<CR>")
+vim.keymap.set("n", "gd", "<cmd>lua find_definition()<CR>", { noremap = true, silent = true, desc = "Find Definition" })
+vim.keymap.set(
+  "n",
+  "gi",
+  "<cmd>Telescope lsp_implementations<CR>",
+  { noremap = true, silent = true, desc = "Find Implementation" }
+)
+vim.keymap.set(
+  "n",
+  "gs",
+  "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>",
+  { noremap = true, silent = true, desc = "Find Symbols" }
+)
+vim.keymap.set(
+  "n",
+  "gr",
+  "<cmd>Telescope lsp_references<CR>",
+  { noremap = true, silent = true, desc = "Find References" }
+)
+vim.keymap.set("n", "K", vim.lsp.buf.hover, { noremap = true, silent = true, desc = "Hover" })
+vim.keymap.set("n", ",gr", "<cmd>lua vim.lsp.buf.rename()<CR>", { noremap = true, silent = true, desc = "Rename" })
 
 local function contains(table_name, value)
   for _, v in pairs(table_name) do

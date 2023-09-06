@@ -503,7 +503,7 @@ require("lazy").setup {
     "keaising/im-select.nvim",
     config = function()
       local is_linux = function()
-        return vim.fn.has "unix" == 1
+        return vim.fn.has "macunix" ~= 1
       end
       local get_im_select = function()
         if is_linux() then

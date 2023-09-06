@@ -27,3 +27,31 @@ require("mini.ai").setup {
     end,
   },
 }
+
+local miniclue = require "mini.clue"
+miniclue.setup {
+  window = {
+    delay = 100,
+    -- config = {
+    --   border = "dobule",
+    -- },
+  },
+  triggers = {
+    { mode = "n", keys = "<space>" },
+    { mode = "x", keys = "<space>" },
+    { mode = "n", keys = ";" },
+    { mode = "x", keys = ";" },
+    { mode = "n", keys = "," },
+    { mode = "x", keys = "," },
+    { mode = "n", keys = ",d", desc = "+Git Diff" },
+    { mode = "n", keys = "g" },
+  },
+  clues = {
+    {
+      mode = "n",
+      keys = ",dh",
+      postkeys = ",d",
+      desc = "+Git Diff",
+    },
+  },
+}
