@@ -119,8 +119,6 @@ map("n", "<tab>p", ":BufferLineCyclePrev<CR>", { silent = true })
 function quitWindow()
   local buf_total_num = vim.fn.len(vim.fn.getbufinfo { buflisted = 1 })
   local buf_name = vim.fn.bufname()
-  local buf_id = vim.fn.bufnr()
-  -- print(vim.inspect(vim.api.nvim_win_get_config(0)))
   if vim.o.filetype == "neo-tree" then
     vim.api.nvim_command "NeoTreeClose"
     return
@@ -141,4 +139,4 @@ function quitWindow()
   end
 end
 
-vim.keymap.set("n", "Q", ":lua quitWindow()<CR>")
+vim.keymap.set("n", "X", ":lua quitWindow()<CR>")

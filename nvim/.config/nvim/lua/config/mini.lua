@@ -31,7 +31,7 @@ require("mini.ai").setup {
 local miniclue = require "mini.clue"
 miniclue.setup {
   window = {
-    delay = 100,
+    delay = 500,
     -- config = {
     --   border = "dobule",
     -- },
@@ -45,6 +45,7 @@ miniclue.setup {
     { mode = "x", keys = "," },
     { mode = "n", keys = ",d", desc = "+Git Diff" },
     { mode = "n", keys = "g" },
+    { mode = "n", keys = "<tab>" },
   },
   clues = {
     {

@@ -1,22 +1,21 @@
 local u = require "util"
 -- https://github.com/Allaman/nvim/blob/main/lua/mappings.lua
 local default_options = { noremap = true, silent = true }
-local expr_options = { noremap = true, expr = true, silent = true }
 
 -- 窗口快捷键映射
-u.map("n", "<tab>h", "<c-w>h")
-u.map("n", "<tab>l", "<c-w>l")
-u.map("n", "<tab>j", "<c-w>j")
-u.map("n", "<tab>k", "<c-w>k")
-u.map("n", "<tab>0", "<c-w>L")
-u.map("n", "<space><space>", "<c-^>")
+u.map("n", "<tab>h", "<c-w>h", { desc = "Window left" })
+u.map("n", "<tab>l", "<c-w>l", { desc = "Window right" })
+u.map("n", "<tab>j", "<c-w>j", { desc = "Window down" })
+u.map("n", "<tab>k", "<c-w>k", { desc = "Window up" })
+-- u.map("n", "<tab>0", "<c-w>L")
+u.map("n", "<space><space>", "<c-^>", { desc = "Last buffer" })
 
 -- 编辑模式
 u.map("i", "<c-a>", "<home>")
 u.map("i", "<c-e>", "<end>")
 u.map("i", "<c-d>", "<del>")
 u.map("i", "<c-_>", "<c-k>")
-u.map("n", "<space>p", 'viw"0p')
+u.map("n", "<space>p", 'viw"0p', { desc = "Paste and Store Register 0" })
 u.map("n", "<space>y", "yiw")
 
 u.map("v", "<", "<gv", default_options)
