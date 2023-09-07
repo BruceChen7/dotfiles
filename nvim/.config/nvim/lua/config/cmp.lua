@@ -64,7 +64,8 @@ cmp.setup {
   },
   sources = {
     { name = "nvim_lsp", priority = 1000 },
-    { name = "luasnip", priority = 900 },
+    { name = "luasnip", priority = 700 },
+    { name = "copilot", priority = 600 },
     { name = "path" },
     { name = "nvim_lua" }, -- with vim.api complete
     {
@@ -78,7 +79,7 @@ cmp.setup {
     },
     { name = "codeium", priority = 800 },
     { name = "crates" },
-    { name = "cmp_tabnine", priority = 700 },
+    -- { name = "cmp_tabnine", priority = 700 },
   },
   matching = {
     disallow_fuzzy_matching = true,
@@ -90,6 +91,7 @@ cmp.setup {
   sorting = {
     comparators = {
       cmp.config.compare.locality,
+      require("copilot_cmp.comparators").prioritize,
       cmp.config.compare.offset,
       cmp.config.compare.exact,
       cmp.config.compare.recently_used,
@@ -132,6 +134,7 @@ cmp.setup {
         TypeParameter = " ",
         Codeium = "",
         TabNine = " ",
+        Copilot = "",
       }
       local meta_type = vim_item.kind
       -- load lspkind icons
@@ -144,6 +147,7 @@ cmp.setup {
         luasnip = " LuaSnip",
         tags = " Tags",
         codeium = " Codeium",
+        copilot = " Copilot",
         -- rg = "Rg",
       })[entry.source.name]
 
@@ -151,3 +155,5 @@ cmp.setup {
     end,
   },
 }
+
+vim.api.nvim_set_hl(0, "CmpItemKindCopilot", { fg = "#6CC644" })

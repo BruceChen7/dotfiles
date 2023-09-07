@@ -693,6 +693,29 @@ require("lazy").setup {
   },
 
   {
+    "zbirenbaum/copilot.lua",
+    event = "InsertEnter",
+    config = function()
+      require("copilot").setup {
+        panel = {
+          enabled = false,
+        },
+        suggestions = {
+          enabled = true,
+        },
+      }
+    end,
+  },
+
+  {
+    "zbirenbaum/copilot-cmp",
+    dependencies = { "zbirenbaum/copilot.lua" },
+    config = function()
+      require("copilot_cmp").setup()
+    end,
+  },
+
+  {
     "junnplus/lsp-setup.nvim",
     dependencies = {
       "neovim/nvim-lspconfig",
