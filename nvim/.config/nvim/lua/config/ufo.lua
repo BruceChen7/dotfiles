@@ -50,11 +50,11 @@ vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decr
 vim.o.foldlevelstart = -1
 vim.o.foldenable = true
 
-vim.keymap.set("n", "zR", require("ufo").openAllFolds)
-vim.keymap.set("n", "zM", require("ufo").closeAllFolds)
-vim.keymap.set("n", "U", function()
+vim.keymap.set("n", "zR", require("ufo").openAllFolds, { desc = "Open All Folds" })
+vim.keymap.set("n", "zM", require("ufo").closeAllFolds, { desc = "Close All Folds" })
+vim.keymap.set("n", "zU", function()
   local winid = require("ufo").peekFoldedLinesUnderCursor()
   if not winid then
     vim.lsp.buf.hover()
   end
-end)
+end, { desc = "Peek Folded Lines" })

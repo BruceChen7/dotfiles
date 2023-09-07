@@ -46,6 +46,7 @@ miniclue.setup {
     { mode = "n", keys = ",d", desc = "+Git Diff" },
     { mode = "n", keys = "g" },
     { mode = "n", keys = "<tab>" },
+    { mode = "n", keys = "z" },
   },
   clues = {
     {
