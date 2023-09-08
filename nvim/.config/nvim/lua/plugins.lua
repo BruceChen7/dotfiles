@@ -561,6 +561,10 @@ require("lazy").setup {
         end
       end
 
+      if is_ubuntu() then
+        return
+      end
+
       require("im_select").setup {
         default_im_select = get_im_select(),
         default_command = get_default_command(),
