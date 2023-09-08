@@ -385,6 +385,9 @@ require("lazy").setup {
   {
     "Exafunction/codeium.vim",
     config = function()
+      if is_ubuntu() then
+        return
+      end
       require "config/codeium"
     end,
     event = "InsertEnter",
@@ -397,6 +400,9 @@ require("lazy").setup {
       "hrsh7th/nvim-cmp",
     },
     config = function()
+      if is_ubuntu() then
+        return
+      end
       require("codeium").setup {}
     end,
     event = "InsertEnter",
