@@ -28,32 +28,33 @@ require("mini.ai").setup {
   },
 }
 
-local miniclue = require "mini.clue"
-miniclue.setup {
-  window = {
-    delay = 500,
-    -- config = {
-    --   border = "dobule",
-    -- },
-  },
-  triggers = {
-    { mode = "n", keys = "<space>" },
-    { mode = "x", keys = "<space>" },
-    { mode = "n", keys = ";" },
-    { mode = "x", keys = ";" },
-    { mode = "n", keys = "," },
-    { mode = "x", keys = "," },
-    { mode = "n", keys = ",d", desc = "+Git Diff" },
-    { mode = "n", keys = "g" },
-    { mode = "n", keys = "<tab>" },
-    { mode = "n", keys = "z" },
-  },
-  clues = {
-    {
-      mode = "n",
-      keys = ",dh",
-      postkeys = ",d",
-      desc = "+Git Diff",
-    },
-  },
-}
+-- needs to design a new way to do this
+-- local miniclue = require "mini.clue"
+-- miniclue.setup {
+--   window = {
+--     delay = 500,
+--     -- config = {
+--     --   border = "dobule",
+--     -- },
+--   },
+--   triggers = {
+--     { mode = "n", keys = "<space>" },
+--     { mode = "x", keys = "<space>" },
+--     { mode = "n", keys = ";" },
+--     { mode = "x", keys = ";" },
+--     { mode = "n", keys = "," },
+--     { mode = "x", keys = "," },
+--     { mode = "n", keys = ",d", desc = "+Git Diff" },
+--     { mode = "n", keys = "g" },
+--     { mode = "n", keys = "<tab>" },
+--     { mode = "n", keys = "z" },
+--   },
+--   clues = {
+--     {
+--       mode = "n",
+--       keys = ",dh",
+--       postkeys = ",d",
+--       desc = "+Git Diff",
+--     },
+--   },
+-- }

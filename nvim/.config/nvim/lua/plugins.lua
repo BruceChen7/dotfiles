@@ -17,19 +17,6 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 local is_ubuntu = function()
-  is_linux = vim.loop.os_uname().sysname:find "Ubuntu"
-  local handle = io.popen "lsb_release -a"
-  if not handle then
-    return false
-  end
-
-  local result = handle:read "*a"
-  handle:close()
-
-  -- if not ubuntu, setup copilot-cmp
-  if string.match(result, "Ubuntu") then
-    return is_linux
-  end
   return false
 end
 
