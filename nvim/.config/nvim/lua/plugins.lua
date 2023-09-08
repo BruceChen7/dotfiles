@@ -16,8 +16,8 @@ vim.opt.runtimepath:prepend(lazypath)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
-local is_ubuntu = function()
-  return false
+local use_ai = function()
+  return vim.env.USE_COPILOT == 1
 end
 
 require("lazy").setup {
@@ -44,7 +44,7 @@ require("lazy").setup {
     config = function()
       require "config/gtags"
     end,
-    -- event = "VeryLazy",
+    event = "VeryLazy",
   },
 
   { "skywind3000/vim-preview" },
@@ -372,7 +372,7 @@ require("lazy").setup {
   {
     "Exafunction/codeium.vim",
     config = function()
-      if is_ubuntu() then
+      if use_ai() then
         return
       end
       require "config/codeium"
@@ -387,7 +387,8 @@ require("lazy").setup {
       "hrsh7th/nvim-cmp",
     },
     config = function()
-      if is_ubuntu() then
+      if use_ai() then
+        print "Codeium is not supported in ai mode"
         return
       end
       require("codeium").setup {}
@@ -548,7 +549,7 @@ require("lazy").setup {
         end
       end
 
-      if is_ubuntu() then
+      if use_ai() then
         return
       end
 
@@ -727,7 +728,7 @@ require("lazy").setup {
     "zbirenbaum/copilot.lua",
     event = "InsertEnter",
     config = function()
-      if is_ubuntu() then
+      if use_ai() then
         return
       end
       require("copilot").setup {
@@ -745,7 +746,7 @@ require("lazy").setup {
     "zbirenbaum/copilot-cmp",
     dependencies = { "zbirenbaum/copilot.lua" },
     config = function()
-      if is_ubuntu() then
+      if use_ai() then
         return
       end
       require("copilot_cmp").setup()
