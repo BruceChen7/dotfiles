@@ -17,7 +17,8 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 local use_ai = function()
-  return vim.env.USE_COPILOT == 1
+  -- print(vim.env.USE_COPILOT)
+  return vim.env.USE_COPILOT == "1"
 end
 
 require("lazy").setup {
@@ -372,7 +373,7 @@ require("lazy").setup {
   {
     "Exafunction/codeium.vim",
     config = function()
-      if use_ai() then
+      if not use_ai() then
         return
       end
       require "config/codeium"
@@ -387,8 +388,7 @@ require("lazy").setup {
       "hrsh7th/nvim-cmp",
     },
     config = function()
-      if use_ai() then
-        print "Codeium is not supported in ai mode"
+      if not use_ai() then
         return
       end
       require("codeium").setup {}
@@ -549,7 +549,7 @@ require("lazy").setup {
         end
       end
 
-      if use_ai() then
+      if not use_ai() then
         return
       end
 
@@ -728,7 +728,7 @@ require("lazy").setup {
     "zbirenbaum/copilot.lua",
     event = "InsertEnter",
     config = function()
-      if use_ai() then
+      if not use_ai() then
         return
       end
       require("copilot").setup {
@@ -746,7 +746,7 @@ require("lazy").setup {
     "zbirenbaum/copilot-cmp",
     dependencies = { "zbirenbaum/copilot.lua" },
     config = function()
-      if use_ai() then
+      if not use_ai() then
         return
       end
       require("copilot_cmp").setup()
