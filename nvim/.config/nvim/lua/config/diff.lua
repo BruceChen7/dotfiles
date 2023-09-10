@@ -108,5 +108,5 @@ diffview.setup {
   },
 }
 -- open file change list
-vim.keymap.set("n", ",df", ":DiffviewOpen<CR>")
-vim.keymap.set("n", ",dh", ":DiffviewFileHistory<CR>")
+vim.keymap.set("n", ",df", ":DiffviewOpen<CR>", { desc = "open diff view" })
+vim.keymap.set("n", ",dh", ":DiffviewFileHistory<CR>", { desc = "file history " })

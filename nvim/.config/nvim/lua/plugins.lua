@@ -622,7 +622,7 @@ require("lazy").setup {
         lsp_as_default_formatter = false,
       }
     end,
-    event = "BufReadPre",
+    -- event = "VeryLazy",
   },
 
   {
@@ -735,8 +735,8 @@ require("lazy").setup {
         panel = {
           enabled = false,
         },
-        suggestions = {
-          enabled = true,
+        suggestion = {
+          enabled = false,
         },
       }
     end,
