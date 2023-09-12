@@ -123,6 +123,10 @@ function quitWindow()
     vim.api.nvim_command "NeoTreeClose"
     return
   end
+  if vim.bo.filetype == "lazy" then
+    vim.api.nvim_command "quit"
+    return
+  end
   if vim.o.filetype == "vim" then
     vim.api.nvim_command "close"
   end

@@ -724,6 +724,8 @@ require("lazy").setup {
     priority = 1001,
   },
 
+  -- not working yet
+  -- becuse of no valid access token
   {
     "zbirenbaum/copilot.lua",
     event = "InsertEnter",
