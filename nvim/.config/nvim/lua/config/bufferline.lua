@@ -143,4 +143,4 @@ function quitWindow()
   end
 end
 
-vim.keymap.set("n", "X", ":lua quitWindow()<CR>")
+vim.keymap.set("n", "Q", ":lua quitWindow()<CR>")
