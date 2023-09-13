@@ -22,6 +22,7 @@ local use_ai = function()
 end
 
 require("lazy").setup {
+  concurrency = 2,
   performance = {
     rtp = {
       disabled_plugins = {
@@ -604,12 +605,14 @@ require("lazy").setup {
     "nvimdev/guard.nvim",
     config = function()
       local ft = require "guard.filetype"
+      -- local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p")
+      -- print(path)
       ft("lua"):fmt {
         cmd = "stylua",
         args = {
-          "--search-parent-directories",
-          "--stdin-filepath",
-          "%",
+          -- "--search-parent-directories",
+          -- "--stdin-filepath",
+          "--",
           "-",
         },
         stdin = true,
