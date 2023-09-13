@@ -171,4 +171,4 @@ function retab_directory()
   retab_directory_helper(current_dir)
 end
 
-vim.keymap.set("n", "<leader>rt", retab_directory)
+vim.keymap.set("n", "<leader>rt", retab_directory, { silent = true, desc = "Retab directory" })

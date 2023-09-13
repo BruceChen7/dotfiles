@@ -137,6 +137,14 @@ require("lazy").setup {
   -- replaced with window.nvim
   { "camspiers/lens.vim" },
 
+  {
+    "aznhe21/actions-preview.nvim",
+    config = function()
+      vim.keymap.set({ "v", "n" }, ",gf", require("actions-preview").code_actions, { desc = "code actions" })
+    end,
+    event = "LspAttach",
+  },
+
   -- treesitter
   {
     "nvim-treesitter/nvim-treesitter",

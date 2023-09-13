@@ -14,9 +14,9 @@ vim.keymap.set("n", ",hp", function()
   ui.nav_prev()
 end, { desc = "nav prev bookmark" })
 
-vim.keymap.set("n", ",hf", function()
+vim.keymap.set("n", ",ht", function()
   ui.toggle_quick_menu()
-end)
+end, { desc = "toggle quick menu" })
 
 vim.keymap.set("n", "m2", function()
   term.gotoTerminal(1)
@@ -107,6 +107,71 @@ vim.keymap.set("n", "m5", function()
   require("harpoon.term").gotoTerminal(1)
   vim.api.nvim_feedkeys("i", "n", false)
 end, { desc = "open git diff in terminal" })
+
+local term = require "harpoon.term"
+local saved_buffer = nil
+local last_term_idx = nil
+local function gotoTerminal(tid, save_buf)
+  saved_buffer = save_buf and vim.fn.bufnr "%" or saved_buffer
+  term.gotoTerminal(tid)
+  last_term_idx = tid
+  vim.api.nvim_command "startinsert"
+end
+
+local function isInTerminal()
+  local current_buffer_name = vim.fn.bufname "%"
+  return string.match(current_buffer_name, "^term")
+end
+
+local function toggleTerminal(open, other)
+  if saved_buffer == nil then
+    gotoTerminal(open, true)
+  else
+    if isInTerminal() then
+      if last_term_idx == other then
+        gotoTerminal(open)
+      else
+        vim.cmd("buffer " .. saved_buffer)
+      end
+    else
+      gotoTerminal(open, true)
+    end
+  end
+end
+
+-- https://www.reddit.com/r/neovim/comments/16b0n3a/whats_your_new_favorite_functions_share_em/
+vim.keymap.set({ "n", "t" }, "<C-0>", function()
+  toggleTerminal(1, 2)
+end)
+vim.keymap.set({ "n", "t" }, "<C-9>", function()
+  toggleTerminal(2, 1)
+end)
+
+-- https://github.com/theopn/theovim/blob/main/lua/core.lua#L155
+-- {{{ Terminal autocmd
+-- Switch to insert mode when terminal is open
+local term_augroup = vim.api.nvim_create_augroup("Terminal", { clear = true })
+vim.api.nvim_create_autocmd({ "TermOpen", "BufEnter" }, {
+  -- TermOpen: for when terminal is opened for the first time
+  -- BufEnter: when you navigate to an existing terminal buffer
+  group = term_augroup,
+  pattern = "term://*", --> only applicable for "BufEnter", an ignored Lua table key when evaluating TermOpen
+  callback = function()
+    vim.cmd "startinsert"
+  end,
+})
+-- Automatically close terminal unless exit code isn't 0
+vim.api.nvim_create_autocmd("TermClose", {
+  group = term_augroup,
+  callback = function()
+    if vim.v.event.status == 0 then
+      vim.api.nvim_buf_delete(0, {})
+      vim.notify_once "Previous terminal job was successful!"
+    else
+      vim.notify_once "Error code detected in the current terminal job!"
+    end
+  end,
+})
 
 require("harpoon").setup {
   global_settings = {

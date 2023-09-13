@@ -106,8 +106,18 @@ end
 
 local map = vim.api.nvim_set_keymap
 for i = 1, 9 do
-  map("n", ("\\%s"):format(i), (":lua require('bufferline').go_to_buffer(%s, true)<CR>"):format(i), { silent = true })
-  map("n", ("\\$"):format(i), (":lua require('bufferline').go_to_buffer(-1, true)<CR>"):format(i), { silent = true })
+  map(
+    "n",
+    ("\\%s"):format(i),
+    (":lua require('bufferline').go_to_buffer(%s, true)<CR>"):format(i),
+    { silent = true, desc = "Go to buffer #" .. i }
+  )
+  map(
+    "n",
+    ("\\$"):format(i),
+    (":lua require('bufferline').go_to_buffer(-1, true)<CR>"):format(i),
+    { silent = true, desc = "Go to last buffer #" .. i }
+  )
 end
 
 map("n", ",cl", ":lua close_all_buffer_except_current()<CR>", { silent = true })
@@ -116,6 +126,18 @@ map("n", ",cl", ":lua close_all_buffer_except_current()<CR>", { silent = true })
 map("n", ",ml", ":1wincmd w<CR>", { silent = true })
 map("n", "<tab>n", ":BufferLineCycleNext<CR>", { silent = true })
 map("n", "<tab>p", ":BufferLineCyclePrev<CR>", { silent = true })
+
+vim.api.nvim_create_autocmd("BufHidden", {
+  desc = "Delete [No Name] buffers",
+  callback = function(event)
+    if event.file == "" and vim.bo[event.buf].buftype == "" and not vim.bo[event.buf].modified then
+      vim.schedule(function()
+        pcall(vim.api.nvim_buf_delete, event.buf, {})
+      end)
+    end
+  end,
+})
+
 function quitWindow()
   local buf_total_num = vim.fn.len(vim.fn.getbufinfo { buflisted = 1 })
   local buf_name = vim.fn.bufname()
