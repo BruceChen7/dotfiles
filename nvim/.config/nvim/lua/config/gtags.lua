@@ -4,7 +4,7 @@ vim.g.gutentags_cache_dir = vim.fn.expand "~/.cache/tags"
 -- 禁止 gutentags 自动链接 gtags 数据库
 vim.g.gutentags_auto_add_gtags_cscope = 0
 vim.g.gutentags_define_advanced_commands = 0
-vim.g.gutentags_file_list_command = "fd -e c -e h -e cpp -e cc"
+vim.g.gutentags_file_list_command = "fd -e c -e h -e cpp -e cc -e go"
 -- for debug
 vim.g.gutentags_trace = 0
 
