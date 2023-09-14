@@ -546,7 +546,7 @@ require("lazy").setup {
         if is_linux() then
           return "keyboard-us"
         else
-          return "com.apple.keyboard.ABC"
+          return "com.apple.keylayout.ABC"
         end
       end
 
@@ -562,6 +562,7 @@ require("lazy").setup {
         return
       end
 
+      -- 用来自动切换输入法
       require("im_select").setup {
         default_im_select = get_im_select(),
         default_command = get_default_command(),
@@ -607,6 +608,8 @@ require("lazy").setup {
       local ft = require "guard.filetype"
       -- local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p")
       -- print(path)
+      -- 必须在启动vim的时候，工作目录是当前文件所在的目录
+      -- 如果是通过,ts来切换的目录，将不起作用，
       ft("lua"):fmt {
         cmd = "stylua",
         args = {
