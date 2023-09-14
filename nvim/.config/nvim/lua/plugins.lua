@@ -606,16 +606,12 @@ require("lazy").setup {
     "nvimdev/guard.nvim",
     config = function()
       local ft = require "guard.filetype"
-      -- local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p")
-      -- print(path)
-      -- 必须在启动vim的时候，工作目录是当前文件所在的目录
-      -- 如果是通过,ts来切换的目录，将不起作用，
       ft("lua"):fmt {
         cmd = "stylua",
         args = {
-          "--search-parent-directories",
-          "--stdin-filepath",
-          "%",
+          -- "--search-parent-directories",
+          -- "--stdin-filepath",
+          -- "%",
           "-",
         },
         stdin = true,
