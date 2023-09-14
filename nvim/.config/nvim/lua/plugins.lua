@@ -613,9 +613,9 @@ require("lazy").setup {
       ft("lua"):fmt {
         cmd = "stylua",
         args = {
-          -- "--search-parent-directories",
-          -- "--stdin-filepath",
-          "--",
+          "--search-parent-directories",
+          "--stdin-filepath",
+          "%",
           "-",
         },
         stdin = true,
