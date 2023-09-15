@@ -66,22 +66,9 @@ local function home()
   vim.api.nvim_win_set_cursor(0, cursor)
 end
 
-vim.keymap.set({ "i", "n" }, "<Home>", home)
-vim.keymap.set("n", "0", home)
-
--- AsyncTask
-vim.keymap.set("n", "g1", ":AsyncTask grep-cword<CR>")
 vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>")
 -- quickfix 手动打开
-u.map("n", "<space>q", ":call asyncrun#quickfix_toggle(20)<cr>")
-
-local present, pounce = pcall(require, "pounce")
-if present then
-  u.map("n", "s", ":Pounce<CR>")
-  u.map("n", "S", ":PounceRepeat<CR>")
-  u.map("v", "s", ":Pounce<CR>")
-  u.map("o", "gs", ":Pounce<CR>")
-end
+u.map("n", "<space>q", ":call asyncrun#quickfix_toggle(20)<cr>", { desc = "quickfix toggle" })
 
 function change_colorscheme()
   file = "~/.config/nvim/lua/style.lua"
@@ -90,9 +77,9 @@ function change_colorscheme()
   print(cmd .. " done")
 end
 
-vim.keymap.set("n", "g3", change_colorscheme)
-vim.keymap.set("n", ",vv", ":vsplit<CR>")
-vim.keymap.set("n", ",ss", ":split<CR>")
+vim.keymap.set("n", "g3", change_colorscheme, { desc = "show change colorscheme" })
+vim.keymap.set("n", ",vv", ":vsplit<CR>", { desc = "vsplit" })
+vim.keymap.set("n", ",ss", ":split<CR>", { desc = "split" })
 
 vim.keymap.set("n", "<leader>ll", function()
   file = vim.fn.expand "%:p"

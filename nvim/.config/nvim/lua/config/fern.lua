@@ -1,9 +1,9 @@
 -- fern.vim
 u = require "util"
-u.map("n", "ne", ":Fern .  -reveal=% <CR>")
-u.map("n", "nE", ":Fern . -opener=vsplit -reveal=% <CR>")
-u.map("n", "nc", ":Fern %:h  -reveal=% <CR>")
-u.map("n", "nC", ":Fern %:h -opener=vsplit -reveal=% <CR>")
+u.map("n", "ne", ":Fern .  -reveal=% <CR>", { desc = "show path in current buffer" })
+u.map("n", "nE", ":Fern . -opener=vsplit -reveal=% <CR>", { desc = "show path in right split buffer" })
+u.map("n", "nc", ":Fern %:h  -reveal=% <CR>", { desc = "show relative path in current buffer" })
+u.map("n", "nC", ":Fern %:h -opener=vsplit -reveal=% <CR>", { desc = "show relative path in right split buffer" })
 function init_fern()
   -- Define NERDTree like mappings
   vim.api.nvim_buf_set_keymap(0, "n", "o", "<Plug>(fern-action-open:edit)", {})
@@ -50,4 +50,3 @@ vim.cmd [[
         autocmd FileType fern lua init_fern()
     augroup END
 ]]
-
