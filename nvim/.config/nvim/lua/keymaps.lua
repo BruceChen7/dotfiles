@@ -58,6 +58,8 @@ vim.g.asyncrun_open = 10
 
 -- 任务结束时候响铃提醒
 vim.g.asyncrun_bell = 1
+-- quickfix 手动打开
+u.map("n", "<space>q", ":call asyncrun#quickfix_toggle(20)<cr>", { desc = "quickfix toggle" })
 
 local function home()
   local head = (vim.api.nvim_get_current_line():find "[^%s]" or 1) - 1
@@ -66,9 +68,8 @@ local function home()
   vim.api.nvim_win_set_cursor(0, cursor)
 end
 
-vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>")
--- quickfix 手动打开
-u.map("n", "<space>q", ":call asyncrun#quickfix_toggle(20)<cr>", { desc = "quickfix toggle" })
+vim.keymap.set("n", "0", home, { desc = "home" }, home)
+vim.keymap.set({ "n", "i" }, "<home>", home)
 
 function change_colorscheme()
   file = "~/.config/nvim/lua/style.lua"
@@ -77,6 +78,8 @@ function change_colorscheme()
   print(cmd .. " done")
 end
 
+vim.keymap.set("n", "g1", ":AsyncTask grep-cword<CR>")
+vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>")
 vim.keymap.set("n", "g3", change_colorscheme, { desc = "show change colorscheme" })
 vim.keymap.set("n", ",vv", ":vsplit<CR>", { desc = "vsplit" })
 vim.keymap.set("n", ",ss", ":split<CR>", { desc = "split" })

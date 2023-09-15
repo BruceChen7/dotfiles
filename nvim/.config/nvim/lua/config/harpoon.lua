@@ -2,13 +2,13 @@ local mark = require "harpoon.mark"
 local ui = require "harpoon.ui"
 local term = require "harpoon.term"
 
-vim.keymap.set("n", "m1", function()
+vim.keymap.set("n", ",ha", function()
   mark.add_file()
-end)
+end, { desc = "add harpoon bookmark" })
 -- next marks
 vim.keymap.set("n", ",hn", function()
   ui.nav_next()
-end)
+end, { desc = "nav next bookmark" })
 --prev marks
 vim.keymap.set("n", ",hp", function()
   ui.nav_prev()
@@ -142,10 +142,10 @@ end
 -- https://www.reddit.com/r/neovim/comments/16b0n3a/whats_your_new_favorite_functions_share_em/
 vim.keymap.set({ "n", "t" }, "<C-0>", function()
   toggleTerminal(1, 2)
-end)
+end, { desc = "open 0 toggle terminal" })
 vim.keymap.set({ "n", "t" }, "<C-9>", function()
   toggleTerminal(2, 1)
-end)
+end, { desc = "open 9 toggle terminal" })
 
 -- https://github.com/theopn/theovim/blob/main/lua/core.lua#L155
 -- {{{ Terminal autocmd
