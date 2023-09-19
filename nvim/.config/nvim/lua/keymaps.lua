@@ -131,6 +131,23 @@ vim.keymap.set("n", "<space>cu", function()
       vim.cmd("bd " .. tostring(bufnr))
     end
   end
+  function display_all_windows()
+    local windows = vim.api.nvim_list_wins()
+    for _, winid in ipairs(windows) do
+      local bufnr = vim.api.nvim_win_get_buf(winid)
+      local bufname = vim.api.nvim_buf_get_name(bufnr)
+      -- buf name 中包含 DAP
+      if bufname:find "DAP" then
+        vim.api.nvim_win_close(winid, true)
+      end
+      if bufname:find "dap" then
+        vim.api.nvim_win_close(winid, true)
+      end
+      -- local win_info = string.format("Window ID: %d, Buffer: %s\n", winid, bufname)
+      -- print(win_info)
+    end
+  end
+  display_all_windows()
 end, { silent = true, desc = "Close unused buffers" })
 
 function retab_directory()

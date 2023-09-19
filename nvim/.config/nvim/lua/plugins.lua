@@ -136,7 +136,14 @@ require("lazy").setup {
 
   -- -- 自动调整窗口
   -- replaced with window.nvim
-  { "camspiers/lens.vim" },
+  -- {
+  --   "camspiers/lens.vim",
+  --   config = function()
+  --     -- vim.g.lens.disabled_filetypes = { "dapui_stacks", "dapui_scopes" }
+  --     vim.g["lens#disabled_filetypes"] = { "dapui_stacks", "dapui_scopes", "dapui_breakpoints" }
+  --   end,
+  --   -- event = "VeryLazy",
+  -- },
 
   {
     "aznhe21/actions-preview.nvim",
@@ -736,34 +743,34 @@ require("lazy").setup {
 
   -- not working yet
   -- becuse of no valid access token
-  {
-    "zbirenbaum/copilot.lua",
-    event = "InsertEnter",
-    config = function()
-      if not use_ai() then
-        return
-      end
-      require("copilot").setup {
-        panel = {
-          enabled = false,
-        },
-        suggestion = {
-          enabled = false,
-        },
-      }
-    end,
-  },
+  -- {
+  --   "zbirenbaum/copilot.lua",
+  --   event = "InsertEnter",
+  --   config = function()
+  --     if not use_ai() then
+  --       return
+  --     end
+  --     require("copilot").setup {
+  --       panel = {
+  --         enabled = false,
+  --       },
+  --       suggestion = {
+  --         enabled = false,
+  --       },
+  --     }
+  --   end,
+  -- },
 
-  {
-    "zbirenbaum/copilot-cmp",
-    dependencies = { "zbirenbaum/copilot.lua" },
-    config = function()
-      if not use_ai() then
-        return
-      end
-      require("copilot_cmp").setup()
-    end,
-  },
+  -- {
+  --   "zbirenbaum/copilot-cmp",
+  --   dependencies = { "zbirenbaum/copilot.lua" },
+  --   config = function()
+  --     if not use_ai() then
+  --       return
+  --     end
+  --     require("copilot_cmp").setup()
+  --   end,
+  -- },
   {
     "folke/which-key.nvim",
     event = "VeryLazy",
@@ -783,6 +790,17 @@ require("lazy").setup {
       -- may set any options here
       vim.g.matchup_matchparen_offscreen = { method = "popup" }
     end,
+  },
+
+  {
+    "rcarriga/nvim-dap-ui",
+    dependencies = {
+      "mfussenegger/nvim-dap",
+    },
+    config = function()
+      require "config/dap"
+    end,
+    event = "LspAttach",
   },
 
   {
