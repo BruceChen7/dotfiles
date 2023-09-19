@@ -70,12 +70,12 @@ local function get_go_test_command()
   end
   local export_cmd = ""
   if is_mac() then
-    export_cmd = "export env=test && export cid=sg "
+    export_cmd = "export env=test && export cid=sg  && gvm use go1.14 "
   end
   if export_cmd == "" then
-    return " cd " .. dir .. " && go test -run " .. function_name
+    return " cd " .. dir .. " && go test -gcflags=all=-l -run " .. function_name
   else
-    local cmd = export_cmd .. " && cd " .. dir .. " && go test -run " .. function_name
+    local cmd = export_cmd .. " && cd " .. dir .. " && go test -gcflags=all=-l -run " .. function_name
     return cmd
   end
 end

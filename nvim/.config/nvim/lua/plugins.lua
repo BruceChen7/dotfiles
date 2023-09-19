@@ -340,7 +340,7 @@ require("lazy").setup {
         keys = {
           telescope = {
             i = {
-              -- default key is <c-k> whici is conflict with telescope.nvim
+              -- default key is <c-k> which is conflict with telescope.nvim
               -- https://github.com/AckslD/nvim-neoclip.lua
               paste_behind = "<Nop>",
             },
@@ -769,13 +769,20 @@ require("lazy").setup {
     event = "VeryLazy",
     init = function()
       vim.o.timeout = true
-      vim.o.timeoutlen = 500
+      vim.o.timeoutlen = 800
     end,
     opts = {
       -- your configuration comes here
       -- or leave it empty to use the default settings
       -- refer to the configuration section below
     },
+  },
+  {
+    "andymass/vim-matchup",
+    config = function()
+      -- may set any options here
+      vim.g.matchup_matchparen_offscreen = { method = "popup" }
+    end,
   },
 
   {

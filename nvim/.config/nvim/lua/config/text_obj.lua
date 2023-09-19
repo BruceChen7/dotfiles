@@ -47,6 +47,9 @@ tc.setup {
     -- performance killer
     enable = false,
   },
+  matchup = {
+    enable = true,
+  },
   textobjects = {
     select = {
       enable = true,
