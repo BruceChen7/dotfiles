@@ -131,7 +131,7 @@ vim.keymap.set("n", "<space>cu", function()
       vim.cmd("bd " .. tostring(bufnr))
     end
   end
-  function display_all_windows()
+  local function display_all_windows()
     local windows = vim.api.nvim_list_wins()
     for _, winid in ipairs(windows) do
       local bufnr = vim.api.nvim_win_get_buf(winid)

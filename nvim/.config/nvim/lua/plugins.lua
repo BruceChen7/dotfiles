@@ -141,6 +141,7 @@ require("lazy").setup {
   --   config = function()
   --     -- vim.g.lens.disabled_filetypes = { "dapui_stacks", "dapui_scopes" }
   --     vim.g["lens#disabled_filetypes"] = { "dapui_stacks", "dapui_scopes", "dapui_breakpoints" }
+  --     vim.g["lens#animate"] = true
   --   end,
   --   -- event = "VeryLazy",
   -- },
