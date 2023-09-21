@@ -383,7 +383,8 @@ require("lazy").setup {
         },
       }
     end,
-    event = "LspAttach",
+    event = "BufRead",
+    commit = "13d25ad8bd55aa34cc0aa3082e78a4157c401346",
   },
 
   {

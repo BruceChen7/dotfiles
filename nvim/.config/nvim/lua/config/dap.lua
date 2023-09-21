@@ -67,10 +67,23 @@ dap.listeners.before.event_exited["dapui_config"] = function()
   dapui.close()
 end
 
+-- DAP-Client ----- Debug Adapter ------- Debugger ------ Debugee
+-- (nvim-dap)  |   (per language)  |   (per language)    (your app)
+--             |                   |
+--             |        Implementation specific communication
+--             |        Debug adapter and debugger could be the same process
+--             |
+--      Communication via the Debug Adapter Protocol
+--  配置debug adapter
+-- `dap.adapters.<name>` can also be set to a function which takes three arguments:
+-- The |dap-configuration| which the user wants to use.
+-- An optional parent session. This is only available if the debug-adapter
+
 dap.adapters.go = function(callback, config)
   local stdout = vim.loop.new_pipe(false)
   local handle
   local pid_or_err
+  -- 指定端口信息
   local host = config.host or "127.0.0.1"
   local port = config.port or "38697"
   local addr = string.format("%s:%s", host, port)
@@ -92,6 +105,7 @@ dap.adapters.go = function(callback, config)
     assert(not err, err)
     if chunk then
       vim.schedule(function()
+        -- 执行repl的逻辑
         require("dap.repl").append(chunk)
       end)
     end
@@ -101,6 +115,22 @@ dap.adapters.go = function(callback, config)
     callback { type = "server", host = "127.0.0.1", port = port }
   end, 100)
 end
+
+-- type: string        -- Which debug adapter to use.
+-- request: string     -- Either `attach` or `launch`. Indicates whether the debug adapter should launch a debugee or attach to one that is already running.
+-- name: string        -- A user-readable name for the configuration.
+-- - Some variables are supported:
+-- - `${file}`: Active filename
+-- - `${fileBasename}`: The current file's basename
+-- - `${fileBasenameNoExtension}`: The current file's basename without extension
+-- - `${fileDirname}`: The current file's dirname
+-- - `${fileExtname}`: The current file's extension
+-- - `${relativeFile}`: The current file relative to |getcwd()|
+-- - `${relativeFileDirname}`: The current file's dirname relative to |getcwd()|
+-- - `${workspaceFolder}`: The current working directory of Neovim
+-- - `${workspaceFolderBasename}`: The name of the folder opened in Neovim
+-- - `${command:pickProcess}`: Open dialog to pick process using |vim.ui.select|
+-- - `${env:Name}`: Environment variable named `Name`, for example: `${env:HOME}`.
 
 dap.configurations.go = {
   {
