@@ -56,6 +56,8 @@ o.directory = "/tmp/"
 o.undodir = "/tmp/"
 o.backupext = ".bak"
 
+o.relativenumber = true
+
 --在右边vsplit
 o.splitright = true
 

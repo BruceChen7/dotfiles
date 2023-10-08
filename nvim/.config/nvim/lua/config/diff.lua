@@ -24,7 +24,7 @@ diffview.setup {
     view_opened = function(view)
       -- dump(view)
       local opts = { noremap = true, silent = true }
-      bufnr = view.panel.bufid
+      local bufnr = view.panel.bufid
       -- vim.api.nvim_buf_del_keymap(bufnr, "n", "<tab>", opts)
       local opts = { noremap = true }
       vim.api.nvim_buf_set_keymap(bufnr, "n", "<tab>l", "<c-w>l", opts)
@@ -62,8 +62,6 @@ diffview.setup {
       ["<c-f>"] = actions.scroll_view(0.25),
       -- ["<tab>"] = actions.select_next_entry,
       -- ["<s-tab>"] = actions.select_prev_entry,
-      ["<tab>"] = false,
-      ["<s-tab>"] = false,
       ["<tab>"] = nil,
       ["<s-tab>"] = nil,
       ["gf"] = actions.goto_file,
