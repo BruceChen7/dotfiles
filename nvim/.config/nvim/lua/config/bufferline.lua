@@ -124,8 +124,8 @@ map("n", ",cl", ":lua close_all_buffer_except_current()<CR>", { silent = true })
 -- move to leftmost window
 -- https://superuser.com/questions/231144/how-can-i-close-the-leftmost-window-in-vim
 map("n", ",ml", ":1wincmd w<CR>", { silent = true })
-map("n", "<tab>n", ":BufferLineCycleNext<CR>", { silent = true })
-map("n", "<tab>p", ":BufferLineCyclePrev<CR>", { silent = true })
+map("n", "\\n", ":BufferLineCycleNext<CR>", { silent = true })
+map("n", "\\p", ":BufferLineCyclePrev<CR>", { silent = true })
 
 vim.api.nvim_create_autocmd("BufHidden", {
   desc = "Delete [No Name] buffers",
