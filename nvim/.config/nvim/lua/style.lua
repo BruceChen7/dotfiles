@@ -14,7 +14,7 @@ o.showtabline = 2
 --o.errorformat = vim.opt.errorformat + '%f|%l col %c|%m'
 o.errorformat:append "[%f:%l] -> %m,[%f:%l]:%m"
 
-o.relativenumber = false
+o.relativenumber = true
 o.mouse = "n"
 
 -- expandtab选项确保缩进时使用空格而不是制表符
