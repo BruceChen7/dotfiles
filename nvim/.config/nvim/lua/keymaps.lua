@@ -18,6 +18,9 @@ u.map("i", "<c-_>", "<c-k>")
 u.map("n", "<space>p", 'viw"0p', { desc = "Paste and Store Register 0" })
 u.map("n", "<space>y", "yiw")
 
+vim.api.nvim_set_keymap("c", "<C-a>", "<home>", { noremap = true })
+vim.api.nvim_set_keymap("c", "<c-e>", "<end>", { noremap = true })
+
 u.map("v", "<", "<gv", default_options)
 u.map("v", ">", ">gv", default_options)
 -- not include last whitespace character
