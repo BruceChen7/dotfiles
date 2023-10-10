@@ -4,6 +4,7 @@ u.map("n", "ne", ":Fern .  -reveal=% <CR>", { desc = "show path in current buffe
 u.map("n", "nE", ":Fern . -opener=vsplit -reveal=% <CR>", { desc = "show path in right split buffer" })
 u.map("n", "nc", ":Fern %:h  -reveal=% <CR>", { desc = "show relative path in current buffer" })
 u.map("n", "nC", ":Fern %:h -opener=vsplit -reveal=% <CR>", { desc = "show relative path in right split buffer" })
+-- if you set <c-h> as a keymap which is used for cursor moved to left window, it conflict with fern
 vim.g["fern#disable_default_mappings"] = 1
 function init_fern()
   -- Define NERDTree like mappings
@@ -19,7 +20,7 @@ function init_fern()
   vim.api.nvim_buf_set_keymap(0, "n", "P", "gg", {})
   vim.api.nvim_buf_set_keymap(0, "n", "as", "<Plug>(fern-action-open:select)", {})
   vim.api.nvim_buf_set_keymap(0, "n", "aa", "<Plug>(fern-action-new-file)", {})
-  vim.api.nvim_buf_set_keymap(0, "n", "<CR>", "<Plug>(fern-action-enter)", {})
+  vim.api.nvim_buf_set_keymap(0, "n", "<CR>", "<Plug>(fern-action-open:edit)", {})
   vim.api.nvim_buf_set_keymap(0, "n", "u", "<Plug>(fern-action-leave)", {})
   vim.api.nvim_buf_set_keymap(0, "n", "<Backspace>", "<Plug>(fern-action-leave)", {})
   vim.api.nvim_buf_set_keymap(0, "n", "r", "<Plug>(fern-action-reload)", {})
