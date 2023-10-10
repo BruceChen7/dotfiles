@@ -173,7 +173,19 @@ vim.api.nvim_create_autocmd({ "TermOpen", "BufEnter" }, {
   group = term_augroup,
   pattern = "term://*", --> only applicable for "BufEnter", an ignored Lua table key when evaluating TermOpen
   callback = function()
+    -- 使用系统命令查看yazi进程是否存在
+    local cmd = "ps -ef | grep yazi | grep -v grep | awk '{print $2}'"
+    local yazi_pid = vim.fn.system(cmd)
+    if yazi_pid ~= "" then
+      -- kill it
+      -- vim.fn.system("kill -9 " .. yazi_pid)
+    end
+    vim.notify_once "kill yazi"
     vim.cmd "startinsert"
+    if yazi_pid ~= "" then
+      -- 输入q
+      vim.api.nvim_feedkeys("q", "n", false)
+    end
   end,
 })
 -- Automatically close terminal unless exit code isn't 0
