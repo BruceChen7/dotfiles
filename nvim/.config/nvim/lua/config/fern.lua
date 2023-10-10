@@ -4,6 +4,7 @@ u.map("n", "ne", ":Fern .  -reveal=% <CR>", { desc = "show path in current buffe
 u.map("n", "nE", ":Fern . -opener=vsplit -reveal=% <CR>", { desc = "show path in right split buffer" })
 u.map("n", "nc", ":Fern %:h  -reveal=% <CR>", { desc = "show relative path in current buffer" })
 u.map("n", "nC", ":Fern %:h -opener=vsplit -reveal=% <CR>", { desc = "show relative path in right split buffer" })
+vim.g["fern#disable_default_mappings"] = 1
 function init_fern()
   -- Define NERDTree like mappings
   vim.api.nvim_buf_set_keymap(0, "n", "o", "<Plug>(fern-action-open:edit)", {})
@@ -18,8 +19,9 @@ function init_fern()
   vim.api.nvim_buf_set_keymap(0, "n", "P", "gg", {})
   vim.api.nvim_buf_set_keymap(0, "n", "as", "<Plug>(fern-action-open:select)", {})
   vim.api.nvim_buf_set_keymap(0, "n", "aa", "<Plug>(fern-action-new-file)", {})
-  vim.api.nvim_buf_set_keymap(0, "n", "C", "<Plug>(fern-action-enter)", {})
+  vim.api.nvim_buf_set_keymap(0, "n", "<CR>", "<Plug>(fern-action-enter)", {})
   vim.api.nvim_buf_set_keymap(0, "n", "u", "<Plug>(fern-action-leave)", {})
+  vim.api.nvim_buf_set_keymap(0, "n", "<Backspace>", "<Plug>(fern-action-leave)", {})
   vim.api.nvim_buf_set_keymap(0, "n", "r", "<Plug>(fern-action-reload)", {})
   vim.api.nvim_buf_set_keymap(0, "n", "R", "gg<Plug>(fern-action-reload)<C-o>", {})
   vim.api.nvim_buf_set_keymap(0, "n", "cd", "<Plug>(fern-action-cd)", {})
@@ -29,6 +31,7 @@ function init_fern()
   vim.api.nvim_buf_set_keymap(0, "n", "Q", ":quit<CR>", {})
   -- not using this, because i what use N to search
   vim.api.nvim_buf_set_keymap(0, "n", "N", "<NOP>", {})
+  -- vim.api.nvim_buf_set_keymap(0, "n", "<c-h>", "<C-w>h")
   vim.api.nvim_buf_set_keymap(
     0,
     "n",
