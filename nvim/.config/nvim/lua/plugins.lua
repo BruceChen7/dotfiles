@@ -373,7 +373,7 @@ require("lazy").setup {
       require("lsp-lens").setup {
         enable = true,
         sections = { -- Enable / Disable specific request
-          definition = true,
+          definition = false,
           references = true,
           implementation = true,
         },
@@ -386,6 +386,14 @@ require("lazy").setup {
     end,
     event = "BufRead",
     commit = "13d25ad8bd55aa34cc0aa3082e78a4157c401346",
+  },
+
+  {
+    "jinzhongjia/LspUI.nvim",
+    config = function()
+      require("LspUI").setup {}
+    end,
+    event = "LspAttach",
   },
 
   {
@@ -516,8 +524,8 @@ require("lazy").setup {
         end
         for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
           local buf_name = vim.api.nvim_buf_get_name(buffer)
-          local buf_nr = vim.fn.bufnr(buf_name)
-          local filetype = vim.api.nvim_buf_get_option(buf_nr, "filetype")
+          -- local buf_nr = vim.fn.bufnr(buf_name)
+          -- local filetype = vim.api.nvim_buf_get_option(buf_nr, "filetype")
 
           if buf_name ~= "" then
             local buf_dir = vim.fn.fnamemodify(buf_name, ":p:h")

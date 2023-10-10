@@ -108,7 +108,7 @@ vim.keymap.set("n", "<leader>tf", function()
 end, { desc = "open git log for this file in terminal" })
 
 vim.keymap.set("n", "<leader>tg", function()
-  local root = find_root_dir(vim.fn.expand "%:p")
+  local root = find_root_dir()
   if not root then
     root = vim.fn.getcwd()
   end
