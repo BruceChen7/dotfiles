@@ -384,8 +384,9 @@ require("lazy").setup {
         },
       }
     end,
-    event = "BufRead",
     commit = "13d25ad8bd55aa34cc0aa3082e78a4157c401346",
+    -- 手动打开，否则对大量pb生成的go文件进行reference，implementation的时候，很慢
+    cmd = "LspLensOn",
   },
 
   {

@@ -248,6 +248,8 @@ require("lsp-setup").setup {
       cmd = {
         "gopls",
         -- "--debug=localhost:6060",
+        -- "-profile.cpu=/Users/ming.chen/gopls.out",
+        -- "-mode=stdi",
       },
       settings = {
         gopls = {
