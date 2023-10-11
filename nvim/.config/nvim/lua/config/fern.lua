@@ -28,6 +28,7 @@ function init_fern()
   vim.api.nvim_buf_set_keymap(0, "n", "cd", "<Plug>(fern-action-cd)", {})
   vim.api.nvim_buf_set_keymap(0, "n", "CD", "gg<Plug>(fern-action-cd)<C-o>", {})
   vim.api.nvim_buf_set_keymap(0, "n", "I", "<Plug>(fern-action-hidden)", {})
+  vim.api.nvim_buf_set_keymap(0, "n", "mr", "<Plug>(fern-action-rename)", {})
   vim.api.nvim_buf_set_keymap(0, "n", "E", "<Plug>(fern-action-expand-tree)", {})
   vim.api.nvim_buf_set_keymap(0, "n", "Q", ":quit<CR>", {})
   -- not using this, because i what use N to search

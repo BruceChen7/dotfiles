@@ -98,6 +98,7 @@ end
 vim.keymap.set("n", "m4", function()
   term.sendCommand(1, "yazi")
   require("harpoon.term").gotoTerminal(1)
+  -- 用来在Insert模式打开终端
   vim.api.nvim_feedkeys("i", "n", false)
 end, { desc = "open yazi in terminal" })
 
@@ -176,11 +177,8 @@ vim.api.nvim_create_autocmd({ "TermOpen", "BufEnter" }, {
     -- 使用系统命令查看yazi进程是否存在
     local cmd = "ps -ef | grep yazi | grep -v grep | awk '{print $2}'"
     local yazi_pid = vim.fn.system(cmd)
-    if yazi_pid ~= "" then
-      -- kill it
-      -- vim.fn.system("kill -9 " .. yazi_pid)
-    end
     vim.notify_once "kill yazi"
+    -- insert
     vim.cmd "startinsert"
     if yazi_pid ~= "" then
       -- 输入q
