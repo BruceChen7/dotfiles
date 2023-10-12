@@ -2,18 +2,19 @@ local rounded = { border = "rounded" }
 vim.diagnostic.config { float = rounded }
 vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, rounded)
 vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, rounded)
-local opts = { noremap = true, silent = true }
 
 function find_definition()
   -- 如果当前的文件是c, cpp, h文件
-  if vim.bo.filetype == "c" or vim.bo.filetype == "cpp" or vim.bo.filetype == "h" then
+  local file_type = vim.bo.filetype
+  if file_type == "c" or file_type == "cpp" or filetype == "h" then
     -- get current cursor word
     local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+    -- print("before row and new row", row, col)
     vim.cmd [[
       execute 'Telescope lsp_definitions'
     ]]
-    local new_row, new_col = unpack(vim.api.nvim_win_get_cursor(0))
-    if new_row == row and new_col == col then
+    -- wait 10 ms
+    vim.defer_fn(function()
       vim.cmd [[
         let word = expand("<cword>")
         silent execute 'Cscope find g ' . word
@@ -25,9 +26,7 @@ function find_definition()
           silent execute "Cstag " . word
         ]]
       end
-      return
-    end
-    return
+    end, 10)
   end
   vim.cmd [[
     execute 'Telescope lsp_definitions'

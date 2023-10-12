@@ -735,6 +735,14 @@ require("lazy").setup {
     priority = 1001,
   },
 
+  {
+    "Mythos-404/xmake.nvim",
+    lazy = true,
+    event = "BufReadPost xmake.lua",
+    config = true,
+    dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
+  },
+
   -- not working yet
   -- becuse of no valid access token
   -- {
@@ -770,7 +778,7 @@ require("lazy").setup {
     event = "VeryLazy",
     init = function()
       vim.o.timeout = true
-      vim.o.timeoutlen = 800
+      vim.o.timeoutlen = 500
     end,
     opts = {
       -- your configuration comes here

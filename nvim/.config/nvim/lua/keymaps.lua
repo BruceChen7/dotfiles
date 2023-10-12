@@ -76,23 +76,24 @@ end
 vim.keymap.set("n", "0", home, { desc = "home" }, home)
 vim.keymap.set({ "n", "i" }, "<home>", home)
 
-function change_colorscheme()
-  file = "~/.config/nvim/lua/style.lua"
-  cmd = ":source " .. file
+local change_color = function()
+  local file = "~/.config/nvim/lua/style.lua"
+  local cmd = ":source " .. file
   vim.cmd(cmd)
-  print(cmd .. " done")
 end
 
 vim.keymap.set("n", "g1", ":AsyncTask grep-cword<CR>")
 vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>")
-vim.keymap.set("n", "g3", change_colorscheme, { desc = "show change colorscheme" })
+vim.keymap.set("n", "g3", function()
+  change_color()
+end, { desc = "show change colorscheme" })
 vim.keymap.set("n", ",vv", ":vsplit<CR>", { desc = "vsplit" })
 vim.keymap.set("n", ",ss", ":split<CR>", { desc = "split" })
 
 vim.keymap.set("n", "<leader>ll", function()
-  file = vim.fn.expand "%:p"
+  local file = vim.fn.expand "%:p"
   if file:find(vim.fn.expand "~/.config/nvim/", 1, true) == 1 then
-    cmd = ":source " .. file
+    local cmd = ":source " .. file
     vim.cmd(cmd)
     print(cmd .. " done")
   end
