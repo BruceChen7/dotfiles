@@ -90,7 +90,7 @@ require("lazy").setup {
     end,
     branch = "main",
     -- https://www.reddit.com/r/neovim/comments/162q5ca/whats_your_favorite_unknown_nvimvim_plugin/
-    commit = "6c84bc75c64f778e9f1dcb798ed41c7fcb93b639",
+    -- commit = "6c84bc75c64f778e9f1dcb798ed41c7fcb93b639",
   },
 
   --

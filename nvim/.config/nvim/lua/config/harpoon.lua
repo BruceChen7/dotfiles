@@ -44,7 +44,14 @@ local function get_nearest_function()
   end
 end
 
-local function get_go_test_command()
+local function get_test_command()
+  -- 获取当前buffer的文件类型
+  local filetype = vim.bo.filetype
+  -- 如果是zig, 命令是zig build
+  if filetype == "zig" then
+    return "zig build"
+  end
+
   -- 获取当前buffer的绝对路径
   local buf_name = vim.api.nvim_buf_get_name(0)
   local dir = vim.fn.fnamemodify(buf_name, ":p:h")
@@ -81,7 +88,7 @@ local function get_go_test_command()
 end
 -- use go test
 vim.keymap.set("n", "m3", function()
-  local cmd = get_go_test_command()
+  local cmd = get_test_command()
   if cmd == nil then
     return
   end

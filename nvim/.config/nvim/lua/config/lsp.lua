@@ -109,14 +109,6 @@ require("lsp-setup").setup {
     enabled = false,
   },
   on_attach = function(client, bufnr)
-    local filetype = vim.bo.filetype
-    local format = false
-    if filetype == "go" or "rust" or "python" or "lua" or "zig" then
-      format = true
-    end
-    -- if format then
-    --   require("lsp-setup.utils").format_on_save(client)
-    -- end
     require("lsp_signature").on_attach({}, bufnr)
   end,
   servers = {
