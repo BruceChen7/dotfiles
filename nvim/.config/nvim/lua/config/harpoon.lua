@@ -23,7 +23,7 @@ vim.keymap.set("n", "m2", function()
 end, { desc = "goto terminal" })
 
 local ts_utils = require "nvim-treesitter.ts_utils"
-local function get_nearest_function()
+local function get_go_nearest_function()
   local node = ts_utils.get_node_at_cursor()
   -- 获取父parent node
   while node and node:type() ~= "function_declaration" do
@@ -44,18 +44,35 @@ local function get_nearest_function()
   end
 end
 
+local function get_zig_test_declaration()
+  local node = ts_utils.get_node_at_cursor()
+  -- 获取父parent node
+  while node and node:type() ~= "TestDecl" do
+    -- print(node:type())
+    node = node:parent()
+  end
+  if node and node:type() == "TestDecl" then
+    return true
+  else
+    return false
+  end
+end
+
 local function get_test_command()
   -- 获取当前buffer的文件类型
+  local buf_name = vim.api.nvim_buf_get_name(0)
+  local dir = vim.fn.fnamemodify(buf_name, ":p:h")
   local filetype = vim.bo.filetype
+
   -- 如果是zig, 命令是zig build
   if filetype == "zig" then
-    return "zig build"
+    if get_zig_test_declaration() then
+      return "cd  " .. dir .. " && zig test " .. buf_name
+    end
   end
 
   -- 获取当前buffer的绝对路径
-  local buf_name = vim.api.nvim_buf_get_name(0)
-  local dir = vim.fn.fnamemodify(buf_name, ":p:h")
-  local function_name = get_nearest_function()
+  local function_name = get_go_nearest_function()
   -- function name whether start with Test
   if not function_name then
     -- message notice
