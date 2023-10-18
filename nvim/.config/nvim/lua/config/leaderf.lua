@@ -32,16 +32,15 @@ vim.g.Lf_WindowPosition = "popup"
 vim.g.Lf_PreviewInPopup = 1
 
 -- ALT+m 打开最近使用的文件 MRU，进行模糊匹配
-u.map("n", "<m-m>", ":LeaderfMruCwd <cr>")
-u.map("n", "<m-l>", ":LeaderfMru<cr>")
-u.map("n", "<m-p>", ":LeaderfFunction<cr>")
+-- u.map("n", "<m-m>", ":LeaderfMruCwd <cr>")
+-- u.map("n", "<m-l>", ":LeaderfMru<cr>")
+-- u.map("n", "<m-p>", ":LeaderfFunction<cr>")
 -- " ALT+SHIFT+p 打开 tag 列表，i 进入模糊匹配，ESC退出
-u.map("n", "<m-P>", ":LeaderfBufTag<cr>")
+-- u.map("n", "<m-P>", ":LeaderfBufTag<cr>")
 -- ALT+n 打开 buffer 列表进行模糊匹配
-u.map("n", "<m-n>", ":LeaderfBuffer<cr>")
+-- u.map("n", "<m-n>", ":LeaderfBuffer<cr>")
 -- " ALT+t 全局 tags 模糊匹配
-u.map("n", "<m-t>", ":LeaderfTag<cr>")
+-- u.map("n", "<m-t>", ":LeaderfTag<cr>")
 u.map("n", "<c-p>", ":LeaderfFile<cr>")
-u.map("n", "<space>f", "Nop")
-
-vim.keymap.set("n", "<space>fe", [[:<C-U><C-R>=printf('Leaderf! rg -e '. expand("<cword>"))<CR>]])
+-- u.map("n", "<space>f", "Nop")
+-- vim.keymap.set("n", "<space>fe", [[:<C-U><C-R>=printf('Leaderf! rg -e '. expand("<cword>"))<CR>]])

@@ -27,34 +27,10 @@ require("mini.ai").setup {
     end,
   },
 }
-
--- needs to design a new way to do this
--- local miniclue = require "mini.clue"
--- miniclue.setup {
---   window = {
---     delay = 500,
---     -- config = {
---     --   border = "dobule",
---     -- },
---   },
---   triggers = {
---     { mode = "n", keys = "<space>" },
---     { mode = "x", keys = "<space>" },
---     { mode = "n", keys = ";" },
---     { mode = "x", keys = ";" },
---     { mode = "n", keys = "," },
---     { mode = "x", keys = "," },
---     { mode = "n", keys = ",d", desc = "+Git Diff" },
---     { mode = "n", keys = "g" },
---     { mode = "n", keys = "<tab>" },
---     { mode = "n", keys = "z" },
---   },
---   clues = {
---     {
---       mode = "n",
---       keys = ",dh",
---       postkeys = ",d",
---       desc = "+Git Diff",
---     },
---   },
+-- require("mini.completion").setup {
+--   delay = { completion = 100, info = 100, signature = 50 },
 -- }
+--
+-- -- use c-j and c-k to navigate completion
+-- vim.keymap.set("i", "<C-j>", [[pumvisible() ? "\<C-n>" : ""]], { expr = true })
+-- vim.keymap.set("i", "<C-k>", [[pumvisible() ? "\<C-p>" : ""]], { expr = true })

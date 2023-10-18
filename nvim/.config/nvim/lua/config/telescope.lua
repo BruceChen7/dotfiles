@@ -171,7 +171,9 @@ telescope.setup {
       theme = "dropdown",
       previewer = false,
       -- find_command = { "find", "-type", "f" },
-      find_command = { "fd" },
+      -- find hidden files
+      find_command = { "fd", "--hidden", "--type", "f" },
+      -- find_command = { "fd" },
     },
 
     -- Default configuration for builtin pickers goes here:
@@ -249,3 +251,4 @@ vim.keymap.set("n", ",tf", "<cmd>Telescope find_files<cr>", { desc = "Telescope 
 vim.keymap.set("n", ",tz", "<cmd>Telescope zoxide list<cr>")
 vim.keymap.set("n", ",tn", "<cmd>Telescope neoclip<cr>", { desc = "Telescope neoclip" })
 vim.keymap.set("n", ",th", "<cmd>Telescope harpoon marks<cr>", { desc = "Telescope harpoon marks" })
+vim.keymap.set("n", "<m-m>", "<cmd>Telescope buffers<cr>", { desc = "Telescope buffers" })
