@@ -134,58 +134,6 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
-  {
-    "petertriho/cmp-git",
-    requires = "nvim-lua/plenary.nvim",
-    event = "InsertEnter",
-    config = function()
-      local format = require "cmp_git.format"
-      local sort = require "cmp_git.sort"
-      require("cmp_git").setup {
-        github = {
-          hosts = {}, -- list of private instances of github
-          issues = {
-            fields = { "title", "number", "body", "updatedAt", "state" },
-            filter = "all", -- assigned, created, mentioned, subscribed, all, repos
-            limit = 100,
-            state = "open", -- open, closed, all
-            sort_by = sort.github.issues,
-            format = format.github.issues,
-          },
-          mentions = {
-            limit = 100,
-            sort_by = sort.github.mentions,
-            format = format.github.mentions,
-          },
-          pull_requests = {
-            fields = { "title", "number", "body", "updatedAt", "state" },
-            limit = 100,
-            state = "open", -- open, closed, merged, all
-            sort_by = sort.github.pull_requests,
-            format = format.github.pull_requests,
-          },
-        },
-        trigger_actions = {
-          {
-            debug_name = "git_commits",
-            trigger_character = ":",
-            action = function(sources, trigger_char, callback, params, git_info)
-              return sources.git:get_commits(callback, params, trigger_char)
-            end,
-          },
-          {
-            debug_name = "github_issues_and_pr",
-            trigger_character = "#",
-            action = function(sources, trigger_char, callback, params, git_info)
-              return sources.github:get_issues(callback, git_info, trigger_char)
-            end,
-          },
-        },
-      }
-    end,
-    -- opts = { filetypes = { "gitcommit", "NeogitCommitMessage" } },
-  },
-
   -- -- 自动调整窗口
   -- replaced with window.nvim
   -- {
@@ -673,37 +621,24 @@ require("lazy").setup {
   },
 
   {
-    "nvimdev/guard.nvim",
+    "stevearc/conform.nvim",
     config = function()
-      local ft = require "guard.filetype"
-      ft("lua"):fmt {
-        cmd = "stylua",
-        args = {
-          -- "--search-parent-directories",
-          -- "--stdin-filepath",
-          -- "%",
-          "-",
+      require("conform").setup {
+        formatters_by_ft = {
+          lua = { "stylua" },
+          go = { "gofmt" },
+          zig = { "zigfmt" },
         },
-        stdin = true,
-      }
-      ft("go"):fmt({
-        cmd = "gofmt",
-        args = {},
-        stdin = true,
-      }):append {
-        cmd = "goimports",
-        args = {},
-      }
-
-      ft("zig"):fmt "lsp"
-
-      require("guard").setup {
-        fmt_on_save = true,
-        lsp_as_default_formatter = false,
+        format_on_save = {
+          -- These options will be passed to conform.format()
+          timeout_ms = 500,
+          lsp_fallback = true,
+        },
       }
     end,
-    -- event = "VeryLazy",
+    event = "VeryLazy",
   },
+
   -- color scheme
   {
     "hardhackerlabs/theme-vim",
