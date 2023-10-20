@@ -66,6 +66,7 @@ cmp.setup {
     { name = "nvim_lsp", priority = 1000 },
     { name = "luasnip", priority = 700 },
     { name = "copilot", priority = 600 },
+    { name = "git" },
     { name = "path" },
     { name = "nvim_lua" }, -- with vim.api complete
     {
@@ -148,7 +149,7 @@ cmp.setup {
         tags = " Tags",
         codeium = " Codeium",
         copilot = " Copilot",
-        -- rg = "Rg",
+        git = "Git",
       })[entry.source.name]
 
       return vim_item

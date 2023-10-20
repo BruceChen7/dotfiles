@@ -146,7 +146,7 @@ vim.keymap.set("n", "m5", function()
   local cmd = "git diff master -- " .. find_root_dir()
   term.sendCommand(1, cmd)
   require("harpoon.term").gotoTerminal(1)
-  vim.api.nvim_feedkeys("i", "n", false)
+  -- vim.api.nvim_feedkeys("i", "n", false)
 end, { desc = "open git diff in terminal" })
 
 local term = require "harpoon.term"
