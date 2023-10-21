@@ -42,6 +42,15 @@ require("lazy").setup {
   },
 
   {
+    "petertriho/cmp-git",
+    dependencies = "nvim-lua/plenary.nvim",
+    event = "VeryLazy",
+    config = function()
+      require("cmp_git").setup {}
+    end,
+  },
+
+  {
     "ludovicchabant/vim-gutentags",
     config = function()
       require "config/gtags"
@@ -53,6 +62,14 @@ require("lazy").setup {
   { "skywind3000/vim-quickui" },
   { "skywind3000/asynctasks.vim" },
   { "skywind3000/asyncrun.vim" },
+
+  {
+    "anuvyklack/hydra.nvim",
+    event = "VeryLazy",
+    config = function()
+      require "config/hydra"
+    end,
+  },
 
   {
     "Yggdroot/LeaderF",

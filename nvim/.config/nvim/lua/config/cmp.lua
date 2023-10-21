@@ -69,6 +69,7 @@ cmp.setup {
     { name = "git" },
     { name = "path" },
     { name = "nvim_lua" }, -- with vim.api complete
+    { name = "git" },
     {
       name = "buffer",
       keyword_length = 3,
