@@ -62,3 +62,25 @@ Hydra {
     },
   },
 }
+
+local ui = require "harpoon.ui"
+Hydra {
+  name = "harpoon bookmark",
+  mode = { "n" },
+  body = ",h",
+  heads = {
+    {
+      "p",
+      function()
+        ui.nav_prev()
+      end,
+    },
+
+    {
+      "n",
+      function()
+        ui.nav_prev()
+      end,
+    },
+  },
+}
