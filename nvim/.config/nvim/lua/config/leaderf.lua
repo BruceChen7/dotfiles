@@ -16,7 +16,8 @@ vim.g.Lf_GtagsAutoUpdate = 1
 vim.g.Lf_MruMaxFiles = 2048
 -- " 如何识别项目目录，从当前文件目录向父目录递归知道碰到下面的文件/目录
 vim.g.Lf_RootMarkers = { ".project", ".root", ".svn", ".git", "go.mod", "cargo.toml" }
-vim.g.Lf_WorkingDirectoryMode = "Ac"
+-- :help g:Lf_WorkingDirectoryMode
+vim.g.Lf_WorkingDirectoryMode = "ac"
 vim.g.Lf_WindowHeight = 0.40
 vim.g.Lf_CacheDirectory = vim.fn.expand "~/.vim/cache"
 vim.g.Lf_PreviewResult = { Function = 0, BufTag = 0 }

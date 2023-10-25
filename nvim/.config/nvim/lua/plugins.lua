@@ -41,14 +41,14 @@ require("lazy").setup {
     },
   },
 
-  {
-    "petertriho/cmp-git",
-    dependencies = "nvim-lua/plenary.nvim",
-    event = "VeryLazy",
-    config = function()
-      require("cmp_git").setup {}
-    end,
-  },
+  -- {
+  --   "petertriho/cmp-git",
+  --   dependencies = "nvim-lua/plenary.nvim",
+  --   event = "VeryLazy",
+  --   config = function()
+  --     require("cmp_git").setup {}
+  --   end,
+  -- },
 
   {
     "ludovicchabant/vim-gutentags",
@@ -519,59 +519,6 @@ require("lazy").setup {
   },
 
   {
-    "rmagatti/auto-session",
-    config = function()
-      local close_not_in_working_dir = function()
-        local close_window_by_bufname = function(buffer_name)
-          local buf = vim.fn.bufnr(buffer_name)
-          if buf ~= -1 then
-            vim.api.nvim_buf_delete(buf, { force = true })
-          end
-        end
-
-        local function isPartOfPath(path, potentialSubpath)
-          local normalizedPath = path:gsub("[/\\]$", "")
-          local normalizedSubpath = potentialSubpath:gsub("[/\\]$", "")
-
-          -- Check if the normalized subpath is contained within the normalized path
-          if string.find(normalizedSubpath, normalizedPath, 1, true) then
-            return true
-          end
-
-          return false
-        end
-        for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
-          local buf_name = vim.api.nvim_buf_get_name(buffer)
-          -- local buf_nr = vim.fn.bufnr(buf_name)
-          -- local filetype = vim.api.nvim_buf_get_option(buf_nr, "filetype")
-
-          if buf_name ~= "" then
-            local buf_dir = vim.fn.fnamemodify(buf_name, ":p:h")
-            if string.find(buf_name, "fern:") then
-              close_window_by_bufname(buf_name)
-            end
-            if string.find(buf_name, "gitcommit") then
-              -- print("fern buffer", buf_name)
-              close_window_by_bufname(buf_name)
-            end
-            local cur_dir = vim.fn.getcwd()
-            if isPartOfPath(cur_dir, buf_dir) == false then
-              close_window_by_bufname(buf_name)
-            end
-          end
-        end
-      end
-      require("auto-session").setup {
-        log_level = "error",
-        auto_session_supress_dir = { "~/" },
-        pre_save_cmds = {
-          close_not_in_working_dir,
-        },
-      }
-    end,
-  },
-
-  {
     "keaising/im-select.nvim",
     config = function()
       local is_linux = function()
@@ -617,14 +564,6 @@ require("lazy").setup {
       }
     end,
     event = "InsertEnter",
-  },
-
-  {
-    "rmagatti/session-lens",
-    dependencies = { "nvim-telescope/telescope.nvim", "rmagatti/auto-session" },
-    config = function()
-      require("session-lens").setup()
-    end,
   },
 
   {
@@ -798,6 +737,10 @@ require("lazy").setup {
     end,
   },
 
+  {
+    "smartpde/telescope-recent-files",
+    event = "VeryLazy",
+  },
   {
     "rcarriga/nvim-dap-ui",
     dependencies = {
