@@ -272,6 +272,7 @@ require("lazy").setup {
         db_build_cmd_args = { "-bqkv" },
       },
     },
+    ft = { "c", "cpp" },
   },
 
   {
@@ -289,6 +290,7 @@ require("lazy").setup {
     config = function()
       require("lsp-progress").setup()
     end,
+    event = "LspAttach",
   },
 
   {
@@ -515,7 +517,7 @@ require("lazy").setup {
       "hrsh7th/nvim-cmp", -- Autocompletion plugin
       "nvim-treesitter/nvim-treesitter",
     },
-    event = "VeryLazy",
+    event = "InsertEnter",
   },
 
   {
@@ -735,6 +737,7 @@ require("lazy").setup {
       -- may set any options here
       vim.g.matchup_matchparen_offscreen = { method = "popup" }
     end,
+    event = "VeryLazy",
   },
 
   {
@@ -763,5 +766,6 @@ require("lazy").setup {
     config = function()
       require "config/lsp"
     end,
+    event = "VeryLazy",
   },
 }
