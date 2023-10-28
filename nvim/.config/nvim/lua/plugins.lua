@@ -272,7 +272,8 @@ require("lazy").setup {
         db_build_cmd_args = { "-bqkv" },
       },
     },
-    ft = { "c", "cpp" },
+    -- ft = { "c", "cpp", "zig",  },
+    event = "VeryLazy",
   },
 
   {
@@ -753,6 +754,10 @@ require("lazy").setup {
       require "config/dap"
     end,
     event = "LspAttach",
+  },
+  {
+    "voldikss/vim-translator",
+    event = "VeryLazy",
   },
 
   {
