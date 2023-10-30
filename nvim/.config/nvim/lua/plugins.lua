@@ -589,11 +589,29 @@ require("lazy").setup {
           zig = { "zigfmt" },
           markdown = { "autocorrect" },
         },
-        format_on_save = {
-          -- These options will be passed to conform.format()
-          timeout_ms = 500,
-          lsp_fallback = true,
-        },
+
+        format_on_save = function(bufnr)
+          -- 当前文件如果markdown, 禁止格式化
+          if vim.bo[bufnr].filetype == "markdown" then
+            return
+          end
+          -- Disable with a global or buffer-local variable
+          if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
+            return
+          end
+          return { timeout_ms = 500, lsp_fallback = true }
+        end,
+
+        format_after_save = function(bufnr)
+          if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
+            return
+          end
+          if vim.bo[bufnr].filetype ~= "markdown" then
+            return
+          end
+          -- ...additional logic...
+          return { timeout_ms = 500 }
+        end,
 
         formatters = {
           autocorrect = {
