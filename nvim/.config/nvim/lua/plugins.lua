@@ -587,11 +587,20 @@ require("lazy").setup {
           lua = { "stylua" },
           go = { "gofmt" },
           zig = { "zigfmt" },
+          markdown = { "autocorrect" },
         },
         format_on_save = {
           -- These options will be passed to conform.format()
           timeout_ms = 500,
           lsp_fallback = true,
+        },
+
+        formatters = {
+          autocorrect = {
+            command = "autocorrect",
+            args = { "$FILENAME" },
+            stdin == true,
+          },
         },
       }
     end,
