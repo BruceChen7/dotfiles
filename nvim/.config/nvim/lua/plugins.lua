@@ -585,7 +585,7 @@ require("lazy").setup {
       require("conform").setup {
         formatters_by_ft = {
           lua = { "stylua" },
-          go = { "gofmt" },
+          go = { "gofmt", "goimports" },
           zig = { "zigfmt" },
           markdown = { "autocorrect" },
         },
@@ -739,6 +739,7 @@ require("lazy").setup {
       -- refer to the configuration section below
     },
   },
+
   {
     "andymass/vim-matchup",
     config = function()
