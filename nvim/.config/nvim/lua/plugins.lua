@@ -409,13 +409,13 @@ require("lazy").setup {
     cmd = "LspLensOn",
   },
 
-  {
-    "jinzhongjia/LspUI.nvim",
-    config = function()
-      require("LspUI").setup {}
-    end,
-    event = "LspAttach",
-  },
+  -- {
+  --   "jinzhongjia/LspUI.nvim",
+  --   config = function()
+  --     require("LspUI").setup {}
+  --   end,
+  --   event = "LspAttach",
+  -- },
 
   {
     "Exafunction/codeium.vim",
