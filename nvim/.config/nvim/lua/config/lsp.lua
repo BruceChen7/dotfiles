@@ -3,10 +3,22 @@ vim.diagnostic.config { float = rounded }
 vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, rounded)
 vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, rounded)
 
+-- https://www.reddit.com/r/neovim/comments/17yrtt5/seeking_guidance_for_improving_nvimcmp/
+vim.lsp.util.stylize_markdown = function(bufnr, contents, opts)
+  contents = vim.lsp.util._normalize_markdown(contents, {
+    width = vim.lsp.util._make_floating_popup_size(contents, opts),
+  })
+  vim.bo[bufnr].filetype = "markdown"
+  vim.treesitter.start(bufnr)
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
+
+  return contents
+end
+
 function find_definition()
   -- 如果当前的文件是c, cpp, h文件
   local file_type = vim.bo.filetype
-  if file_type == "c" or file_type == "cpp" or filetype == "h" then
+  if file_type == "c" or file_type == "cpp" or file_type == "h" then
     -- get current cursor word
     local row, col = unpack(vim.api.nvim_win_get_cursor(0))
     -- print("before row and new row", row, col)
@@ -41,10 +53,18 @@ vim.keymap.set(
 )
 vim.keymap.set(
   "n",
-  "gs",
+  ",gs",
   "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>",
   { noremap = true, silent = true, desc = "Find Symbols" }
 )
+
+vim.keymap.set(
+  "n",
+  "gs",
+  "<cmd>Telescope lsp_document_symbols<CR>",
+  { noremap = true, silent = true, desc = "find Document Symbols" }
+)
+
 vim.keymap.set(
   "n",
   "gr",

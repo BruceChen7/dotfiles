@@ -43,10 +43,10 @@ u.map("i", "jj", "<ESC>")
 u.map("n", "<leader>bn", ":bn<cr>")
 u.map("n", "<leader>bp", ":bp<cr>")
 
-u.map("n", "<leader>tc", ":tabnew<cr>")
-u.map("n", "<leader>tq", ":tabclose<cr>")
-u.map("n", "<leader>tn", ":tabnext<cr>")
-u.map("n", "<leader>tp", ":tabprev<cr>")
+u.map("n", "\\t", ":tabnew<cr>")
+u.map("n", "\\tq", ":tabclose<cr>")
+u.map("n", "\\tn", ":tabnext<cr>")
+u.map("n", "\\tp", ":tabprev<cr>")
 u.map("n", "<leader>to", ":tabonly<cr>")
 
 u.map("n", "<space>=", ":resize +3<cr>")
@@ -185,3 +185,43 @@ function retab_directory()
 end
 
 vim.keymap.set("n", "<leader>rt", retab_directory, { silent = true, desc = "Retab directory" })
+
+function quitWindow()
+  local buf_total_num = vim.fn.len(vim.fn.getbufinfo { buflisted = 1 })
+  local buf_name = vim.fn.bufname()
+  if vim.o.filetype == "neo-tree" then
+    vim.api.nvim_command "NeoTreeClose"
+    return
+  end
+  if vim.bo.filetype == "lazy" then
+    vim.api.nvim_command "quit"
+    return
+  end
+  if vim.o.filetype == "vim" then
+    vim.api.nvim_command "close"
+  end
+  if vim.o.filetype == "packer" then
+    vim.api.nvim_command "close"
+  end
+  if buf_name:find "^diffview" then
+    vim.api.nvim_command "DiffviewClose"
+    -- vim.api.nvim_command("bdelete %s"):format(buf_id)
+  elseif buf_total_num ~= 1 then
+    vim.api.nvim_command "bdelete!"
+  else
+    vim.api.nvim_command "quit!"
+  end
+end
+
+vim.keymap.set("n", "Q", ":lua quitWindow()<CR>")
+
+vim.api.nvim_create_autocmd("BufHidden", {
+  desc = "Delete [No Name] buffers",
+  callback = function(event)
+    if event.file == "" and vim.bo[event.buf].buftype == "" and not vim.bo[event.buf].modified then
+      vim.schedule(function()
+        pcall(vim.api.nvim_buf_delete, event.buf, {})
+      end)
+    end
+  end,
+})

@@ -342,14 +342,6 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
-  {
-    "akinsho/bufferline.nvim",
-    dependencies = "nvim-tree/nvim-web-devicons",
-    config = function()
-      require "config/bufferline"
-    end,
-  },
-
   -- colorscheme
   { "folke/tokyonight.nvim" },
 
@@ -654,20 +646,11 @@ require("lazy").setup {
   },
 
   {
-    "sourcegraph/sg.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    keys = {
-      {
-        ",as",
-        function()
-          require("sg.extensions.telescope").fuzzy_search_results()
-        end,
-        desc = "󰓁 SourceGraph Search",
-      },
-      { ",al", "<cmd>SourcegraphLink<CR>", desc = "󰓁 Copy SourceGraph URL" },
-      { ",aa", "<cmd>CodyAsk<CR>", desc = "󰓁 CodyAsk" },
-      { ",ad", "<cmd>CodyDo<CR>", desc = "󰓁 CodyDo" },
-    },
+    "akinsho/bufferline.nvim",
+    dependencies = "nvim-tree/nvim-web-devicons",
+    config = function()
+      require "config/bufferline"
+    end,
   },
 
   {
