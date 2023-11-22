@@ -580,6 +580,7 @@ require("lazy").setup {
           go = { "gofmt", "goimports" },
           zig = { "zigfmt" },
           markdown = { "autocorrect" },
+          typst = { "autocorrect" },
         },
 
         format_on_save = function(bufnr)

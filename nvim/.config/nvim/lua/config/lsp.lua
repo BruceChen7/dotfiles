@@ -88,7 +88,7 @@ vim.api.nvim_create_autocmd({ "InsertEnter" }, {
     -- if filetype is go or rust or lua
     -- pyright is not support textDocument/inlayHint
     -- if vim.bo.filetype is go or rust or lua
-    -- thena vim.lsp.inlay_hint(0, true)
+    -- thena vim.lsp.inlay_hint.enable(0, true)
     local lang = {
       "go",
       "rust",
