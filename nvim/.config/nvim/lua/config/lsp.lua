@@ -121,9 +121,15 @@ vim.api.nvim_create_autocmd({ "InsertLeave" }, {
     end
   end,
 })
-
+-- https://github.com/kevinhwang91/nvim-ufo
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.textDocument.foldingRange = {
+  dynamicRegistration = false,
+  lineFoldingOnly = true,
+}
 require("lsp-setup").setup {
   default_mappings = false,
+  capabilities = capabilities,
   --  manually set the inlay hints
   inlay_hints = {
     enabled = false,
@@ -291,7 +297,7 @@ require("lsp-setup").setup {
             compositeLiteralTypes = true,
             functionTypeParameters = true,
           },
-          semanticTokens = true,
+          -- semanticTokens = true,
         },
       },
     },

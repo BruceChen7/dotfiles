@@ -75,7 +75,7 @@ o.ffs = "unix,dos,mac"
 o.foldenable = true
 
 -- 代码折叠默认使用缩进
-o.fdm = "indent"
+-- o.fdm = "indent"
 
 -- 默认打开所有缩进
 o.foldlevel = 99
@@ -123,7 +123,7 @@ o.wildignore = [[
 
 vim.cmd [[
  set clipboard+=unnamedplus
- set foldcolumn=0
+ set foldcolumn=1
 ]]
 
 -- https://neovim.discourse.group/t/a-lua-based-auto-refresh-buffers-when-they-change-on-disk-function/2482/3
