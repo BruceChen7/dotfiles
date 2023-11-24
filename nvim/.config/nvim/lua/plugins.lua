@@ -166,7 +166,7 @@ require("lazy").setup {
   {
     "aznhe21/actions-preview.nvim",
     config = function()
-      vim.keymap.set({ "v", "n" }, ",gf", require("actions-preview").code_actions, { desc = "code actions" })
+      vim.keymap.set({ "v", "n" }, "\\gf", require("actions-preview").code_actions, { desc = "code actions" })
     end,
     event = "LspAttach",
   },
@@ -438,8 +438,8 @@ require("lazy").setup {
   {
     "ojroques/nvim-osc52",
     config = function()
-      vim.keymap.set("n", ",c", require("osc52").copy_operator, { expr = true })
-      vim.keymap.set("x", ",c", require("osc52").copy_visual)
+      vim.keymap.set("n", "\\c", require("osc52").copy_operator, { expr = true })
+      vim.keymap.set("x", "\\c", require("osc52").copy_visual)
     end,
     event = "VeryLazy",
   },
@@ -463,12 +463,7 @@ require("lazy").setup {
           enabled = false,
         },
         char = {
-          keys = {
-            "f",
-            "F",
-            "t",
-            "T",
-          },
+          keys = {},
         },
       },
     },
@@ -625,22 +620,22 @@ require("lazy").setup {
     dependencies = { "nvim-tree/nvim-web-devicons" },
     event = "VeryLazy",
     config = function()
-      vim.keymap.set("n", ",xx", function()
+      vim.keymap.set("n", "\\xx", function()
         require("trouble").open()
       end)
-      vim.keymap.set("n", ",xw", function()
+      vim.keymap.set("n", "\\xw", function()
         require("trouble").open "workspace_diagnostics"
       end)
-      vim.keymap.set("n", ",xd", function()
+      vim.keymap.set("n", "\\xd", function()
         require("trouble").open "document_diagnostics"
       end)
-      vim.keymap.set("n", ",xq", function()
+      vim.keymap.set("n", "\\xq", function()
         require("trouble").open "quickfix"
       end)
-      vim.keymap.set("n", ",xl", function()
+      vim.keymap.set("n", "\\xl", function()
         require("trouble").open "loclist"
       end)
-      vim.keymap.set("n", ",gR", function()
+      vim.keymap.set("n", "\\gR", function()
         require("trouble").open "lsp_references"
       end)
     end,

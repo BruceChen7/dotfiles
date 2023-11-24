@@ -120,11 +120,11 @@ for i = 1, 9 do
   )
 end
 
-vim.keymap.set("n", ",cl", function()
+vim.keymap.set("n", "\\cl", function()
   close_all_buffer_except_current()
 end, { silent = true })
 -- move to leftmost window
 -- https://superuser.com/questions/231144/how-can-i-close-the-leftmost-window-in-vim
-map("n", ",ml", ":1wincmd w<CR>", { silent = true })
-map("n", ",n", ":BufferLineCycleNext<CR>", { silent = true })
-map("n", ",p", ":BufferLineCyclePrev<CR>", { silent = true })
+map("n", "\\ml", ":1wincmd w<CR>", { silent = true })
+map("n", "\\n", ":BufferLineCycleNext<CR>", { silent = true })
+map("n", "\\p", ":BufferLineCyclePrev<CR>", { silent = true })

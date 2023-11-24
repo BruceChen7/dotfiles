@@ -87,8 +87,8 @@ vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>")
 vim.keymap.set("n", "g3", function()
   change_color()
 end, { desc = "show change colorscheme" })
-vim.keymap.set("n", ",vv", ":vsplit<CR>", { desc = "vsplit" })
-vim.keymap.set("n", ",ss", ":split<CR>", { desc = "split" })
+vim.keymap.set("n", "<space>vv", ":vsplit<CR>", { desc = "vsplit" })
+vim.keymap.set("n", "<space>ss", ":split<CR>", { desc = "split" })
 
 vim.keymap.set("n", "<leader>ll", function()
   local file = vim.fn.expand "%:p"

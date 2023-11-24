@@ -67,7 +67,7 @@ local ui = require "harpoon.ui"
 Hydra {
   name = "harpoon bookmark",
   mode = { "n" },
-  body = ",h",
+  body = "<space>h",
   heads = {
     {
       "p",

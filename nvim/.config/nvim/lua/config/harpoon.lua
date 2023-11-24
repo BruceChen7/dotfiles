@@ -2,19 +2,19 @@ local mark = require "harpoon.mark"
 local ui = require "harpoon.ui"
 local term = require "harpoon.term"
 
-vim.keymap.set("n", ",ha", function()
+vim.keymap.set("n", "<space>ha", function()
   mark.add_file()
 end, { desc = "add harpoon bookmark" })
 -- next marks
-vim.keymap.set("n", ",hn", function()
+vim.keymap.set("n", "<space>hn", function()
   ui.nav_next()
 end, { desc = "nav next bookmark" })
 --prev marks
-vim.keymap.set("n", ",hp", function()
+vim.keymap.set("n", "<space>hp", function()
   ui.nav_prev()
 end, { desc = "nav prev bookmark" })
 
-vim.keymap.set("n", ",ht", function()
+vim.keymap.set("n", "<space>ht", function()
   ui.toggle_quick_menu()
 end, { desc = "toggle quick menu" })
 

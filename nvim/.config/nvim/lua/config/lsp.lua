@@ -53,7 +53,7 @@ vim.keymap.set(
 )
 vim.keymap.set(
   "n",
-  ",gs",
+  "\\gs",
   "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>",
   { noremap = true, silent = true, desc = "Find Symbols" }
 )
@@ -72,7 +72,7 @@ vim.keymap.set(
   { noremap = true, silent = true, desc = "Find References" }
 )
 vim.keymap.set("n", "K", vim.lsp.buf.hover, { noremap = true, silent = true, desc = "Hover" })
-vim.keymap.set("n", ",gr", "<cmd>lua vim.lsp.buf.rename()<CR>", { noremap = true, silent = true, desc = "Rename" })
+vim.keymap.set("n", "\\gr", "<cmd>lua vim.lsp.buf.rename()<CR>", { noremap = true, silent = true, desc = "Rename" })
 
 local function contains(table_name, value)
   for _, v in pairs(table_name) do
