@@ -179,6 +179,12 @@ require("lsp-setup").setup {
       },
       filetypes = { "c", "cpp", "objc", "objcpp" },
     },
+    tailwindcss = {
+      cmd = {
+        "tailwindcss-language-server",
+        "--stdio",
+      },
+    },
     pyright = {},
     -- pylsp = {
     --   settings = {
@@ -303,15 +309,6 @@ require("lsp-setup").setup {
     },
   },
 }
-
--- used to import go packages
--- (https://github.com/golang/tools/blob/master/gopls/doc/vim.md#neovim-imports)
--- vim.api.nvim_create_autocmd("BufWritePre", {
---   pattern = "*.go",
---   callback = function()
---     vim.lsp.buf.code_action { context = { only = { "source.organizeImports" } }, apply = true }
---   end,
--- })
 
 vim.api.nvim_create_autocmd("BufWritePre", {
   pattern = "*.md",

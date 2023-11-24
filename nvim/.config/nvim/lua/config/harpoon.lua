@@ -132,7 +132,7 @@ vim.keymap.set("n", "<leader>tf", function()
   require("harpoon.term").gotoTerminal(1)
 end, { desc = "open git log for this file in terminal" })
 
-vim.keymap.set("n", "<leader>tg", function()
+vim.keymap.set("n", "<leader>tt", function()
   local root = find_root_dir()
   if not root then
     root = vim.fn.getcwd()
