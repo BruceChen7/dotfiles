@@ -185,6 +185,13 @@ require("lsp-setup").setup {
         "--stdio",
       },
     },
+    -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#svelte
+    svelte = {
+      cmd = {
+        "svelteserver",
+        "--stdio",
+      },
+    },
     pyright = {},
     -- pylsp = {
     --   settings = {
