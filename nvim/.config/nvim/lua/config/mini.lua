@@ -1,12 +1,13 @@
-require("mini.cursorword").setup { delay = 0 }
+require("mini.cursorword").setup { delay = 50 }
+-- https://github.com/khuedoan/dotfiles/blob/5f5035e899568718501d6c1688b816019ddc918d/.config/nvim/lua/plugins.lua#L250
 require("mini.surround").setup {
   mappings = {
-    add = "sa",
-    delete = "sd",
-    find = "sf",
-    replace = "sr",
-    highlight = "sh",
-    update_n_lines = "su",
+    add = "gza",
+    delete = "gzd",
+    find = "gzf",
+    replace = "gzr",
+    highlight = "gzh",
+    update_n_lines = "gzn",
   },
 }
 require("mini.trailspace").setup {}

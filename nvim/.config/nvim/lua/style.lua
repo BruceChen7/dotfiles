@@ -80,6 +80,7 @@ function getColorscheme()
     "kanagawa-dragon",
     "catppuccin",
     "catppuccin-frappe",
+    "gruvbox-material",
   }
   local u = require "util"
   local len = u.tableLength(colorschemes)
@@ -88,6 +89,9 @@ function getColorscheme()
 
   if scheme == "vscode" then
     vim.g.vscode_style = "dark"
+  end
+  if scheme == "gruvbox-material" then
+    vim.g.gruvbox_material_background = "soft"
   end
   return scheme
 end

@@ -748,6 +748,10 @@ require("lazy").setup {
   },
 
   {
+    "sainnhe/gruvbox-material",
+  },
+
+  {
     "junnplus/lsp-setup.nvim",
     dependencies = {
       "neovim/nvim-lspconfig",
