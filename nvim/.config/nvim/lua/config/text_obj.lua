@@ -17,6 +17,7 @@ tc.setup {
     "yaml",
     "go",
     "vimdoc",
+    "svelte",
   },
   highlight = {
     enable = true,
