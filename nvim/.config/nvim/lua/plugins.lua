@@ -742,6 +742,40 @@ require("lazy").setup {
     end,
     event = "LspAttach",
   },
+
+  {
+    "nvim-pack/nvim-spectre",
+    config = function()
+      vim.keymap.set("n", "<leader>S", '<cmd>lua require("spectre").toggle()<CR>', {
+        desc = "Toggle Spectre",
+      })
+      vim.keymap.set("n", "<leader>sw", '<cmd>lua require("spectre").open_visual({select_word=true})<CR>', {
+        desc = "Search current word",
+      })
+      vim.keymap.set("v", "<leader>sw", '<esc><cmd>lua require("spectre").open_visual()<CR>', {
+        desc = "Search current word",
+      })
+      vim.keymap.set("n", "<leader>sp", '<cmd>lua require("spectre").open_file_search({select_word=true})<CR>', {
+        desc = "Search on current file",
+      })
+      require("spectre").setup {
+        mapping = {
+          ["run_current_replace"] = {
+            map = "<leader>rc",
+            cmd = "<cmd>lua require('spectre.actions').run_current_replace()<CR>",
+            desc = "replace current line",
+          },
+          ["run_replace"] = {
+            map = "<leader>rr",
+            cmd = "<cmd>lua require('spectre.actions').run_replace()<CR>",
+            desc = "replace all",
+          },
+        },
+      }
+    end,
+    event = "VeryLazy",
+  },
+
   {
     "voldikss/vim-translator",
     event = "VeryLazy",
