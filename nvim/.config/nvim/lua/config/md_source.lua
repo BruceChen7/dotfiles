@@ -1,6 +1,6 @@
 local source = {}
 source.new = function()
-  local timer = vim.loop.new_timer()
+  local timer = vim.uv.new_timer()
   vim.api.nvim_create_autocmd("VimLeavePre", {
     callback = function()
       if timer and not timer:is_closing() then
@@ -16,111 +16,72 @@ source.new = function()
   }, { __index = source })
 end
 
+local find_root_dir = function()
+  local buf_name = vim.api.nvim_buf_get_name(0)
+  local lspconfig_util = require "lspconfig.util"
+  return lspconfig_util.root_pattern(".obsidian", ".git")(buf_name)
+end
+
+local relative_path = function(a, b)
+  local Path = require "plenary.path"
+  return Path:new(a):make_relative(b)
+end
+
+-- request value
+-- name string
+-- option table|nil
+-- priority integer|nil
+-- trigger_characters string[]|nil
+-- keyword_pattern string|nil
+-- keyword_length integer|nil
+-- max_item_count integer|nil
+-- group_index integer|nil
+-- entry_filter nil|function(entry: cmp.Entry, ctx: cmp.Context): boolean
 source.complete = function(self, request, callback)
+  print(vim.inspect(request))
   local q = string.sub(request.context.cursor_before_line, request.offset)
-  local pattern = request.option.pattern or "[\\w_-]+"
-  local additional_arguments = request.option.additional_arguments or ""
-  local context_before = request.option.context_before or 1
-  local context_after = request.option.context_after or 3
-  local quote = "'"
-  if vim.o.shell == "cmd.exe" then
-    quote = '"'
+
+  local trigger_character = request.context.cursor_before_line
+
+  print("q is ", vim.inspect(q), "trigger_character is ", trigger_character)
+  -- if trigger_character not starts with [[
+  if string.sub(trigger_character, 1, 2) ~= "[[" then
+    print("not starts with [[ ", trigger_character)
+    return
   end
-  local seen = {}
-  local items = {}
-  local chunk_size = 5
+
+  local root = find_root_dir()
+  if not root then
+    return
+  end
 
   -- deal with event
+  local items = {}
   local function on_event(_, data, event)
     if event == "stdout" then
       local messages = data
+      print(vim.inspect(messages))
 
-      local function get_message_with_lines(index)
-        if index < 1 then
-          return nil
-        end
-        local m = messages[index]
-        if not m then
-          return nil
-        end
-        if type(m) == "string" then
-          local ok, decoded = pcall(self.json_decode, m)
-          if not ok then
-            return nil
-          end
-          m, messages[index] = decoded, decoded
-        end
-        if m.type ~= "match" and m.type ~= "context" then
-          return nil
-        end
-        if not m.data.lines.text then
-          return nil
-        end
-        m.data.lines.text = m.data.lines.text:gsub("\n", "")
-        return m
-      end
+      -- 遍历messages
+      for _, m in ipairs(messages) do
+        -- 获取当前buffer 的绝对路径
+        local buf_path = vim.api.nvim_buf_get_name(0)
+        -- 将m相对路径转为绝对路径
+        local m_path = vim.fn.fnamemodify(m, ":p")
+        local rel_path = relative_path(m_path, buf_path)
 
-      -- 用来处理上下文
-      for current = 1, #data, 1 do
-        local message = get_message_with_lines(current)
-        if message and message.type == "match" then
-          local label = message.data.submatches[1].match.text
-          if label and not seen[label] then
-            local path = message.data.path.text
-            local doc_lines = { path, "", "```" }
-            local doc_body = {}
-            if context_before > 0 then
-              for j = current - context_before, current - 1, 1 do
-                local before = get_message_with_lines(j)
-                if before then
-                  table.insert(doc_body, before.data.lines.text)
-                end
-              end
-            end
-            table.insert(doc_body, message.data.lines.text .. " <--")
-            if context_after > 0 then
-              for k = current + 1, current + context_after, 1 do
-                local after = get_message_with_lines(k)
-                if after then
-                  table.insert(doc_body, after.data.lines.text)
-                end
-              end
-            end
-
-            -- shallow indent
-            local min_indent = math.huge
-            for _, line in ipairs(doc_body) do
-              local _, indent = string.find(line, "^%s+")
-              min_indent = math.min(min_indent, indent or math.huge)
-            end
-            for _, line in ipairs(doc_body) do
-              table.insert(doc_lines, line:sub(min_indent))
-            end
-
-            table.insert(doc_lines, "```")
-            local documentation = {
-              value = table.concat(doc_lines, "\n"),
-              kind = "markdown",
-            }
-            table.insert(items, {
-              label = label,
-              documentation = documentation,
-            })
-            seen[label] = true
-          end
-        end
+        print("buf_path is ", buf_path, "rel_path is ", rel_path, "m_path is ", m_path)
       end
 
       if request.max_item_count ~= nil and #items >= request.max_item_count then
+        -- 停止该job
         vim.fn.jobstop(self.running_job_id)
+        -- 给出相关的items
         callback { items = items, isIncomplete = false }
         return
       end
 
-      if #items - chunk_size >= chunk_size then
-        chunk_size = chunk_size * 2
-        callback { items = items, isIncomplete = true }
-      end
+      callback { items = items, isIncomplete = true }
     end
 
     if event == "stderr" and request.option.debug then
@@ -140,25 +101,15 @@ source.complete = function(self, request, callback)
     request.option.debounce or 100,
     0,
     vim.schedule_wrap(function()
+      local cmd = string.format("fd  --follow --type file --color never '%s' %s", q, root)
+      print("cmd is ", cmd)
       vim.fn.jobstop(self.running_job_id)
-      self.running_job_id = vim.fn.jobstart(
-        string.format(
-          "rg --heading --json --word-regexp -B %d -A %d --color never %s %s%s%s%s .",
-          context_before,
-          context_after,
-          additional_arguments,
-          quote,
-          q,
-          pattern,
-          quote
-        ),
-        {
-          on_stderr = on_event,
-          on_stdout = on_event,
-          on_exit = on_event,
-          cwd = request.option.cwd or vim.fn.getcwd(),
-        }
-      )
+      self.running_job_id = vim.fn.jobstart(cmd, {
+        on_stderr = on_event,
+        on_stdout = on_event,
+        on_exit = on_event,
+        cwd = root or vim.fn.getcwd(),
+      })
     end)
   )
 end
@@ -167,6 +118,7 @@ local ok, cmp = pcall(require, "cmp")
 
 if ok then
   cmp.register_source("md_link", source.new())
+elseif not ok then
 end
 
 return source

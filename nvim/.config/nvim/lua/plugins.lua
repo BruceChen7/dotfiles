@@ -104,6 +104,7 @@ require("lazy").setup {
     event = "InsertEnter",
     config = function()
       require "config/cmp"
+      require "config/md_source"
     end,
     branch = "main",
     -- https://www.reddit.com/r/neovim/comments/162q5ca/whats_your_favorite_unknown_nvimvim_plugin/

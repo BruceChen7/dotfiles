@@ -62,6 +62,9 @@ cmp.setup {
     ghost_text = false,
     native_menu = false,
   },
+  -- view = {
+  --   entries = "native",
+  -- },
   sources = {
     { name = "nvim_lsp", priority = 1000 },
     { name = "luasnip", priority = 700 },
@@ -83,6 +86,7 @@ cmp.setup {
     { name = "codeium", priority = 800 },
     { name = "crates" },
     -- { name = "cmp_tabnine", priority = 700 },
+    { name = "md_link", keyword_length = 3 },
   },
   matching = {
     disallow_fuzzy_matching = true,
@@ -157,5 +161,3 @@ cmp.setup {
     end,
   },
 }
-
-vim.api.nvim_set_hl(0, "CmpItemKindCopilot", { fg = "#6CC644" })
