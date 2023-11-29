@@ -228,3 +228,18 @@ vim.api.nvim_create_autocmd("BufHidden", {
     end
   end,
 })
+
+vim.keymap.set("n", "<space>tc", function()
+  local find_root_dir = function()
+    local buf_name = vim.api.nvim_buf_get_name(0)
+    local lspconfig_util = require "lspconfig.util"
+    return lspconfig_util.root_pattern("go.mod", ".git")(buf_name)
+  end
+  local root = find_root_dir()
+  if not root then
+    print "no root dir"
+    return
+  end
+  print("now is in " .. root)
+  vim.cmd.tcd(root)
+end, { silent = true, desc = "cd to root" })

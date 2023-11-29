@@ -28,6 +28,9 @@ require("mini.ai").setup {
     end,
   },
 }
+
+require("mini.files").setup {}
+vim.keymap.set("n", "<leader>mf", ":lua MiniFiles.open()<CR>", { desc = "open files" })
 -- require("mini.completion").setup {
 --   delay = { completion = 100, info = 100, signature = 50 },
 -- }
