@@ -126,8 +126,8 @@ vim.keymap.set("n", "m4", function()
   vim.api.nvim_feedkeys("i", "n", false)
 end, { desc = "open yazi in terminal" })
 
-vim.keymap.set("n", "<leader>tf", function()
-  local cmd = "git log -p " .. vim.fn.expand "%:p"
+vim.keymap.set("n", "<leader>tl", function()
+  local cmd = 'git log -p "' .. vim.fn.expand "%:p" .. '"'
   require("harpoon.term").sendCommand(1, cmd)
   require("harpoon.term").gotoTerminal(1)
 end, { desc = "open git log for this file in terminal" })
@@ -137,7 +137,7 @@ vim.keymap.set("n", "<leader>tt", function()
   if not root then
     root = vim.fn.getcwd()
   end
-  local cmd = "tig -C " .. root
+  local cmd = 'tig -C "' .. root .. '"'
   require("harpoon.term").sendCommand(1, cmd)
   require("harpoon.term").gotoTerminal(1)
 end, { desc = "open tig" })

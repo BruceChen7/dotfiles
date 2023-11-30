@@ -22,9 +22,11 @@ local find_root_dir = function()
   return lspconfig_util.root_pattern(".obsidian", ".git")(buf_name)
 end
 
-local relative_path = function(a, b)
-  local Path = require "plenary.path"
-  return Path:new(a):make_relative(b)
+local relative_path = function(dest, src)
+  -- call shell command realpath
+  local cmd = string.format("realpath --relative-to='%s' '%s'", src, dest)
+  local result = vim.fn.system(cmd)
+  return string.gsub(result, "\n", "")
 end
 
 -- request value
@@ -42,13 +44,10 @@ source.complete = function(self, request, callback)
   local q = string.sub(request.context.cursor_before_line, request.offset)
 
   local trigger_character = request.context.cursor_before_line
+  local after_charactor = request.context.cursor_after_line
 
-  print("q is ", vim.inspect(q), "trigger_character is ", trigger_character)
-  -- if trigger_character not starts with [[
-  if string.sub(trigger_character, 1, 2) ~= "[[" then
-    print("not starts with [[ ", trigger_character)
-    return
-  end
+  print("q is ", vim.inspect(q), "trigger_character is ", trigger_character .. after_charactor)
+  -- 从trigger_character后向前查找\[\[ 没有找到则返回
 
   local root = find_root_dir()
   if not root then
@@ -57,30 +56,47 @@ source.complete = function(self, request, callback)
 
   -- deal with event
   local items = {}
+  local seen = {}
   local function on_event(_, data, event)
     if event == "stdout" then
       local messages = data
       print(vim.inspect(messages))
+      if #messages == 0 then
+        return
+      end
+      local buf_path = vim.api.nvim_buf_get_name(0)
 
       -- 遍历messages
       for _, m in ipairs(messages) do
-        -- 获取当前buffer 的绝对路径
-        local buf_path = vim.api.nvim_buf_get_name(0)
-        -- 将m相对路径转为绝对路径
-        local m_path = vim.fn.fnamemodify(m, ":p")
-        local rel_path = relative_path(m_path, buf_path)
+        if m ~= "" then
+          -- 获取当前buffer 的绝对路径
+          -- 将m相对路径转为绝对路径
+          local m_path = vim.fn.fnamemodify(m, ":p")
+          local rel_path = relative_path(m_path, buf_path)
 
-        print("buf_path is ", buf_path, "rel_path is ", rel_path, "m_path is ", m_path)
+          if not seen[rel_path] then
+            -- append item
+            table.insert(items, {
+              label = rel_path,
+            })
+            seen[rel_path] = true
+          end
+
+          print("buf_path is ", buf_path, "rel_path is ", rel_path, "m_path is ", m_path)
+          -- print("items is ", vim.inspect(items))
+        end
       end
 
       if request.max_item_count ~= nil and #items >= request.max_item_count then
         -- 停止该job
         vim.fn.jobstop(self.running_job_id)
         -- 给出相关的items
-        callback { items = items, isIncomplete = false }
+        print("items reach max", vim.inspect(items))
+        callback { items = items, isIncomplete = true }
         return
       end
 
+      print("items is ", vim.inspect(items))
       callback { items = items, isIncomplete = true }
     end
 
@@ -91,7 +107,8 @@ source.complete = function(self, request, callback)
     end
 
     if event == "exit" then
-      callback { items = items, isIncomplete = false }
+      print("exit is ", vim.inspect(items))
+      callback { items = items, isIncomplete = true }
     end
   end
 

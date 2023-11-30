@@ -68,11 +68,10 @@ cmp.setup {
   sources = {
     { name = "nvim_lsp", priority = 1000 },
     { name = "luasnip", priority = 700 },
-    { name = "copilot", priority = 600 },
+    -- { name = "copilot", priority = 600 },
     { name = "git" },
     { name = "path" },
     { name = "nvim_lua" }, -- with vim.api complete
-    { name = "git" },
     {
       name = "buffer",
       keyword_length = 3,
@@ -82,11 +81,12 @@ cmp.setup {
         end,
       },
       priority = 100,
+      max_item_count = 5,
     },
     { name = "codeium", priority = 800 },
     { name = "crates" },
     -- { name = "cmp_tabnine", priority = 700 },
-    { name = "md_link", keyword_length = 3 },
+    { name = "md_link", keyword_length = 2 },
   },
   matching = {
     disallow_fuzzy_matching = true,
