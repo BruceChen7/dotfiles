@@ -786,18 +786,18 @@ require("lazy").setup {
     "sainnhe/gruvbox-material",
   },
 
-  {
-    "jakewvincent/mkdnflow.nvim",
-    config = function()
-      require("mkdnflow").setup {
-        -- Config goes here; leave blank for defaults
-      }
-      -- current buffer only
-      vim.keymap.set("n", "<leader>mk", ":MkdnCreateLink<CR>", { silent = true, desc = "create link" })
-    end,
-    ft = "markdown",
-  },
-
+  -- {
+  --   "jakewvincent/mkdnflow.nvim",
+  --   config = function()
+  --     require("mkdnflow").setup {
+  --       -- Config goes here; leave blank for defaults
+  --     }
+  --     -- current buffer only
+  --     vim.keymap.set("n", "<leader>mk", ":MkdnCreateLink<CR>", { silent = true, desc = "create link" })
+  --   end,
+  --   ft = "markdown",
+  -- },
+  --
   {
     "junnplus/lsp-setup.nvim",
     dependencies = {

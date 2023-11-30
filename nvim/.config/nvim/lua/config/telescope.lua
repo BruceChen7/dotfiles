@@ -51,7 +51,6 @@ if not status_ok then
   return
 end
 
-local opts = { noremap = true, silent = true }
 local actions = require "telescope.actions"
 
 -- disable preview binaries
