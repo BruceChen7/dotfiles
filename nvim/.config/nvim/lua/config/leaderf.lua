@@ -10,7 +10,17 @@ vim.g.Lf_ShowRelativePath = 0
 vim.g.Lf_ShowDevIcons = 1
 -- " 隐藏帮助
 vim.g.Lf_HideHelp = 0
+vim.g.Lf_py = "/usr/bin/python3"
+-- " 使用python
+-- if is in linux
+if vim.fn.has "macunix" ~= 1 then
+  vim.g.python3_host_prog = "/usr/local/bin/python3"
+end
 
+-- if is in mac
+if vim.fn.has "macunix" then
+  vim.g.python3_host_prog = "/usr/bin/python3"
+end
 --  gtags database auto update
 vim.g.Lf_GtagsAutoUpdate = 1
 vim.g.Lf_MruMaxFiles = 2048
