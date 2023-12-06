@@ -2,6 +2,12 @@ local mark = require "harpoon.mark"
 local ui = require "harpoon.ui"
 local term = require "harpoon.term"
 
+local find_root_dir = function()
+  local buf_name = vim.api.nvim_buf_get_name(0)
+  local lspconfig_util = require "lspconfig.util"
+  return lspconfig_util.root_pattern("go.mod", ".git", "pyproject.toml")(buf_name)
+end
+
 vim.keymap.set("n", "<space>ha", function()
   mark.add_file()
 end, { desc = "add harpoon bookmark" })
@@ -71,6 +77,13 @@ local function get_test_command()
     end
   end
 
+  if filetype == "python" then
+    -- local root = find_root_dir()
+    -- 获取当前buffer所在的目录
+    local dir = vim.fn.fnamemodify(buf_name, ":p:h")
+    return "cd " .. dir .. " && python3 -m unittest discover -s ./"
+  end
+
   -- 获取当前buffer的绝对路径
   local function_name = get_go_nearest_function()
   -- function name whether start with Test
@@ -112,12 +125,6 @@ vim.keymap.set("n", "m3", function()
   term.sendCommand(1, cmd)
   require("harpoon.term").gotoTerminal(1)
 end, { desc = "open go test in terminal" })
-
-local find_root_dir = function()
-  local buf_name = vim.api.nvim_buf_get_name(0)
-  local lspconfig_util = require "lspconfig.util"
-  return lspconfig_util.root_pattern("go.mod", ".git")(buf_name)
-end
 
 vim.keymap.set("n", "m4", function()
   term.sendCommand(1, "yazi")
