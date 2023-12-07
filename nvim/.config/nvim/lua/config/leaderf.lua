@@ -10,19 +10,14 @@ vim.g.Lf_ShowRelativePath = 0
 vim.g.Lf_ShowDevIcons = 1
 -- " 隐藏帮助
 vim.g.Lf_HideHelp = 0
-vim.g.Lf_py = "/usr/bin/python3"
--- " 使用python
--- if is in linux
-if vim.fn.has "macunix" ~= 1 then
-  vim.g.python3_host_prog = "/usr/local/bin/python3"
-end
+vim.g.Lf_py = "/usr/local/bin/python3"
 
 -- if is in mac
 if vim.fn.has "macunix" then
   vim.g.python3_host_prog = "/usr/bin/python3"
 end
 --  gtags database auto update
-vim.g.Lf_GtagsAutoUpdate = 1
+vim.g.Lf_GtagsAutoUpdate = 0
 vim.g.Lf_MruMaxFiles = 2048
 -- " 如何识别项目目录，从当前文件目录向父目录递归知道碰到下面的文件/目录
 vim.g.Lf_RootMarkers = { ".project", ".root", ".svn", ".git", "go.mod", "cargo.toml" }

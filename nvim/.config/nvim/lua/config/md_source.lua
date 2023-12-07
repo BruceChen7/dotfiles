@@ -40,10 +40,9 @@ end
 -- group_index integer|nil
 -- entry_filter nil|function(entry: cmp.Entry, ctx: cmp.Context): boolean
 source.complete = function(self, request, callback)
-  if 1 == 1 then
+  if true then
     return
   end
-
   print(vim.inspect(request))
   local q = string.sub(request.context.cursor_before_line, request.offset)
 

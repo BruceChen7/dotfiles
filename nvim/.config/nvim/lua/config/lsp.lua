@@ -15,7 +15,7 @@ vim.lsp.util.stylize_markdown = function(bufnr, contents, opts)
   return contents
 end
 
-function find_definition()
+local function find_definition()
   -- 如果当前的文件是c, cpp, h文件
   local file_type = vim.bo.filetype
   if file_type == "c" or file_type == "cpp" or file_type == "h" then
@@ -44,7 +44,9 @@ function find_definition()
     execute 'Telescope lsp_definitions'
   ]]
 end
-vim.keymap.set("n", "gd", "<cmd>lua find_definition()<CR>", { noremap = true, silent = true, desc = "Find Definition" })
+vim.keymap.set("n", "gd", function()
+  find_definition()
+end, { noremap = true, silent = true, desc = "Find Definition" })
 vim.keymap.set(
   "n",
   "gi",

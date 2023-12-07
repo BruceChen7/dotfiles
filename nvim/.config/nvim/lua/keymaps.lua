@@ -229,6 +229,15 @@ vim.api.nvim_create_autocmd("BufHidden", {
   end,
 })
 
+local mk_diary_file = function()
+  local now = os.date "%Y-%m-%d"
+  local dir = "~/work/notes/Calendar/Daily Notes"
+  local file = dir .. "/" .. now .. ".md"
+  vim.api.nvim_command(":e " .. file)
+end
+
+vim.keymap.set("n", "<leader>md", mk_diary_file, { desc = "mk diary file" })
+
 vim.keymap.set("n", "<space>tc", function()
   local find_root_dir = function()
     local buf_name = vim.api.nvim_buf_get_name(0)
