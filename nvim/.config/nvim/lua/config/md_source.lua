@@ -1,4 +1,14 @@
 local source = {}
+
+local defaults = {
+  keyword_length = 3,
+  -- start with [[ ..]]
+  keyword_pattern = "%[%[%s*([%w%-%s]*)%s*%]%]",
+}
+
+source.get_trigger_characters = function()
+  return { "[" }
+end
 source.new = function()
   local timer = vim.uv.new_timer()
   vim.api.nvim_create_autocmd("VimLeavePre", {
@@ -29,109 +39,79 @@ local relative_path = function(dest, src)
   return string.gsub(result, "\n", "")
 end
 
--- request value
--- name string
--- option table|nil
--- priority integer|nil
--- trigger_characters string[]|nil
--- keyword_pattern string|nil
--- keyword_length integer|nil
--- max_item_count integer|nil
--- group_index integer|nil
--- entry_filter nil|function(entry: cmp.Entry, ctx: cmp.Context): boolean
+source.get_keyword_length = function()
+  -- 以[[ 开头，以]] 结尾
+  return [[\s*\zs\(\[\+\(\w\+\)\?]]
+end
+-- nvim-cmp/lua/cmp/types/lsp.lua
 source.complete = function(self, request, callback)
-  if true then
-    return
-  end
+  local input = request.context.cursor_line
   print(vim.inspect(request))
-  local q = string.sub(request.context.cursor_before_line, request.offset)
+  local filename = input:match "%[%[%s*([^]%]]+)%s*%]%]"
+  if filename then
+    print(vim.inspect(filename))
+    local path = find_root_dir()
+    print("root dir: " .. path)
+    -- using fd to search file
+    local cmd = string.format(
+      "fd --type f --hidden --follow --color never --exclude .obsidian --exclude .git --absolute-path '%s' '%s'",
+      filename,
+      path
+    )
+    local result = vim.fn.system(cmd)
+    print(vim.inspect(result))
+    -- split result by newline
+    local files = vim.split(result, "\n")
 
-  local trigger_character = request.context.cursor_before_line
-  local after_charactor = request.context.cursor_after_line
+    print(vim.inspect(files))
+    local items = {}
+    local filterText = "[[" .. filename .. "]]"
+    print("filterText: " .. filterText)
+    for i = 1, #files do
+      local file = files[i]
+      -- trim \newline
+      file = string.gsub(file, "\n", "")
 
-  print("q is ", vim.inspect(q), "trigger_character is ", trigger_character .. after_charactor)
-  -- 从trigger_character后向前查找\[\[ 没有找到则返回
+      -- vim获取文件名称
+      local name = vim.fn.fnamemodify(file, ":t")
+      print("file: " .. file)
+      print("name: " .. name)
+      local entry = "[" .. name .. "](" .. file .. ")"
+      print("entry: " .. entry)
 
-  local root = find_root_dir()
-  if not root then
-    return
+      if file ~= "" then
+        local row = request.context.cursor.row
+        print("start is ", row)
+        table.insert(items, {
+          label = entry,
+          word = entry,
+          filterText = filterText,
+          -- 用来替换原来的文本
+          textEdit = {
+            range = {
+              start = {
+                line = row - 1,
+                character = 1,
+              },
+              ["end"] = {
+                line = row - 1,
+                character = 30,
+              },
+            },
+          },
+          newText = entry,
+        })
+      end
+    end
+    -- print("items: " .. vim.inspect(items))
+    callback { items = items, isIncomplete = true }
+  else
+    callback { isIncomplete = true }
   end
+end
 
-  -- deal with event
-  local items = {}
-  local seen = {}
-  local function on_event(_, data, event)
-    if event == "stdout" then
-      local messages = data
-      print(vim.inspect(messages))
-      if #messages == 0 then
-        return
-      end
-      local buf_path = vim.api.nvim_buf_get_name(0)
-
-      -- 遍历messages
-      for _, m in ipairs(messages) do
-        if m ~= "" then
-          -- 获取当前buffer 的绝对路径
-          -- 将m相对路径转为绝对路径
-          local m_path = vim.fn.fnamemodify(m, ":p")
-          local rel_path = relative_path(m_path, buf_path)
-
-          if not seen[rel_path] then
-            -- append item
-            table.insert(items, {
-              label = rel_path,
-            })
-            seen[rel_path] = true
-          end
-
-          print("buf_path is ", buf_path, "rel_path is ", rel_path, "m_path is ", m_path)
-          -- print("items is ", vim.inspect(items))
-        end
-      end
-
-      if request.max_item_count ~= nil and #items >= request.max_item_count then
-        -- 停止该job
-        vim.fn.jobstop(self.running_job_id)
-        -- 给出相关的items
-        print("items reach max", vim.inspect(items))
-        callback { items = items, isIncomplete = true }
-        return
-      end
-
-      print("items is ", vim.inspect(items))
-      callback { items = items, isIncomplete = true }
-    end
-
-    if event == "stderr" and request.option.debug then
-      vim.cmd "echohl Error"
-      vim.cmd('echomsg "' .. table.concat(data, "") .. '"')
-      vim.cmd "echohl None"
-    end
-
-    if event == "exit" then
-      print("exit is ", vim.inspect(items))
-      callback { items = items, isIncomplete = true }
-    end
-  end
-
-  self.timer:stop()
-  -- 开启一个timer
-  self.timer:start(
-    request.option.debounce or 100,
-    0,
-    vim.schedule_wrap(function()
-      local cmd = string.format("fd  --follow --type file --color never '%s' %s", q, root)
-      print("cmd is ", cmd)
-      vim.fn.jobstop(self.running_job_id)
-      self.running_job_id = vim.fn.jobstart(cmd, {
-        on_stderr = on_event,
-        on_stdout = on_event,
-        on_exit = on_event,
-        cwd = root or vim.fn.getcwd(),
-      })
-    end)
-  )
+source.get_position_encoding_kind = function()
+  return "utf-8"
 end
 
 local ok, cmp = pcall(require, "cmp")

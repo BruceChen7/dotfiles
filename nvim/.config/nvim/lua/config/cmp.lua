@@ -85,8 +85,8 @@ cmp.setup {
     },
     { name = "codeium", priority = 800 },
     { name = "crates" },
-    -- { name = "cmp_tabnine", priority = 700 },
-    { name = "md_link", keyword_length = 2 },
+    { name = "md_link", keyword_length = 3 },
+    { name = "calc" },
   },
   matching = {
     disallow_fuzzy_matching = true,
@@ -138,9 +138,10 @@ cmp.setup {
         Event = "",
         Operator = "",
         TypeParameter = " ",
-        Codeium = "",
+        Codeium = " ",
         TabNine = " ",
         Copilot = "",
+        MdLink = " ",
       }
       local meta_type = vim_item.kind
       -- load lspkind icons
@@ -153,6 +154,7 @@ cmp.setup {
         luasnip = " LuaSnip",
         tags = " Tags",
         codeium = " Codeium",
+        md_link = " MdLink",
         copilot = " Copilot",
         git = "Git",
       })[entry.source.name]

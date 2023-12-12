@@ -100,6 +100,7 @@ require("lazy").setup {
       "hrsh7th/cmp-nvim-lua",
       "hrsh7th/cmp-nvim-lsp-document-symbol",
       "tamago324/cmp-zsh",
+      "hrsh7th/cmp-calc",
     },
     event = "InsertEnter",
     config = function()
