@@ -17,7 +17,9 @@ local cmp = require "cmp"
 --
 local function select_next_item(fallback)
   if cmp.visible() then
-    cmp.select_next_item()
+    cmp.select_next_item {
+      behavior = cmp.SelectBehavior.Select,
+    }
   elseif luasnip.expand_or_jumpable() then
     luasnip.expand_or_jump()
   else
@@ -27,7 +29,9 @@ end
 
 local function select_prev_item(fallback)
   if cmp.visible() then
-    cmp.select_prev_item()
+    cmp.select_prev_item {
+      behavior = cmp.SelectBehavior.Select,
+    }
   elseif luasnip.jumpable(-1) then
     luasnip.jump(-1)
   else
@@ -85,8 +89,8 @@ cmp.setup {
     },
     { name = "codeium", priority = 800 },
     { name = "crates" },
-    { name = "md_link", keyword_length = 3 },
     { name = "calc" },
+    { name = "md_link" },
   },
   matching = {
     disallow_fuzzy_matching = true,
