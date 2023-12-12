@@ -242,7 +242,7 @@ vim.keymap.set("n", "<space>tc", function()
   local find_root_dir = function()
     local buf_name = vim.api.nvim_buf_get_name(0)
     local lspconfig_util = require "lspconfig.util"
-    return lspconfig_util.root_pattern("go.mod", ".git")(buf_name)
+    return lspconfig_util.root_pattern("go.mod", ".git", "pyproject.toml")(buf_name)
   end
   local root = find_root_dir()
   if not root then
