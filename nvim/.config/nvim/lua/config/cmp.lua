@@ -90,7 +90,7 @@ cmp.setup {
     { name = "codeium", priority = 800 },
     { name = "crates" },
     { name = "calc" },
-    { name = "md_link", keyword_length = 3, priority = 1000 },
+    -- { name = "md_link" },
   },
   matching = {
     disallow_fuzzy_matching = true,

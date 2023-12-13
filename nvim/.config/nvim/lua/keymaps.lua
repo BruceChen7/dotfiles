@@ -252,3 +252,71 @@ vim.keymap.set("n", "<space>tc", function()
   print("now is in " .. root)
   vim.cmd.tcd(root)
 end, { silent = true, desc = "cd to root" })
+
+local function copy_with_prefix()
+  local select = vim.fn.getline "."
+  -- 输出选择的文本
+  print("select is ", vim.inspect(select))
+
+  -- get select array first element
+
+  local selection = select
+  print("selection is ", selection)
+  local util = require "utils"
+  print("util is ", vim.inspect(util))
+
+  -- 删除两端的空白字符
+  selection = vim.trim(selection)
+  -- 如果选择的文本以#开头，则selection删除多个#
+  if string.sub(selection, 1, 1) == "#" then
+    -- trim开头的多个#
+    selection = util.remove_leading_char(selection, "#")
+  else
+    vim.notify "selection must start with #"
+    return
+  end
+
+  -- 移除最后不可打印字符
+  selection = string.gsub(selection, "%c", "")
+
+  selection = vim.trim(selection)
+  if selection == "" then
+    print "selection is empty"
+    return
+  end
+
+  -- 获取当前文件名称
+  local current_file = vim.fn.expand "%:t"
+  if current_file == "" then
+    print "No file name"
+    return
+  end
+  print("current file is ", current_file)
+
+  -- 添加前缀
+  local prefixed = "[" .. current_file .. "] " .. "(abcd#" .. selection .. ")"
+
+  -- 放入寄存器
+  vim.fn.setreg('"', prefixed)
+  print("Copied to clipboard: " .. prefixed)
+end
+
+vim.keymap.set("n", "<space>cy", function()
+  copy_with_prefix()
+end, { silent = true, desc = "copy with markdown reference link" })
+
+-- 定义一个函数获取内容并粘贴
+local function paste_regester()
+  local content = vim.fn.getreg '"'
+
+  if content ~= "" then
+    vim.fn.setreg('"', content)
+    vim.api.nvim_command 'normal! "0p'
+  else
+    vim.notify "empty resgister"
+  end
+end
+
+vim.keymap.set("n", "<space>cp", function()
+  paste_regester()
+end, { noremap = true, silent = true, desc = "paste markdown" })
