@@ -30,62 +30,144 @@ source.complete = function(self, request, callback)
   local input = request.context.cursor_line
   print("request is ", vim.inspect(request))
   print("input is ", vim.inspect(input))
-  local filename = input:match "%[%[%s*([^]%]]+)%s*%]%]"
-  if filename then
-    print(vim.inspect(filename))
-    local path = find_root_dir()
-    -- using fd to search file
-    local cmd = string.format(
-      "fd --type f --hidden --follow --color never --exclude .obsidian --exclude .git --absolute-path '%s' '%s'",
-      filename,
-      path
-    )
-    local result = vim.fn.system(cmd)
+
+  local comp = function(result)
     -- print(vim.inspect(result))
     -- split result by newline
-    local files = vim.split(result, "\n")
+
     local items = {}
-    for i = 1, #files do
-      local file = files[i]
+
+    for i = 1, #result do
+      local file = result[i]
       -- trim \newline
       file = string.gsub(file, "\n", "")
 
       -- vim获取文件名称
       local name = vim.fn.fnamemodify(file, ":t")
       local entry = "[" .. name .. "](" .. file .. ")"
-
-      if file ~= "" then
-        local row = request.context.cursor.row
-        table.insert(items, {
-          label = entry,
-          -- word = entry,
-          -- filterText = filterText,
-          -- 用来替换原来的文本
-          -- textEdit = {
-          --   range = {
-          --     start = {
-          --       line = row - 1,
-          --       character = 1,
-          --     },
-          --     ["end"] = {
-          --       line = row - 1,
-          --       character = 30,
-          --     },
-          --   },
-          -- },
-          -- newText = entry,
-        })
+      if file == "" or i == 100 then
+        break
       end
+
+      local row = request.context.cursor.row
+      table.insert(items, {
+        label = entry,
+        -- seems not working
+        -- 用来替换原来的文本
+        -- vim.api.nvim_strwidth(来获取文本的宽度)
+        -- character
+        -- textEdit = {
+        --   range = {
+        --     start = {
+        --       line = row - 1,
+        --       character = 0,
+        --     },
+        --     ["end"] = {
+        --       line = row - 1,
+        --       character = request.context.cursor.col + 1000,
+        --     },
+        --   },
+        --   newText = "mysql中的表",
+        -- },
+        -- textEdit = {
+        --   range = {
+        --     start = {
+        --       line = row - 1,
+        --       character = 0,
+        --     },
+        --     ["end"] = {
+        --       line = row - 1,
+        --       character = request.context.cursor.col - 1 + 2,
+        --     },
+        --   },
+        --   newText = entry,
+        -- },
+      })
     end
     -- items size is 0
     if #items == 0 then
       callback()
+      return
     end
-    -- print("items: " .. vim.inspect(items))
+    print("items: " .. vim.inspect(items))
     callback { items = items }
-  else
-    callback { isIncomplete = false }
   end
+
+  -- local row = request.context.cursor.row
+  -- sleep 100ms
+  -- vim.defer_fn(function()
+  --   print "sleep 100ms"
+  --   local items = {
+  --     {
+  --       label = "[hello]hello你好1",
+  --       textEdit = {
+  --         range = {
+  --           start = {
+  --             line = row - 1,
+  --             character = 0,
+  --           },
+  --           ["end"] = {
+  --             line = row - 1,
+  --             character = 100,
+  --           },
+  --         },
+  --         newText = "[hello]hello你好",
+  --       },
+  --     },
+  --
+  --     {
+  --       label = "[hello]hello你好2",
+  --       textEdit = {
+  --         range = {
+  --           start = {
+  --             line = row - 1,
+  --             character = 0,
+  --           },
+  --           ["end"] = {
+  --             line = row - 1,
+  --             character = 100,
+  --           },
+  --         },
+  --         newText = "[hello]hello你好2",
+  --       },
+  --     },
+  --   }
+  --   callback {
+  --     isIncomplete = true,
+  --     items = items,
+  --   }
+  --   print(vim.inspect(items))
+  --   if true then
+  --     return
+  --   end
+  -- end, 20)
+
+  local filename = input:match "%[%[%s*([^]%]]+)%s*%]%]"
+  if filename == "" or not filename then
+    return
+  end
+  print("filename is ", vim.inspect(filename))
+  local path = find_root_dir()
+  -- using fd to search file
+  local cmd = string.format(
+    "fd --type f --hidden --follow --color never --exclude .obsidian --exclude .git --absolute-path '%s' '%s'",
+    filename,
+    path
+  )
+  print("cmd is", vim.inspect(cmd))
+  -- -- add a job
+  vim.fn.jobstart(cmd, {
+    on_stdout = function(_, data)
+      if #data == 0 then
+        return
+      end
+      if #data == 1 and data[1] == "" then
+        return
+      end
+      -- print("data is ", vim.inspect(data))
+      comp(data)
+    end,
+  })
 end
 
 source.get_position_encoding_kind = function()
