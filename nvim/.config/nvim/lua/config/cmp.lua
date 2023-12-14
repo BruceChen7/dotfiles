@@ -10,7 +10,6 @@ local luasnip = require "luasnip"
 -- " noinsert: Do not insert text until a selection is made
 -- " noselect: Do not select, force user to select one from the menu
 vim.o.completeopt = "menuone,noselect"
-
 -- nvim-cmp setup
 local cmp = require "cmp"
 

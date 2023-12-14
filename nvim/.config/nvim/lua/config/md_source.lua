@@ -7,19 +7,6 @@ source.new = function()
   return setmetatable({}, { __index = source })
 end
 
-local find_root_dir = function()
-  local buf_name = vim.api.nvim_buf_get_name(0)
-  local lspconfig_util = require "lspconfig.util"
-  return lspconfig_util.root_pattern(".obsidian", ".git")(buf_name)
-end
-
-local relative_path = function(dest, src)
-  -- call shell command realpath
-  local cmd = string.format("realpath --relative-to='%s' '%s'", src, dest)
-  local result = vim.fn.system(cmd)
-  return string.gsub(result, "\n", "")
-end
-
 -- 这个不触发pattern的补全，而是触发补全的场景下，如果继续输入, 高亮匹配的部分，并匹配
 source.get_keyword_pattern = function()
   return [[\k\+]]
@@ -147,7 +134,8 @@ source.complete = function(self, request, callback)
     return
   end
   print("filename is ", vim.inspect(filename))
-  local path = find_root_dir()
+  local utils = require "utils"
+  local path = utils.find_root_dir()
   -- using fd to search file
   local cmd = string.format(
     "fd --type f --hidden --follow --color never --exclude .obsidian --exclude .git --absolute-path '%s' '%s'",

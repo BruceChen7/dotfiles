@@ -239,12 +239,8 @@ end
 vim.keymap.set("n", "<leader>md", mk_diary_file, { desc = "mk diary file" })
 
 vim.keymap.set("n", "<space>tc", function()
-  local find_root_dir = function()
-    local buf_name = vim.api.nvim_buf_get_name(0)
-    local lspconfig_util = require "lspconfig.util"
-    return lspconfig_util.root_pattern("go.mod", ".git", "pyproject.toml")(buf_name)
-  end
-  local root = find_root_dir()
+  local utils = require "utils"
+  local root = utils.find_root_dir()
   if not root then
     print "no root dir"
     return

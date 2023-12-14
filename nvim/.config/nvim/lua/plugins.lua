@@ -513,11 +513,9 @@ require("lazy").setup {
   {
     "keaising/im-select.nvim",
     config = function()
-      local is_linux = function()
-        return vim.fn.has "macunix" ~= 1
-      end
+      local utils = require "utils"
       local get_im_select = function()
-        if is_linux() then
+        if not utils.is_mac() then
           return "keyboard-us"
         else
           return "com.apple.keylayout.ABC"
@@ -525,7 +523,7 @@ require("lazy").setup {
       end
 
       local get_default_command = function()
-        if is_linux() then
+        if not utils.is_mac() then
           return "fcitx5-remote"
         else
           return "im-select"
