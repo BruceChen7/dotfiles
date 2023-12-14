@@ -38,3 +38,12 @@ vim.keymap.set("n", "<leader>mf", ":lua MiniFiles.open()<CR>", { desc = "open fi
 -- -- use c-j and c-k to navigate completion
 -- vim.keymap.set("i", "<C-j>", [[pumvisible() ? "\<C-n>" : ""]], { expr = true })
 -- vim.keymap.set("i", "<C-k>", [[pumvisible() ? "\<C-p>" : ""]], { expr = true })
+
+require("mini.pick").setup {
+  mappings = {
+    move_down = "<C-j>",
+    move_up = "<C-k>",
+  },
+}
+
+require("mini.extra").setup {}
