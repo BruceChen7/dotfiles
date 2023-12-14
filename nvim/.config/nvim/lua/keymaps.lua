@@ -281,23 +281,24 @@ local function copy_with_prefix()
     return
   end
 
-  -- 获取当前文件名称
-  local current_file = vim.fn.expand "%:t"
-  if current_file == "" then
+  -- 获取当前文件的绝对路径
+  local current_file_abs_path = vim.fn.expand "%:p"
+  if current_file_abs_path == "" then
     print "No file name"
     return
   end
-  print("current file is ", current_file)
+  local current_file_name = vim.fn.expand "%:t"
+  print("current file is ", current_file_abs_path)
 
   -- 添加前缀
-  local prefixed = "[" .. current_file .. "] " .. "(abcd#" .. selection .. ")"
+  local prefixed = "[" .. current_file_name .. "]" .. "(" .. current_file_abs_path .. "#" .. selection .. ")"
 
   -- 放入寄存器
   vim.fn.setreg('"', prefixed)
   print("Copied to clipboard: " .. prefixed)
 end
 
-vim.keymap.set("n", "<space>cy", function()
+vim.keymap.set("n", "\\cy", function()
   copy_with_prefix()
 end, { silent = true, desc = "copy with markdown reference link" })
 
@@ -306,13 +307,53 @@ local function paste_regester()
   local content = vim.fn.getreg '"'
 
   if content ~= "" then
-    vim.fn.setreg('"', content)
+    -- content is `[2023-12-13.md](2023-12-13.md#test)`
+    -- 获取() 中的内容
+    local start_index = string.find(content, "%(")
+    local end_index = string.find(content, "%)")
+    local selection = string.sub(content, start_index + 1, end_index - 1)
+    local description = string.sub(content, 1, start_index - 1)
+    print("selection is ", selection)
+    print("descrption is ", description)
+    start_index = string.find(selection, "#")
+    assert(start_index ~= nil)
+    -- including #
+    local header_content = string.sub(selection, start_index + 1)
+    print("header content is ", header_content)
+    local dest_file_path = string.sub(selection, 1, start_index - 1)
+    print("dest file path is ", dest_file_path)
+
+    -- 获取当前文件的绝对路径
+    local current_file_abs_path = vim.fn.expand "%:p"
+    if current_file_abs_path == "" then
+      print "No file name"
+      return
+    end
+    print("current file is ", current_file_abs_path)
+    local utils = require "utils"
+
+    local current_file_name = vim.fn.expand "%:t"
+    local current_file_dir = vim.fn.fnamemodify(current_file_abs_path, ":h")
+    local relative_path = ""
+    if current_file_abs_path == dest_file_path then
+      relative_path = "./" .. current_file_name
+    else
+      relative_path = utils.relative_path(current_file_dir, dest_file_path)
+    end
+
+    -- 将header_content中的空格替换为%20
+    local escaped_header_content = string.gsub(header_content, " ", "%%20")
+    local full_link = "[" .. header_content .. "]" .. "(" .. relative_path .. "#" .. escaped_header_content .. ")"
+    print("full link is ", full_link)
+
+    vim.fn.setreg('"', full_link)
     vim.api.nvim_command 'normal! "0p'
+    vim.fn.setreg('"', content)
   else
     vim.notify "empty resgister"
   end
 end
 
-vim.keymap.set("n", "<space>cp", function()
+vim.keymap.set("n", "\\cp", function()
   paste_regester()
 end, { noremap = true, silent = true, desc = "paste markdown" })

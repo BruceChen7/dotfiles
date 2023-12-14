@@ -11,11 +11,17 @@ M.find_root_dir = function()
   return lspconfig_util.root_pattern(".obsidian", ".git", "go.mod")(buf_name)
 end
 
-M.relative_path = function()
+M.relative_path = function(src, link_to_file_path)
   -- call shell command realpath
-  local cmd = string.format("realpath --relative-to='%s' '%s'", src, dest)
-  local result = vim.fn.system(cmd)
-  return string.gsub(result, "\n", "")
+  if not M:is_mac() then
+    local cmd = string.format("realpath --relative-to='%s' '%s'", link_to_file_path, src)
+    local result = vim.fn.system(cmd)
+    return string.gsub(result, "\n", "")
+  end
+  local cmd = "python3 -c \"import os.path; print(os.path.relpath('" .. link_to_file_path .. "', '" .. src .. "'))\""
+  local res = vim.fn.system(cmd)
+  print("res is ", res, "cmd is ", cmd)
+  return string.gsub(res, "\n", "")
 end
 
 M.is_mac = function()

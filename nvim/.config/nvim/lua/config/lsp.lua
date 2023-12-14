@@ -39,6 +39,7 @@ local function find_definition()
         ]]
       end
     end, 10)
+    return
   end
   vim.cmd [[
     execute 'Telescope lsp_definitions'
