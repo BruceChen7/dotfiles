@@ -17,7 +17,8 @@ local cmp = require "cmp"
 local function select_next_item(fallback)
   if cmp.visible() then
     cmp.select_next_item {
-      behavior = cmp.SelectBehavior.Select,
+      -- seems to fix md_source problem
+      -- behavior = cmp.SelectBehavior.Select,
     }
   elseif luasnip.expand_or_jumpable() then
     luasnip.expand_or_jump()
@@ -29,7 +30,7 @@ end
 local function select_prev_item(fallback)
   if cmp.visible() then
     cmp.select_prev_item {
-      behavior = cmp.SelectBehavior.Select,
+      -- behavior = cmp.SelectBehavior.Select,
     }
   elseif luasnip.jumpable(-1) then
     luasnip.jump(-1)
@@ -94,8 +95,8 @@ cmp.setup {
   matching = {
     disallow_fuzzy_matching = true,
     disallow_fullfuzzy_matching = true,
-    disallow_partial_fuzzy_matching = true,
-    disallow_partial_matching = true,
+    disallow_partial_fuzzy_matching = false,
+    disallow_partial_matching = false,
     disallow_prefix_unmatching = true,
   },
   sorting = {
