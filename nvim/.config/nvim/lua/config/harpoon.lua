@@ -73,10 +73,12 @@ local function get_test_command()
 
   if filetype == "python" then
     -- 获取当前buffer所在的目录
-    local dir = vim.fn.fnamemodify(buf_name, ":p:h")
     return "cd " .. dir .. " && python3 -m unittest discover -s ./"
   end
 
+  if filetype ~= "go" then
+    return
+  end
   -- 获取当前buffer的绝对路径
   local function_name = get_go_nearest_function()
   -- function name whether start with Test
@@ -97,7 +99,9 @@ local function get_test_command()
   local utils = require "utils"
   local export_cmd = ""
   if utils.is_mac() then
-    export_cmd = "export env=test && export cid=sg  && gvm use go1.14 "
+    if utils.is_in_working_dir() then
+      export_cmd = "export env=test && export cid=sg  && gvm use go1.14 "
+    end
   end
   if export_cmd == "" then
     return " cd " .. dir .. " && go test -gcflags=all=-l -run " .. function_name

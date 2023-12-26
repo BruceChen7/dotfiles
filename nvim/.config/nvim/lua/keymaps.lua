@@ -231,7 +231,8 @@ vim.api.nvim_create_autocmd("BufHidden", {
 
 local mk_diary_file = function()
   local now = os.date "%Y-%m-%d"
-  local dir = "~/work/notes/Calendar/Daily Notes"
+  local year = os.date "%Y"
+  local dir = "~/work/notes/Calendar/Daily Notes/" .. year
   local file = dir .. "/" .. now .. ".md"
   vim.api.nvim_command(":e " .. file)
 end
