@@ -314,15 +314,11 @@ local function paste_regester()
     local end_index = string.find(content, "%)")
     local selection = string.sub(content, start_index + 1, end_index - 1)
     local description = string.sub(content, 1, start_index - 1)
-    print("selection is ", selection)
-    print("descrption is ", description)
     start_index = string.find(selection, "#")
     assert(start_index ~= nil)
     -- including #
     local header_content = string.sub(selection, start_index + 1)
-    print("header content is ", header_content)
     local dest_file_path = string.sub(selection, 1, start_index - 1)
-    print("dest file path is ", dest_file_path)
 
     -- 获取当前文件的绝对路径
     local current_file_abs_path = vim.fn.expand "%:p"
@@ -344,7 +340,15 @@ local function paste_regester()
 
     -- 将header_content中的空格替换为%20
     local escaped_header_content = string.gsub(header_content, " ", "%%20")
-    local full_link = "[" .. header_content .. "]" .. "(" .. relative_path .. "#" .. escaped_header_content .. ")"
+    local relative_escaped_path = string.gsub(relative_path, " ", "%%20")
+    local full_link = "["
+      .. header_content
+      .. "]"
+      .. "("
+      .. relative_escaped_path
+      .. "#"
+      .. escaped_header_content
+      .. ")"
     print("full link is ", full_link)
 
     vim.fn.setreg('"', full_link)
