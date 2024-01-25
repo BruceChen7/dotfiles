@@ -77,6 +77,7 @@ require("lazy").setup {
       require "config/leaderf"
     end,
     event = "VeryLazy",
+    commit = "de8bb02024b2c4d89006d51b896b2808ddece527",
   },
 
   -- -- adds vscode-like pictograms to neovim built-in lsp
@@ -720,14 +721,14 @@ require("lazy").setup {
     },
   },
 
-  {
-    "andymass/vim-matchup",
-    config = function()
-      -- may set any options here
-      vim.g.matchup_matchparen_offscreen = { method = "popup" }
-    end,
-    event = "VeryLazy",
-  },
+  -- {
+  --   "andymass/vim-matchup",
+  --   config = function()
+  --     -- may set any options here
+  --     vim.g.matchup_matchparen_offscreen = { method = "popup" }
+  --   end,
+  --   event = "VeryLazy",
+  -- },
 
   {
     "smartpde/telescope-recent-files",
