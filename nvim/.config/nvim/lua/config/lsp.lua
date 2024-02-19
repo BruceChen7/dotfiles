@@ -100,12 +100,12 @@ vim.api.nvim_create_autocmd({ "InsertEnter" }, {
       "typescript",
     }
 
-    if versionThan9 then
-      local filetype = vim.bo.filetype
-      if contains(lang, filetype) then
-        vim.lsp.inlay_hint.enable(0, true)
-      end
-    end
+    -- if versionThan9 then
+    --   local filetype = vim.bo.filetype
+    --   if contains(lang, filetype) then
+    --     vim.lsp.inlay_hint.enable(0, true)
+    --   end
+    -- end
   end,
 })
 vim.api.nvim_create_autocmd({ "InsertLeave" }, {
@@ -117,11 +117,11 @@ vim.api.nvim_create_autocmd({ "InsertLeave" }, {
       "zig",
       "typescript",
     }
-    if versionThan9 then
-      if contains(lang, vim.bo.filetype) then
-        vim.lsp.inlay_hint.enable(0, false)
-      end
-    end
+    -- if versionThan9 then
+    --   if contains(lang, vim.bo.filetype) then
+    --     vim.lsp.inlay_hint.enable(0, false)
+    --   end
+    -- end
   end,
 })
 -- https://github.com/kevinhwang91/nvim-ufo
