@@ -99,8 +99,13 @@ local function get_test_command()
   local utils = require "utils"
   local export_cmd = ""
   if utils.is_mac() then
+    local root = utils.find_root_dir()
+    vim.notify("root is " .. root)
+    local lastPart = string.match(root, "([^/]+)$")
     if utils.is_in_working_dir() then
-      export_cmd = "export env=test && export cid=sg  && gvm use go1.14 "
+      export_cmd = "export env=test && export cid=id  && export PROJECT_NAME=luckyvideo && export MODULE_NAME="
+        .. lastPart
+        .. " && export SP_UNIX_SOCKET=/tmp/spex.sock"
     end
   end
   if export_cmd == "" then
@@ -115,6 +120,14 @@ vim.keymap.set("n", "m3", function()
   local cmd = get_test_command()
   if cmd == nil then
     return
+  end
+  local utils = require "utils"
+  if utils.is_mac() then
+    local spex_cmd =
+      "inp-client --mode=forward --local_network=unix --local_address=/tmp/spex.sock --remote_network=unix --remote_address=/run/spex/spex.sock"
+    vim.fn.jobstart(spex_cmd, {
+      on_stdout = function(_, data) end,
+    })
   end
   term.sendCommand(1, cmd)
   require("harpoon.term").gotoTerminal(1)
