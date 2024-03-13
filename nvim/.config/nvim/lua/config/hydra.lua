@@ -1,5 +1,6 @@
 local Hydra = require "hydra"
 local gitsigns = require "gitsigns"
+local before = require "before"
 
 Hydra {
   name = "Window",
@@ -17,6 +18,25 @@ Hydra {
       "n",
       function()
         vim.cmd "BufferLineCycleNext"
+      end,
+    },
+  },
+}
+Hydra {
+  name = "edit pos navigation",
+  mode = { "n" },
+  body = "<space>g",
+  heads = {
+    {
+      ";",
+      function()
+        before.jump_to_last_edit()
+      end,
+    },
+    {
+      ",",
+      function()
+        before.jump_to_next_edit()
       end,
     },
   },

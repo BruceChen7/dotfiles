@@ -146,6 +146,13 @@ vim.keymap.set("n", "<leader>tl", function()
   require("harpoon.term").gotoTerminal(1)
 end, { desc = "open git log for this file in terminal" })
 
+vim.keymap.set("n", "<leader>tbb", function()
+  local current_file_path_with_name = vim.fn.expand "%:p"
+  local cmd = "tig blame " .. current_file_path_with_name
+  require("harpoon.term").sendCommand(1, cmd)
+  require("harpoon.term").gotoTerminal(1)
+end, { desc = "tig blame current file in terminal" })
+
 vim.keymap.set("n", "<leader>tt", function()
   local utils = require "utils"
   local root = utils.find_root_dir()

@@ -103,7 +103,7 @@ require("lazy").setup {
       "tamago324/cmp-zsh",
       "hrsh7th/cmp-calc",
     },
-    event = "InsertEnter",
+    -- event = "InsertEnter",
     config = function()
       require "config/cmp"
       require "config/md_source"
@@ -111,6 +111,7 @@ require("lazy").setup {
     branch = "main",
     -- https://www.reddit.com/r/neovim/comments/162q5ca/whats_your_favorite_unknown_nvimvim_plugin/
     -- commit = "6c84bc75c64f778e9f1dcb798ed41c7fcb93b639",
+    ft = { "go", "lua", "python", "zig", "rust" },
   },
 
   --
@@ -298,7 +299,11 @@ require("lazy").setup {
   },
 
   {
-    "simrat39/rust-tools.nvim",
+    "vxpm/ferris.nvim",
+    event = "LspAttach",
+    config = function()
+      require("ferris").setup()
+    end,
     ft = { "rust" },
   },
 
@@ -786,19 +791,34 @@ require("lazy").setup {
   {
     "sainnhe/gruvbox-material",
   },
+  {
+    "dgagn/diagflow.nvim",
+    event = "LspAttach",
+    config = function()
+      require("diagflow").setup()
+    end,
+  },
+  {
+    "bloznelis/before.nvim",
+    config = function()
+      local before = require "before"
+      before.setup()
 
-  -- {
-  --   "jakewvincent/mkdnflow.nvim",
-  --   config = function()
-  --     require("mkdnflow").setup {
-  --       -- Config goes here; leave blank for defaults
-  --     }
-  --     -- current buffer only
-  --     vim.keymap.set("n", "<leader>mk", ":MkdnCreateLink<CR>", { silent = true, desc = "create link" })
-  --   end,
-  --   ft = "markdown",
-  -- },
-  --
+      -- Jump to previous entry in the edit history
+      vim.keymap.set("n", "<space>g;", before.jump_to_last_edit, { desc = "Jump to last edit position" })
+
+      -- Jump to next entry in the edit history
+      vim.keymap.set("n", "<space>g,", before.jump_to_next_edit, { desc = "Jump to next edit position" })
+
+      -- Look for previous edits in quickfix list
+      vim.keymap.set("n", "<space>gq", before.show_edits_in_quickfix, { desc = "Show edits in quickfix" })
+
+      -- Look for previous edits in telescope (needs telescope, obviously)
+      -- vim.keymap.set("n", "<space>", before.show_edits_in_telescope, {})
+    end,
+    event = "VeryLazy",
+  },
+
   {
     "junnplus/lsp-setup.nvim",
     dependencies = {

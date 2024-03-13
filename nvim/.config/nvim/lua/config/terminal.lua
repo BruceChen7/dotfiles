@@ -36,7 +36,7 @@ local Terminal = require("toggleterm.terminal").Terminal
 local lspconfig_util = require "lspconfig.util"
 local find_root = lspconfig_util.root_pattern ".git"
 
-function _Tig_TOGGLE()
+local function _Tig_TOGGLE()
   local root = find_root(vim.fn.expand "%:p")
   if not root then
     -- FIXME(ming.chen): use vim.notify()
@@ -48,13 +48,13 @@ function _Tig_TOGGLE()
 end
 
 -- https://devhints.io/tig
-function _Tig_Blame()
+local function _Tig_Blame()
   local root = find_root(vim.fn.expand "%:p")
   if not root then
-    -- FIXME(ming.chen): use notify instead
     root = vim.fn.getcwd()
+    vim.notify "use working directory instead"
   end
-  file_name = vim.fn.expand "%:p"
+  local file_name = vim.fn.expand "%:p"
   if not file_name then
     return
   end
@@ -107,7 +107,9 @@ function _GitUi()
 end
 local u = require "util"
 -- vim.keymap.set("n", "<leader>tg", ":lua _Tig_TOGGLE()<CR>")
-u.map("n", "<leader>tb", ":lua _Tig_Blame()<CR>")
+vim.keymap.set("n", "<leader>tbf", function()
+  _Tig_Blame()
+end, { desc = "get file history in git commit" })
 -- u.map("n", "<leader>tf", ":lua _Git_file_diff()<CR>")
 u.map("n", "<leader>gs", ":lua  _Git_Status()<CR>")
 u.map("n", "<leader>gdd", ":lua  _Git_Diff_Name_Only()<CR>")
