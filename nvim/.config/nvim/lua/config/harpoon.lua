@@ -14,7 +14,7 @@ vim.keymap.set("n", "<space>hp", function()
   ui.nav_prev()
 end, { desc = "nav prev bookmark" })
 
-vim.keymap.set("n", "<space>ht", function()
+vim.keymap.set("n", "\\\\", function()
   ui.toggle_quick_menu()
 end, { desc = "toggle quick menu" })
 

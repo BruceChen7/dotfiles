@@ -348,6 +348,7 @@ require("lazy").setup {
       require "config/harpoon"
     end,
     event = "VeryLazy",
+    commit = "ccae1b9bec717ae284906b0bf83d720e59d12b91",
   },
 
   -- colorscheme
@@ -751,15 +752,17 @@ require("lazy").setup {
     event = "LspAttach",
   },
 
-  {
-    "otavioschwanck/arrow.nvim",
-    opts = {
-      show_icons = true,
-      leader_key = "\\\\", -- Recommended to be a single key
-    },
-    event = "VeryLazy",
-  },
-
+  -- 不能在切换项目的时候显示
+  -- {
+  --   "otavioschwanck/arrow.nvim",
+  --   opts = {
+  --     show_icons = true,
+  --     leader_key = "\\\\", -- Recommended to be a single key
+  --     save_key = "git_root",
+  --   },
+  --   event = "VeryLazy",
+  -- },
+  --
   {
     "nvim-pack/nvim-spectre",
     config = function()
@@ -827,6 +830,22 @@ require("lazy").setup {
       -- vim.keymap.set("n", "<space>", before.show_edits_in_telescope, {})
     end,
     event = "VeryLazy",
+  },
+  {
+    "allaman/emoji.nvim",
+    version = "1.0.0", -- optionally pin to a tag
+    dependencies = {
+      -- optional for nvim-cmp integration
+      "hrsh7th/nvim-cmp",
+      -- optional for telescope integration
+      "nvim-telescope/telescope.nvim",
+    },
+    event = "InsertEnter",
+
+    opts = {
+      -- default is false
+      enable_cmp_integration = true,
+    },
   },
 
   {

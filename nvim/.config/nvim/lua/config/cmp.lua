@@ -90,6 +90,7 @@ cmp.setup {
     { name = "codeium", priority = 800 },
     { name = "crates" },
     { name = "calc" },
+    { name = "emoji" },
     -- { name = "md_link" },
   },
   matching = {
