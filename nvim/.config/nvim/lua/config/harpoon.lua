@@ -102,8 +102,17 @@ local function get_test_command()
     local root = utils.find_root_dir()
     vim.notify("root is " .. root)
     local lastPart = string.match(root, "([^/]+)$")
+    local project_name = "luckyvideo"
+    if lastPart == "ecommerce" then
+      project_name = "core"
+    else
+      project_name = "luckyvideo"
+    end
+
     if utils.is_in_working_dir() then
-      export_cmd = "export env=test && export cid=id  && export PROJECT_NAME=luckyvideo && export MODULE_NAME="
+      export_cmd = "export env=test && export cid=id && export PROJECT_NAME="
+        .. project_name
+        .. " && export MODULE_NAME="
         .. lastPart
         .. " && export SP_UNIX_SOCKET=/tmp/spex.sock"
     end
