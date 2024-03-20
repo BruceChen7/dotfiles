@@ -238,7 +238,6 @@ telescope.load_extension "neoclip"
 telescope.load_extension "zoxide"
 telescope.load_extension "harpoon"
 telescope.load_extension "recent_files"
-telescope.load_extension "emoji"
 vim.keymap.set("n", "<space>tg", ":Telescope live_grep<CR>", { desc = "Telescope live_grep" })
 vim.keymap.set("n", "<space>tr", ":Telescope resume<CR>", { desc = "Telescope resume" })
 vim.keymap.set("n", "<space>tf", "<cmd>Telescope find_files<cr>", { desc = "Telescope find_files" })
