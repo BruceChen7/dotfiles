@@ -66,9 +66,11 @@ cmp.setup {
     ghost_text = false,
     native_menu = false,
   },
-  -- view = {
-  --   entries = "native",
-  -- },
+  view = {
+    entries = {
+      follow_cursor = true,
+    },
+  },
   sources = {
     { name = "nvim_lsp", priority = 1000 },
     { name = "luasnip", priority = 700 },

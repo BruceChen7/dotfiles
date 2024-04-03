@@ -110,7 +110,7 @@ local function get_test_command()
     end
 
     if utils.is_in_working_dir() then
-      export_cmd = "export env=test && export cid=id && export PROJECT_NAME="
+      export_cmd = "export env=test && export cid=global && export PROJECT_NAME="
         .. project_name
         .. " && export MODULE_NAME="
         .. lastPart

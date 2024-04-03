@@ -251,6 +251,7 @@ require("lazy").setup {
       require "config/neogit"
     end,
     event = "VeryLazy",
+    branch = "nightly",
   },
 
   {
