@@ -419,30 +419,40 @@ require("lazy").setup {
   --   event = "LspAttach",
   -- },
 
-  {
-    "Exafunction/codeium.vim",
-    config = function()
-      if not use_ai() then
-        return
-      end
-      require "config/codeium"
-    end,
-    event = "InsertEnter",
-  },
+  -- {
+  --   "Exafunction/codeium.vim",
+  --   config = function()
+  --     if not use_ai() then
+  --       return
+  --     end
+  --     require "config/codeium"
+  --   end,
+  --   event = "InsertEnter",
+  -- },
 
   {
-    "Exafunction/codeium.nvim",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "hrsh7th/nvim-cmp",
-    },
+    "monkoose/neocodeium",
+    event = "VeryLazy",
     config = function()
-      if not use_ai() then
-        return
-      end
-      require("codeium").setup {}
+      local neocodeium = require "neocodeium"
+      neocodeium.setup()
+      vim.keymap.set("i", "<Right>", neocodeium.accept)
+      vim.keymap.set("i", "<A-w>", function()
+        require("neocodeium").accept_word()
+      end)
+      vim.keymap.set("i", "<A-a>", function()
+        require("neocodeium").accept_line()
+      end)
+      vim.keymap.set("i", "<Up>", function()
+        require("neocodeium").cycle_or_complete()
+      end)
+      vim.keymap.set("i", "<Down>", function()
+        require("neocodeium").cycle_or_complete(-1)
+      end)
+      vim.keymap.set("i", "<Left>", function()
+        require("neocodeium").clear()
+      end)
     end,
-    event = "InsertEnter",
   },
 
   {
