@@ -411,25 +411,6 @@ require("lazy").setup {
     cmd = "LspLensOn",
   },
 
-  -- {
-  --   "jinzhongjia/LspUI.nvim",
-  --   config = function()
-  --     require("LspUI").setup {}
-  --   end,
-  --   event = "LspAttach",
-  -- },
-
-  -- {
-  --   "Exafunction/codeium.vim",
-  --   config = function()
-  --     if not use_ai() then
-  --       return
-  --     end
-  --     require "config/codeium"
-  --   end,
-  --   event = "InsertEnter",
-  -- },
-
   {
     "monkoose/neocodeium",
     event = "VeryLazy",
@@ -641,22 +622,13 @@ require("lazy").setup {
     config = function()
       vim.keymap.set("n", "\\xx", function()
         require("trouble").open()
-      end)
+      end, { desc = "current Diagnostics" })
       vim.keymap.set("n", "\\xw", function()
         require("trouble").open "workspace_diagnostics"
-      end)
+      end, { desc = "Workspace Diagnostics" })
       vim.keymap.set("n", "\\xd", function()
         require("trouble").open "document_diagnostics"
-      end)
-      vim.keymap.set("n", "\\xq", function()
-        require("trouble").open "quickfix"
-      end)
-      vim.keymap.set("n", "\\xl", function()
-        require("trouble").open "loclist"
-      end)
-      vim.keymap.set("n", "\\gR", function()
-        require("trouble").open "lsp_references"
-      end)
+      end, { desc = "Document Diagnostics" })
     end,
   },
 

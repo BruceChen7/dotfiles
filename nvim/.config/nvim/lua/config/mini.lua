@@ -16,7 +16,7 @@ require("mini.pairs").setup {}
 
 -- https://github.com/oncomouse/dotfiles/blob/2a58fa952eacb751ff24361efd81308716a759c1/conf/vim/lua/dotfiles/plugins/mini-nvim.lua#L104
 require("mini.ai").setup {
-  custom_text_objects = {
+  custom_textobjects = {
     e = function()
       local from = { line = 1, col = 1 }
       local last_line_length = #vim.fn.getline "$"
