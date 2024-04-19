@@ -195,7 +195,15 @@ require("lsp-setup").setup {
         "--stdio",
       },
     },
-    pyright = {},
+    -- pyright = {},
+    basedpyright = {
+
+      settings = {
+        basedpyright = {
+          typeCheckingMode = "standard",
+        },
+      },
+    },
     -- pylsp = {
     --   settings = {
     --     pylsp = {
