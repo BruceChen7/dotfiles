@@ -71,14 +71,13 @@ require("lazy").setup {
     end,
   },
 
-  {
-    "Yggdroot/LeaderF",
-    config = function()
-      require "config/leaderf"
-    end,
-    event = "VeryLazy",
-    commit = "de8bb02024b2c4d89006d51b896b2808ddece527",
-  },
+  -- {
+  --   "Yggdroot/LeaderF",
+  --   config = function()
+  --     require "config/leaderf"
+  --   end,
+  --   event = "VeryLazy",
+  -- },
 
   -- -- adds vscode-like pictograms to neovim built-in lsp
   { "onsails/lspkind-nvim" },
@@ -282,6 +281,13 @@ require("lazy").setup {
   },
 
   {
+    "mrcjkb/rustaceanvim",
+    version = "^4",
+    -- plug is already lazy
+    lazy = false,
+  },
+
+  {
     "saecki/crates.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
@@ -297,15 +303,6 @@ require("lazy").setup {
       require("lsp-progress").setup()
     end,
     event = "LspAttach",
-  },
-
-  {
-    "vxpm/ferris.nvim",
-    event = "LspAttach",
-    config = function()
-      require("ferris").setup()
-    end,
-    ft = { "rust" },
   },
 
   {
