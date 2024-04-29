@@ -59,6 +59,8 @@ local function get_zig_test_declaration()
 end
 
 local function get_test_command()
+  -- 让vim 重新刷新当前buffer
+  vim.api.nvim_command "redraw"
   -- 获取当前buffer的文件类型
   local buf_name = vim.api.nvim_buf_get_name(0)
   local dir = vim.fn.fnamemodify(buf_name, ":p:h")
@@ -142,13 +144,6 @@ vim.keymap.set("n", "m3", function()
   require("harpoon.term").gotoTerminal(1)
 end, { desc = "open go test in terminal" })
 
-vim.keymap.set("n", "m4", function()
-  term.sendCommand(1, "yazi")
-  require("harpoon.term").gotoTerminal(1)
-  -- 用来在Insert模式打开终端
-  vim.api.nvim_feedkeys("i", "n", false)
-end, { desc = "open yazi in terminal" })
-
 vim.keymap.set("n", "<leader>tl", function()
   local cmd = 'git log -p "' .. vim.fn.expand "%:p" .. '"'
   require("harpoon.term").sendCommand(1, cmd)
@@ -230,16 +225,8 @@ vim.api.nvim_create_autocmd({ "TermOpen", "BufEnter" }, {
   group = term_augroup,
   pattern = "term://*", --> only applicable for "BufEnter", an ignored Lua table key when evaluating TermOpen
   callback = function()
-    -- 使用系统命令查看yazi进程是否存在
-    local cmd = "ps -ef | grep yazi | grep -v grep | awk '{print $2}'"
-    local yazi_pid = vim.fn.system(cmd)
-    vim.notify_once "kill yazi"
     -- insert
     vim.cmd "startinsert"
-    if yazi_pid ~= "" then
-      -- 输入q
-      vim.api.nvim_feedkeys("q", "n", false)
-    end
   end,
 })
 -- Automatically close terminal unless exit code isn't 0
