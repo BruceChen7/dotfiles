@@ -356,24 +356,35 @@ require("lazy").setup {
     "gennaro-tedesco/nvim-peekup",
   },
 
+  -- {
+  --   "AckslD/nvim-neoclip.lua",
+  --   dependencies = {
+  --     { "nvim-telescope/telescope.nvim" },
+  --   },
+  --   config = function()
+  --     require("neoclip").setup {
+  --       default_register = { '"', "+", "*" },
+  --       keys = {
+  --         telescope = {
+  --           i = {
+  --             -- default key is <c-k> which is conflict with telescope.nvim
+  --             -- https://github.com/AckslD/nvim-neoclip.lua
+  --             paste_behind = "<Nop>",
+  --           },
+  --         },
+  --       },
+  --     }
+  --   end,
+  --   event = "VeryLazy",
+  -- },
   {
-    "AckslD/nvim-neoclip.lua",
-    dependencies = {
-      { "nvim-telescope/telescope.nvim" },
-    },
+    "ptdewey/yankbank-nvim",
     config = function()
-      require("neoclip").setup {
-        default_register = { '"', "+", "*" },
-        keys = {
-          telescope = {
-            i = {
-              -- default key is <c-k> which is conflict with telescope.nvim
-              -- https://github.com/AckslD/nvim-neoclip.lua
-              paste_behind = "<Nop>",
-            },
-          },
-        },
+      require("yankbank").setup {
+        max_entries = 20,
+        num_behavior = "prefix",
       }
+      vim.keymap.set("n", "<leader>y", "<cmd>YankBank<CR>", { noremap = true, desc = "yank history list" })
     end,
     event = "VeryLazy",
   },
@@ -810,6 +821,26 @@ require("lazy").setup {
       -- Look for previous edits in telescope (needs telescope, obviously)
       -- vim.keymap.set("n", "<space>", before.show_edits_in_telescope, {})
     end,
+    event = "VeryLazy",
+  },
+  {
+    "yorickpeterse/nvim-tree-pairs",
+    config = function()
+      require("tree-pairs").setup()
+    end,
+    event = "VeryLazy",
+  },
+
+  {
+    "andrewferrier/debugprint.nvim",
+    opts = {},
+    dependencies = {
+      "echasnovski/mini.nvim", -- Needed to enable :ToggleCommentDebugPrints for NeoVim <= 0.9
+      "nvim-treesitter/nvim-treesitter", -- Needed to enable treesitter for NeoVim 0.8
+    },
+    -- Remove the following line to use development versions,
+    -- not just the formal releases
+    version = "*",
     event = "VeryLazy",
   },
 
