@@ -126,9 +126,10 @@ require("fzf-lua").setup {
       -- Rotate preview clockwise/counter-clockwise
       ["<F5>"] = "toggle-preview-ccw",
       ["<F6>"] = "toggle-preview-cw",
-      ["<S-down>"] = "preview-page-down",
-      ["<S-up>"] = "preview-page-up",
+      ["<c-l>"] = "preview-page-down",
+      ["<c-h>"] = "preview-page-up",
       ["<S-left>"] = "preview-page-reset",
+      ["<esc>"] = "abort",
     },
     fzf = {
       -- fzf '--bind=' options
@@ -142,8 +143,8 @@ require("fzf-lua").setup {
       -- Only valid with fzf previewers (bat/cat/git/etc)
       ["f3"] = "toggle-preview-wrap",
       ["f4"] = "toggle-preview",
-      ["shift-down"] = "preview-page-down",
-      ["shift-up"] = "preview-page-up",
+      ["ctrl-l"] = "preview-page-down",
+      ["ctrl-h"] = "preview-page-up",
     },
   },
   actions = {
