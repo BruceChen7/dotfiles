@@ -558,4 +558,4 @@ local zoxide = function()
     },
   })
 end
-vim.keymap.set("n", "<leader>zz", zoxide, { desc = "Zoxide" })
+-- vim.keymap.set("n", "<leader>zz", zoxide, { desc = "Zoxide" })

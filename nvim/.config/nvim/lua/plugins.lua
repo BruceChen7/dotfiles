@@ -11,6 +11,12 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.runtimepath:prepend(lazypath)
 
+local fl = setmetatable({}, {
+  __index = function(_, k)
+    return ([[<cmd>lua require('fzf-lua-overlay').%s()<cr>]]):format(k)
+  end,
+})
+
 -- make sure to set `mapleader` before lazy so your mappings are correct
 -- u.map("n", "<space>", "<Nop>")
 vim.g.mapleader = " "
@@ -572,6 +578,19 @@ require("lazy").setup {
       require("fzf-lua").setup {}
       require "config/fzf"
     end,
+    event = "VeryLazy",
+  },
+
+  {
+    "phanen/fzf-lua-overlay",
+    dependencies = { "ibhagwan/fzf-lua" },
+    init = function()
+      require("fzf-lua-overlay").init()
+    end,
+    keys = {
+      { "<leader>zz", fl.zoxide, desc = "Zoxide", noremap = true },
+      { "<m-l>", fl.recentfiles, desc = "Recent files", noremap = true },
+    },
     event = "VeryLazy",
   },
 
