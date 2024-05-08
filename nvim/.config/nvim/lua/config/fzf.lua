@@ -540,6 +540,7 @@ require("fzf-lua").setup {
   -- nbsp = '\xc2\xa0',
 }
 
+-- https://gist.github.com/Sombrer0Dev/0a84db975079bd2ecb4fea9205d3ebef
 local zoxide = function()
   local fzflua = require "fzf-lua"
 
