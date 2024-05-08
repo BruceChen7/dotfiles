@@ -26,6 +26,7 @@ o.incsearch = true
 o.showmatch = true
 o.showtabline = 2
 o.smartindent = true
+o.cmdheight = 0
 
 o.splitright = true
 o.splitbelow = true
