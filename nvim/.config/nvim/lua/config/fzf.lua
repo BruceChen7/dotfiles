@@ -384,7 +384,7 @@ require("fzf-lua").setup {
     -- default options are controlled by 'rg|grep_opts'
     -- cmd            = "rg --vimgrep",
     grep_opts = "--binary-files=without-match --line-number --recursive --color=auto",
-    rg_opts = "--column --line-number --no-heading --color=always --smart-case --max-columns=512",
+    rg_opts = "--column --line-number --no-heading --color=always --smart-case --max-columns=512 --no-ignore --hidden",
     -- set to 'true' to always parse globs in both 'grep' and 'live_grep'
     -- search strings will be split using the 'glob_separator' and translated
     -- to '--iglob=' arguments, requires 'rg'
