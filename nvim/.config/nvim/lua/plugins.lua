@@ -271,7 +271,7 @@ require("lazy").setup {
         -- build db file in current dir
         -- how to set db_file in ~/.cache/tags/
         -- db_file = "~/.cache/tags/",
-        picker = "telescope",
+        -- picker = "telescope",
         skip_picker_for_single_result = true,
         db_build_cmd_args = { "-bqkv" },
       },
@@ -453,15 +453,15 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
-  {
-    "nvim-telescope/telescope.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    config = function()
-      require "config/telescope"
-    end,
-    event = "VeryLazy",
-  },
-
+  -- {
+  --   "nvim-telescope/telescope.nvim",
+  --   dependencies = { "nvim-lua/plenary.nvim" },
+  --   config = function()
+  --     require "config/telescope"
+  --   end,
+  --   event = "VeryLazy",
+  -- },
+  --
   -- https://github.com/Innei/nvim-config-lua/blob/2b311daa7841af52226fc9b75add357c03eac078/lua/plugins/motion.lua#L10
   {
     "folke/flash.nvim",
@@ -564,14 +564,26 @@ require("lazy").setup {
   },
 
   {
-    "jvgrootveld/telescope-zoxide",
-    dependencies = {
-      "nvim-telescope/telescope.nvim",
-      "nvim-lua/popup.nvim",
-      "nvim-lua/plenary.nvim",
-    },
-    event = { "VeryLazy" },
+    "ibhagwan/fzf-lua",
+    -- optional for icon support
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      -- calling `setup` is optional for customization
+      require("fzf-lua").setup {}
+      require "config/fzf"
+    end,
+    event = "VeryLazy",
   },
+
+  -- {
+  --   "jvgrootveld/telescope-zoxide",
+  --   dependencies = {
+  --     "nvim-telescope/telescope.nvim",
+  --     "nvim-lua/popup.nvim",
+  --     "nvim-lua/plenary.nvim",
+  --   },
+  --   event = { "VeryLazy" },
+  -- },
 
   {
     "stevearc/conform.nvim",
@@ -602,12 +614,12 @@ require("lazy").setup {
   },
 
   -- color scheme
-  {
-    "hardhackerlabs/theme-vim",
-    config = function()
-      vim.cmd.colorscheme "hardhacker"
-    end,
-  },
+  -- {
+  --   "hardhackerlabs/theme-vim",
+  --   config = function()
+  --     vim.cmd.colorscheme "hardhacker"
+  --   end,
+  -- },
 
   {
     "nvim-lualine/lualine.nvim",
@@ -646,7 +658,7 @@ require("lazy").setup {
     config = function()
       require "config/bufferline"
     end,
-    event = "VeryLazy",
+    -- event = "VeryLazy",
   },
 
   {
@@ -732,6 +744,7 @@ require("lazy").setup {
     "smartpde/telescope-recent-files",
     event = "VeryLazy",
   },
+
   {
     "rcarriga/nvim-dap-ui",
     dependencies = {

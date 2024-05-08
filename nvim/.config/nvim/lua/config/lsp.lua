@@ -45,35 +45,10 @@ local function find_definition()
     execute 'Telescope lsp_definitions'
   ]]
 end
+
 vim.keymap.set("n", "gd", function()
   find_definition()
 end, { noremap = true, silent = true, desc = "Find Definition" })
-vim.keymap.set(
-  "n",
-  "gi",
-  "<cmd>Telescope lsp_implementations<CR>",
-  { noremap = true, silent = true, desc = "Find Implementation" }
-)
-vim.keymap.set(
-  "n",
-  "\\gs",
-  "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>",
-  { noremap = true, silent = true, desc = "Find Symbols" }
-)
-
-vim.keymap.set(
-  "n",
-  "gs",
-  "<cmd>Telescope lsp_document_symbols<CR>",
-  { noremap = true, silent = true, desc = "find Document Symbols" }
-)
-
-vim.keymap.set(
-  "n",
-  "gr",
-  "<cmd>Telescope lsp_references<CR>",
-  { noremap = true, silent = true, desc = "Find References" }
-)
 -- vim.keymap.set("n", "K", vim.lsp.buf.hover, { noremap = true, silent = true, desc = "Hover" })
 vim.keymap.set("n", "\\gr", "<cmd>lua vim.lsp.buf.rename()<CR>", { noremap = true, silent = true, desc = "Rename" })
 
