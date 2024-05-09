@@ -3,6 +3,7 @@ vim.keymap.set("n", "<space>tr", "<cmd>FzfLua resume<CR>", { desc = "FzfLua resu
 vim.keymap.set("n", "<c-p>", "<cmd>FzfLua files<cr>", { desc = "FzfLua find_files" })
 vim.keymap.set("n", "gr", "<cmd>FzfLua lsp_references<CR>", { noremap = true, silent = true, desc = "Find References" })
 vim.keymap.set("n", "<m-m>", "<cmd>FzfLua buffers<CR>", { noremap = true, silent = true, desc = "find buffers" })
+vim.keymap.set("n", "<m-l>", "<cmd>FzfLua oldfiles<CR>", { noremap = true, silent = true, desc = "find oldfiles" })
 vim.keymap.set(
   "n",
   "gi",
@@ -426,6 +427,7 @@ require("fzf-lua").setup {
     file_icons = true, -- show file icons?
     color_icons = true, -- colorize file|git icons
     sort_lastused = true, -- sort buffers() by last used
+    no_term_buffers = true,
     actions = {
       -- actions inherit from 'actions.buffers' and merge
       -- by supplying a table of functions we're telling
@@ -448,7 +450,7 @@ require("fzf-lua").setup {
     },
     fzf_opts = {
       -- hide tabnr
-      ["--delimiter"] = "'[\\):]'",
+      -- ["--delimiter"] = "'[\\):]'",
       ["--with-nth"] = "2..",
     },
   },
@@ -475,7 +477,7 @@ require("fzf-lua").setup {
     previewer = "builtin", -- set to 'false' to disable
     prompt = "BLines❯ ",
     show_unlisted = true, -- include 'help' buffers
-    no_term_buffers = false, -- include 'term' buffers
+    no_term_buffers = true, -- include 'term' buffers
     fzf_opts = {
       -- hide filename, tiebreak by line no.
       ["--delimiter"] = "'[\\]:]'",
@@ -534,6 +536,10 @@ require("fzf-lua").setup {
     -- severity_limit:  keep any equal or more severe (lower)
     -- severity_bound:  keep any equal or less severe (higher)
   },
+  lsp = {
+    jump_to_single_result = true,
+  },
+
   -- uncomment to use the old help previth icon rendering
   file_icon_padding = "",
   -- uncomment if your terminal/font does not support unicode character
@@ -559,7 +565,7 @@ local zoxide = function()
     },
   })
 end
--- vim.keymap.set("n", "<leader>zz", zoxide, { desc = "Zoxide" })
+vim.keymap.set("n", "<leader>tz", zoxide, { desc = "Zoxide" })
 --
 --
 -- TODO(ming.chen): add gitlab integration url
@@ -595,8 +601,6 @@ local open_url = function()
     fzflua.fzf_exec(url, {
       actions = {
         ["default"] = function(selected, _)
-          -- open url in browser
-          print("selected is ", vim.inspect(selected))
           vim.fn.jobstart("open " .. selected[1], { detach = true })
         end,
       },

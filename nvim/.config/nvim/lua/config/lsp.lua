@@ -23,7 +23,7 @@ local function find_definition()
     local row, col = unpack(vim.api.nvim_win_get_cursor(0))
     -- print("before row and new row", row, col)
     vim.cmd [[
-      execute 'Telescope lsp_definitions'
+      execute 'FzfLua lsp_definitions'
     ]]
     -- wait 10 ms
     vim.defer_fn(function()
@@ -42,7 +42,7 @@ local function find_definition()
     return
   end
   vim.cmd [[
-    execute 'Telescope lsp_definitions'
+    execute 'FzfLua lsp_definitions'
   ]]
 end
 
