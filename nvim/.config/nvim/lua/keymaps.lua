@@ -243,10 +243,12 @@ vim.keymap.set("n", "<space>tc", function()
   local utils = require "utils"
   local root = utils.find_root_dir()
   if not root then
-    print "no root dir"
+    vim.cmd.redraw()
+    vim.notify "no root dir"
     return
   end
-  print("now is in " .. root)
+  vim.cmd.redraw()
+  vim.notify("now is in " .. root)
   vim.cmd.tcd(root)
 end, { silent = true, desc = "cd to root" })
 

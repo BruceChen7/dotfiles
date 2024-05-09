@@ -590,6 +590,7 @@ require("lazy").setup {
     keys = {
       { "<leader>zz", fl.zoxide, desc = "Zoxide", noremap = true },
       { "<m-l>", fl.recentfiles, desc = "Recent files", noremap = true },
+      { "<m-b>", fl.buffers, desc = "Buffers", noremap = true },
     },
     event = "VeryLazy",
   },

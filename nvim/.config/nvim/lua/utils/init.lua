@@ -7,6 +7,11 @@ end
 
 M.find_root_dir = function()
   local buf_name = vim.api.nvim_buf_get_name(0)
+  if buf_name == "" or buf_name == nil then
+    -- return current working dir with full path
+    return vim.fn.getcwd()
+  end
+
   local lspconfig_util = require "lspconfig.util"
   return lspconfig_util.root_pattern(".obsidian", ".git", "go.mod")(buf_name)
 end

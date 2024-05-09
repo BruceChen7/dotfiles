@@ -103,9 +103,9 @@ local function get_test_command()
   if utils.is_mac() then
     local root = utils.find_root_dir()
     vim.notify("root is " .. root)
-    local lastPart = string.match(root, "([^/]+)$")
+    local last_part = string.match(root, "([^/]+)$")
     local project_name = "luckyvideo"
-    if lastPart == "ecommerce" then
+    if last_part == "ecommerce" then
       project_name = "core"
     else
       project_name = "luckyvideo"
@@ -115,7 +115,7 @@ local function get_test_command()
       export_cmd = "export env=test && export cid=global && export PROJECT_NAME="
         .. project_name
         .. " && export MODULE_NAME="
-        .. lastPart
+        .. last_part
         .. " && export SP_UNIX_SOCKET=/tmp/spex.sock"
     end
   end

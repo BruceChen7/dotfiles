@@ -560,3 +560,48 @@ local zoxide = function()
   })
 end
 -- vim.keymap.set("n", "<leader>zz", zoxide, { desc = "Zoxide" })
+--
+--
+-- TODO(ming.chen): add gitlab integration url
+local open_url = function()
+  local fzflua = require "fzf-lua"
+
+  local utils = require "utils"
+
+  if utils.is_mac() then
+    local root = utils.find_root_dir()
+    if not root then
+      return
+    end
+    local lastPart = string.match(root, "([^/]+)$")
+    -- read from env
+    local git_url = vim.env.GITLAB_MERGE_URL_PATTERN
+    local scc_url = vim.env.SCC_CONFIG_URL_PATTERN
+    local space_cmdb_url = vim.env.SPACE_CMDB_URL_PATTERN
+    local url = {}
+
+    local append_url = function(url_list, url_pattern)
+      if url_pattern ~= nil then
+        url_pattern = string.gsub(url_pattern, "?", lastPart)
+        -- append `url` with `url_pattern`
+        url = vim.list_extend(url, { url_pattern })
+        return url
+      end
+    end
+    url = append_url(url, git_url)
+    url = append_url(url, scc_url)
+    url = append_url(url, space_cmdb_url)
+
+    fzflua.fzf_exec(url, {
+      actions = {
+        ["default"] = function(selected, _)
+          -- open url in browser
+          print("selected is ", vim.inspect(selected))
+          vim.fn.jobstart("open " .. selected[1], { detach = true })
+        end,
+      },
+    })
+  end
+end
+
+vim.keymap.set("n", "<leader>og", open_url, { desc = "open url" })
