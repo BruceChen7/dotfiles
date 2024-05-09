@@ -435,6 +435,12 @@ require("fzf-lua").setup {
       -- can resume the buffers picker on the same window
       -- eliminating an otherwise unaesthetic win "flash"
       ["ctrl-x"] = { actions.buf_del, actions.resume },
+      ["default"] = function(selected, _)
+        -- extract bufnr from string `[1] xxx`
+        local bufnr = tonumber(selected[1]:match "%[(%d+)%]")
+        -- execute command `BufferLineGotoBuffer <bufnr>`
+        vim.cmd("BufferLineGoToBuffer " .. bufnr)
+      end,
     },
   },
   tabs = {
