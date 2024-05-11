@@ -71,14 +71,6 @@ require("lazy").setup {
     end,
   },
 
-  -- {
-  --   "Yggdroot/LeaderF",
-  --   config = function()
-  --     require "config/leaderf"
-  --   end,
-  --   event = "VeryLazy",
-  -- },
-
   -- -- adds vscode-like pictograms to neovim built-in lsp
   { "onsails/lspkind-nvim" },
 
@@ -183,7 +175,7 @@ require("lazy").setup {
       require "config/text_obj"
     end,
   },
-
+  -- Smartly select the inner part of texts
   {
     "sustech-data/wildfire.nvim",
     event = "VeryLazy",
@@ -571,14 +563,14 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
-  {
-    "nvim-lualine/lualine.nvim",
-    requires = { "nvim-tree/nvim-web-devicons", "linrongbin16/lsp-progress.nvim" },
-    config = function()
-      require "config/lualine"
-    end,
-    event = "VeryLazy",
-  },
+  -- {
+  --   "nvim-lualine/lualine.nvim",
+  --   requires = { "nvim-tree/nvim-web-devicons", "linrongbin16/lsp-progress.nvim" },
+  --   config = function()
+  --     require "config/lualine"
+  --   end,
+  --   event = "VeryLazy",
+  -- },
 
   {
     "zhenyangze/vim-bitoai",
@@ -636,6 +628,8 @@ require("lazy").setup {
       vim.keymap.set({ "n", "o", "x" }, "w", "<cmd>lua require('spider').motion('w')<CR>", { desc = "Spider-w" })
       vim.keymap.set({ "n", "o", "x" }, "e", "<cmd>lua require('spider').motion('e')<CR>", { desc = "Spider-e" })
       vim.keymap.set({ "n", "o", "x" }, "b", "<cmd>lua require('spider').motion('b')<CR>", { desc = "Spider-b" })
+      vim.keymap.set("i", "<C-f>", "<Esc>l<cmd>lua require('spider').motion('w')<CR>i")
+      vim.keymap.set("i", "<C-b>", "<Esc><cmd>lua require('spider').motion('b')<CR>i")
     end,
   },
 

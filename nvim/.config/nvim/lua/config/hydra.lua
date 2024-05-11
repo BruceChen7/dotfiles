@@ -13,16 +13,19 @@ Hydra {
       function()
         vim.cmd "BufferLineCyclePrev"
       end,
-    },
-
-    {
-      "n",
-      function()
-        vim.cmd "BufferLineCycleNext"
-      end,
+      { desc = "previous buffer" },
     },
   },
+
+  {
+    "n",
+    function()
+      vim.cmd "BufferLineCycleNext"
+    end,
+    { desc = "next buffer" },
+  },
 }
+
 Hydra {
   name = "edit pos navigation",
   mode = { "n" },
@@ -33,12 +36,14 @@ Hydra {
       function()
         before.jump_to_last_edit()
       end,
+      { desc = "last edit position" },
     },
     {
       ",",
       function()
         before.jump_to_next_edit()
       end,
+      { desc = "next edit position" },
     },
   },
 }
