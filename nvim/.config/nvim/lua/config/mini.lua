@@ -15,23 +15,26 @@ require("mini.trailspace").setup {}
 require("mini.pairs").setup {}
 
 -- https://github.com/oncomouse/dotfiles/blob/2a58fa952eacb751ff24361efd81308716a759c1/conf/vim/lua/dotfiles/plugins/mini-nvim.lua#L104
+-- https://github.com/xixiaofinland/dotfiles/blob/main/.config/nvim/lua/plugins/mini.lua
+local gen_spec = require("mini.ai").gen_spec
 require("mini.ai").setup {
   custom_textobjects = {
-    -- e = function()
-    --   local from = { line = 1, col = 1 }
-    --   local last_line_length = #vim.fn.getline "$"
-    --   local to = {
-    --     line = vim.fn.line "$",
-    --     col = last_line_length == 0 and 1 or last_line_length,
-    --   }
-    --   return { from = from, to = to, vis_mode = "V" }
-    -- end,
+    o = gen_spec.treesitter({ a = "@loop.outer", i = "@loop.inner" }, {}),
+    m = gen_spec.treesitter({ a = "@function.outer", i = "@function.inner" }, {}),
+    i = gen_spec.treesitter({ a = "@conditional.outer", i = "@conditional.inner" }, {}),
   },
 }
 
 require("mini.statusline").setup {}
-require("mini.files").setup {}
-vim.keymap.set("n", "<leader>mf", ":lua MiniFiles.open()<CR>", { desc = "open files" })
+require("mini.files").setup {
+  windows = {
+    preview = true,
+  },
+}
+vim.keymap.set("n", "<leader>mf", function()
+  local files = require "mini.files"
+  files.open(vim.api.nvim_buf_get_name(0))
+end, { desc = "open files" })
 -- require("mini.completion").setup {
 --   delay = { completion = 100, info = 100, signature = 50 },
 -- }
