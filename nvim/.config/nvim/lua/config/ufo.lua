@@ -52,7 +52,7 @@ vim.o.foldenable = true
 
 vim.keymap.set("n", "zR", require("ufo").openAllFolds, { desc = "Open All Folds" })
 vim.keymap.set("n", "zM", require("ufo").closeAllFolds, { desc = "Close All Folds" })
-vim.keymap.set("n", "zU", function()
+vim.keymap.set("n", "K", function()
   local winid = require("ufo").peekFoldedLinesUnderCursor()
   if not winid then
     vim.lsp.buf.hover()

@@ -1,6 +1,7 @@
 local Hydra = require "hydra"
 local gitsigns = require "gitsigns"
 local before = require "before"
+local ufo = require "ufo"
 
 Hydra {
   name = "Window",
@@ -43,7 +44,29 @@ Hydra {
 }
 
 Hydra {
-  name = "Horizontal resize",
+  name = "go to closed fold",
+  mode = { "n" },
+  body = "zg",
+  heads = {
+    {
+      "j",
+      function()
+        ufo.goNextClosedFold()
+      end,
+      { desc = "next fold" },
+    },
+    {
+      "k",
+      function()
+        ufo.goPreviousClosedFold()
+      end,
+      { desc = "previous fold" },
+    },
+  },
+}
+
+Hydra {
+  name = "git hunk navigation",
   mode = { "n" },
   body = "<space>h",
   heads = {
@@ -52,12 +75,14 @@ Hydra {
       function()
         gitsigns.prev_hunk()
       end,
+      { desc = "previous hunk", mode = { "n" } },
     },
     {
       "=",
       function()
-        gitsigns.prev_hunk()
+        gitsigns.next_hunk()
       end,
+      { desc = "next hunk", mode = { "n" } },
     },
   },
 }

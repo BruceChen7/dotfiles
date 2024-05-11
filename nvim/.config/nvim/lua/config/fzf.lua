@@ -1,9 +1,17 @@
 vim.keymap.set("n", "<space>tg", "<cmd>FzfLua grep<CR>", { desc = "FzfLua live_grep" })
 vim.keymap.set("n", "<space>tr", "<cmd>FzfLua resume<CR>", { desc = "FzfLua resume" })
-vim.keymap.set("n", "<c-p>", "<cmd>FzfLua files<cr>", { desc = "FzfLua find_files" })
+-- vim.keymap.set("n", "<c-p>", "<cmd>FzfLua files<cr>", { desc = "FzfLua find_files" })
 vim.keymap.set("n", "gr", "<cmd>FzfLua lsp_references<CR>", { noremap = true, silent = true, desc = "Find References" })
 vim.keymap.set("n", "<m-m>", "<cmd>FzfLua buffers<CR>", { noremap = true, silent = true, desc = "find buffers" })
 vim.keymap.set("n", "<m-l>", "<cmd>FzfLua oldfiles<CR>", { noremap = true, silent = true, desc = "find oldfiles" })
+vim.keymap.set("n", "<c-p>", function()
+  local utils = require "utils"
+  local root = utils.find_root_dir()
+  if not root then
+    root = vim.fn.getcwd()
+  end
+  require("fzf-lua").files { cwd = root }
+end, { desc = "FzfLua find_files" })
 vim.keymap.set(
   "n",
   "gi",
@@ -567,6 +575,7 @@ local zoxide = function()
       ["default"] = function(selected, _)
         local path = vim.split(selected[1]:gsub("^%s*", ""), " ")[2]
         vim.cmd("cd " .. path)
+        require("fzf-lua").files { cwd = root }
       end,
     },
   })
@@ -585,7 +594,13 @@ local open_url = function()
     if not root then
       return
     end
-    local lastPart = string.match(root, "([^/]+)$")
+    local last_part = string.match(root, "([^/]+)$")
+    local special = { "bff_timeline", "bff_activity", "bff_safety", "bff_user" }
+    -- last_part in special table
+    if vim.tbl_contains(special, last_part) then
+      -- repace last_part's `_` with ``
+      last_part = string.gsub(last_part, "_", "")
+    end
     -- read from env
     local git_url = vim.env.GITLAB_MERGE_URL_PATTERN
     local scc_url = vim.env.SCC_CONFIG_URL_PATTERN
@@ -594,10 +609,10 @@ local open_url = function()
 
     local append_url = function(url_list, url_pattern)
       if url_pattern ~= nil then
-        url_pattern = string.gsub(url_pattern, "?", lastPart)
+        url_pattern = string.gsub(url_pattern, "?", last_part)
         -- append `url` with `url_pattern`
-        url = vim.list_extend(url, { url_pattern })
-        return url
+        url_list = vim.list_extend(url_list, { url_pattern })
+        return url_list
       end
     end
     url = append_url(url, git_url)

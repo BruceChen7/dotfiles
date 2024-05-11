@@ -202,14 +202,14 @@ require("lazy").setup {
   },
 
   -- terminal
-  {
-    "akinsho/toggleterm.nvim",
-    config = function()
-      require "config/terminal"
-    end,
-    branch = "main",
-    event = "VeryLazy",
-  },
+  -- {
+  --   "akinsho/toggleterm.nvim",
+  --   config = function()
+  --     require "config/terminal"
+  --   end,
+  --   branch = "main",
+  --   event = "VeryLazy",
+  -- },
 
   -- colorscheme
   { "EdenEast/nightfox.nvim" },
@@ -356,27 +356,6 @@ require("lazy").setup {
     "gennaro-tedesco/nvim-peekup",
   },
 
-  -- {
-  --   "AckslD/nvim-neoclip.lua",
-  --   dependencies = {
-  --     { "nvim-telescope/telescope.nvim" },
-  --   },
-  --   config = function()
-  --     require("neoclip").setup {
-  --       default_register = { '"', "+", "*" },
-  --       keys = {
-  --         telescope = {
-  --           i = {
-  --             -- default key is <c-k> which is conflict with telescope.nvim
-  --             -- https://github.com/AckslD/nvim-neoclip.lua
-  --             paste_behind = "<Nop>",
-  --           },
-  --         },
-  --       },
-  --     }
-  --   end,
-  --   event = "VeryLazy",
-  -- },
   {
     "ptdewey/yankbank-nvim",
     config = function()
@@ -453,15 +432,6 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
-  -- {
-  --   "nvim-telescope/telescope.nvim",
-  --   dependencies = { "nvim-lua/plenary.nvim" },
-  --   config = function()
-  --     require "config/telescope"
-  --   end,
-  --   event = "VeryLazy",
-  -- },
-  --
   -- https://github.com/Innei/nvim-config-lua/blob/2b311daa7841af52226fc9b75add357c03eac078/lua/plugins/motion.lua#L10
   {
     "folke/flash.nvim",
@@ -568,22 +538,10 @@ require("lazy").setup {
     -- optional for icon support
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
-      -- calling `setup` is optional for customization
-      require("fzf-lua").setup {}
       require "config/fzf"
     end,
     event = "VeryLazy",
   },
-
-  -- {
-  --   "jvgrootveld/telescope-zoxide",
-  --   dependencies = {
-  --     "nvim-telescope/telescope.nvim",
-  --     "nvim-lua/popup.nvim",
-  --     "nvim-lua/plenary.nvim",
-  --   },
-  --   event = { "VeryLazy" },
-  -- },
 
   {
     "stevearc/conform.nvim",
@@ -669,6 +627,16 @@ require("lazy").setup {
     -- Ensure that it runs first to minimize delay when opening file from terminal
     lazy = false,
     priority = 1001,
+  },
+
+  {
+    "chrisgrieser/nvim-spider",
+    event = "VeryLazy",
+    config = function()
+      vim.keymap.set({ "n", "o", "x" }, "w", "<cmd>lua require('spider').motion('w')<CR>", { desc = "Spider-w" })
+      vim.keymap.set({ "n", "o", "x" }, "e", "<cmd>lua require('spider').motion('e')<CR>", { desc = "Spider-e" })
+      vim.keymap.set({ "n", "o", "x" }, "b", "<cmd>lua require('spider').motion('b')<CR>", { desc = "Spider-b" })
+    end,
   },
 
   {

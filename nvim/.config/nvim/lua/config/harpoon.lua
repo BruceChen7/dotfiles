@@ -242,6 +242,15 @@ vim.api.nvim_create_autocmd("TermClose", {
   end,
 })
 
+function set_terminal_keymaps()
+  local opts = { noremap = true }
+  -- using <esc> to enter normal mode
+  vim.api.nvim_buf_set_keymap(0, "t", "<esc>", [[<C-\><C-n>]], opts)
+end
+
+-- if you only want these mappings for toggle term use term://*toggleterm#* instead
+vim.cmd "autocmd! TermOpen term://* lua set_terminal_keymaps()"
+
 require("harpoon").setup {
   global_settings = {
     enter_on_sendcmd = true,

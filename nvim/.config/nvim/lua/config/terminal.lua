@@ -29,9 +29,6 @@ function _G.set_terminal_keymaps()
   -- vim.api.nvim_buf_set_keymap(0, "t", "<tab>l", [[<C-\><C-n><C-W>l]], opts)
 end
 
--- if you only want these mappings for toggle term use term://*toggleterm#* instead
--- vim.cmd "autocmd! TermOpen term://* lua set_terminal_keymaps()"
-
 local Terminal = require("toggleterm.terminal").Terminal
 
 local lspconfig_util = require "lspconfig.util"
