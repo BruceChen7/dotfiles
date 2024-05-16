@@ -25,6 +25,7 @@ require("mini.ai").setup {
   },
 }
 
+-- https://github.com/pkazmier/nvim/blob/main/lua/plugins/mini/statusline.lua
 require("mini.statusline").setup {}
 require("mini.files").setup {
   windows = {

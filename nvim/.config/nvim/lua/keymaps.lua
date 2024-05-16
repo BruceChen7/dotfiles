@@ -201,7 +201,7 @@ function quitWindow()
     return
   end
   if vim.o.filetype == "vim" then
-    vim.api.nvim_command "close"
+    vim.api.nvim_command "quit"
   end
   if vim.o.filetype == "packer" then
     vim.api.nvim_command "close"

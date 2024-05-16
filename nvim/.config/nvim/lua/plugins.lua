@@ -74,13 +74,13 @@ require("lazy").setup {
   -- -- adds vscode-like pictograms to neovim built-in lsp
   { "onsails/lspkind-nvim" },
 
-  {
-    "lambdalisue/fern.vim",
-    config = function()
-      require "config/fern"
-    end,
-    event = "VeryLazy",
-  },
+  -- {
+  --   "lambdalisue/fern.vim",
+  --   config = function()
+  --     require "config/fern"
+  --   end,
+  --   event = "VeryLazy",
+  -- },
 
   {
     "hrsh7th/nvim-cmp", -- Autocompletion plugin
@@ -253,7 +253,7 @@ require("lazy").setup {
   {
     "dhananjaylatkar/cscope_maps.nvim",
     dependencies = {
-      "nvim-telescope/telescope.nvim", -- optional [for picker="telescope"]
+      -- "nvim-telescope/telescope.nvim", -- optional [for picker="telescope"]
       "nvim-tree/nvim-web-devicons", -- optional [for devicons in telescope or fzf]
     },
     opts = {
@@ -694,10 +694,10 @@ require("lazy").setup {
   --   event = "VeryLazy",
   -- },
 
-  {
-    "smartpde/telescope-recent-files",
-    event = "VeryLazy",
-  },
+  -- {
+  --   "smartpde/telescope-recent-files",
+  --   event = "VeryLazy",
+  -- },
 
   {
     "rcarriga/nvim-dap-ui",
@@ -808,6 +808,16 @@ require("lazy").setup {
     -- Remove the following line to use development versions,
     -- not just the formal releases
     version = "*",
+    event = "VeryLazy",
+  },
+
+  {
+    "stevearc/oil.nvim",
+    config = function()
+      require "config/oil"
+    end,
+    -- Optional dependencies
+    dependencies = { "nvim-tree/nvim-web-devicons" },
     event = "VeryLazy",
   },
 
