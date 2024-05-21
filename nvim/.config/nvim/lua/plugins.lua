@@ -569,6 +569,20 @@ require("lazy").setup {
     end,
   },
 
+  -- "Preview command results with `:Norm`"
+  {
+    "smjonas/live-command.nvim",
+    -- live-command supports semantic versioning via tags
+    -- tag = "1.*",
+    config = function()
+      require("live-command").setup {
+        commands = {
+          Norm = { cmd = "norm" },
+        },
+      }
+    end,
+  },
+
   {
     "akinsho/bufferline.nvim",
     dependencies = "nvim-tree/nvim-web-devicons",
