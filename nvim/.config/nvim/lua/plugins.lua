@@ -343,30 +343,31 @@ require("lazy").setup {
     cmd = "LspLensOn",
   },
 
-  {
-    "monkoose/neocodeium",
-    event = "VeryLazy",
-    config = function()
-      local neocodeium = require "neocodeium"
-      neocodeium.setup()
-      vim.keymap.set("i", "<Right>", neocodeium.accept)
-      vim.keymap.set("i", "<A-w>", function()
-        require("neocodeium").accept_word()
-      end)
-      vim.keymap.set("i", "<A-a>", function()
-        require("neocodeium").accept_line()
-      end)
-      vim.keymap.set("i", "<Up>", function()
-        require("neocodeium").cycle_or_complete()
-      end)
-      vim.keymap.set("i", "<Down>", function()
-        require("neocodeium").cycle_or_complete(-1)
-      end)
-      vim.keymap.set("i", "<Left>", function()
-        require("neocodeium").clear()
-      end)
-    end,
-  },
+  -- ai complement
+  -- {
+  --   "monkoose/neocodeium",
+  --   event = "VeryLazy",
+  --   config = function()
+  --     local neocodeium = require "neocodeium"
+  --     neocodeium.setup()
+  --     vim.keymap.set("i", "<Right>", neocodeium.accept)
+  --     vim.keymap.set("i", "<A-w>", function()
+  --       require("neocodeium").accept_word()
+  --     end)
+  --     vim.keymap.set("i", "<A-a>", function()
+  --       require("neocodeium").accept_line()
+  --     end)
+  --     vim.keymap.set("i", "<Up>", function()
+  --       require("neocodeium").cycle_or_complete()
+  --     end)
+  --     vim.keymap.set("i", "<Down>", function()
+  --       require("neocodeium").cycle_or_complete(-1)
+  --     end)
+  --     vim.keymap.set("i", "<Left>", function()
+  --       require("neocodeium").clear()
+  --     end)
+  --   end,
+  -- },
 
   {
     "ojroques/nvim-osc52",
@@ -479,6 +480,65 @@ require("lazy").setup {
   },
 
   {
+    "Exafunction/codeium.vim",
+    config = function()
+      if not use_ai() then
+        return
+      end
+      require "config/codeium"
+    end,
+    event = "InsertEnter",
+  },
+
+  {
+    "robitx/gp.nvim",
+    config = function()
+      require("gp").setup {
+        openai_api_key = os.getenv "OPENAI_API_KEY",
+        openai_api_endpoint = "https://api.deepseek.com/chat/completions",
+        chat_topic_gen_model = "deepseek-coder",
+        agents = {
+          -- disable all default agents
+          {
+            name = "ChatGPT4",
+          },
+          {
+            name = "CodeGPT3-5",
+          },
+
+          {
+            name = "CodeGPT4",
+          },
+          {
+            name = "ChatGPT3-5",
+          },
+          {
+            name = "deepseek-coder",
+            chat = true,
+            command = false, -- string with model name or table with model name and parameters
+            model = { model = "deepseek-coder", temperature = 1.0, top_p = 1 },
+            -- system prompt (use this to specify the persona/role of the AI)
+            system_prompt = "You are now a general AI assistant",
+            "If you don't know, just say you don't know",
+            "Work step by step on your problem",
+          },
+
+          {
+            name = "deepseek-coder",
+            chat = false,
+            command = true, -- string with model name or table with model name and parameters
+            model = { model = "deepseek-coder", temperature = 1.0, top_p = 1 },
+            system_prompt = "You are an AI working as a code editor.\n\n"
+              .. "Please AVOID COMMENTARY OUTSIDE OF THE SNIPPET RESPONSE.\n"
+              .. "START AND END YOUR ANSWER WITH:\n\n```",
+          },
+        },
+      }
+    end,
+  },
+
+  -- find files
+  {
     "ibhagwan/fzf-lua",
     -- optional for icon support
     dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -488,6 +548,7 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
+  -- format code
   {
     "stevearc/conform.nvim",
     config = function()
@@ -586,6 +647,7 @@ require("lazy").setup {
     end,
   },
 
+  -- use xmake
   {
     "Mythos-404/xmake.nvim",
     lazy = true,
@@ -638,20 +700,6 @@ require("lazy").setup {
     },
   },
 
-  -- {
-  --   "andymass/vim-matchup",
-  --   config = function()
-  --     -- may set any options here
-  --     vim.g.matchup_matchparen_offscreen = { method = "popup" }
-  --   end,
-  --   event = "VeryLazy",
-  -- },
-
-  -- {
-  --   "smartpde/telescope-recent-files",
-  --   event = "VeryLazy",
-  -- },
-
   {
     "rcarriga/nvim-dap-ui",
     dependencies = {
@@ -664,17 +712,6 @@ require("lazy").setup {
     event = "LspAttach",
   },
 
-  -- 不能在切换项目的时候显示
-  -- {
-  --   "otavioschwanck/arrow.nvim",
-  --   opts = {
-  --     show_icons = true,
-  --     leader_key = "\\\\", -- Recommended to be a single key
-  --     save_key = "git_root",
-  --   },
-  --   event = "VeryLazy",
-  -- },
-  --
   {
     "nvim-pack/nvim-spectre",
     config = function()
@@ -743,6 +780,7 @@ require("lazy").setup {
     end,
     event = "VeryLazy",
   },
+  -- https://www.reddit.com/r/neovim/comments/1c747ns/treepairs_a_tiny_plugin_that_makes_work_properly/
   {
     "yorickpeterse/nvim-tree-pairs",
     config = function()
@@ -751,6 +789,7 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
+  -- https://www.reddit.com/r/neovim/comments/1ca3rm8/shoutout_to_andrewferrierdebugprintnvim_add/
   {
     "andrewferrier/debugprint.nvim",
     opts = {},
