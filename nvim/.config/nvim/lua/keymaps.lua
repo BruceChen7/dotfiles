@@ -34,6 +34,9 @@ u.map("x", "$", "g_", default_options)
 -- 一半操作是使用viw命令选中文本，另一半是使用p命令粘贴文本，p粘贴的文本是之前复制的文本
 u.map("v", "p", '"_dP', default_options)
 
+vim.keymap.set({ "n" }, "vv", "V", { noremap = true })
+vim.keymap.set({ "n" }, "vvv", "<C-V>", { noremap = true })
+
 -- Cancel search highlighting with ESC
 u.map("n", "<ESC>", ":nohlsearch<Bar>:echo<CR>", default_options)
 

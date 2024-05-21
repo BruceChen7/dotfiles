@@ -303,9 +303,10 @@ require("lsp-setup").setup {
   },
 }
 
-vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = "*.md",
-  callback = function()
-    MiniTrailspace.trim()
-  end,
-})
+-- https://github.com/ofseed/nvim/blob/1abfedd821c313eae7e04558ecbd08a1953b055f/lua/lsp.lua#L61-L63
+vim.keymap.set("n", "<leader>lh", function()
+  vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = bufnr }, { bufnr = bufnr })
+end, { buffer = bufnr, desc = "Toggle inlay hints" })
+
+vim.keymap.set("n", "<leader>li", vim.lsp.buf.incoming_calls, { buffer = bufnr, desc = "Incoming calls" })
+vim.keymap.set("n", "<leader>lo", vim.lsp.buf.outgoing_calls, { buffer = bufnr, desc = "Outgoing calls" })

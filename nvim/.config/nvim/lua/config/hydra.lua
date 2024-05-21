@@ -15,14 +15,14 @@ Hydra {
       end,
       { desc = "previous buffer" },
     },
-  },
 
-  {
-    "n",
-    function()
-      vim.cmd "BufferLineCycleNext"
-    end,
-    { desc = "next buffer" },
+    {
+      "n",
+      function()
+        vim.cmd "BufferLineCycleNext"
+      end,
+      { desc = "next buffer" },
+    },
   },
 }
 

@@ -41,15 +41,6 @@ require("lazy").setup {
     },
   },
 
-  -- {
-  --   "petertriho/cmp-git",
-  --   dependencies = "nvim-lua/plenary.nvim",
-  --   event = "VeryLazy",
-  --   config = function()
-  --     require("cmp_git").setup {}
-  --   end,
-  -- },
-
   {
     "ludovicchabant/vim-gutentags",
     config = function()
@@ -73,14 +64,6 @@ require("lazy").setup {
 
   -- -- adds vscode-like pictograms to neovim built-in lsp
   { "onsails/lspkind-nvim" },
-
-  -- {
-  --   "lambdalisue/fern.vim",
-  --   config = function()
-  --     require "config/fern"
-  --   end,
-  --   event = "VeryLazy",
-  -- },
 
   {
     "hrsh7th/nvim-cmp", -- Autocompletion plugin
@@ -146,18 +129,6 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
-  -- -- 自动调整窗口
-  -- replaced with window.nvim
-  -- {
-  --   "camspiers/lens.vim",
-  --   config = function()
-  --     -- vim.g.lens.disabled_filetypes = { "dapui_stacks", "dapui_scopes" }
-  --     vim.g["lens#disabled_filetypes"] = { "dapui_stacks", "dapui_scopes", "dapui_breakpoints" }
-  --     vim.g["lens#animate"] = true
-  --   end,
-  --   -- event = "VeryLazy",
-  -- },
-
   {
     "aznhe21/actions-preview.nvim",
     config = function()
@@ -184,24 +155,6 @@ require("lazy").setup {
       require("wildfire").setup()
     end,
   },
-
-  {
-    "numToStr/Comment.nvim",
-    config = function()
-      require("Comment").setup()
-    end,
-    event = "VeryLazy",
-  },
-
-  -- terminal
-  -- {
-  --   "akinsho/toggleterm.nvim",
-  --   config = function()
-  --     require "config/terminal"
-  --   end,
-  --   branch = "main",
-  --   event = "VeryLazy",
-  -- },
 
   -- colorscheme
   { "EdenEast/nightfox.nvim" },
@@ -242,7 +195,7 @@ require("lazy").setup {
       require "config/neogit"
     end,
     event = "VeryLazy",
-    branch = "nightly",
+    -- branch = "nightly",
   },
 
   {
@@ -763,13 +716,13 @@ require("lazy").setup {
   {
     "sainnhe/gruvbox-material",
   },
-  {
-    "dgagn/diagflow.nvim",
-    event = "LspAttach",
-    config = function()
-      require("diagflow").setup()
-    end,
-  },
+  -- {
+  --   "dgagn/diagflow.nvim",
+  --   event = "LspAttach",
+  --   config = function()
+  --     require("diagflow").setup()
+  --   end,
+  -- },
   {
     "bloznelis/before.nvim",
     config = function()

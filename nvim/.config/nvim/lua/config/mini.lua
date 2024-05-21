@@ -16,6 +16,7 @@ require("mini.pairs").setup {}
 
 -- https://github.com/oncomouse/dotfiles/blob/2a58fa952eacb751ff24361efd81308716a759c1/conf/vim/lua/dotfiles/plugins/mini-nvim.lua#L104
 -- https://github.com/xixiaofinland/dotfiles/blob/main/.config/nvim/lua/plugins/mini.lua
+-- use `if` 和 `af` 来选择函数调用
 local gen_spec = require("mini.ai").gen_spec
 require("mini.ai").setup {
   custom_textobjects = {
@@ -52,3 +53,10 @@ require("mini.pick").setup {
 }
 
 require("mini.extra").setup {}
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+  pattern = "*.md",
+  callback = function()
+    MiniTrailspace.trim()
+  end,
+})
