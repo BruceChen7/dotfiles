@@ -18,7 +18,7 @@ require("gp").setup {
       name = "ChatGPT3-5",
     },
     {
-      name = "deepseek-coder",
+      name = "deepseek-chat",
       chat = true,
       command = false, -- string with model name or table with model name and parameters
       model = { model = "deepseek-coder", temperature = 1.0, top_p = 1 },
