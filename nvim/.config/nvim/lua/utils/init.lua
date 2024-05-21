@@ -39,4 +39,12 @@ M.is_in_working_dir = function()
   return buf_name:find "video"
 end
 
+-- https://shaneworld.github.io/p/neovim-%E4%BD%BF%E7%94%A8-lua-%E8%8E%B7%E5%8F%96-visual-mode-%E4%B8%8B%E9%80%89%E4%B8%AD%E7%9A%84%E6%96%87%E6%9C%AC/
+M.get_visual_selection = function()
+  local vstart = vim.fn.getpos "v"
+  local vend = vim.fn.getcurpos()
+  local lines = vim.api.nvim_buf_get_lines(0, vstart[2] - 1, vend[2], false)
+  return table.concat(lines)
+end
+
 return M

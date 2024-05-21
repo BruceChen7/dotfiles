@@ -493,48 +493,9 @@ require("lazy").setup {
   {
     "robitx/gp.nvim",
     config = function()
-      require("gp").setup {
-        openai_api_key = os.getenv "OPENAI_API_KEY",
-        openai_api_endpoint = "https://api.deepseek.com/chat/completions",
-        chat_topic_gen_model = "deepseek-coder",
-        agents = {
-          -- disable all default agents
-          {
-            name = "ChatGPT4",
-          },
-          {
-            name = "CodeGPT3-5",
-          },
-
-          {
-            name = "CodeGPT4",
-          },
-          {
-            name = "ChatGPT3-5",
-          },
-          {
-            name = "deepseek-coder",
-            chat = true,
-            command = false, -- string with model name or table with model name and parameters
-            model = { model = "deepseek-coder", temperature = 1.0, top_p = 1 },
-            -- system prompt (use this to specify the persona/role of the AI)
-            system_prompt = "You are now a general AI assistant",
-            "If you don't know, just say you don't know",
-            "Work step by step on your problem",
-          },
-
-          {
-            name = "deepseek-coder",
-            chat = false,
-            command = true, -- string with model name or table with model name and parameters
-            model = { model = "deepseek-coder", temperature = 1.0, top_p = 1 },
-            system_prompt = "You are an AI working as a code editor.\n\n"
-              .. "Please AVOID COMMENTARY OUTSIDE OF THE SNIPPET RESPONSE.\n"
-              .. "START AND END YOUR ANSWER WITH:\n\n```",
-          },
-        },
-      }
+      require "config/gp"
     end,
+    event = "VeryLazy",
   },
 
   -- find files
