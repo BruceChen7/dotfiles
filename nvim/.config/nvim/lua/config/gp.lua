@@ -69,4 +69,4 @@ vim.keymap.set("v", "<c-g>c", function()
 end, { desc = "gp rewrite to english" })
 
 vim.keymap.set("v", "<c-g>v", ":<C-u>'<,'>GpChatNew vsplit<cr>", { desc = "Visual Chat New" })
-vim.keymap.set({ "n", "i", "v", "x" }, "<space>gs", "<cmd>GpStop<cr>", { desc = "GpStop" })
+vim.keymap.set({ "n", "v", "x", "i" }, "<c-g>s", "<cmd>GpStop<cr>", { desc = "GpStop" })
