@@ -14,32 +14,6 @@ u.map("n", "\\9", ":tabn 9<cr>")
 -- avoid slowly to wait to parse \\1
 u.map("n", "\\0", ":tabn 10<cr>")
 
-function quitWindow()
-  local buf_total_num = vim.fn.len(vim.fn.getbufinfo { buflisted = 1 })
-  local buf_name = vim.fn.bufname()
-  if buf_name:find "^diffview" then
-    vim.api.nvim_command "DiffviewClose"
-    vim.api.nvim_command "VemTablineDelete"
-  elseif buf_total_num ~= 1 then
-    vim.api.nvim_command "VemTablineDelete"
-  else
-    vim.api.nvim_command "quit!"
-  end
-end
-
-function quitWindow()
-  local buf_total_num = vim.fn.len(vim.fn.getbufinfo { buflisted = 1 })
-  local buf_name = vim.fn.bufname()
-  if buf_name:find "^diffview" then
-    vim.api.nvim_command "DiffviewClose"
-    vim.api.nvim_command "VemTablineDelete"
-  elseif buf_total_num ~= 1 then
-    vim.api.nvim_command "VemTablineDelete"
-  else
-    vim.api.nvim_command "quit!"
-  end
-end
-
 if vim.fn.exists ":VemTablineGo" then
   -- always show number
   vim.g.vem_tabline_show_number = "index"

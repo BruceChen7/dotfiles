@@ -52,14 +52,6 @@ end, { noremap = true, silent = true, desc = "Find Definition" })
 -- vim.keymap.set("n", "K", vim.lsp.buf.hover, { noremap = true, silent = true, desc = "Hover" })
 vim.keymap.set("n", "\\gr", "<cmd>lua vim.lsp.buf.rename()<CR>", { noremap = true, silent = true, desc = "Rename" })
 
-local function contains(table_name, value)
-  for _, v in pairs(table_name) do
-    if v == value then
-      return true
-    end
-  end
-end
-
 local versionThan9 = vim.version().minor > 9
 vim.api.nvim_create_autocmd({ "InsertEnter" }, {
   callback = function()
