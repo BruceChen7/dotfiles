@@ -54,8 +54,6 @@ vim.keymap.set("v", "<c-g>g", function()
   vim.cmd(command)
 end, { desc = "gp rewrite to english" })
 
-vim.keymap.set({ "n", "v" }, "<space>gp", function() end)
-
 vim.keymap.set("v", "<c-g>c", function()
   local utils = require "utils"
   local visual_selection = utils.get_visual_selection()
@@ -66,7 +64,7 @@ vim.keymap.set("v", "<c-g>c", function()
     .. visual_selection
     .. "`按英文意思翻译成中文，要求只保留翻译的结果，结果去除引号\n\n"
   vim.cmd(command)
-end, { desc = "gp rewrite to english" })
+end, { desc = "gp rewrite to chinese" })
 
 vim.keymap.set("v", "<c-g>v", ":<C-u>'<,'>GpChatNew vsplit<cr>", { desc = "Visual Chat New" })
 vim.keymap.set({ "n", "v", "x", "i" }, "<c-g>s", "<cmd>GpStop<cr>", { desc = "GpStop" })

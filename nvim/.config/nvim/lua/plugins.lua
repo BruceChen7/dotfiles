@@ -589,7 +589,7 @@ require("lazy").setup {
     config = function()
       require "config/bufferline"
     end,
-    event = "VeryLazy",
+    -- event = "VeryLazy",
   },
 
   {

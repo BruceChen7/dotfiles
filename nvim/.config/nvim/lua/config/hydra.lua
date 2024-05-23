@@ -5,7 +5,7 @@ local ufo = require "ufo"
 
 Hydra {
   name = "Window",
-  mode = { "n" },
+  mode = { "n", "t" },
   body = "<space>b",
   heads = {
     {
@@ -129,7 +129,7 @@ Hydra {
     {
       "n",
       function()
-        ui.nav_prev()
+        ui.nav_next()
       end,
     },
   },

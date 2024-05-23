@@ -1,6 +1,5 @@
 vim.keymap.set("n", "<space>tg", "<cmd>FzfLua live_grep resume=true<CR>", { desc = "FzfLua live_grep" })
 vim.keymap.set("n", "<space>tr", "<cmd>FzfLua resume<CR>", { desc = "FzfLua resume" })
--- vim.keymap.set("n", "<c-p>", "<cmd>FzfLua files<cr>", { desc = "FzfLua find_files" })
 vim.keymap.set("n", "gr", "<cmd>FzfLua lsp_references<CR>", { noremap = true, silent = true, desc = "Find References" })
 vim.keymap.set("n", "<m-m>", "<cmd>FzfLua buffers<CR>", { noremap = true, silent = true, desc = "find buffers" })
 vim.keymap.set("n", "<m-l>", "<cmd>FzfLua oldfiles<CR>", { noremap = true, silent = true, desc = "find oldfiles" })

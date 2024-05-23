@@ -47,4 +47,8 @@ M.get_visual_selection = function()
   return table.concat(lines)
 end
 
+M.is_terminal_buffer = function()
+  local bufname = vim.fn.bufname "%"
+  return string.find(bufname, "^term://") ~= nil
+end
 return M

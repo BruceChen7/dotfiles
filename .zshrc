@@ -173,11 +173,16 @@ bindkey '^r' _atuin_search_widget
 export CARGO_HTTP_MULTIPLEXING=false
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
 export FZF_DEFAULT_OPTS="--layout=reverse --inline-info"
-alias vf="vim \`fzf\`"
+
+function vf {
+	IFS=$'\n' files=($(fzf --query="$1" --multi --select-1 --exit-0 --prompt 'files:' ))
+	[[ -n "$files" ]] && ${EDITOR} "${files[@]}"
+}
+
 export FZF_COMPLETION_TRIGGER='~~'
 
-export VISUAL=nvim;
-export EDITOR=nvim;
+export VISUAL=nvim
+export EDITOR=nvim
 export LANG=zh_CN.UTF-8
 export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
 export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
