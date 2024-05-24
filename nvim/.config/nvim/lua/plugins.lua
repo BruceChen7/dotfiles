@@ -343,32 +343,6 @@ require("lazy").setup {
     cmd = "LspLensOn",
   },
 
-  -- ai complement
-  -- {
-  --   "monkoose/neocodeium",
-  --   event = "VeryLazy",
-  --   config = function()
-  --     local neocodeium = require "neocodeium"
-  --     neocodeium.setup()
-  --     vim.keymap.set("i", "<Right>", neocodeium.accept)
-  --     vim.keymap.set("i", "<A-w>", function()
-  --       require("neocodeium").accept_word()
-  --     end)
-  --     vim.keymap.set("i", "<A-a>", function()
-  --       require("neocodeium").accept_line()
-  --     end)
-  --     vim.keymap.set("i", "<Up>", function()
-  --       require("neocodeium").cycle_or_complete()
-  --     end)
-  --     vim.keymap.set("i", "<Down>", function()
-  --       require("neocodeium").cycle_or_complete(-1)
-  --     end)
-  --     vim.keymap.set("i", "<Left>", function()
-  --       require("neocodeium").clear()
-  --     end)
-  --   end,
-  -- },
-
   {
     "ojroques/nvim-osc52",
     config = function()
@@ -610,17 +584,18 @@ require("lazy").setup {
     priority = 1001,
   },
 
-  {
-    "chrisgrieser/nvim-spider",
-    event = "VeryLazy",
-    config = function()
-      vim.keymap.set({ "n", "o", "x" }, "w", "<cmd>lua require('spider').motion('w')<CR>", { desc = "Spider-w" })
-      vim.keymap.set({ "n", "o", "x" }, "e", "<cmd>lua require('spider').motion('e')<CR>", { desc = "Spider-e" })
-      vim.keymap.set({ "n", "o", "x" }, "b", "<cmd>lua require('spider').motion('b')<CR>", { desc = "Spider-b" })
-      vim.keymap.set("i", "<C-f>", "<Esc>l<cmd>lua require('spider').motion('w')<CR>i")
-      vim.keymap.set("i", "<C-b>", "<Esc><cmd>lua require('spider').motion('b')<CR>i")
-    end,
-  },
+  -- Make the cursor move in the middle of camel words
+  -- {
+  --   "chrisgrieser/nvim-spider",
+  --   event = "VeryLazy",
+  --   config = function()
+  --     vim.keymap.set({ "n", "o", "x" }, "w", "<cmd>lua require('spider').motion('w')<CR>", { desc = "Spider-w" })
+  --     vim.keymap.set({ "n", "o", "x" }, "e", "<cmd>lua require('spider').motion('e')<CR>", { desc = "Spider-e" })
+  --     vim.keymap.set({ "n", "o", "x" }, "b", "<cmd>lua require('spider').motion('b')<CR>", { desc = "Spider-b" })
+  --     vim.keymap.set("i", "<C-f>", "<Esc>l<cmd>lua require('spider').motion('w')<CR>i")
+  --     vim.keymap.set("i", "<C-b>", "<Esc><cmd>lua require('spider').motion('b')<CR>i")
+  --   end,
+  -- },
 
   -- use xmake
   {
@@ -721,11 +696,6 @@ require("lazy").setup {
   },
 
   {
-    "voldikss/vim-translator",
-    event = "VeryLazy",
-  },
-
-  {
     "sainnhe/gruvbox-material",
   },
   -- {
@@ -736,6 +706,7 @@ require("lazy").setup {
   --   end,
   -- },
 
+  -- Jump across files to the last edited location
   {
     "bloznelis/before.nvim",
     config = function()
@@ -757,13 +728,13 @@ require("lazy").setup {
     event = "VeryLazy",
   },
   -- https://www.reddit.com/r/neovim/comments/1c747ns/treepairs_a_tiny_plugin_that_makes_work_properly/
-  {
-    "yorickpeterse/nvim-tree-pairs",
-    config = function()
-      require("tree-pairs").setup()
-    end,
-    event = "VeryLazy",
-  },
+  -- {
+  --   "yorickpeterse/nvim-tree-pairs",
+  --   config = function()
+  --     require("tree-pairs").setup()
+  --   end,
+  --   event = "VeryLazy",
+  -- },
 
   -- https://www.reddit.com/r/neovim/comments/1ca3rm8/shoutout_to_andrewferrierdebugprintnvim_add/
   {
