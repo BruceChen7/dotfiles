@@ -40,7 +40,7 @@ require("gp").setup {
   },
 }
 
-vim.keymap.set("v", "<c-g>g", function()
+vim.keymap.set("v", "<c-g>e", function()
   local utils = require "utils"
 
   local visual_selection = utils.get_visual_selection()

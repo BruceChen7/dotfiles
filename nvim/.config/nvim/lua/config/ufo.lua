@@ -28,7 +28,10 @@ end
 
 require("ufo").setup {
   provider_selector = function(bufnr, filetype)
-    return { "treesitter", "indent" }
+    if filetype == "markdown" then
+      return { "treesitter", "indent" }
+    end
+    -- return { "treesitter", "indent" }
   end,
   fold_virt_text_handler = fold_handler,
   preview = {
