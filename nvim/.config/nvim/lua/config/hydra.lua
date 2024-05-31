@@ -27,6 +27,28 @@ Hydra {
 }
 
 Hydra {
+  name = "go to next tab page",
+  mode = { "n", "t" },
+  body = "<space>t",
+  heads = {
+    {
+      "n",
+      function()
+        vim.cmd "tabNext"
+      end,
+      { desc = "go to next tab" },
+    },
+    {
+      "p",
+      function()
+        vim.cmd "tabprevious"
+      end,
+      { desc = "go to previous tab" },
+    },
+  },
+}
+
+Hydra {
   name = "edit pos navigation",
   mode = { "n" },
   body = "<space>g",

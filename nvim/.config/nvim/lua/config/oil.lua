@@ -62,9 +62,10 @@ require("oil").setup {
     ["v"] = "actions.select_vsplit",
     ["s"] = "actions.select_split",
     ["<t>"] = "actions.select_tab",
-    ["<p>"] = "actions.preview",
+    -- ["<p>"] = "actions.preview",
     ["<x>"] = "actions.close",
-    ["<C-l>"] = "actions.refresh",
+    -- ["<C-l>"] = "actions.refresh",
+    ["<c-p>"] = nil,
     ["<backspace>"] = "actions.parent",
     ["_"] = "actions.open_cwd",
     ["`"] = "actions.cd",
@@ -75,7 +76,7 @@ require("oil").setup {
     ["g\\"] = "actions.toggle_trash",
   },
   -- Set to false to disable all of the above keymaps
-  -- use_default_keymaps = true,
+  use_default_keymaps = false,
   view_options = {
     -- Show files and directories that start with "."
     show_hidden = true, -- This function defines what is considered a "hidden" file

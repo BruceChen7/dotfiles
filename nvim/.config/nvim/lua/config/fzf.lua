@@ -1,4 +1,4 @@
-vim.keymap.set("n", "<space>tg", "<cmd>FzfLua live_grep resume=true<CR>", { desc = "FzfLua live_grep" })
+vim.keymap.set("n", "<space>tg", "<cmd>FzfLua live_grep <CR>", { desc = "FzfLua live_grep" })
 vim.keymap.set("n", "<space>tr", "<cmd>FzfLua resume<CR>", { desc = "FzfLua resume" })
 vim.keymap.set("n", "gr", "<cmd>FzfLua lsp_references<CR>", { noremap = true, silent = true, desc = "Find References" })
 vim.keymap.set("n", "<m-m>", "<cmd>FzfLua buffers<CR>", { noremap = true, silent = true, desc = "find buffers" })
@@ -445,8 +445,7 @@ require("fzf-lua").setup {
       ["default"] = function(selected, _)
         -- extract bufnr from string `[1] xxx`
         local bufnr = tonumber(selected[1]:match "%[(%d+)%]")
-        -- execute command `BufferLineGotoBuffer <bufnr>`
-        vim.cmd("BufferLineGoToBuffer " .. bufnr)
+        vim.cmd("buffer" .. bufnr)
       end,
     },
   },

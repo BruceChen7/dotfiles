@@ -61,3 +61,5 @@ vim.api.nvim_create_autocmd("BufWritePre", {
     MiniTrailspace.trim()
   end,
 })
+
+require("mini.tabline").setup {}
