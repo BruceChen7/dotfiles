@@ -1,4 +1,3 @@
--- luasnip setup
 --
 local lspkind = require "lspkind"
 lspkind.init()

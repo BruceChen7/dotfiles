@@ -6,12 +6,12 @@ local ufo = require "ufo"
 Hydra {
   name = "Window",
   mode = { "n", "t" },
-  body = "<space>b",
+  body = "\\b",
   heads = {
     {
       "p",
       function()
-        vim.cmd "BufferLineCyclePrev"
+        vim.cmd "bprevious"
       end,
       { desc = "previous buffer" },
     },
@@ -19,7 +19,7 @@ Hydra {
     {
       "n",
       function()
-        vim.cmd "BufferLineCycleNext"
+        vim.cmd "bnext"
       end,
       { desc = "next buffer" },
     },
@@ -29,7 +29,7 @@ Hydra {
 Hydra {
   name = "go to next tab page",
   mode = { "n", "t" },
-  body = "<space>t",
+  body = "\\t",
   heads = {
     {
       "n",

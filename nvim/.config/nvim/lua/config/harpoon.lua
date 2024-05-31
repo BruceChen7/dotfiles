@@ -176,7 +176,6 @@ vim.keymap.set("n", "m5", function()
   -- vim.api.nvim_feedkeys("i", "n", false)
 end, { desc = "open git diff in terminal" })
 
-local term = require "harpoon.term"
 local saved_buffer = nil
 local last_term_idx = nil
 local function gotoTerminal(tid, save_buf)

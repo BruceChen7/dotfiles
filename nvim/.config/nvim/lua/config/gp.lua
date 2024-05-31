@@ -38,6 +38,67 @@ require("gp").setup {
         .. "START AND END YOUR ANSWER WITH:\n\n```",
     },
   },
+  hooks = {
+    Implement = function(gp, params)
+      local template = "Having following from {{filename}}:\n\n"
+        .. "```{{filetype}}\n{{selection}}\n```\n\n"
+        .. "Please rewrite this according to the contained instructions."
+        .. "\n\nRespond exclusively with the snippet that should replace the selection above."
+
+      local agent = gp.get_command_agent()
+      gp.info("Implementing selection with agent: " .. agent.name)
+
+      gp.Prompt(
+        params,
+        gp.Target.rewrite,
+        nil, -- command will run directly without any prompting for user input
+        agent.model,
+        template,
+        agent.system_prompt
+      )
+    end,
+
+    Tranlate = function(gp, params)
+      local template = "Having following from {{filename}}:\n\n"
+        .. "```{{filetype}}\n{{selection}}\n```\n\n"
+        .. "Please rewrite this according to the contained instructions."
+        .. "\n\nRespond exclusively with the snippet that should replace the selection above."
+
+      local agent = gp.get_command_agent()
+      gp.info("Implementing selection with agent: " .. agent.name)
+
+      gp.Prompt(
+        params,
+        gp.Target.rewrite,
+        nil, -- command will run directly without any prompting for user input
+        agent.model,
+        template,
+        agent.system_prompt
+      )
+    end,
+    -- example of adding command which explains the selected code
+    Explain = function(gp, params)
+      local template = "I have the following code from {{filename}}:\n\n"
+        .. "```{{filetype}}\n{{selection}}\n```\n\n"
+        .. "Please respond by explaining the code above."
+      local agent = gp.get_chat_agent()
+      gp.Prompt(params, gp.Target.popup, nil, agent.model, template, agent.system_prompt)
+    end,
+    -- example of usig enew as a function specifying type for the new buffer
+    CodeReview = function(gp, params)
+      local template = "I have the following code from {{filename}}:\n\n"
+        .. "```{{filetype}}\n{{selection}}\n```\n\n"
+        .. "Please analyze for code smells and suggest improvements."
+      local agent = gp.get_chat_agent()
+      gp.Prompt(params, gp.Target.enew "markdown", nil, agent.model, template, agent.system_prompt)
+    end,
+    -- example of adding command which opens new chat dedicated for translation
+    Translator = function(gp, params)
+      local agent = gp.get_command_agent()
+      local chat_system_prompt = "You are a Translator, please translate between English and Chinese."
+      gp.cmd.ChatNew(params, agent.model, chat_system_prompt)
+    end,
+  },
 }
 
 vim.keymap.set("v", "<c-g>e", function()

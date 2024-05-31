@@ -49,10 +49,10 @@ u.map("i", "jj", "<ESC>")
 u.map("n", "<leader>bn", ":bn<cr>")
 u.map("n", "<leader>bp", ":bp<cr>")
 
-u.map("n", "\\t", ":tabnew<cr>")
+u.map("n", "\\tt", ":tabnew<cr>")
 u.map("n", "\\tq", ":tabclose<cr>")
-u.map("n", "\\tn", ":tabnext<cr>")
-u.map("n", "\\tp", ":tabprev<cr>")
+-- u.map("n", "\\tn", ":tabnext<cr>")
+-- u.map("n", "\\tp", ":tabprev<cr>")
 u.map("n", "<leader>to", ":tabonly<cr>")
 
 u.map("n", "<space>=", ":resize +3<cr>")
@@ -244,15 +244,9 @@ vim.keymap.set("n", "<leader>md", mk_diary_file, { desc = "mk diary file" })
 
 vim.keymap.set("n", "<space>tc", function()
   local utils = require "utils"
-  local root = utils.find_root_dir()
-  if not root then
-    vim.cmd.redraw()
-    vim.notify "no root dir"
-    return
-  end
+  utils.change_to_current_buffer_root_dir()
   vim.cmd.redraw()
   vim.notify("now is in " .. root)
-  vim.cmd.tcd(root)
 end, { silent = true, desc = "cd to root" })
 
 local function copy_with_prefix()

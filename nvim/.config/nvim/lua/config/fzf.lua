@@ -1,4 +1,9 @@
-vim.keymap.set("n", "<space>tg", "<cmd>FzfLua live_grep <CR>", { desc = "FzfLua live_grep" })
+vim.keymap.set("n", "<space>tg", function()
+  local utils = require "utils"
+  utils.change_to_current_buffer_root_dir()
+  vim.cmd "FzfLua live_grep"
+end, { desc = "FzfLua live_grep" })
+
 vim.keymap.set("n", "<space>tr", "<cmd>FzfLua resume<CR>", { desc = "FzfLua resume" })
 vim.keymap.set("n", "gr", "<cmd>FzfLua lsp_references<CR>", { noremap = true, silent = true, desc = "Find References" })
 vim.keymap.set("n", "<m-m>", "<cmd>FzfLua buffers<CR>", { noremap = true, silent = true, desc = "find buffers" })
