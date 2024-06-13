@@ -14,11 +14,15 @@ local cmp = require "cmp"
 
 --
 local function select_next_item(fallback)
+  -- local suggestion = require "supermaven-nvim.completion_preview"
+
   if cmp.visible() then
     cmp.select_next_item {
       -- seems to fix md_source problem
       -- behavior = cmp.SelectBehavior.Select,
     }
+  -- elseif suggestion.has_suggestion() then
+  --   suggestion.on_accept_suggestion()
   elseif luasnip.expand_or_jumpable() then
     luasnip.expand_or_jump()
   else
@@ -91,6 +95,7 @@ cmp.setup {
     { name = "codeium", priority = 800 },
     { name = "crates" },
     { name = "calc" },
+    { name = "supermaven" },
     -- { name = "md_link" },
   },
   matching = {
@@ -145,8 +150,8 @@ cmp.setup {
         TypeParameter = " ",
         Codeium = " ",
         TabNine = " ",
-        Copilot = "",
         MdLink = " ",
+        Supermaven = "",
       }
       local meta_type = vim_item.kind
       -- load lspkind icons
@@ -159,12 +164,15 @@ cmp.setup {
         luasnip = " LuaSnip",
         tags = " Tags",
         codeium = " Codeium",
-        md_link = " MdLink",
-        copilot = " Copilot",
+        -- md_link = " MdLink",
         git = "Git",
+        supermaven = " Supermaven",
       })[entry.source.name]
 
       return vim_item
     end,
   },
 }
+
+-- supermaven color
+vim.api.nvim_set_hl(0, "CmpItemKindSupermaven", { fg = "#6CC644" })

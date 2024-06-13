@@ -394,6 +394,25 @@ require("lazy").setup {
     },
   },
 
+  {
+    "supermaven-inc/supermaven-nvim",
+    config = function()
+      require("supermaven-nvim").setup {
+        -- disable_keymaps = true,
+        keymaps = {
+          accept_suggestion = "<C-y>",
+          clear_suggestion = "<C-]",
+          accept_word = "<C-j>",
+        },
+        -- color = {
+        --   suggestion_color = "#ffffff",
+        --   cterm = 244,
+        -- },
+      }
+    end,
+    event = "VeryLazy",
+  },
+
   -- skip to inner bracket
   {
     "abecodes/tabout.nvim",
@@ -453,16 +472,16 @@ require("lazy").setup {
     event = "InsertEnter",
   },
 
-  {
-    "Exafunction/codeium.vim",
-    config = function()
-      if not use_ai() then
-        return
-      end
-      require "config/codeium"
-    end,
-    event = "InsertEnter",
-  },
+  -- {
+  --   "Exafunction/codeium.vim",
+  --   config = function()
+  --     if not use_ai() then
+  --       return
+  --     end
+  --     require "config/codeium"
+  --   end,
+  --   event = "InsertEnter",
+  -- },
 
   {
     "robitx/gp.nvim",
