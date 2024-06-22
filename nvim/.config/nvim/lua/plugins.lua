@@ -42,11 +42,11 @@ require("lazy").setup {
   },
 
   {
-    "ludovicchabant/vim-gutentags",
+    "skywind3000/vim-gutentags",
     config = function()
       require "config/gtags"
     end,
-    event = "VeryLazy",
+    -- event = "VeryLazy",
   },
 
   { "skywind3000/vim-preview" },
@@ -86,6 +86,19 @@ require("lazy").setup {
     -- https://www.reddit.com/r/neovim/comments/162q5ca/whats_your_favorite_unknown_nvimvim_plugin/
     -- commit = "6c84bc75c64f778e9f1dcb798ed41c7fcb93b639",
     ft = { "go", "lua", "python", "zig", "rust" },
+  },
+
+  {
+    "j-hui/fidget.nvim",
+    config = function()
+      require("fidget").setup()
+    end,
+    event = "VeryLazy",
+  },
+
+  {
+    "skywind3000/gutentags_plus",
+    -- event = "VeryLazy",
   },
 
   --
@@ -200,28 +213,6 @@ require("lazy").setup {
 
   {
     "nvim-lua/lsp_extensions.nvim",
-    event = "VeryLazy",
-  },
-
-  {
-    "dhananjaylatkar/cscope_maps.nvim",
-    dependencies = {
-      -- "nvim-telescope/telescope.nvim", -- optional [for picker="telescope"]
-      "nvim-tree/nvim-web-devicons", -- optional [for devicons in telescope or fzf]
-    },
-    opts = {
-      skip_input_prompt = true,
-      cscope = {
-        exec = "gtags-cscope",
-        -- build db file in current dir
-        -- how to set db_file in ~/.cache/tags/
-        -- db_file = "~/.cache/tags/",
-        -- picker = "telescope",
-        skip_picker_for_single_result = true,
-        db_build_cmd_args = { "-bqkv" },
-      },
-    },
-    -- ft = { "c", "cpp", "zig",  },
     event = "VeryLazy",
   },
 
@@ -575,15 +566,6 @@ require("lazy").setup {
       }
     end,
   },
-
-  -- {
-  --   "akinsho/bufferline.nvim",
-  --   dependencies = "nvim-tree/nvim-web-devicons",
-  --   config = function()
-  --     require "config/bufferline"
-  --   end,
-  --   -- event = "VeryLazy",
-  -- },
 
   {
     "echasnovski/mini.nvim",
