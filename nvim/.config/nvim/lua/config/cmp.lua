@@ -149,7 +149,6 @@ cmp.setup {
         Operator = "",
         TypeParameter = " ",
         Codeium = " ",
-        TabNine = " ",
         MdLink = " ",
         Supermaven = "",
       }
@@ -168,7 +167,6 @@ cmp.setup {
         git = "Git",
         supermaven = " Supermaven",
       })[entry.source.name]
-
       return vim_item
     end,
   },

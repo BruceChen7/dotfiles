@@ -6,7 +6,7 @@ local ufo = require "ufo"
 Hydra {
   name = "Window",
   mode = { "n", "t" },
-  body = "\\b",
+  body = "<space>b",
   heads = {
     {
       "p",
@@ -44,6 +44,29 @@ Hydra {
         vim.cmd "tabprevious"
       end,
       { desc = "go to previous tab" },
+    },
+  },
+}
+
+Hydra {
+  name = "go to last edit position in current file",
+  mode = { "n" },
+  body = "g;",
+  heads = {
+    {
+      ";",
+      function()
+        -- use lua to get the last edit position like in normal mode g;
+        vim.cmd "silent normal! g;"
+      end,
+      { desc = "last edit position in current file" },
+    },
+    {
+      ",",
+      function()
+        vim.cmd "silent normal! g,"
+      end,
+      { desc = "next edit position in current file" },
     },
   },
 }

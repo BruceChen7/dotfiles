@@ -583,6 +583,7 @@ local zoxide = function()
     },
   })
 end
+
 vim.keymap.set("n", "<leader>tz", zoxide, { desc = "Zoxide" })
 --
 --

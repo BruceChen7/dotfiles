@@ -11,6 +11,10 @@ o.nu = true
 o.wrap = false
 o.termguicolors = true
 
+-- 保留1000个历史文件
+-- https://neovim.discourse.group/t/updating-shada-option-in-lua/3324
+vim.o.shada = "!,'1000,<50,s30,h"
+
 o.ttimeout = true
 o.ttimeoutlen = 100
 o.tags = [[ ./.tags;,.tags ]]
