@@ -88,7 +88,7 @@ local change_color = function()
   vim.cmd(cmd)
 end
 
-vim.keymap.set("n", "g1", ":AsyncTask grep-cword<CR>")
+-- vim.keymap.set("n", "g1", ":AsyncTask grep-cword<CR>")
 vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>")
 vim.keymap.set("n", "g3", function()
   change_color()
@@ -246,6 +246,7 @@ vim.keymap.set("n", "<space>tc", function()
   local utils = require "utils"
   utils.change_to_current_buffer_root_dir()
   vim.cmd.redraw()
+  local root = utils.find_root_dir()
   vim.notify("now is in " .. root)
 end, { silent = true, desc = "cd to root" })
 

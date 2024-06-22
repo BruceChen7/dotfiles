@@ -31,7 +31,7 @@ require("ufo").setup {
     if filetype == "markdown" then
       return { "treesitter", "indent" }
     end
-    -- return { "treesitter", "indent" }
+    return "indent"
   end,
   fold_virt_text_handler = fold_handler,
   preview = {

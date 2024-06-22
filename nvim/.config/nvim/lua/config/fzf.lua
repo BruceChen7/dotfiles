@@ -4,10 +4,11 @@ vim.keymap.set("n", "<space>tg", function()
   vim.cmd "FzfLua live_grep"
 end, { desc = "FzfLua live_grep" })
 
-vim.keymap.set("n", "<space>tr", "<cmd>FzfLua resume<CR>", { desc = "FzfLua resume" })
+vim.keymap.set("n", "<space>tr", "<cmd>FzfLua grep_last<CR>", { desc = "FzfLua resume" })
 vim.keymap.set("n", "gr", "<cmd>FzfLua lsp_references<CR>", { noremap = true, silent = true, desc = "Find References" })
 vim.keymap.set("n", "<m-m>", "<cmd>FzfLua buffers<CR>", { noremap = true, silent = true, desc = "find buffers" })
 vim.keymap.set("n", "<m-l>", "<cmd>FzfLua oldfiles<CR>", { noremap = true, silent = true, desc = "find oldfiles" })
+vim.keymap.set("n", "g1", "<cmd>FzfLua grep_cword<CR>", { noremap = true, silent = true, desc = "find oldfiles" })
 vim.keymap.set("n", "<c-p>", function()
   local utils = require "utils"
   local root = utils.find_root_dir()
