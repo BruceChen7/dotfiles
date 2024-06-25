@@ -535,22 +535,42 @@ require("lazy").setup {
     "zhenyangze/vim-bitoai",
     event = "VeryLazy",
   },
-
   {
     "folke/trouble.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    event = "VeryLazy",
-    config = function()
-      vim.keymap.set("n", "\\xx", function()
-        require("trouble").open()
-      end, { desc = "current Diagnostics" })
-      vim.keymap.set("n", "\\xw", function()
-        require("trouble").open "workspace_diagnostics"
-      end, { desc = "Workspace Diagnostics" })
-      vim.keymap.set("n", "\\xd", function()
-        require("trouble").open "document_diagnostics"
-      end, { desc = "Document Diagnostics" })
-    end,
+    opts = {}, -- for default options, refer to the configuration section for custom setup.
+    cmd = "Trouble",
+    keys = {
+      {
+        "\\xx",
+        "<cmd>Trouble diagnostics toggle<cr>",
+        desc = "Diagnostics (Trouble)",
+      },
+      {
+        "\\xX",
+        "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
+        desc = "Buffer Diagnostics (Trouble)",
+      },
+      {
+        "\\cs",
+        "<cmd>Trouble symbols toggle focus=false<cr>",
+        desc = "Symbols (Trouble)",
+      },
+      {
+        "\\cl",
+        "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
+        desc = "LSP Definitions / references / ... (Trouble)",
+      },
+      {
+        "\\xL",
+        "<cmd>Trouble loclist toggle<cr>",
+        desc = "Location List (Trouble)",
+      },
+      {
+        "\\xQ",
+        "<cmd>Trouble qflist toggle<cr>",
+        desc = "Quickfix List (Trouble)",
+      },
+    },
   },
 
   -- "Preview command results with `:Norm`"
