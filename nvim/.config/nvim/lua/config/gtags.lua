@@ -30,10 +30,12 @@ vim.g.gutentags_modules = modules
 if vim.fn.executable "gtags" and vim.fn.executable "gtags-cscope" then
   -- support more languages including go
   -- sudo pacman -S python-pygments
-  vim.env.GTAGSLABEL = "native-pygments"
-  if vim.fn.has "unix" then
-    vim.env.GTAGSCONF = "/usr/share/gtags/gtags.conf"
-  elseif vim.fn.has "macunix" then
+  -- check if neovim is installled in macos
+  if vim.fn.has "mac" then
+    vim.env.GTAGSLABEL = "native-pygments"
     vim.env.GTAGSCONF = "/usr/local/share/gtags/gtags.conf"
+  elseif vim.fn.has "unix" then
+    vim.env.GTAGSLABEL = "native-pygments"
+    vim.env.GTAGSCONF = "/usr/share/gtags/gtags.conf"
   end
 end
