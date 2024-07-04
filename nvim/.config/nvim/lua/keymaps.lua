@@ -65,7 +65,7 @@ local first_init_window = {}
 vim.keymap.set("n", "<m-;>", function()
   vim.cmd "PreviewTag"
   -- jump back to last window
-  -- 获取当前的windowid 和 tabid
+  -- Get the current windowid and tabid
   local winid = vim.api.nvim_get_current_win()
   local tabid = vim.api.nvim_get_current_tabpage()
   -- format windowid and tabid
