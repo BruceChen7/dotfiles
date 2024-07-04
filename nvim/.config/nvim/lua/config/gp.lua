@@ -101,7 +101,7 @@ require("gp").setup {
   },
 }
 
-vim.keymap.set("v", "<c-g>e", function()
+vim.keymap.set("v", "\\ge", function()
   local utils = require "utils"
 
   local visual_selection = utils.get_visual_selection()
@@ -115,7 +115,7 @@ vim.keymap.set("v", "<c-g>e", function()
   vim.cmd(command)
 end, { desc = "gp rewrite to english" })
 
-vim.keymap.set("v", "<c-g>c", function()
+vim.keymap.set("v", "\\gc", function()
   local utils = require "utils"
   local visual_selection = utils.get_visual_selection()
   if visual_selection == nil then
@@ -127,5 +127,5 @@ vim.keymap.set("v", "<c-g>c", function()
   vim.cmd(command)
 end, { desc = "gp rewrite to chinese" })
 
-vim.keymap.set("v", "<c-g>v", ":<C-u>'<,'>GpChatNew vsplit<cr>", { desc = "Visual Chat New" })
-vim.keymap.set({ "n", "v", "x", "i" }, "<c-g>s", "<cmd>GpStop<cr>", { desc = "GpStop" })
+vim.keymap.set("v", "\\gv", ":<C-u>'<,'>GpChatNew vsplit<cr>", { desc = "Visul Chat New" })
+vim.keymap.set({ "n", "v", "x", "i" }, "\\gs", "<cmd>GpStop<cr>", { desc = "GpStop" })

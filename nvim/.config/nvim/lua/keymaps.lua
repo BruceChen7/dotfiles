@@ -61,7 +61,22 @@ u.map("n", "<space>,", ":vertical resize -5<cr>")
 u.map("n", "<space>.", ":vertical resize +5<cr>")
 
 -- vim-preview
-u.map("n", "<m-;>", ":PreviewTag<CR>")
+local first_init_window = {}
+vim.keymap.set("n", "<m-;>", function()
+  vim.cmd "PreviewTag"
+  -- jump back to last window
+  -- 获取当前的windowid 和 tabid
+  local winid = vim.api.nvim_get_current_win()
+  local tabid = vim.api.nvim_get_current_tabpage()
+  -- format windowid and tabid
+  local winid_str = tostring(winid)
+  local tabid_str = tostring(tabid)
+  local key = winid_str .. ":" .. tabid_str
+  if not first_init_window[key] then
+    vim.cmd "wincmd p"
+    first_init_window[key] = true
+  end
+end)
 u.map("n", "<m-:", ":PreviewClose<CR>")
 
 -- 自动打开 quickfix window ，高度为 10

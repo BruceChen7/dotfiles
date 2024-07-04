@@ -234,7 +234,7 @@ require("lazy").setup {
 
   {
     "linrongbin16/lsp-progress.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    -- dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       require("lsp-progress").setup()
     end,
@@ -243,7 +243,7 @@ require("lazy").setup {
 
   {
     "sindrets/diffview.nvim",
-    dependencies = { "nvim-lua/plenary.nvim", "nvim-tree/nvim-web-devicons", opt = true },
+    dependencies = { "nvim-lua/plenary.nvim", opt = true },
     config = function()
       require "config/diff"
     end,
@@ -486,7 +486,7 @@ require("lazy").setup {
   {
     "ibhagwan/fzf-lua",
     -- optional for icon support
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    -- dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       require "config/fzf"
     end,
@@ -571,6 +571,51 @@ require("lazy").setup {
         desc = "Quickfix List (Trouble)",
       },
     },
+  },
+
+  {
+    "rachartier/tiny-inline-diagnostic.nvim",
+    event = "VeryLazy",
+    config = function()
+      require("tiny-inline-diagnostic").setup()
+    end,
+  },
+
+  -- https://github.com/echasnovski/mini.nvim/issues/1007
+  {
+    "echasnovski/mini.icons",
+    lazy = true,
+    opts = {},
+    init = function()
+      package.preload["nvim-web-devicons"] = function()
+        local Icons = require "mini.icons"
+        local ret = {}
+        package.loaded["nvim-web-devicons"] = ret
+        Icons.mock_nvim_web_devicons()
+
+        local function get(cat)
+          local all = {}
+          for _, name in ipairs(Icons.list(cat)) do
+            local icon, color = ret.get_icon_color(cat == "file" and name, cat == "extension" and name)
+            all[name] = { icon = icon, color = color }
+          end
+          return all
+        end
+
+        ret.get_icons_by_extension = function()
+          return get "extension"
+        end
+
+        ret.get_icons_by_filename = function()
+          return get "file"
+        end
+
+        ret.get_icons = function()
+          return vim.tbl_extend("force", get "file", get "extension")
+        end
+        return ret
+      end
+    end,
   },
 
   -- "Preview command results with `:Norm`"
@@ -770,7 +815,6 @@ require("lazy").setup {
       require "config/oil"
     end,
     -- Optional dependencies
-    dependencies = { "nvim-tree/nvim-web-devicons" },
     event = "VeryLazy",
   },
 
