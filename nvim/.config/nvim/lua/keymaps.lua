@@ -382,3 +382,19 @@ end, { noremap = true, silent = true, desc = "paste markdown" })
 vim.cmd [[
   au BufReadPost * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 ]]
+
+vim.keymap.set("n", "<leader>sa", function()
+  -- 交换两个窗口的中的buffer
+  local pid = vim.fn["preview#preview_check"]()
+  if pid == 0 then
+    return
+  end
+
+  local preview_winnr, _ = vim.fn["preview#window_find"](pid)
+  print("preview_winnr is ", vim.inspect(preview_winnr))
+  local winid = vim.api.nvim_get_current_win()
+  local bufnr = vim.api.nvim_win_get_buf(winid)
+  local bufnr2 = vim.api.nvim_win_get_buf(preview_winnr)
+  vim.api.nvim_win_set_buf(winid, bufnr2)
+  vim.api.nvim_win_set_buf(preview_winnr, bufnr)
+end, { desc = "swap buffers" })
