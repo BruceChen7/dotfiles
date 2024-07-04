@@ -32,13 +32,12 @@ timer:start(
 -- 禁止 gutentags 自动链接 gtags 数据库
 vim.g.gutentags_auto_add_gtags_cscope = 0
 vim.g.gutentags_define_advanced_commands = 1
-vim.g.gutentags_file_list_command = "fd -I -e c -e h -e cpp -e cc -e go -e py"
+vim.g.gutentags_file_list_command = "fd -I -e c -e h -e cpp -e cc -e go -e py -e lua"
 -- for debug
 vim.g.gutentags_trace = 0
 
 -- vim.g.gutentags_cscope_build_inverted_index_maps = 1
-
--- vim.g.gutentags_ctags_extra_args = {'--fields=+niazS', '--extras=+q', '--c++-kinds=+px', '--c-kinds=+px'}
+-- vim.g.gutentags_ctags_extra_args = { "--fields=+niazS", "--extras=+q", "--c++-kinds=+px", "--c-kinds=+px" }
 -- 使用 universal-ctags 的话需要下面这行，请反注释
 local extra_tags = { "--fields=+niazS", "--extras=+q", "--c++-kinds=+px", "--c-kinds=+px" }
 table.insert(extra_tags, "--output-format=e-ctags")
@@ -48,22 +47,19 @@ local modules = {}
 if vim.fn.executable "ctags" then
   table.insert(modules, "ctags")
   if vim.fn.executable "gtags" and vim.fn.executable "gtags-cscope" then
-    -- table.insert(modules, "gtags_cscope")
+    table.insert(modules, "gtags_cscope")
   end
 end
 -- table.insert(modules, "cscope_maps")
-table.insert(modules, "gtags_cscope")
+-- table.insert(modules, "gtags_cscope")
 vim.g.gutentags_modules = modules
 
 if vim.fn.executable "gtags" and vim.fn.executable "gtags-cscope" then
-  -- support more languages including go
-  -- sudo pacman -S python-pygments
-  -- check if neovim is installled in macos
-  if vim.fn.has "mac" then
-    vim.env.GTAGSLABEL = "native-pygments"
+  vim.env.GTAGSCONF = "/usr/share/gtags/gtags.conf"
+  vim.env.GTAGSLABEL = "native-pygments"
+  -- If it is neovim in mac
+  local utils = require "utils"
+  if utils.is_mac() then
     vim.env.GTAGSCONF = "/usr/local/share/gtags/gtags.conf"
-  elseif vim.fn.has "unix" then
-    vim.env.GTAGSLABEL = "native-pygments"
-    vim.env.GTAGSCONF = "/usr/share/gtags/gtags.conf"
   end
 end

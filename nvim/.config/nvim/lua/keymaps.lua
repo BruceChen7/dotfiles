@@ -63,16 +63,17 @@ u.map("n", "<space>.", ":vertical resize +5<cr>")
 -- vim-preview
 local first_init_window = {}
 vim.keymap.set("n", "<m-;>", function()
-  vim.cmd "PreviewTag"
   -- jump back to last window
   -- Get the current windowid and tabid
   local winid = vim.api.nvim_get_current_win()
   local tabid = vim.api.nvim_get_current_tabpage()
-  -- format windowid and tabid
   local winid_str = tostring(winid)
   local tabid_str = tostring(tabid)
+  local pid = vim.fn["preview#preview_check"]()
   local key = winid_str .. ":" .. tabid_str
-  if not first_init_window[key] then
+  vim.cmd "PreviewTag"
+  -- pid == 0 means no preview window
+  if not first_init_window[key] or pid == 0 then
     vim.cmd "wincmd p"
     first_init_window[key] = true
   end
@@ -382,7 +383,6 @@ end, { noremap = true, silent = true, desc = "paste markdown" })
 vim.cmd [[
   au BufReadPost * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 ]]
-
 vim.keymap.set("n", "<leader>sa", function()
   -- 交换两个窗口的中的buffer
   local pid = vim.fn["preview#preview_check"]()
@@ -390,11 +390,18 @@ vim.keymap.set("n", "<leader>sa", function()
     return
   end
 
-  local preview_winnr, _ = vim.fn["preview#window_find"](pid)
-  print("preview_winnr is ", vim.inspect(preview_winnr))
+  print("pid is ", pid)
   local winid = vim.api.nvim_get_current_win()
   local bufnr = vim.api.nvim_win_get_buf(winid)
-  local bufnr2 = vim.api.nvim_win_get_buf(preview_winnr)
-  vim.api.nvim_win_set_buf(winid, bufnr2)
-  vim.api.nvim_win_set_buf(preview_winnr, bufnr)
+  local ids = vim.fn["preview#window_find"](pid)
+  local preview_winnr = ids[1]
+
+  vim.cmd(tostring(preview_winnr) .. "wincmd w")
+  local preview_winid = vim.api.nvim_get_current_win()
+  print("preview_winid is ", preview_winid)
+  local preview_bufnr = vim.api.nvim_win_get_buf(preview_winid)
+  print("preview_bufnr is ", preview_bufnr)
+
+  vim.api.nvim_win_set_buf(winid, preview_bufnr)
+  vim.api.nvim_win_set_buf(preview_winid, bufnr)
 end, { desc = "swap buffers" })

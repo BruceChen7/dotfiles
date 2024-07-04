@@ -532,10 +532,6 @@ require("lazy").setup {
   -- },
 
   {
-    "zhenyangze/vim-bitoai",
-    event = "VeryLazy",
-  },
-  {
     "folke/trouble.nvim",
     opts = {}, -- for default options, refer to the configuration section for custom setup.
     cmd = "Trouble",
@@ -578,6 +574,10 @@ require("lazy").setup {
     event = "VeryLazy",
     config = function()
       require("tiny-inline-diagnostic").setup()
+      require("tiny-inline-diagnostic").disable()
+      vim.keymap.set("n", "\\td", function()
+        require("tiny-inline-diagnostic").toggle()
+      end, { desc = "Toggle Tiny Inline Diagnostic" })
     end,
   },
 
