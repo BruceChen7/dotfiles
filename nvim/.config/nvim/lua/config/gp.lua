@@ -21,7 +21,7 @@ require("gp").setup {
       name = "deepseek-chat",
       chat = true,
       command = false, -- string with model name or table with model name and parameters
-      model = { model = "deepseek-coder", temperature = 1.0, top_p = 1 },
+      model = { model = "deepseek-coder", temperature = 0.0, top_p = 1 },
       -- system prompt (use this to specify the persona/role of the AI)
       system_prompt = "You are now a general AI assistant",
       "If you don't know, just say you don't know",
