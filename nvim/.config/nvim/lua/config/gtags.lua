@@ -31,7 +31,9 @@ timer:start(
 -- 禁止 gutentags 自动链接 gtags 数据库
 vim.g.gutentags_auto_add_gtags_cscope = 0
 vim.g.gutentags_define_advanced_commands = 1
-vim.g.gutentags_file_list_command = "fd -I -e c -e h -e cpp -e cc -e go -e py -e lua"
+-- ignore fiels in `.gitignore`
+-- Avoid having a large database
+vim.g.gutentags_file_list_command = "fd -e c -e h -e cpp -e cc -e go -e py -e lua"
 -- for debug
 vim.g.gutentags_trace = 0
 
