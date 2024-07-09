@@ -1,6 +1,6 @@
 local wezterm = require("wezterm")
 local function enable_wayland()
-	wayland = os.getenv("XDG_SESSION_TYPE")
+	local wayland = os.getenv("XDG_SESSION_TYPE")
 	if wayland ~= "wayland" then
 		return false
 	end

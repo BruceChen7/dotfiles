@@ -1,7 +1,7 @@
 require("gp").setup {
   openai_api_key = os.getenv "OPENAI_API_KEY",
   openai_api_endpoint = "https://api.deepseek.com/chat/completions",
-  chat_topic_gen_model = "deepseek-coder",
+  chat_topic_gen_model = "deepseek-chat",
   agents = {
     -- disable all default agents
     {
@@ -21,7 +21,8 @@ require("gp").setup {
       name = "deepseek-chat",
       chat = true,
       command = false, -- string with model name or table with model name and parameters
-      model = { model = "deepseek-coder", temperature = 0.0, top_p = 1 },
+      -- see `temperature` in ths page `https://platform.deepseek.com/api-docs/zh-cn/`
+      model = { model = "deepseek-chat", temperature = 1.0, top_p = 1 },
       -- system prompt (use this to specify the persona/role of the AI)
       system_prompt = "You are now a general AI assistant",
       "If you don't know, just say you don't know",
@@ -82,7 +83,7 @@ require("gp").setup {
         .. "```{{filetype}}\n{{selection}}\n```\n\n"
         .. "Please respond by explaining the code above."
       local agent = gp.get_chat_agent()
-      gp.Prompt(params, gp.Target.popup, nil, agent.model, template, agent.system_prompt)
+      gp.Prompt(params, gp.Target.enew "markdown", nil, agent.model, template, agent.system_prompt)
     end,
     -- example of usig enew as a function specifying type for the new buffer
     CodeReview = function(gp, params)
@@ -127,5 +128,5 @@ vim.keymap.set("v", "\\gc", function()
   vim.cmd(command)
 end, { desc = "gp rewrite to chinese" })
 
-vim.keymap.set("v", "\\gv", ":<C-u>'<,'>GpChatNew vsplit<cr>", { desc = "Visul Chat New" })
+vim.keymap.set({ "v", "n" }, "\\gv", ":<C-u>'<,'>GpChatNew vsplit<cr>", { desc = "Visul Chat New" })
 vim.keymap.set({ "n", "v", "x", "i" }, "\\gs", "<cmd>GpStop<cr>", { desc = "GpStop" })

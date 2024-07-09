@@ -498,22 +498,32 @@ require("lazy").setup {
     "stevearc/conform.nvim",
     config = function()
       require("conform").setup {
+        -- log_level = vim.log.levels.TRACE,
         formatters_by_ft = {
           lua = { "stylua" },
           go = { "gofmt", "goimports" },
           zig = { "zigfmt" },
-          markdown = { "autocorrect" },
+          markdown = { "autocorrect", "trim_empty_lines" },
           typst = { "autocorrect" },
           python = { "ruff_format" },
         },
 
         format_on_save = function(bufnr)
-          return { timeout_ms = 500, lsp_fallback = true }
+          return { timeout_ms = 1000, lsp_fallback = true }
         end,
         formatters = {
           autocorrect = {
             command = "autocorrect",
             args = { "--stdin", "$FILENAME" },
+            -- args = { "$FILENAME" },
+            -- stdin == true,
+          },
+          -- `filename` is original file content
+          -- 这里不能使用`$FILENAME`，因为`$FILENAME`是当前文件的内容(上次保存的内容)
+          -- 你需要的是修改后的内容
+          trim_empty_lines = {
+            command = "awk",
+            args = { '/^$/{n=n RS}; /./{printf "%s%s%s",n,$0,RS; n=""}' },
             stdin == true,
           },
         },
@@ -521,15 +531,6 @@ require("lazy").setup {
     end,
     event = "VeryLazy",
   },
-
-  -- {
-  --   "nvim-lualine/lualine.nvim",
-  --   requires = { "nvim-tree/nvim-web-devicons", "linrongbin16/lsp-progress.nvim" },
-  --   config = function()
-  --     require "config/lualine"
-  --   end,
-  --   event = "VeryLazy",
-  -- },
 
   {
     "folke/trouble.nvim",
@@ -580,40 +581,27 @@ require("lazy").setup {
       end, { desc = "Toggle Tiny Inline Diagnostic" })
     end,
   },
+  {
+    "carbon-steel/detour.nvim",
+    config = function()
+      vim.keymap.set("n", "<c-w><enter>", ":Detour<cr>")
+      vim.keymap.set("n", "<c-w>.", ":DetourCurrentWindow<cr>")
+    end,
+    event = "VeryLazy",
+  },
 
   -- https://github.com/echasnovski/mini.nvim/issues/1007
   {
     "echasnovski/mini.icons",
     lazy = true,
     opts = {},
+    config = function()
+      require("mini.icons").setup()
+    end,
     init = function()
       package.preload["nvim-web-devicons"] = function()
-        local Icons = require "mini.icons"
-        local ret = {}
-        package.loaded["nvim-web-devicons"] = ret
-        Icons.mock_nvim_web_devicons()
-
-        local function get(cat)
-          local all = {}
-          for _, name in ipairs(Icons.list(cat)) do
-            local icon, color = ret.get_icon_color(cat == "file" and name, cat == "extension" and name)
-            all[name] = { icon = icon, color = color }
-          end
-          return all
-        end
-
-        ret.get_icons_by_extension = function()
-          return get "extension"
-        end
-
-        ret.get_icons_by_filename = function()
-          return get "file"
-        end
-
-        ret.get_icons = function()
-          return vim.tbl_extend("force", get "file", get "extension")
-        end
-        return ret
+        require("mini.icons").mock_nvim_web_devicons()
+        return package.loaded["nvim-web-devicons"]
       end
     end,
   },
@@ -630,6 +618,7 @@ require("lazy").setup {
         },
       }
     end,
+    event = "VeryLazy",
   },
 
   {
@@ -649,19 +638,6 @@ require("lazy").setup {
     lazy = false,
     priority = 1001,
   },
-
-  -- Make the cursor move in the middle of camel words
-  -- {
-  --   "chrisgrieser/nvim-spider",
-  --   event = "VeryLazy",
-  --   config = function()
-  --     vim.keymap.set({ "n", "o", "x" }, "w", "<cmd>lua require('spider').motion('w')<CR>", { desc = "Spider-w" })
-  --     vim.keymap.set({ "n", "o", "x" }, "e", "<cmd>lua require('spider').motion('e')<CR>", { desc = "Spider-e" })
-  --     vim.keymap.set({ "n", "o", "x" }, "b", "<cmd>lua require('spider').motion('b')<CR>", { desc = "Spider-b" })
-  --     vim.keymap.set("i", "<C-f>", "<Esc>l<cmd>lua require('spider').motion('w')<CR>i")
-  --     vim.keymap.set("i", "<C-b>", "<Esc><cmd>lua require('spider').motion('b')<CR>i")
-  --   end,
-  -- },
 
   -- use xmake
   {

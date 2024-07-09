@@ -16,8 +16,7 @@ timer:start(
       local attributes = vim.loop.fs_stat(file)
       if attributes and (attributes.type == "file" or attributes.type == "directory") then
         local file_age = now - attributes.mtime.sec
-        --over 1800 seconds
-        if file_age > 1800 then
+        if file_age > 3600 * 24 * 7 then
           print("file: " .. file)
           -- delete file or directory
           -- using rm -rf

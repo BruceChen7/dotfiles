@@ -154,6 +154,7 @@ cmp.setup {
       }
       local meta_type = vim_item.kind
       -- load lspkind icons
+      -- print("vim_item.kind", vim_item.kind)
       vim_item.kind = lspkind_icons[vim_item.kind] .. ""
 
       vim_item.menu = ({

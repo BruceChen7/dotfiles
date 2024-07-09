@@ -56,6 +56,19 @@ M.get_visual_selection = function()
   return table.concat(lines)
 end
 
+M.find_all_visible_buffers = function()
+  local buffers = vim.api.nvim_list_bufs()
+  local visible_buffers = {}
+
+  for _, buf in ipairs(buffers) do
+    if vim.api.nvim_buf_is_loaded(buf) and vim.api.nvim_buf_get_option(buf, "buflisted") then
+      table.insert(visible_buffers, buf)
+    end
+  end
+  return visible_buffers
+end
+
+--
 M.is_terminal_buffer = function()
   local bufname = vim.fn.bufname "%"
   return string.find(bufname, "^term://") ~= nil
