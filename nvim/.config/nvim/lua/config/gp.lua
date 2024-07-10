@@ -1,6 +1,13 @@
 require("gp").setup {
-  openai_api_key = os.getenv "OPENAI_API_KEY",
-  openai_api_endpoint = "https://api.deepseek.com/chat/completions",
+  -- openai_api_key = os.getenv "OPENAI_API_KEY",
+  -- openai_api_endpoint = "https://api.deepseek.com/chat/completions",
+  --
+  providers = {
+    openai = {
+      endpoint = "https://api.deepseek.com/chat/completions",
+      secret = os.getenv "OPENAI_API_KEY",
+    },
+  },
   chat_topic_gen_model = "deepseek-chat",
   agents = {
     -- disable all default agents

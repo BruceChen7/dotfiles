@@ -125,12 +125,12 @@ for i = 1, 9 do
     end
     local buffer_id = buffer_ids[1] or -1
     local utils = require "utils"
-    local visiual_buff = utils.find_all_visible_buffers()
+    local visible_buff = utils.find_all_visible_buffers()
     if buffer_id == -1 then
       return
     end
     local in_visual_buffer = false
-    for _, v in pairs(visiual_buff) do
+    for _, v in pairs(visible_buff) do
       if v == buffer_id then
         in_visual_buffer = true
         break
