@@ -37,6 +37,7 @@ o.splitbelow = true
 o.cursorline = true
 o.title = true
 o.numberwidth = 4
+o.colorcolumn = "120"
 
 -- 显示关标位置
 o.ruler = true
@@ -88,7 +89,7 @@ o.foldlevel = 99
 --文件搜索和补全时忽略下面扩展名
 o.suffixes = ".bak,~,.o,.h,.info,.swp,.obj,.pyc,.pyo,.egg-info,.class"
 
-vim.api.nvim_create_augroup("warp_group", {})
+vim.api.nvim_create_augroup("wrap_group", {})
 
 local function set_wrap()
   local file_size = vim.fn.getfsize(vim.api.nvim_buf_get_name(0))
@@ -101,7 +102,7 @@ end
 
 vim.api.nvim_create_autocmd("BufRead", {
   pattern = "*",
-  group = "warp_group",
+  group = "wrap_group",
   callback = function()
     set_wrap()
   end,
@@ -109,8 +110,6 @@ vim.api.nvim_create_autocmd("BufRead", {
 
 -- global line status
 o.laststatus = 3
-vim.g.vim_bito_prompt_BitoAiReadable = "现在你是代码专家，开始重构这段代码"
-
 vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 o.wildignore = [[
   .git,.hg,.svn

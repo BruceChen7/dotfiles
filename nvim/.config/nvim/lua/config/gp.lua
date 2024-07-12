@@ -13,16 +13,24 @@ require("gp").setup {
     -- disable all default agents
     {
       name = "ChatGPT4",
+      disable = true,
     },
     {
       name = "CodeGPT3-5",
+      disable = true,
+    },
+    {
+      name = "CodeGPT4o",
+      disable = true,
     },
 
     {
       name = "CodeGPT4",
+      disable = true,
     },
     {
       name = "ChatGPT3-5",
+      disable = true,
     },
     {
       name = "deepseek-chat",

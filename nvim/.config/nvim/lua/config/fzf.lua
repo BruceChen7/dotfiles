@@ -7,7 +7,7 @@ end, { desc = "FzfLua live_grep" })
 vim.keymap.set("n", "<space>tr", "<cmd>FzfLua grep_last<CR>", { desc = "FzfLua resume" })
 vim.keymap.set(
   "n",
-  "gr",
+  "grr",
   "<cmd>FzfLua lsp_references resume <CR>",
   { noremap = true, silent = true, desc = "Find References" }
 )
@@ -640,3 +640,37 @@ local open_url = function()
 end
 
 vim.keymap.set("n", "<leader>og", open_url, { desc = "open working gitlab url" })
+
+local get_branches = function()
+  local branches = {}
+
+  local current = current_branch()
+
+  local job = Job:new {
+    command = "git",
+    args = { "for-each-ref", "--format=%(refname:short)" },
+  }
+
+  job:sync()
+  local result = job:result()
+
+  for _, v in pairs(result) do
+    if v ~= current then
+      table.insert(branches, v)
+    end
+  end
+
+  return branches
+end
+vim.api.nvim_create_user_command("DiffFilesTo", function(args)
+  local fzf = require "fzf-lua"
+  fzf.git_files {
+    prompt = "Changed from <" .. args.args .. ">: ",
+    previewer = true,
+    cmd = "git diff --diff-filter=d --name-only " .. args.args,
+  }
+end, { nargs = 1, complete = get_branches })
+
+vim.keymap.set("n", "\\\\", function()
+  vim.cmd "DiffFilesTo release "
+end, { desc = "Diff files to release" })

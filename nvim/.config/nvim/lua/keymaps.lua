@@ -329,7 +329,6 @@ local function paste_regester()
     local start_index = string.find(content, "%(")
     local end_index = string.find(content, "%)")
     local selection = string.sub(content, start_index + 1, end_index - 1)
-    local description = string.sub(content, 1, start_index - 1)
     start_index = string.find(selection, "#")
     assert(start_index ~= nil)
     -- including #
@@ -380,10 +379,16 @@ vim.keymap.set("n", "\\cp", function()
 end, { noremap = true, silent = true, desc = "paste markdown" })
 
 -- Jump to last edit position on opening file
+--
+-- `au BufReadPost` that triggers when a buffer is read after the file has been loaded.
+-- The condition checks if the file path (`expand('%:p')`) does not contain `.git/`
+-- if the line number stored in the last known cursor position (`line("'\"")`) is valid (greater than 1 and less than or equal to the last line of the file).
+-- If both conditions are met, it executes a normal mode command (`exe "normal! g'\""`) to move the cursor to the last known position.
 vim.cmd [[
   au BufReadPost * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 ]]
 
+-- todo
 vim.keymap.set("n", "<leader>sa", function()
   -- 交换两个窗口的中的buffer
   local pid = vim.fn["preview#preview_check"]()
@@ -391,7 +396,6 @@ vim.keymap.set("n", "<leader>sa", function()
     return
   end
 
-  print("pid is ", pid)
   local winid = vim.api.nvim_get_current_win()
   local bufnr = vim.api.nvim_win_get_buf(winid)
   local ids = vim.fn["preview#window_find"](pid)
@@ -405,8 +409,10 @@ vim.keymap.set("n", "<leader>sa", function()
 
   vim.api.nvim_win_set_buf(winid, preview_bufnr)
   vim.api.nvim_win_set_buf(preview_winid, bufnr)
-end, { desc = "swap buffers" })
+end, { desc = "swap preivew buffers" })
 
 vim.keymap.set("n", "<leader>wx", function()
+  local winid = vim.api.nvim_get_current_win()
   vim.cmd "wincmd x"
+  vim.api.nvim_set_current_win(winid)
 end, { desc = "swap windows" })
