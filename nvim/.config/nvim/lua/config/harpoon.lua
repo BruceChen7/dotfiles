@@ -120,9 +120,16 @@ local function get_test_command()
     end
   end
   if export_cmd == "" then
-    return " cd " .. dir .. " && go test -gcflags=all=-l -run " .. function_name
+    return " cd "
+      .. dir
+      .. " && go test -tags='integration_test,unit_test' -tags=unit_test -gcflags=all=-l -run "
+      .. function_name
   else
-    local cmd = export_cmd .. " && cd " .. dir .. " && go test -gcflags=all=-l -run " .. function_name
+    local cmd = export_cmd
+      .. " && cd "
+      .. dir
+      .. " && go test -tags='integration_test,unit_test' -gcflags=all=-l -run "
+      .. function_name
     return cmd
   end
 end

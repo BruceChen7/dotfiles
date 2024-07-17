@@ -140,5 +140,5 @@ for i = 1, 9 do
       return
     end
     vim.cmd(string.format("b %d", buffer_id))
-  end)
+  end, { desc = string.format("go to buffer %d", i) })
 end

@@ -265,6 +265,7 @@ require("lsp-setup").setup {
         gopls = {
           gofumpt = true,
           usePlaceholders = false,
+          buildFlags = { "-tags=integration_test unit_test" },
           codelenses = {
             gc_details = true,
           },

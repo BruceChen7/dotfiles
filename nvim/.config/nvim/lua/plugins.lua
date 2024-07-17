@@ -285,6 +285,26 @@ require("lazy").setup {
     commit = "ccae1b9bec717ae284906b0bf83d720e59d12b91",
   },
 
+  {
+    "rodolfojsv/reminders.nvim",
+    config = function()
+      vim.keymap.set("n", "<leader>rme", ":RemindMeEvery ", { desc = "[R]emind [M]e [E]very and type minutes" })
+      vim.keymap.set("n", "<leader>rma", ":RemindMeAt ", { desc = "[R]emind [M]e [A]t and type hour of day (24h)" })
+      vim.keymap.set("n", "<leader>rmi", ":RemindMeIn ", { desc = "[R]emind [M]e [I]n and type minutes" })
+      vim.keymap.set(
+        "n",
+        "<leader>rmda",
+        ":RemindMeDailyAt ",
+        { desc = "[R]emind [M]e [D]aily [A]t and type hour of day (24h)" }
+      )
+      vim.keymap.set("n", "<leader>rmc", ":ReminderClose<CR>", { desc = "[R]e[m]inder [C]lose" })
+      vim.keymap.set("n", "<leader>rmrz", ":ReminderRemoveAll<CR>", { desc = "[R]e[m]inder [R]emove All" })
+      vim.keymap.set("n", "<leader>rmra", ":ReminderRemoveAt ", { desc = "[R]e[m]inder [R]emove [A]t" })
+      vim.keymap.set("n", "<leader>rmfo", ":ReminderFocusModeOff<CR>", { desc = "[R]e[m]inder [F]ocusMode [O]ff" })
+      vim.keymap.set("n", "<leader>rmfm", ":ReminderFocusModeOn<CR>", { desc = "[R]e[m]inder [F]ocus[M]ode On" })
+    end,
+    event = "VeryLazy",
+  },
   -- colorscheme
   { "folke/tokyonight.nvim" },
 
@@ -385,24 +405,24 @@ require("lazy").setup {
     },
   },
 
-  {
-    "supermaven-inc/supermaven-nvim",
-    config = function()
-      require("supermaven-nvim").setup {
-        -- disable_keymaps = true,
-        keymaps = {
-          accept_suggestion = "<C-y>",
-          clear_suggestion = "<C-]",
-          accept_word = "<C-j>",
-        },
-        -- color = {
-        --   suggestion_color = "#ffffff",
-        --   cterm = 244,
-        -- },
-      }
-    end,
-    event = "VeryLazy",
-  },
+  -- {
+  --   "supermaven-inc/supermaven-nvim",
+  --   config = function()
+  --     require("supermaven-nvim").setup {
+  --       -- disable_keymaps = true,
+  --       keymaps = {
+  --         accept_suggestion = "<C-y>",
+  --         clear_suggestion = "<C-]",
+  --         accept_word = "<C-j>",
+  --       },
+  --       -- color = {
+  --       --   suggestion_color = "#ffffff",
+  --       --   cterm = 244,
+  --       -- },
+  --     }
+  --   end,
+  --   event = "VeryLazy",
+  -- },
 
   -- skip to inner bracket
   {
@@ -463,16 +483,16 @@ require("lazy").setup {
     event = "InsertEnter",
   },
 
-  -- {
-  --   "Exafunction/codeium.vim",
-  --   config = function()
-  --     if not use_ai() then
-  --       return
-  --     end
-  --     require "config/codeium"
-  --   end,
-  --   event = "InsertEnter",
-  -- },
+  {
+    "Exafunction/codeium.vim",
+    config = function()
+      if not use_ai() then
+        return
+      end
+      require "config/codeium"
+    end,
+    event = "InsertEnter",
+  },
 
   {
     "robitx/gp.nvim",
@@ -648,47 +668,15 @@ require("lazy").setup {
     dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
   },
 
-  -- not working yet
-  -- becuse of no valid access token
-  -- {
-  --   "zbirenbaum/copilot.lua",
-  --   event = "InsertEnter",
-  --   config = function()
-  --     if not use_ai() then
-  --       return
-  --     end
-  --     require("copilot").setup {
-  --       panel = {
-  --         enabled = false,
-  --       },
-  --       suggestion = {
-  --         enabled = false,
-  --       },
-  --     }
-  --   end,
-  -- },
-
-  -- {
-  --   "zbirenbaum/copilot-cmp",
-  --   dependencies = { "zbirenbaum/copilot.lua" },
-  --   config = function()
-  --     if not use_ai() then
-  --       return
-  --     end
-  --     require("copilot_cmp").setup()
-  --   end,
-  -- },
   {
     "folke/which-key.nvim",
-    event = "VeryLazy",
-    init = function()
-      vim.o.timeout = true
-      vim.o.timeoutlen = 500
-    end,
+    -- event = "VeryLazy",
     opts = {
-      -- your configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section below
+      delay = function(ctx)
+        return 500
+      end,
+      preset = "modern",
+      modes = { n = true, x = true, v = true, t = false },
     },
   },
 
@@ -707,6 +695,9 @@ require("lazy").setup {
   {
     "nvim-pack/nvim-spectre",
     config = function()
+      require("reminders").setup {
+        directory_path = vim.fn.stdpath "data",
+      }
       vim.keymap.set("n", "<leader>S", '<cmd>lua require("spectre").toggle()<CR>', {
         desc = "Toggle Spectre",
       })

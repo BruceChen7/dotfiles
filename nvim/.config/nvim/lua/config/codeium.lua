@@ -1,5 +1,5 @@
 vim.g.codeium_disable_bindings = 1
-vim.keymap.set("i", "<Right>", function()
+vim.keymap.set("i", "<c-y>", function()
   return vim.fn["codeium#Accept"]()
 end, { expr = true })
 vim.keymap.set("i", "<Down>", function()
