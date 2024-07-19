@@ -144,4 +144,4 @@ vim.keymap.set("v", "\\gc", function()
 end, { desc = "gp rewrite to chinese" })
 
 vim.keymap.set({ "v", "n" }, "\\gv", ":<C-u>'<,'>GpChatNew vsplit<cr>", { desc = "Visul Chat New" })
-vim.keymap.set({ "n", "v", "x", "i" }, "\\gs", "<cmd>GpStop<cr>", { desc = "GpStop" })
+-- vim.keymap.set({ "n", "v", "x" }, "\\gs", "<cmd>GpStop<cr>", { desc = "GpStop" })

@@ -405,25 +405,6 @@ require("lazy").setup {
     },
   },
 
-  -- {
-  --   "supermaven-inc/supermaven-nvim",
-  --   config = function()
-  --     require("supermaven-nvim").setup {
-  --       -- disable_keymaps = true,
-  --       keymaps = {
-  --         accept_suggestion = "<C-y>",
-  --         clear_suggestion = "<C-]",
-  --         accept_word = "<C-j>",
-  --       },
-  --       -- color = {
-  --       --   suggestion_color = "#ffffff",
-  --       --   cterm = 244,
-  --       -- },
-  --     }
-  --   end,
-  --   event = "VeryLazy",
-  -- },
-
   -- skip to inner bracket
   {
     "abecodes/tabout.nvim",
@@ -435,6 +416,17 @@ require("lazy").setup {
       "nvim-treesitter/nvim-treesitter",
     },
     event = "InsertEnter",
+  },
+
+  {
+    "rcarriga/nvim-notify",
+    event = "VeryLazy",
+    config = function()
+      local notfify = require "notify"
+      notfify.setup {
+        timeout = 5000,
+      }
+    end,
   },
 
   {
@@ -676,7 +668,8 @@ require("lazy").setup {
         return 500
       end,
       preset = "modern",
-      modes = { n = true, x = true, v = true, t = false },
+      triggers = { n = true, x = true, v = true, t = false },
+      notify = false,
     },
   },
 

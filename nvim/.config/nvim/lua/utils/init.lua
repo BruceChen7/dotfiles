@@ -36,7 +36,7 @@ end
 M.is_in_working_dir = function()
   local buf_name = vim.api.nvim_buf_get_name(0)
   -- buf_name contains `mms` or `video` string
-  return buf_name:find "video"
+  return buf_name:find "work"
 end
 
 M.change_to_current_buffer_root_dir = function()

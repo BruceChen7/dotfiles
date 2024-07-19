@@ -102,7 +102,7 @@ local function get_test_command()
   local export_cmd = ""
   if utils.is_mac() then
     local root = utils.find_root_dir()
-    vim.notify("root is " .. root)
+    -- vim.notify("root is " .. root)
     local last_part = string.match(root, "([^/]+)$")
     local project_name = "luckyvideo"
     if last_part == "ecommerce" then
@@ -120,10 +120,7 @@ local function get_test_command()
     end
   end
   if export_cmd == "" then
-    return " cd "
-      .. dir
-      .. " && go test -tags='integration_test,unit_test' -tags=unit_test -gcflags=all=-l -run "
-      .. function_name
+    return " cd " .. dir .. " && go test -tags='integration_test,unit_test'  -gcflags=all=-l -run " .. function_name
   else
     local cmd = export_cmd
       .. " && cd "
