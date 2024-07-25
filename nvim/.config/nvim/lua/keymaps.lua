@@ -208,7 +208,7 @@ end
 
 vim.keymap.set("n", "<leader>rt", retab_directory, { silent = true, desc = "Retab directory" })
 
-function quitWindow()
+local function quitWindow()
   local buf_total_num = vim.fn.len(vim.fn.getbufinfo { buflisted = 1 })
   local buf_name = vim.fn.bufname()
   if vim.o.filetype == "neo-tree" then

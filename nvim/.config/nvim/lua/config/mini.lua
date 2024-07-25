@@ -78,26 +78,18 @@ require("mini.extra").setup {}
 local buf_num_2_id = {}
 local get_buffer_num = function(buf_id)
   if buf_num_2_id[buf_id] == nil then
-    if buf_num_2_id["max"] == nil then
-      return 1
-    else
-      return buf_num_2_id["max"] + 1
-    end
-  else
-    return buf_num_2_id[buf_id]
+    local max = buf_num_2_id["max"] or 0
+    buf_num_2_id[buf_id] = max + 1
+    buf_num_2_id["max"] = max + 1
   end
+  return buf_num_2_id[buf_id]
 end
 
 local tweak_buffer_num_2_id = function()
   local max = 0
   local visible_buffers = require("utils").find_all_visible_buffers()
-  for k, v in pairs(buf_num_2_id) do
-    if type(k) == "number" then
-      -- v in visible_buffers
-      if vim.tbl_contains(visible_buffers, k) then
-        max = math.max(max, v)
-      end
-    end
+  for _, buf_id in ipairs(visible_buffers) do
+    max = math.max(max, buf_num_2_id[buf_id] or 0)
   end
   buf_num_2_id["max"] = max
 end
@@ -157,7 +149,7 @@ for i = 1, 9 do
   end, { desc = string.format("go to buffer %d", i) })
 end
 
--- 重置编号
+-- Reset Number
 local reset_buffer_numbers = function()
   buf_num_2_id = {}
   buf_num_2_id["max"] = 0
@@ -171,7 +163,7 @@ local rebuild_buffer_numbers = function()
   end
 end
 
--- 使用 autocmd 事件触发编号重建
+-- Use autocmd event to trigger numbering rebuild
 vim.api.nvim_create_autocmd({ "BufDelete", "BufWinEnter" }, {
   callback = function()
     rebuild_buffer_numbers()

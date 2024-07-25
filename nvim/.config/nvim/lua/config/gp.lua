@@ -3,9 +3,12 @@ require("gp").setup {
   -- openai_api_endpoint = "https://api.deepseek.com/chat/completions",
   --
   providers = {
-    openai = {
+    deepseek = {
       endpoint = "https://api.deepseek.com/chat/completions",
       secret = os.getenv "OPENAI_API_KEY",
+    },
+    openai = {
+      disable = true,
     },
   },
   chat_topic_gen_model = "deepseek-chat",
@@ -38,12 +41,11 @@ require("gp").setup {
       disable = true,
     },
     {
-      provider = "openai",
       name = "ChatGPT4o-mini",
       disable = true,
     },
     {
-      provider = "openai",
+      provider = "deepseek",
       name = "deepseek-chat",
       chat = true,
       command = false, -- string with model name or table with model name and parameters
@@ -56,7 +58,7 @@ require("gp").setup {
     },
 
     {
-      provider = "openai",
+      provider = "deepseek",
       name = "deepseek-coder",
       chat = false,
       command = true, -- string with model name or table with model name and parameters
@@ -76,14 +78,15 @@ require("gp").setup {
       local agent = gp.get_command_agent()
       gp.info("Implementing selection with agent: " .. agent.name)
 
-      gp.Prompt(
-        params,
-        gp.Target.rewrite,
-        nil, -- command will run directly without any prompting for user input
-        agent.model,
-        template,
-        agent.system_prompt
-      )
+      gp.Prompt(params, gp.Target.rewrite, agent, template, nil, nil)
+    end,
+
+    UnitTests = function(gp, params)
+      local template = "I have the following code from {{filename}}:\n\n"
+        .. "```{{filetype}}\n{{selection}}\n```\n\n"
+        .. "Please respond by writing table driven unit tests for the code above."
+      local agent = gp.get_command_agent()
+      gp.Prompt(params, gp.Target.vnew, agent, template)
     end,
 
     Tranlate = function(gp, params)
@@ -94,15 +97,7 @@ require("gp").setup {
 
       local agent = gp.get_command_agent()
       gp.info("Implementing selection with agent: " .. agent.name)
-
-      gp.Prompt(
-        params,
-        gp.Target.rewrite,
-        nil, -- command will run directly without any prompting for user input
-        agent.model,
-        template,
-        agent.system_prompt
-      )
+      gp.Prompt(params, gp.Target.rewrite, agent, template)
     end,
     -- example of adding command which explains the selected code
     Explain = function(gp, params)
@@ -110,7 +105,7 @@ require("gp").setup {
         .. "```{{filetype}}\n{{selection}}\n```\n\n"
         .. "Please respond by explaining the code above."
       local agent = gp.get_chat_agent()
-      gp.Prompt(params, gp.Target.enew "markdown", nil, agent.model, template, agent.system_prompt)
+      gp.Prompt(params, gp.Target.enew "markdown", agent, template)
     end,
     -- example of usig enew as a function specifying type for the new buffer
     CodeReview = function(gp, params)
@@ -118,11 +113,11 @@ require("gp").setup {
         .. "```{{filetype}}\n{{selection}}\n```\n\n"
         .. "Please analyze for code smells and suggest improvements."
       local agent = gp.get_chat_agent()
-      gp.Prompt(params, gp.Target.enew "markdown", nil, agent.model, template, agent.system_prompt)
+      gp.Prompt(params, gp.Target.enew "markdown", agent, template)
     end,
     -- example of adding command which opens new chat dedicated for translation
     Translator = function(gp, params)
-      local agent = gp.get_command_agent()
+      local agent = gp.get_chat_agent()
       local chat_system_prompt = "You are a Translator, please translate between English and Chinese."
       gp.cmd.ChatNew(params, agent.model, chat_system_prompt)
     end,
@@ -136,7 +131,7 @@ vim.keymap.set("v", "\\ge", function()
   if visual_selection == nil then
     return
   end
-  -- Get the selected content in visual mode
+
   local command = "GpRewrite `"
     .. visual_selection
     .. "`按中文意思翻译成英文，只保留翻译的结果，结果去除引号\n\n"
