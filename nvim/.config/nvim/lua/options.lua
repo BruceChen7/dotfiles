@@ -13,10 +13,16 @@ o.termguicolors = true
 
 -- 保留1000个历史文件
 -- https://neovim.discourse.group/t/updating-shada-option-in-lua/3324
+-- - `!`: Save and restore global variables that start with an uppercase letter, and don't save variables that start with a lowercase letter.
+-- - `,'1000`: Save marks for the last 1000 files.
+-- - `<50`: Save up to 50 lines from each register.
+-- - `s30`: Limit the size of items to 30 KB.
+-- - `h`: Disable the 'hlsearch' option when starting up.
 vim.o.shada = "!,'1000,<50,s30,h"
 
+o.timeoutlen = 200
 o.ttimeout = true
-o.ttimeoutlen = 100
+o.ttimeoutlen = 50
 o.tags = [[ ./.tags;,.tags ]]
 
 -- 智能搜索大小写判断，默认忽略大小写，除非搜索内容包含大写字母

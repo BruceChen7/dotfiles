@@ -6,7 +6,8 @@ local ufo = require "ufo"
 Hydra {
   name = "Window",
   mode = { "n", "t" },
-  body = "<space>b",
+  -- Do not use <space> in terminal mode, otherwise it will cause a delay of timoutlen ms when inputting <space> in terminal mode
+  body = "\\b",
   heads = {
     {
       "p",
