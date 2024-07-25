@@ -20,6 +20,20 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 
 require("mini.pairs").setup {}
 
+local miniclue = require "mini.clue"
+miniclue.setup {
+  triggers = {
+    -- Leader triggers
+    { mode = "n", keys = "<Leader>" },
+    { mode = "n", keys = "\\" },
+    { mode = "v", keys = "\\" },
+    { mode = "n", keys = "g" },
+  },
+  window = {
+    delay = 500,
+  },
+}
+
 -- https://github.com/oncomouse/dotfiles/blob/2a58fa952eacb751ff24361efd81308716a759c1/conf/vim/lua/dotfiles/plugins/mini-nvim.lua#L104
 -- https://github.com/xixiaofinland/dotfiles/blob/main/.config/nvim/lua/plugins/mini.lua
 -- https://www.reddit.com/r/neovim/comments/1cvur6s/what_custom_text_objects_do_you_use/
@@ -142,3 +156,26 @@ for i = 1, 9 do
     vim.cmd(string.format("b %d", buffer_id))
   end, { desc = string.format("go to buffer %d", i) })
 end
+
+-- 重置编号
+local reset_buffer_numbers = function()
+  buf_num_2_id = {}
+  buf_num_2_id["max"] = 0
+end
+
+local rebuild_buffer_numbers = function()
+  reset_buffer_numbers()
+  local visible_buffers = require("utils").find_all_visible_buffers()
+  for i, buf_id in ipairs(visible_buffers) do
+    set_buffer_num(buf_id, i)
+  end
+end
+
+-- 使用 autocmd 事件触发编号重建
+vim.api.nvim_create_autocmd({ "BufDelete", "BufWinEnter" }, {
+  callback = function()
+    rebuild_buffer_numbers()
+  end,
+})
+
+require("mini.notify").setup()

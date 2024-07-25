@@ -88,13 +88,13 @@ require("lazy").setup {
     ft = { "go", "lua", "python", "zig", "rust" },
   },
 
-  {
-    "j-hui/fidget.nvim",
-    config = function()
-      require("fidget").setup()
-    end,
-    event = "VeryLazy",
-  },
+  -- {
+  --   "j-hui/fidget.nvim",
+  --   config = function()
+  --     require("fidget").setup()
+  --   end,
+  --   event = "VeryLazy",
+  -- },
 
   {
     "skywind3000/gutentags_plus",
@@ -418,16 +418,16 @@ require("lazy").setup {
     event = "InsertEnter",
   },
 
-  {
-    "rcarriga/nvim-notify",
-    event = "VeryLazy",
-    config = function()
-      local notfify = require "notify"
-      notfify.setup {
-        timeout = 5000,
-      }
-    end,
-  },
+  -- {
+  --   "rcarriga/nvim-notify",
+  --   event = "VeryLazy",
+  --   config = function()
+  --     local notfify = require "notify"
+  --     notfify.setup {
+  --       timeout = 5000,
+  --     }
+  --   end,
+  -- },
 
   {
     "keaising/im-select.nvim",
@@ -658,19 +658,6 @@ require("lazy").setup {
     event = "BufReadPost xmake.lua",
     config = true,
     dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
-  },
-
-  {
-    "folke/which-key.nvim",
-    -- event = "VeryLazy",
-    opts = {
-      delay = function(ctx)
-        return 500
-      end,
-      preset = "modern",
-      triggers = { n = true, x = true, v = true, t = false },
-      notify = false,
-    },
   },
 
   {

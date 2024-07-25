@@ -86,7 +86,7 @@ vim.g.asyncrun_open = 10
 -- 任务结束时候响铃提醒
 vim.g.asyncrun_bell = 1
 -- quickfix 手动打开
-u.map("n", "<space>q", ":call asyncrun#quickfix_toggle(20)<cr>", { desc = "quickfix toggle" })
+u.map("n", "<space>qf", ":call asyncrun#quickfix_toggle(20)<cr>", { desc = "quickfix toggle" })
 
 local function home()
   local head = (vim.api.nvim_get_current_line():find "[^%s]" or 1) - 1
@@ -235,7 +235,9 @@ function quitWindow()
   end
 end
 
-vim.keymap.set("n", "Q", ":lua quitWindow()<CR>")
+vim.keymap.set("n", "X", function()
+  quitWindow()
+end, { silent = true, desc = "Quit window" })
 
 vim.api.nvim_create_autocmd("BufHidden", {
   desc = "Delete [No Name] buffers",

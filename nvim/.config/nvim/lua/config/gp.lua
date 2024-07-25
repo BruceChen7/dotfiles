@@ -32,7 +32,18 @@ require("gp").setup {
       name = "ChatGPT3-5",
       disable = true,
     },
+
     {
+      name = "ChatGPT4o",
+      disable = true,
+    },
+    {
+      provider = "openai",
+      name = "ChatGPT4o-mini",
+      disable = true,
+    },
+    {
+      provider = "openai",
       name = "deepseek-chat",
       chat = true,
       command = false, -- string with model name or table with model name and parameters
@@ -45,6 +56,7 @@ require("gp").setup {
     },
 
     {
+      provider = "openai",
       name = "deepseek-coder",
       chat = false,
       command = true, -- string with model name or table with model name and parameters
