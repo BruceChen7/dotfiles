@@ -28,6 +28,9 @@ miniclue.setup {
     { mode = "n", keys = "\\" },
     { mode = "v", keys = "\\" },
     { mode = "n", keys = "g" },
+    { mode = "v", keys = "g" },
+    { mode = "n", keys = "n" },
+    { mode = "n", keys = "z" },
   },
   window = {
     delay = 500,
