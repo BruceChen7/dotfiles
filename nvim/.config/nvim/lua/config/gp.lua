@@ -76,9 +76,7 @@ require("gp").setup {
         .. "\n\nRespond exclusively with the snippet that should replace the selection above."
 
       local agent = gp.get_command_agent()
-      gp.info("Implementing selection with agent: " .. agent.name)
-
-      gp.Prompt(params, gp.Target.rewrite, agent, template, nil, nil)
+      gp.Prompt(params, gp.Target.rewrite, agent, template)
     end,
 
     UnitTests = function(gp, params)

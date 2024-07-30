@@ -594,8 +594,7 @@ local zoxide = function()
 end
 
 vim.keymap.set("n", "<leader>tz", zoxide, { desc = "Zoxide" })
---
---
+
 -- TODO(ming.chen): add gitlab integration url
 local open_url = function()
   local fzflua = require "fzf-lua"
@@ -644,9 +643,14 @@ end
 
 vim.keymap.set("n", "<leader>og", open_url, { desc = "open working gitlab url" })
 
-local get_branches = function()
-  local branches = {}
+local current_branch = function()
+  -- using git command  to get current_branch
+  local output = vim.fn.system "git symbolic-ref --short HEAD 2>/dev/null"
+  local branch = output:gsub("%s+$", "") -- Trim trailing whitespace
+  return branch
+end
 
+local get_branches = function()
   local current = current_branch()
 
   local job = Job:new {
@@ -657,6 +661,7 @@ local get_branches = function()
   job:sync()
   local result = job:result()
 
+  local branches = {}
   for _, v in pairs(result) do
     if v ~= current then
       table.insert(branches, v)

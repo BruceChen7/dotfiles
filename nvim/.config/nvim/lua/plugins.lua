@@ -275,36 +275,6 @@ require("lazy").setup {
     end,
   },
 
-  {
-    "ThePrimeagen/harpoon",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    config = function()
-      require "config/harpoon"
-    end,
-    event = "VeryLazy",
-    commit = "ccae1b9bec717ae284906b0bf83d720e59d12b91",
-  },
-
-  {
-    "rodolfojsv/reminders.nvim",
-    config = function()
-      vim.keymap.set("n", "<leader>rme", ":RemindMeEvery ", { desc = "[R]emind [M]e [E]very and type minutes" })
-      vim.keymap.set("n", "<leader>rma", ":RemindMeAt ", { desc = "[R]emind [M]e [A]t and type hour of day (24h)" })
-      vim.keymap.set("n", "<leader>rmi", ":RemindMeIn ", { desc = "[R]emind [M]e [I]n and type minutes" })
-      vim.keymap.set(
-        "n",
-        "<leader>rmda",
-        ":RemindMeDailyAt ",
-        { desc = "[R]emind [M]e [D]aily [A]t and type hour of day (24h)" }
-      )
-      vim.keymap.set("n", "<leader>rmc", ":ReminderClose<CR>", { desc = "[R]e[m]inder [C]lose" })
-      vim.keymap.set("n", "<leader>rmrz", ":ReminderRemoveAll<CR>", { desc = "[R]e[m]inder [R]emove All" })
-      vim.keymap.set("n", "<leader>rmra", ":ReminderRemoveAt ", { desc = "[R]e[m]inder [R]emove [A]t" })
-      vim.keymap.set("n", "<leader>rmfo", ":ReminderFocusModeOff<CR>", { desc = "[R]e[m]inder [F]ocusMode [O]ff" })
-      vim.keymap.set("n", "<leader>rmfm", ":ReminderFocusModeOn<CR>", { desc = "[R]e[m]inder [F]ocus[M]ode On" })
-    end,
-    event = "VeryLazy",
-  },
   -- colorscheme
   { "folke/tokyonight.nvim" },
 
@@ -475,6 +445,16 @@ require("lazy").setup {
     event = "InsertEnter",
   },
 
+  -- amongst your other plugins
+  {
+    "akinsho/toggleterm.nvim",
+    version = "*",
+    config = function()
+      require "config/terminal"
+    end,
+    event = "VeryLazy",
+  },
+
   {
     "Exafunction/codeium.vim",
     config = function()
@@ -501,6 +481,16 @@ require("lazy").setup {
     -- dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       require "config/fzf"
+    end,
+    event = "VeryLazy",
+  },
+
+  {
+    "leath-dub/snipe.nvim",
+    config = function()
+      local snipe = require "snipe"
+      snipe.setup()
+      vim.keymap.set("n", "gb", snipe.create_buffer_menu_toggler(), { desc = "show buffer menu" })
     end,
     event = "VeryLazy",
   },
@@ -536,7 +526,6 @@ require("lazy").setup {
           trim_empty_lines = {
             command = "awk",
             args = { '/^$/{n=n RS}; /./{printf "%s%s%s",n,$0,RS; n=""}' },
-            stdin == true,
           },
         },
       }
@@ -681,9 +670,6 @@ require("lazy").setup {
   {
     "nvim-pack/nvim-spectre",
     config = function()
-      require("reminders").setup {
-        directory_path = vim.fn.stdpath "data",
-      }
       vim.keymap.set("n", "<leader>S", '<cmd>lua require("spectre").toggle()<CR>', {
         desc = "Toggle Spectre",
       })

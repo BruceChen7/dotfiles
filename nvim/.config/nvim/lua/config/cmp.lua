@@ -95,7 +95,6 @@ cmp.setup {
     { name = "codeium", priority = 800 },
     { name = "crates" },
     { name = "calc" },
-    { name = "supermaven" },
     -- { name = "md_link" },
   },
   matching = {
@@ -150,7 +149,6 @@ cmp.setup {
         TypeParameter = " ",
         Codeium = " ",
         MdLink = " ",
-        Supermaven = "",
       }
       local meta_type = vim_item.kind
       -- load lspkind icons
@@ -165,12 +163,8 @@ cmp.setup {
         codeium = " Codeium",
         -- md_link = " MdLink",
         git = "Git",
-        supermaven = " Supermaven",
       })[entry.source.name]
       return vim_item
     end,
   },
 }
-
--- supermaven color
-vim.api.nvim_set_hl(0, "CmpItemKindSupermaven", { fg = "#6CC644" })
