@@ -204,6 +204,11 @@ vim.keymap.set({ "n", "t" }, "<c-9>", function()
   vim.cmd "2ToggleTerm"
 end, { desc = "open terminal 9" })
 
+vim.keymap.set({ "n", "t" }, "<c-8>", function()
+  vim.cmd "enew" -- Create a new buffer
+  vim.cmd "terminal" -- Open a terminal buffer in the new buffer
+end, { desc = "open fullscreen terminal" })
+
 require("toggleterm").setup {
   --  -- size can be a number or function which is passed the current terminal
   size = function(term)
