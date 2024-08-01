@@ -197,12 +197,16 @@ end, { desc = "open git diff in terminal" })
 vim.cmd "autocmd! TermOpen term://* lua set_terminal_keymaps()"
 
 vim.keymap.set({ "n", "t" }, "<c-0>", function()
-  vim.cmd "1ToggleTerm"
+  local utils = require "utils"
+  local root_dir = utils.find_root_dir()
+  vim.cmd("1ToggleTerm dir=" .. root_dir)
 end, { desc = "open terminal 1" })
 
 vim.keymap.set({ "n", "t" }, "<c-9>", function()
-  vim.cmd "2ToggleTerm"
-end, { desc = "open terminal 9" })
+  local utils = require "utils"
+  local root_dir = utils.find_root_dir()
+  vim.cmd("2ToggleTerm dir=" .. root_dir)
+end, { desc = "open terminal 2" })
 
 vim.keymap.set({ "n", "t" }, "<c-8>", function()
   vim.cmd "enew" -- Create a new buffer
