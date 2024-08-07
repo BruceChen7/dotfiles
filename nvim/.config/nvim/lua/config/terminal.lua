@@ -199,13 +199,21 @@ vim.cmd "autocmd! TermOpen term://* lua set_terminal_keymaps()"
 vim.keymap.set({ "n", "t" }, "<c-0>", function()
   local utils = require "utils"
   local root_dir = utils.find_root_dir()
-  vim.cmd("1ToggleTerm dir=" .. root_dir)
+  if root_dir ~= nil then
+    vim.cmd("1ToggleTerm dir=" .. root_dir)
+    return
+  end
+  vim.cmd "1ToggleTerm "
 end, { desc = "open terminal 1" })
 
 vim.keymap.set({ "n", "t" }, "<c-9>", function()
   local utils = require "utils"
   local root_dir = utils.find_root_dir()
-  vim.cmd("2ToggleTerm dir=" .. root_dir)
+  if root ~= nil then
+    vim.cmd("2ToggleTerm dir=" .. root_dir)
+    return
+  end
+  vim.cmd "2ToggleTerm"
 end, { desc = "open terminal 2" })
 
 vim.keymap.set({ "n", "t" }, "<c-8>", function()

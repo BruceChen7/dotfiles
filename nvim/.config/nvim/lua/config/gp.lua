@@ -4,7 +4,7 @@ require("gp").setup {
   --
   providers = {
     deepseek = {
-      endpoint = "https://api.deepseek.com/chat/completions",
+      endpoint = "https://api.deepseek.com/beta/chat/completions",
       secret = os.getenv "OPENAI_API_KEY",
     },
     openai = {
