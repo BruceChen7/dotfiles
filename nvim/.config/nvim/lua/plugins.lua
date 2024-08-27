@@ -621,15 +621,15 @@ require("lazy").setup {
       -- add any opts here
       provider = "deepseek",
       mappings = {
-        ask = "<leader>ak",
-        edit = "<leader>ae",
-        refresh = "<leader>ar",
+        ask = "\\ak",
+        edit = "\\ac",
+        refresh = "\\ar",
         --- @class AvanteConflictMappings
         diff = {
-          ours = "co",
-          theirs = "ct",
-          none = "c0",
-          both = "cb",
+          ours = "\\co",
+          theirs = "\\ct",
+          none = "\\c0",
+          both = "\\cb",
           next = "]x",
           prev = "[x",
         },
@@ -638,9 +638,37 @@ require("lazy").setup {
           prev = "[[",
         },
       },
+      vendors = {
+        ["deepseek"] = {
+          endpoint = "https://api.deepseek.com/beta/chat/completions",
+          model = "deepseek-coder",
+          api_key_name = "DEEPSEEK_API_KEY",
+          parse_curl_args = function(opts, code_opts)
+            return {
+              url = opts.endpoint,
+              headers = {
+                ["Accept"] = "application/json",
+                ["Content-Type"] = "application/json",
+                ["Authorization"] = "Bearer " .. os.getenv(opts.api_key_name),
+              },
+              body = {
+                model = opts.model,
+                messages = require("avante.providers").openai.parse_message(code_opts), -- you can make your own message, but this is very advanced
+                temperature = 0,
+                max_tokens = 4096,
+                stream = true, -- this will be set by default.
+              },
+            }
+          end,
+          parse_response_data = function(data_stream, event_state, opts)
+            require("avante.providers").openai.parse_response(data_stream, event_state, opts)
+          end,
+        },
+      },
     },
     dependencies = {
-      "nvim-tree/nvim-web-devicons",
+      -- "nvim-tree/nvim-web-devicons",
+      "echasnovski/mini.nvim",
       "stevearc/dressing.nvim",
       "nvim-lua/plenary.nvim",
       {

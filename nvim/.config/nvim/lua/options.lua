@@ -142,3 +142,9 @@ vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "CursorHoldI", "FocusGai
   command = "if mode() != 'c' | checktime | endif",
   pattern = { "*" },
 })
+
+--  `"screen"`: 保持屏幕内容在分割窗口时不变。
+--  `"topline"`: 保持当前窗口的顶部行在分割窗口时不变。
+--  `"cursor"`: 保持光标位置在分割窗口时不变。
+--  `"all"`: 保持所有内容在分割窗口时不变。
+vim.o.splitkeep = "screen"
