@@ -616,7 +616,7 @@ require("lazy").setup {
   {
     "yetone/avante.nvim",
     event = "VeryLazy",
-    build = "make BUILD_FROM_SOURCE=true luajit",
+    build = "make BUILD_FROM_SOURCE=true",
     opts = {
       -- add any opts here
       provider = "deepseek",
@@ -654,7 +654,7 @@ require("lazy").setup {
               body = {
                 model = opts.model,
                 messages = require("avante.providers").openai.parse_message(code_opts), -- you can make your own message, but this is very advanced
-                temperature = 0,
+                temperature = 1,
                 max_tokens = 4096,
                 stream = true, -- this will be set by default.
               },
@@ -686,6 +686,24 @@ require("lazy").setup {
       --   ft = { "markdown", "Avante" },
       -- },
     },
+  },
+
+  {
+    "magicalne/nvim.ai",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    opts = {
+      provider = "deepseek", -- You can configure your provider, model or keymaps here.
+      keymaps = {
+        toggle = "\\na",
+        inline_assist = "\\ni",
+        accept_code = "\\ia",
+        reject_code = "\\ir",
+      },
+    },
+    event = "VeryLazy",
   },
 
   -- "Preview command results with `:Norm`"
