@@ -16,11 +16,6 @@ vim.opt.runtimepath:prepend(lazypath)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
-local use_ai = function()
-  -- print(vim.env.USE_COPILOT)
-  return vim.env.USE_COPILOT == "1"
-end
-
 require("lazy").setup {
   concurrency = 2,
   performance = {
@@ -419,10 +414,6 @@ require("lazy").setup {
         end
       end
 
-      if not use_ai() then
-        return
-      end
-
       -- 用来自动切换输入法
       require("im_select").setup {
         default_im_select = get_im_select(),
@@ -458,9 +449,6 @@ require("lazy").setup {
   {
     "Exafunction/codeium.vim",
     config = function()
-      if not use_ai() then
-        return
-      end
       require "config/codeium"
     end,
     event = "InsertEnter",
