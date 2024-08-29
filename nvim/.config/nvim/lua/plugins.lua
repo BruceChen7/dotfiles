@@ -41,7 +41,7 @@ require("lazy").setup {
     config = function()
       require "config/gtags"
     end,
-    -- event = "VeryLazy",
+    event = "VeryLazy",
   },
 
   { "skywind3000/vim-preview" },
@@ -643,7 +643,7 @@ require("lazy").setup {
                 model = opts.model,
                 messages = require("avante.providers").openai.parse_message(code_opts), -- you can make your own message, but this is very advanced
                 temperature = 1,
-                max_tokens = 4096,
+                max_tokens = 8092,
                 stream = true, -- this will be set by default.
               },
             }
@@ -806,14 +806,23 @@ require("lazy").setup {
     end,
     event = "VeryLazy",
   },
-  -- https://www.reddit.com/r/neovim/comments/1c747ns/treepairs_a_tiny_plugin_that_makes_work_properly/
-  -- {
-  --   "yorickpeterse/nvim-tree-pairs",
-  --   config = function()
-  --     require("tree-pairs").setup()
-  --   end,
-  --   event = "VeryLazy",
-  -- },
+
+  {
+    "olimorris/codecompanion.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+      -- "nvim-telescope/telescope.nvim", -- Optional
+      {
+        "stevearc/dressing.nvim", -- Optional: Improves the default Neovim UI
+        opts = {},
+      },
+    },
+    config = function()
+      require "config/codecompanion"
+    end,
+    event = "VeryLazy",
+  },
 
   -- https://www.reddit.com/r/neovim/comments/1ca3rm8/shoutout_to_andrewferrierdebugprintnvim_add/
   {
