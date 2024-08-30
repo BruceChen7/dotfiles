@@ -61,7 +61,10 @@ require("lazy").setup {
   { "onsails/lspkind-nvim" },
 
   {
-    "hrsh7th/nvim-cmp", -- Autocompletion plugin
+    -- "hrsh7th/nvim-cmp", -- Autocompletion plugin
+    "yioneko/nvim-cmp",
+    branch = "perf",
+    event = "InsertEnter",
     dependencies = {
       "hrsh7th/cmp-nvim-lsp",
       "hrsh7th/cmp-cmdline",
@@ -77,10 +80,10 @@ require("lazy").setup {
       require "config/cmp"
       require "config/md_source"
     end,
-    branch = "main",
+    -- branch = "main",
     -- https://www.reddit.com/r/neovim/comments/162q5ca/whats_your_favorite_unknown_nvimvim_plugin/
     -- commit = "6c84bc75c64f778e9f1dcb798ed41c7fcb93b639",
-    ft = { "go", "lua", "python", "zig", "rust" },
+    -- ft = { "go", "lua", "python", "zig", "rust" },
   },
 
   -- {
@@ -377,7 +380,7 @@ require("lazy").setup {
       require "config/tabout"
     end,
     dependencies = {
-      "hrsh7th/nvim-cmp", -- Autocompletion plugin
+      -- "/nvim-cmp", -- Autocompletion plugin
       "nvim-treesitter/nvim-treesitter",
     },
     event = "InsertEnter",
