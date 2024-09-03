@@ -171,7 +171,7 @@ vim.keymap.set("n", "<leader>tl", function()
   require("toggleterm").exec(cmd, 1, 12)
 end, { desc = "open git log for this file in terminal" })
 
-vim.keymap.set("n", "<leader>tb", function()
+vim.keymap.set("n", "\\tb", function()
   local current_file_path_with_name = vim.fn.expand "%:p"
   local cmd = "tig blame " .. current_file_path_with_name
   require("toggleterm").exec(cmd, 1, 12)

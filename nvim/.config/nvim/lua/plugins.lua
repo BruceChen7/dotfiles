@@ -601,12 +601,28 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
+  -- set `;,` to select next diagnostic
+  -- seems not working together with hydra.nvim
+  -- hardl
+  -- {
+  --   "mawkler/demicolon.nvim",
+  --   dependencies = {
+  --     "nvim-treesitter/nvim-treesitter",
+  --     "nvim-treesitter/nvim-treesitter-textobjects",
+  --   },
+  --   opts = {},
+  -- },
+
   {
     "yetone/avante.nvim",
     event = "VeryLazy",
     build = "make BUILD_FROM_SOURCE=true",
     opts = {
       -- add any opts here
+      behaviour = {
+        auto_suggestions = false,
+        -- auto_set_keymaps = false,
+      },
       provider = "deepseek",
       mappings = {
         ask = "\\ak",
@@ -624,6 +640,16 @@ require("lazy").setup {
         jump = {
           next = "]]",
           prev = "[[",
+        },
+        submit = {
+          normal = "<CR>",
+          insert = "<C-CR>",
+        },
+        suggestion = {
+          accept = "<c-l>",
+          -- next = "<\\n>",
+          -- prev = "<[\\p>",
+          -- dismiss = "<\\]>",
         },
       },
       vendors = {
@@ -807,22 +833,22 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
-  {
-    "olimorris/codecompanion.nvim",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-treesitter/nvim-treesitter",
-      -- "nvim-telescope/telescope.nvim", -- Optional
-      {
-        "stevearc/dressing.nvim", -- Optional: Improves the default Neovim UI
-        opts = {},
-      },
-    },
-    config = function()
-      require "config/codecompanion"
-    end,
-    event = "VeryLazy",
-  },
+  -- {
+  --   "olimorris/codecompanion.nvim",
+  --   dependencies = {
+  --     "nvim-lua/plenary.nvim",
+  --     "nvim-treesitter/nvim-treesitter",
+  --     -- "nvim-telescope/telescope.nvim", -- Optional
+  --     {
+  --       "stevearc/dressing.nvim", -- Optional: Improves the default Neovim UI
+  --       opts = {},
+  --     },
+  --   },
+  --   config = function()
+  --     require "config/codecompanion"
+  --   end,
+  --   event = "VeryLazy",
+  -- },
 
   -- https://www.reddit.com/r/neovim/comments/1ca3rm8/shoutout_to_andrewferrierdebugprintnvim_add/
   {

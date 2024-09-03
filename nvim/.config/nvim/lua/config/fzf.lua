@@ -13,7 +13,7 @@ vim.keymap.set(
 )
 vim.keymap.set("n", "<m-m>", "<cmd>FzfLua buffers<CR>", { noremap = true, silent = true, desc = "find buffers" })
 vim.keymap.set("n", "<m-l>", "<cmd>FzfLua oldfiles<CR>", { noremap = true, silent = true, desc = "find oldfiles" })
-vim.keymap.set("n", "g1", "<cmd>FzfLua grep_cword<CR>", { noremap = true, silent = true, desc = "find oldfiles" })
+vim.keymap.set("n", "g1", "<cmd>FzfLua grep_cword<CR>", { noremap = true, silent = true, desc = "find current word" })
 vim.keymap.set("n", "<c-p>", function()
   local utils = require "utils"
   local root = utils.find_root_dir()
@@ -407,7 +407,7 @@ require("fzf-lua").setup {
     -- default options are controlled by 'rg|grep_opts'
     -- cmd            = "rg --vimgrep",
     grep_opts = "--binary-files=without-match --line-number --recursive --color=auto",
-    rg_opts = "--column --line-number --no-heading --color=always --smart-case --max-columns=512 --no-ignore --hidden",
+    rg_opts = "--column --line-number --no-heading --color=always --smart-case --max-columns=512",
     -- set to 'true' to always parse globs in both 'grep' and 'live_grep'
     -- search strings will be split using the 'glob_separator' and translated
     -- to '--iglob=' arguments, requires 'rg'
