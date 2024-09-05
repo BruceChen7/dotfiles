@@ -187,7 +187,7 @@ vim.keymap.set("n", "<leader>tt", function()
   require("toggleterm").exec(cmd, 1, 12)
 end, { desc = "open tig" })
 
-vim.keymap.set("n", "m5", function()
+vim.keymap.set("n", "\\gm", function()
   local utils = require "utils"
   local cmd = "git diff master -- " .. utils.find_root_dir()
   require("toggleterm").exec(cmd, 1, 12)
@@ -216,10 +216,42 @@ vim.keymap.set({ "n", "t" }, "<c-9>", function()
   vim.cmd "2ToggleTerm"
 end, { desc = "open terminal 2" })
 
+-- 记录终端缓冲区的编号
+local terminal_buffer_nr = nil
+-- 定义一个函数来检查是否存在终端缓冲区
+-- local function find_terminal_buffer()
+--   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+--     if vim.api.nvim_buf_get_option(buf, "buftype") == "terminal" then
+--       return buf
+--     end
+--   end
+--   return nil
+-- end
+--
+-- 定义一个函数来处理终端的打开和跳转
+local function toggle_terminal()
+  if terminal_buffer_nr and vim.api.nvim_buf_is_valid(terminal_buffer_nr) then
+    -- 如果终端缓冲区存在且有效，跳转到该缓冲区
+    vim.cmd("buffer " .. terminal_buffer_nr)
+  else
+    -- 如果终端缓冲区不存在，创建一个新的终端缓冲区
+    vim.cmd "enew" -- 创建一个新缓冲区
+    vim.cmd "terminal" -- 在新缓冲区中打开终端
+    terminal_buffer_nr = vim.api.nvim_get_current_buf() -- 记录当前终端缓冲区的编号
+    print("new terminal " .. terminal_buffer_nr)
+  end
+end
+
 vim.keymap.set({ "n", "t" }, "<c-8>", function()
-  vim.cmd "enew" -- Create a new buffer
-  vim.cmd "terminal" -- Open a terminal buffer in the new buffer
-end, { desc = "open fullscreen terminal" })
+  toggle_terminal()
+end, { desc = "toggle fullscreen terminal" })
+-- 设置快捷键
+-- vim.keymap.set({ "n", "t" }, "<c-8>", toggle_terminal, { desc = "toggle fullscreen terminal" })
+
+-- vim.keymap.set({ "n", "t" }, "<c-8>", function()
+--   vim.cmd "enew" -- Create a new buffer
+--   vim.cmd "terminal" -- Open a terminal buffer in the new buffer
+-- end, { desc = "open fullscreen terminal" })
 
 require("toggleterm").setup {
   --  -- size can be a number or function which is passed the current terminal
