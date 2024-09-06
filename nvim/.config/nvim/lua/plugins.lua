@@ -674,7 +674,10 @@ require("lazy").setup {
               },
               body = {
                 model = opts.model,
-                messages = require("avante.providers").openai.parse_message(code_opts), -- you can make your own message, but this is very advanced
+                messages = {
+                  { role = "system", content = code_opts.system_prompt },
+                  { role = "user", content = require("avante.providers.openai").get_user_message(code_opts) },
+                },
                 temperature = 1,
                 max_tokens = 8092,
                 stream = true, -- this will be set by default.
