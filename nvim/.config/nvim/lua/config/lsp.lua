@@ -123,7 +123,7 @@ require("lsp-setup").setup {
         },
       },
     },
-    -- ts_ls = {
+    -- tsserver = {
     --   settings = {
     --     typescript = {
     --       inlayHints = {

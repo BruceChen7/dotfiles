@@ -480,7 +480,11 @@ require("lazy").setup {
     "leath-dub/snipe.nvim",
     config = function()
       local snipe = require "snipe"
-      snipe.setup()
+      snipe.setup {
+        hints = {
+          dictionary = "adflewcmpghio",
+        },
+      }
       vim.keymap.set("n", "gb", snipe.create_buffer_menu_toggler(), { desc = "show buffer menu" })
     end,
     event = "VeryLazy",
