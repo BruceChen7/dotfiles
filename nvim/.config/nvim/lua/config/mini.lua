@@ -32,8 +32,13 @@ miniclue.setup {
     { mode = "n", keys = "n" },
     { mode = "n", keys = "z" },
   },
+  clues = {
+    miniclue.gen_clues.marks(),
+    miniclue.gen_clues.windows(),
+    miniclue.gen_clues.registers(),
+  },
   window = {
-    delay = 500,
+    delay = 200,
   },
 }
 

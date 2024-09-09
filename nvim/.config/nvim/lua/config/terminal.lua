@@ -150,7 +150,7 @@ local function get_test_command()
   end
 end
 -- use go test
-vim.keymap.set("n", "m3", function()
+vim.keymap.set("n", "<F2>", function()
   local cmd = get_test_command()
   if cmd == nil then
     return

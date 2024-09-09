@@ -596,6 +596,8 @@ end
 
 vim.keymap.set("n", "<leader>tz", zoxide, { desc = "Zoxide" })
 
+vim.keymap.set("n", "<leader>tm", "<cmd>FzfLua marks <CR>", { desc = "show marks" })
+
 -- TODO(ming.chen): add gitlab integration url
 local open_url = function()
   local fzflua = require "fzf-lua"
