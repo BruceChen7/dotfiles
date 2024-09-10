@@ -196,6 +196,16 @@ end, { desc = "open git diff in terminal" })
 -- if you only want these mappings for toggle term use term://*toggleterm#* instead
 vim.cmd "autocmd! TermOpen term://* lua set_terminal_keymaps()"
 
+-- Define a shortcut key to diff the current buffer with the release branch differences and display them in the terminal
+vim.keymap.set("n", "\\fh", function()
+  local utils = require "utils"
+  local root = utils.find_root_dir()
+  -- local cmd = "git diff release -- " .. root
+  -- diff the current file with the release branch
+  local cmd = "git diff release -- " .. vim.fn.expand "%:p"
+  require("toggleterm").exec(cmd, 1, 12)
+end, { desc = "file differences b" })
+
 vim.keymap.set({ "n", "t" }, "<c-0>", function()
   local utils = require "utils"
   local root_dir = utils.find_root_dir()
@@ -218,16 +228,6 @@ end, { desc = "open terminal 2" })
 
 -- 记录终端缓冲区的编号
 local terminal_buffer_nr = nil
--- 定义一个函数来检查是否存在终端缓冲区
--- local function find_terminal_buffer()
---   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
---     if vim.api.nvim_buf_get_option(buf, "buftype") == "terminal" then
---       return buf
---     end
---   end
---   return nil
--- end
---
 -- 定义一个函数来处理终端的打开和跳转
 local function toggle_terminal()
   if terminal_buffer_nr and vim.api.nvim_buf_is_valid(terminal_buffer_nr) then

@@ -674,7 +674,7 @@ require("lazy").setup {
               },
               body = {
                 model = opts.model,
-                messages = {
+                messages = { -- you can make your own message, but this is very advanced
                   { role = "system", content = code_opts.system_prompt },
                   { role = "user", content = require("avante.providers.openai").get_user_message(code_opts) },
                 },
