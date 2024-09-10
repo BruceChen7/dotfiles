@@ -682,6 +682,6 @@ vim.api.nvim_create_user_command("DiffFilesTo", function(args)
   }
 end, { nargs = 1, complete = get_branches })
 
-vim.keymap.set("n", "\\\\", function()
+vim.keymap.set("n", "\\rr", function()
   vim.cmd "DiffFilesTo release "
 end, { desc = "Diff files to release" })
