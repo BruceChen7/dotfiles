@@ -20,25 +20,25 @@ local function find_definition()
   local file_type = vim.bo.filetype
   if file_type == "c" or file_type == "cpp" or file_type == "h" then
     -- get current cursor word
-    local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+    -- local row, col = unpack(vim.api.nvim_win_get_cursor(0))
     -- print("before row and new row", row, col)
     vim.cmd [[
       execute 'FzfLua lsp_definitions'
     ]]
     -- wait 10 ms
-    vim.defer_fn(function()
-      vim.cmd [[
-        let word = expand("<cword>")
-        silent execute 'Cscope find g ' . word
-      ]]
-      local next_row, next_col = unpack(vim.api.nvim_win_get_cursor(0))
-      if next_row == row and next_col == col then
-        vim.cmd [[
-          let word = expand("<cword>")
-          silent execute "Cstag " . word
-        ]]
-      end
-    end, 10)
+    -- vim.defer_fn(function()
+    --   vim.cmd [[
+    --     let word = expand("<cword>")
+    --     silent execute 'Cscope find g ' . word
+    --   ]]
+    --   local next_row, next_col = unpack(vim.api.nvim_win_get_cursor(0))
+    --   if next_row == row and next_col == col then
+    --     vim.cmd [[
+    --       let word = expand("<cword>")
+    --       silent execute "Cstag " . word
+    --     ]]
+    --   end
+    -- end, 10)
     return
   end
   vim.cmd [[
