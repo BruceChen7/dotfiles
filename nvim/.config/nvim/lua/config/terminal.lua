@@ -227,13 +227,27 @@ vim.keymap.set({ "n", "t" }, "<c-9>", function()
 end, { desc = "open terminal 2" })
 
 -- 记录终端缓冲区的编号
+-- TODO: Save the current window layout
 local terminal_buffer_nr = nil
 -- 定义一个函数来处理终端的打开和跳转
 local function toggle_terminal()
   if terminal_buffer_nr and vim.api.nvim_buf_is_valid(terminal_buffer_nr) then
     -- 如果终端缓冲区存在且有效，跳转到该缓冲区
+    -- Check how many windows are currently open
+    local window_count = vim.api.nvim_list_wins()
+    if #window_count > 1 then
+      -- close other window and obtain current window
+      vim.cmd "wincmd p"
+      vim.cmd "hide"
+    end
     vim.cmd("buffer " .. terminal_buffer_nr)
   else
+    local window_count = vim.api.nvim_list_wins()
+    if #window_count > 1 then
+      -- close other window and obtain current window
+      vim.cmd "wincmd p"
+      vim.cmd "close"
+    end
     -- 如果终端缓冲区不存在，创建一个新的终端缓冲区
     vim.cmd "enew" -- 创建一个新缓冲区
     vim.cmd "terminal" -- 在新缓冲区中打开终端

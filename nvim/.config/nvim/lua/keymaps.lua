@@ -46,8 +46,8 @@ u.map("n", "Y", "y$", default_options)
 u.map("n", "W", ":w!<cr>")
 u.map("i", "jj", "<ESC>")
 
-u.map("n", "<leader>bn", ":bn<cr>")
-u.map("n", "<leader>bp", ":bp<cr>")
+-- u.map("n", "<leader>bn", ":bn<cr>")
+-- u.map("n", "<leader>bp", ":bp<cr>")
 
 u.map("n", "\\tt", ":tabnew<cr>")
 u.map("n", "\\tq", ":tabclose<cr>")
