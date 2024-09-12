@@ -109,13 +109,14 @@ require("lazy").setup {
     event = "InsertEnter",
   },
 
-  {
-    "rafamadriz/friendly-snippets",
-    config = function()
-      require("luasnip.loaders.from_vscode").lazy_load()
-    end,
-    event = "InsertEnter",
-  },
+  -- {
+  --   "rafamadriz/friendly-snippets",
+  --   config = function()
+  --     require("luasnip.loaders.from_vscode").lazy_load()
+  --   end,
+  --   event = "InsertEnter",
+  -- },
+  --
   {
     "saadparwaiz1/cmp_luasnip",
     event = "InsertEnter",
@@ -256,6 +257,7 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
+  -- Show how many words can match after pressing *
   {
     "kevinhwang91/nvim-hlslens",
     config = function()
@@ -298,6 +300,7 @@ require("lazy").setup {
     config = function()
       require("git-conflict").setup {}
     end,
+    event = "VeryLazy",
   },
 
   {
@@ -627,7 +630,7 @@ require("lazy").setup {
     opts = {
       -- add any opts here
       behaviour = {
-        auto_suggestions = false,
+        auto_suggestions = true,
         -- auto_set_keymaps = false,
       },
       provider = "deepseek",

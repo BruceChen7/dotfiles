@@ -656,7 +656,7 @@ end
 local get_branches = function()
   local current = current_branch()
 
-  local job = Job:new {
+  local job = require("plenary.job"):new {
     command = "git",
     args = { "for-each-ref", "--format=%(refname:short)" },
   }
@@ -673,14 +673,28 @@ local get_branches = function()
 
   return branches
 end
+
 vim.api.nvim_create_user_command("DiffFilesTo", function(args)
   local fzf = require "fzf-lua"
+  local branches = get_branches()
+  -- if branches not  contain `arg` branch, use master
+  if not vim.tbl_contains(branches, args.args) then
+    -- check if contains `master` or `main`, if so, use it as default
+    if vim.tbl_contains(branches, "master") then
+      args.args = "master"
+    elseif vim.tbl_contains(branches, "main") then
+      args.args = "main"
+    else
+      return
+    end
+  end
+
   fzf.git_files {
     prompt = "Changed from <" .. args.args .. ">: ",
     previewer = true,
     cmd = "git diff --diff-filter=d --name-only " .. args.args,
   }
-end, { nargs = 1, complete = get_branches })
+end, { nargs = 1 })
 
 vim.keymap.set("n", "\\rr", function()
   vim.cmd "DiffFilesTo release "
