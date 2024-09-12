@@ -630,7 +630,7 @@ require("lazy").setup {
     opts = {
       -- add any opts here
       behaviour = {
-        auto_suggestions = true,
+        auto_suggestions = false,
         -- auto_set_keymaps = false,
       },
       provider = "deepseek",

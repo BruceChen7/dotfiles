@@ -9,7 +9,6 @@ u.map("n", "<c-h>", "<c-w>h", { desc = "Window left" })
 u.map("n", "<c-l>", "<c-w>l", { desc = "Window right" })
 u.map("n", "<c-j>", "<c-w>j", { desc = "Window down" })
 u.map("n", "<c-k>", "<c-w>k", { desc = "Window up" })
--- u.map("n", "<tab>0", "<c-w>L")
 u.map("n", "<space><space>", "<c-^>", { desc = "Last buffer" })
 
 -- 编辑模式
@@ -228,6 +227,13 @@ local function quitWindow()
   if buf_name:find "^diffview" then
     vim.api.nvim_command "DiffviewClose"
     -- vim.api.nvim_command("bdelete %s"):format(buf_id)
+  end
+  -- Get the number of windows
+  --
+  local window_count = vim.api.nvim_list_wins()
+  if buf_total_num ~= 1 and #window_count > 1 then
+    -- close means `close window`
+    vim.api.nvim_command "close!"
   elseif buf_total_num ~= 1 then
     vim.api.nvim_command "bdelete!"
   else

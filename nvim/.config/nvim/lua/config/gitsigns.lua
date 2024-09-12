@@ -70,14 +70,13 @@ signs.setup {
     end, { expr = true })
 
     -- Actions
-    map("n", "<leader>hs", gs.stage_hunk, { desc = "Stage Hunk" })
     map("n", "<leader>hr", gs.reset_hunk, { desc = "Reset Hunk" })
     map("v", "<leader>hs", function()
       gs.stage_hunk { vim.fn.line ".", vim.fn.line "v" }
-    end)
+    end, { desc = "Stage Hunk" })
     map("v", "<leader>hr", function()
       gs.reset_hunk { vim.fn.line ".", vim.fn.line "v" }
-    end)
+    end, { desc = "Reset Hunk" })
     map("n", "<leader>hS", gs.stage_buffer, { desc = "Stage Buffer" })
     map("n", "<leader>hu", gs.undo_stage_hunk)
     map("n", "<leader>hR", gs.reset_buffer)
@@ -85,7 +84,7 @@ signs.setup {
     map("n", "<leader>hb", function()
       gs.blame_line { full = true }
     end)
-    map("n", "<leader>tb", gs.toggle_current_line_blame)
+    map("n", "<leader>tb", gs.toggle_current_line_blame, { desc = "Toggle Blame" })
     map("n", "<leader>hd", gs.diffthis)
     map("n", "<leader>hD", function()
       gs.diffthis "~"
