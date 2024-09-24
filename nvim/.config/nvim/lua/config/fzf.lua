@@ -697,5 +697,5 @@ vim.api.nvim_create_user_command("DiffFilesTo", function(args)
 end, { nargs = 1 })
 
 vim.keymap.set("n", "\\rr", function()
-  vim.cmd "DiffFilesTo release "
+  vim.cmd "DiffFilesTo release"
 end, { desc = "Diff files to release" })
