@@ -81,6 +81,7 @@ function getColorscheme()
     "catppuccin",
     "catppuccin-frappe",
     "gruvbox-material",
+    "yorumi",
   }
   local u = require "util"
   local len = u.tableLength(colorschemes)

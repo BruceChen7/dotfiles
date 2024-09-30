@@ -221,7 +221,7 @@ require("lazy").setup {
     -- plug is already lazy
     lazy = false,
   },
-
+  --
   {
     "saecki/crates.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
@@ -636,7 +636,7 @@ require("lazy").setup {
       provider = "deepseek",
       mappings = {
         ask = "\\ak",
-        edit = "\\ac",
+        edit = "\\am",
         refresh = "\\ar",
         --- @class AvanteConflictMappings
         diff = {
@@ -681,7 +681,8 @@ require("lazy").setup {
                   { role = "system", content = code_opts.system_prompt },
                   { role = "user", content = require("avante.providers.openai").get_user_message(code_opts) },
                 },
-                temperature = 1,
+                -- https://platform.deepseek.com/api-docs/zh-cn/quick_start/parameter_settings
+                temperature = 0.0,
                 max_tokens = 8092,
                 stream = true, -- this will be set by default.
               },
@@ -899,6 +900,9 @@ require("lazy").setup {
     end,
     event = "VeryLazy",
   },
+
+  -- colorscheme
+  { "yorumicolors/yorumi.nvim" },
 
   {
     "otavioschwanck/arrow.nvim",
