@@ -1,0 +1,18 @@
+(defcfg
+ ;; https://github.com/jtroo/kanata/discussions/130
+  ;; 其他全局配置...
+)
+
+(defsrc
+  caps
+  ;; 其他按键...
+)
+
+(defalias
+  cle (tap-hold 50 200 esc lctl)
+)
+
+(deflayer default
+  @cle
+  ;; 其他按键映射...
+)

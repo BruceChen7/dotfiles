@@ -101,8 +101,8 @@ require("lazy").setup {
 
   {
     "saghen/blink.cmp",
-    -- event = "BufReadPre",
-    event = "LspAttach",
+    event = "BufReadPre",
+    -- event = "LspAttach",
     version = "v0.*", -- REQUIRED release tag to download pre-built binaries
     opts = {
       sources = {
@@ -199,6 +199,17 @@ require("lazy").setup {
     },
   },
 
+  {
+    "numToStr/Navigator.nvim",
+    config = function()
+      require("Navigator").setup()
+      vim.keymap.set({ "n", "t" }, "<c-h>", "<CMD>NavigatorLeft<CR>")
+      vim.keymap.set({ "n", "t" }, "<c-l>", "<CMD>NavigatorRight<CR>")
+      vim.keymap.set({ "n", "t" }, "<c-k>", "<CMD>NavigatorUp<CR>")
+      vim.keymap.set({ "n", "t" }, "<c-j>", "<CMD>NavigatorDown<CR>")
+      -- vim.keymap.set({ "n", "t" }, "<c-p>", "<CMD>NavigatorPrevious<CR>")
+    end,
+  },
   --
   -- {
   --   "L3MON4D3/LuaSnip",
@@ -208,7 +219,6 @@ require("lazy").setup {
   --   build = "make install_jsregexp",
   --   event = "InsertEnter",
   -- },
-
   -- {
   --   "rafamadriz/friendly-snippets",
   --   config = function()
@@ -221,7 +231,6 @@ require("lazy").setup {
   --   "saadparwaiz1/cmp_luasnip",
   --   event = "InsertEnter",
   -- },
-
   {
     "anuvyklack/hydra.nvim",
     event = "VeryLazy",

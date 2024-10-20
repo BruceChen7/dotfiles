@@ -5,10 +5,10 @@ local default_options = { noremap = true, silent = true }
 -- 窗口快捷键映射
 -- why not use tab, because of c-i is the same as tab in normal mode
 -- which means when you set <tab>h, when use c-i, it will wait timeout time, which is slow
-u.map("n", "<c-h>", "<c-w>h", { desc = "Window left" })
-u.map("n", "<c-l>", "<c-w>l", { desc = "Window right" })
-u.map("n", "<c-j>", "<c-w>j", { desc = "Window down" })
-u.map("n", "<c-k>", "<c-w>k", { desc = "Window up" })
+-- u.map("n", "<c-h>", "<c-w>h", { desc = "Window left" })
+-- u.map("n", "<c-l>", "<c-w>l", { desc = "Window right" })
+-- u.map("n", "<c-j>", "<c-w>j", { desc = "Window down" })
+-- u.map("n", "<c-k>", "<c-w>k", { desc = "Window up" })
 u.map("n", "<space><space>", "<c-^>", { desc = "Last buffer" })
 
 -- 编辑模式
