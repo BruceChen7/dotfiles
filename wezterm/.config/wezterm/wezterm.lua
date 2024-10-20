@@ -47,7 +47,6 @@ for i = 1, 9 do
 	})
 end
 
-config.color_scheme = "Grubox"
 config.font = wezterm.font({ family = "Iosevka Nerd Font Mono" })
 config.font_size = 20
 config.hide_tab_bar_if_only_one_tab = true
@@ -109,4 +108,8 @@ local jump_keys = {
 for _, key in ipairs(jump_keys) do
 	table.insert(config.keys, key)
 end
+
+-- config.color_scheme = "Builtin Solarized Dark"
+-- config.tab_bar_at_bottom = true
+config.color_scheme = "zenbones_dark"
 return config
