@@ -60,31 +60,31 @@ require("lazy").setup {
   -- -- adds vscode-like pictograms to neovim built-in lsp
   { "onsails/lspkind-nvim" },
 
-  {
-    -- "hrsh7th/nvim-cmp", -- Autocompletion plugin
-    "yioneko/nvim-cmp",
-    branch = "perf",
-    event = "InsertEnter",
-    dependencies = {
-      "hrsh7th/cmp-nvim-lsp",
-      "hrsh7th/cmp-cmdline",
-      "hrsh7th/cmp-buffer",
-      "hrsh7th/cmp-path",
-      "hrsh7th/cmp-nvim-lua",
-      "hrsh7th/cmp-nvim-lsp-document-symbol",
-      "tamago324/cmp-zsh",
-      "hrsh7th/cmp-calc",
-    },
-    -- event = "InsertEnter",
-    config = function()
-      require "config/cmp"
-      require "config/md_source"
-    end,
-    -- branch = "main",
-    -- https://www.reddit.com/r/neovim/comments/162q5ca/whats_your_favorite_unknown_nvimvim_plugin/
-    -- commit = "6c84bc75c64f778e9f1dcb798ed41c7fcb93b639",
-    -- ft = { "go", "lua", "python", "zig", "rust" },
-  },
+  -- {
+  --   -- "hrsh7th/nvim-cmp", -- Autocompletion plugin
+  --   "yioneko/nvim-cmp",
+  --   branch = "perf",
+  --   event = "InsertEnter",
+  --   dependencies = {
+  --     "hrsh7th/cmp-nvim-lsp",
+  --     "hrsh7th/cmp-cmdline",
+  --     "hrsh7th/cmp-buffer",
+  --     "hrsh7th/cmp-path",
+  --     "hrsh7th/cmp-nvim-lua",
+  --     "hrsh7th/cmp-nvim-lsp-document-symbol",
+  --     "tamago324/cmp-zsh",
+  --     "hrsh7th/cmp-calc",
+  --   },
+  --   -- event = "InsertEnter",
+  --   config = function()
+  --     require "config/cmp"
+  --     require "config/md_source"
+  --   end,
+  --   -- branch = "main",
+  --   -- https://www.reddit.com/r/neovim/comments/162q5ca/whats_your_favorite_unknown_nvimvim_plugin/
+  --   -- commit = "6c84bc75c64f778e9f1dcb798ed41c7fcb93b639",
+  --   -- ft = { "go", "lua", "python", "zig", "rust" },
+  -- },
 
   -- {
   --   "j-hui/fidget.nvim",
@@ -99,15 +99,115 @@ require("lazy").setup {
     -- event = "VeryLazy",
   },
 
-  --
   {
-    "L3MON4D3/LuaSnip",
-    config = function()
-      require "config/lua_snip"
-    end,
-    build = "make install_jsregexp",
-    event = "InsertEnter",
+    "saghen/blink.cmp",
+    -- event = "BufReadPre",
+    event = "LspAttach",
+    version = "v0.*", -- REQUIRED release tag to download pre-built binaries
+    opts = {
+      sources = {
+        providers = {
+          { "blink.cmp.sources.lsp", name = "LSP" },
+
+          {
+            "blink.cmp.sources.snippets",
+            name = "Snippets",
+            score_offset = -1,
+            -- keyword_length = 1, -- not supported yet
+          },
+          {
+            "blink.cmp.sources.path",
+            name = "Path",
+            score_offset = 3,
+            opts = { get_cwd = vim.uv.cwd },
+          },
+          -- {
+          --   "blink.cmp.sources.buffer",
+          --   name = "Buffer",
+          --   keyword_length = 4,
+          --   fallback_for = { "Path" }, -- PENDING https://github.com/Saghen/blink.cmp/issues/122
+          -- },
+        },
+      },
+      trigger = {
+        completion = {
+          keyword_range = "full", -- full|prefix
+        },
+        -- signature_help = {
+        --   enabled = true,
+        -- },
+      },
+      keymap = {
+        show = "<D-c>",
+        hide = "<S-CR>",
+        accept = "<CR>",
+        select_next = { "<c-j>" },
+        select_prev = { "<c-k>" },
+        scroll_documentation_down = "<PageDown>",
+        scroll_documentation_up = "<PageUp>",
+      },
+      highlight = {
+        use_nvim_cmp_as_default = true,
+      },
+      nerd_font_variant = "normal",
+      windows = {
+        documentation = {
+          min_width = 15,
+          max_width = 50,
+          max_height = 15,
+          border = vim.g.border,
+          auto_show = true,
+          auto_show_delay_ms = 200,
+        },
+        autocomplete = {
+          min_width = 20,
+          max_width = 40,
+          max_height = 15,
+          border = vim.g.border,
+          draw = "reversed",
+          scrolloff = 2,
+          direction_priority = { "s", "n" },
+        },
+      },
+      kind_icons = {
+        Text = " ",
+        Method = "󰊕",
+        Function = "󰊕",
+        Constructor = "",
+        Field = "󰇽",
+        Variable = "󰂡",
+        Class = "⬟",
+        Interface = "",
+        Module = "",
+        Property = "󰜢",
+        Unit = "",
+        Value = "󰎠",
+        Enum = "",
+        Keyword = "󰌋",
+        Snippet = "󰒕",
+        Color = "󰏘",
+        Reference = "",
+        File = "󰉋",
+        Folder = "󰉋",
+        EnumMember = "",
+        Constant = "󰏿",
+        Struct = "",
+        Event = "",
+        Operator = "󰆕",
+        TypeParameter = "󰅲",
+      },
+    },
   },
+
+  --
+  -- {
+  --   "L3MON4D3/LuaSnip",
+  --   config = function()
+  --     require "config/lua_snip"
+  --   end,
+  --   build = "make install_jsregexp",
+  --   event = "InsertEnter",
+  -- },
 
   -- {
   --   "rafamadriz/friendly-snippets",
@@ -117,10 +217,10 @@ require("lazy").setup {
   --   event = "InsertEnter",
   -- },
   --
-  {
-    "saadparwaiz1/cmp_luasnip",
-    event = "InsertEnter",
-  },
+  -- {
+  --   "saadparwaiz1/cmp_luasnip",
+  --   event = "InsertEnter",
+  -- },
 
   {
     "anuvyklack/hydra.nvim",
