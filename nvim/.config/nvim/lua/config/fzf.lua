@@ -699,3 +699,62 @@ end, { nargs = 1 })
 vim.keymap.set("n", "\\rr", function()
   vim.cmd "DiffFilesTo release"
 end, { desc = "Diff files to release" })
+
+local function get_recent_buffers()
+  local buffers = {}
+  -- 获取所有 buffer
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    local name = vim.api.nvim_buf_get_name(buf)
+    if name ~= "" then -- 忽略无名 buffer
+      local lastused = vim.fn.getbufinfo(buf)[1].lastused
+      table.insert(buffers, { name = name, time = lastused })
+    end
+  end
+
+  -- 获取已关闭的 buffer
+  local oldfiles = vim.v.oldfiles
+  for _, file in ipairs(oldfiles) do
+    if vim.fn.bufnr(file) == -1 then -- 如果文件不在当前 buffer 列表中
+      table.insert(buffers, { name = file, time = 0 }) -- 时间设为 0，因为我们不知道确切时间
+    end
+  end
+
+  -- 按时间排序
+  table.sort(buffers, function(a, b)
+    return a.time > b.time
+  end)
+
+  return buffers
+end
+
+-- 显示最近的 buffer
+local function show_recent_buffers()
+  local buffers = get_recent_buffers()
+  local lines = {}
+  for i, buf in ipairs(buffers) do
+    table.insert(lines, string.format("%d: %s", i, buf.name))
+  end
+  return buffers
+end
+
+vim.api.nvim_create_user_command("AllRecentFiles", function(args)
+  local fzf = require "fzf-lua"
+  local branches = get_branches()
+  -- if branches not  contain `arg` branch, use master
+  if not vim.tbl_contains(branches, args.args) then
+    -- check if contains `master` or `main`, if so, use it as default
+    if vim.tbl_contains(branches, "master") then
+      args.args = "master"
+    elseif vim.tbl_contains(branches, "main") then
+      args.args = "main"
+    else
+      return
+    end
+  end
+
+  fzf.git_files {
+    prompt = "Changed from <" .. args.args .. ">: ",
+    previewer = true,
+    cmd = "git diff --diff-filter=d --name-only " .. args.args,
+  }
+end, { nargs = 1 })

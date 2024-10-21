@@ -61,6 +61,14 @@ require("lazy").setup {
   { "onsails/lspkind-nvim" },
 
   -- {
+  --   "iguanacucumber/magazine.nvim",
+  --   name = "nvim-cmp", -- Otherwise highlighting gets messed up
+  --   config = function()
+  --     require "config/cmp"
+  --     require "config/md_source"
+  --   end,
+  -- },
+  -- {
   --   -- "hrsh7th/nvim-cmp", -- Autocompletion plugin
   --   "yioneko/nvim-cmp",
   --   branch = "perf",
@@ -198,6 +206,15 @@ require("lazy").setup {
       },
     },
   },
+  --
+  -- {
+  --   "L3MON4D3/LuaSnip",
+  --   config = function()
+  --     require "config/lua_snip"
+  --   end,
+  --   build = "make install_jsregexp",
+  --   event = "InsertEnter",
+  -- },
 
   {
     "numToStr/Navigator.nvim",
@@ -231,6 +248,7 @@ require("lazy").setup {
   --   "saadparwaiz1/cmp_luasnip",
   --   event = "InsertEnter",
   -- },
+
   {
     "anuvyklack/hydra.nvim",
     event = "VeryLazy",
@@ -1018,7 +1036,7 @@ require("lazy").setup {
     opts = {
       show_icons = true,
       leader_key = "\\\\", -- Recommended to be a single key
-      buffer_leader_key = "m", -- Per Buffer Mappings
+      buffer_leader_key = "\\m", -- Per Buffer Mappings
       seperate_by_branch = true,
     },
     event = "VeryLazy",

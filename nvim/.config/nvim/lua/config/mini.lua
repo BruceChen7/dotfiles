@@ -66,11 +66,23 @@ vim.keymap.set("n", "<leader>mf", function()
   local files = require "mini.files"
   files.open(vim.api.nvim_buf_get_name(0))
 end, { desc = "open files" })
+
 -- require("mini.completion").setup {
---   delay = { completion = 100, info = 100, signature = 50 },
+--   delay = { completion = 50, info = 100, signature = 50 },
+--   lsp_completion = {
+--     -- `source_func` should be one of 'completefunc' or 'omnifunc'.
+--     source_func = "completefunc",
+--     -- `auto_setup` should be boolean indicating if LSP completion is set up
+--     -- on every `BufEnter` event.
+--     auto_setup = true,
+--     -- A function which takes LSP 'textDocument/completion' response items
+--     -- and word to complete. Output should be a table of the same nature as
+--     -- input items. Common use case is custom filter/sort.
+--     -- process_items = --<function: MiniCompletion.default_process_items>,
+--   },
 -- }
---
--- -- use c-j and c-k to navigate completion
+
+-- use c-j and c-k to navigate completion
 -- vim.keymap.set("i", "<C-j>", [[pumvisible() ? "\<C-n>" : ""]], { expr = true })
 -- vim.keymap.set("i", "<C-k>", [[pumvisible() ? "\<C-p>" : ""]], { expr = true })
 

@@ -2,7 +2,6 @@ local rounded = { border = "rounded" }
 vim.diagnostic.config { float = rounded }
 vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, rounded)
 vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, rounded)
-
 -- https://www.reddit.com/r/neovim/comments/17yrtt5/seeking_guidance_for_improving_nvimcmp/
 vim.lsp.util.stylize_markdown = function(bufnr, contents, opts)
   contents = vim.lsp.util._normalize_markdown(contents, {
@@ -252,6 +251,8 @@ require("lsp-setup").setup {
         },
       },
     },
+    -- https://neovimcraft.com/plugin/ray-x/go.nvim/
+    -- https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#completionClientCapabilities
     gopls = {
       cmd = {
         "gopls",
@@ -268,6 +269,8 @@ require("lsp-setup").setup {
           buildFlags = { "-tags=integration_test unit_test" },
           codelenses = {
             gc_details = true,
+            -- test = true,
+            tidy = true,
           },
           analyses = {
             -- find structs that would use less memory if their fields were sorted
@@ -278,6 +281,7 @@ require("lsp-setup").setup {
             nonewvars = true,
             fillreturns = true,
             nilness = true, -- check for redundant or impossible nil comparisons
+            -- ST1003 = true,
           },
           staticcheck = true,
           hints = {
@@ -290,6 +294,31 @@ require("lsp-setup").setup {
             functionTypeParameters = true,
           },
           -- semanticTokens = true,
+        },
+      },
+      capabilities = {
+        textDocument = {
+          completion = {
+            completionItem = {
+              commitCharactersSupport = true,
+              deprecatedSupport = true,
+              documentationFormat = { "markdown", "plaintext" },
+              preselectSupport = true,
+              insertReplaceSupport = true,
+              labelDetailsSupport = true,
+              -- not working with mini-completion
+              snippetSupport = false,
+              resolveSupport = {
+                properties = {
+                  "documentation",
+                  "details",
+                  "additionalTextEdits",
+                },
+              },
+            },
+            contextSupport = true,
+            dynamicRegistration = true,
+          },
         },
       },
     },
