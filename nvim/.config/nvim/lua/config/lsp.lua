@@ -304,7 +304,7 @@ require("lsp-setup").setup {
               deprecatedSupport = true,
               documentationFormat = { "markdown", "plaintext" },
               preselectSupport = true,
-              insertReplaceSupport = true,
+              insertReplaceSupport = false,
               labelDetailsSupport = true,
               -- not working with mini-completion
               snippetSupport = false,
