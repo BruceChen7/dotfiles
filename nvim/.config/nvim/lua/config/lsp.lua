@@ -304,6 +304,7 @@ require("lsp-setup").setup {
               deprecatedSupport = true,
               documentationFormat = { "markdown", "plaintext" },
               preselectSupport = true,
+              -- https://github.com/Saghen/blink.cmp/issues/21
               insertReplaceSupport = false,
               labelDetailsSupport = true,
               -- not working with mini-completion
