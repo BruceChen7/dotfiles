@@ -700,6 +700,10 @@ vim.keymap.set("n", "\\rr", function()
   vim.cmd "DiffFilesTo release"
 end, { desc = "Diff files to release" })
 
+vim.keymap.set("n", "\\fb", function()
+  vim.cmd "<cmd>Fzflua git_branches <CR>"
+end, { desc = "checkout branches" })
+
 local function get_recent_buffers()
   local buffers = {}
   -- 获取所有 buffer

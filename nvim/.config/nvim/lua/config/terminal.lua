@@ -171,6 +171,12 @@ vim.keymap.set("n", "<leader>tl", function()
   require("toggleterm").exec(cmd, 1, 12)
 end, { desc = "open git log for this file in terminal" })
 
+vim.keymap.set("n", "\\tf", function()
+  -- cmd 为 gitdiff release 分支 和当前分支 当前buffer 所在的目录
+  local cmd = "git diff release -- " .. vim.fn.expand "%:p"
+  require("toggleterm").exec(cmd, 1, 12)
+end, { desc = "open git log for this file in terminal" })
+
 vim.keymap.set("n", "\\tb", function()
   local current_file_path_with_name = vim.fn.expand "%:p"
   local cmd = "tig blame " .. current_file_path_with_name

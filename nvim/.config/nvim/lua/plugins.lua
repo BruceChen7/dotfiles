@@ -113,33 +113,33 @@ require("lazy").setup {
     -- event = "LspAttach",
     version = "v0.*", -- REQUIRED release tag to download pre-built binaries
     opts = {
-      sources = {
-        providers = {
-          { "blink.cmp.sources.lsp", name = "LSP" },
-
-          {
-            "blink.cmp.sources.snippets",
-            name = "Snippets",
-            score_offset = -1,
-            -- keyword_length = 1, -- not supported yet
-          },
-          {
-            "blink.cmp.sources.path",
-            name = "Path",
-            score_offset = 3,
-            opts = { get_cwd = vim.uv.cwd },
-          },
-          -- {
-          --   "blink.cmp.sources.buffer",
-          --   name = "Buffer",
-          --   keyword_length = 4,
-          --   fallback_for = { "Path" }, -- PENDING https://github.com/Saghen/blink.cmp/issues/122
-          -- },
-        },
-      },
+      -- sources = {
+      --   providers = {
+      --     { "blink.cmp.sources.lsp", name = "LSP" },
+      --
+      --     {
+      --       "blink.cmp.sources.snippets",
+      --       name = "Snippets",
+      --       score_offset = -1,
+      --       -- keyword_length = 1, -- not supported yet
+      --     },
+      --     {
+      --       "blink.cmp.sources.path",
+      --       name = "Path",
+      --       score_offset = 3,
+      --       opts = { get_cwd = vim.uv.cwd },
+      --     },
+      --     -- {
+      --     --   "blink.cmp.sources.buffer",
+      --     --   name = "Buffer",
+      --     --   keyword_length = 4,
+      --     --   fallback_for = { "Path" }, -- PENDING https://github.com/Saghen/blink.cmp/issues/122
+      --     -- },
+      --   },
+      -- },
       trigger = {
         completion = {
-          keyword_range = "full", -- full|prefix
+          keyword_range = "prefix", -- full|prefix
         },
         -- signature_help = {
         --   enabled = true,
@@ -223,8 +223,8 @@ require("lazy").setup {
         -- `normal` and `terminal` mode.
         mappings = {
           enable = true,
-          toggle = "<C-;>",
-          kill = "<C-S-;>",
+          toggle = "<C-\\>",
+          kill = "<C-S-\\>",
         },
         -- Additional mappings that I consider useful since you won't have to escape (<C-\><C-n>)
         -- the terminal each time. Available in `terminal` mode.
@@ -813,7 +813,7 @@ require("lazy").setup {
         },
         submit = {
           normal = "<CR>",
-          insert = "<C-CR>",
+          insert = "<S-CR>",
         },
         suggestion = {
           accept = "<c-l>",

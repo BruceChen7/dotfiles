@@ -93,6 +93,10 @@ require("mini.pick").setup {
   },
 }
 
+require("mini.visits").setup {}
+
+vim.keymap.set("n", "<m-b>", ":lua MiniVisits.select_path()<cr>")
+
 require("mini.extra").setup {}
 
 local buf_num_2_id = {}

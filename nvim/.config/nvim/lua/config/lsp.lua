@@ -305,10 +305,10 @@ require("lsp-setup").setup {
               documentationFormat = { "markdown", "plaintext" },
               preselectSupport = true,
               -- https://github.com/Saghen/blink.cmp/issues/21
-              insertReplaceSupport = false,
+              insertReplaceSupport = true,
               labelDetailsSupport = true,
               -- not working with mini-completion
-              snippetSupport = false,
+              snippetSupport = true,
               resolveSupport = {
                 properties = {
                   "documentation",
