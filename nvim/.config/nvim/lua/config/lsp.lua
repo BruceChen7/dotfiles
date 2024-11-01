@@ -283,7 +283,7 @@ require("lsp-setup").setup {
             nilness = true, -- check for redundant or impossible nil comparisons
             -- ST1003 = true,
           },
-          staticcheck = true,
+          staticcheck = false,
           hints = {
             rangeVariableTypes = true,
             parameterNames = true,

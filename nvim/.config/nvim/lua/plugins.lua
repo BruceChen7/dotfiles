@@ -145,14 +145,20 @@ require("lazy").setup {
         --   enabled = true,
         -- },
       },
+      -- keymap = "default",
+
       keymap = {
-        show = "<D-c>",
-        hide = "<S-CR>",
-        accept = "<CR>",
-        select_next = { "<c-j>" },
-        select_prev = { "<c-k>" },
-        scroll_documentation_down = "<PageDown>",
-        scroll_documentation_up = "<PageUp>",
+        -- ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
+        ["<C-e>"] = { "hide" },
+        ["<c-y>"] = { "select_and_accept", "fallback" },
+        ["<enter>"] = { "select_and_accept", "fallback" },
+        ["<C-k>"] = { "select_prev", "fallback" },
+        ["<C-j>"] = { "select_next", "fallback" },
+
+        ["<C-b>"] = { "scroll_documentation_up", "fallback" },
+        ["<C-f>"] = { "scroll_documentation_down", "fallback" },
+        ["<Tab>"] = { "snippet_forward", "fallback" },
+        ["<S-Tab>"] = { "snippet_backward", "fallback" },
       },
       highlight = {
         use_nvim_cmp_as_default = true,
@@ -1059,6 +1065,53 @@ require("lazy").setup {
       require "config/lsp"
     end,
     event = "VeryLazy",
+  },
+
+  {
+    "Kurama622/llm.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" },
+    -- cmd = { "LLMSesionToggle", "LLMSelectedTextHandler" },
+    event = "VeryLazy",
+    config = function()
+      require("llm").setup {
+        max_tokens = 512,
+        url = "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+        model = "glm-4-flash",
+        prefix = {
+          user = { text = "😃 ", hl = "Title" },
+          assistant = { text = "⚡ ", hl = "Added" },
+        },
+
+        save_session = true,
+        max_history = 30,
+
+        -- stylua: ignore
+        keys = {
+          -- The keyboard mapping for the input window.
+          ["Input:Submit"]      = { mode = "i", key = "<cr>" },
+          ["Input:Cancel"]      = { mode = "i", key = "<C-c>" },
+          ["Input:Resend"]      = { mode = "n", key = "<C-r>" },
+
+          -- only works when "save_session = true"
+          ["Input:HistoryNext"] = { mode = "i", key = "<C-S-j>" },
+          ["Input:HistoryPrev"] = { mode = "i", key = "<C-S-k>" },
+
+          -- The keyboard mapping for the output window in "split" style.
+          ["Output:Ask"]        = { mode = "n", key = "i" },
+          ["Output:Cancel"]     = { mode = "n", key = "<C-c>" },
+          ["Output:Resend"]     = { mode = "n", key = "<C-r>" },
+
+          -- The keyboard mapping for the output and input windows in "float" style.
+          ["Session:Toggle"]    = { mode = "n", key = "<leader>ac" },
+          ["Session:Close"]     = { mode = "n", key = "<esc>" },
+        },
+      }
+    end,
+    keys = {
+      { "<leader>ac", mode = "n", "<cmd>LLMSessionToggle<cr>" },
+      { "<leader>ae", mode = "v", "<cmd>LLMSelectedTextHandler 请解释下面这段代码<cr>" },
+      { "<leader>t", mode = "x", "<cmd>LLMSelectedTextHandler 英译汉<cr>" },
+    },
   },
 
   -- colorscheme
