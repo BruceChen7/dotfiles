@@ -165,14 +165,14 @@ require("lazy").setup {
       },
       nerd_font_variant = "normal",
       windows = {
-        documentation = {
-          min_width = 15,
-          max_width = 50,
-          max_height = 15,
-          border = vim.g.border,
-          auto_show = true,
-          auto_show_delay_ms = 200,
-        },
+        -- documentation = {
+        --   min_width = 15,
+        --   max_width = 50,
+        --   max_height = 15,
+        --   border = vim.g.border,
+        --   auto_show = true,
+        --   auto_show_delay_ms = 200,
+        -- },
         autocomplete = {
           min_width = 20,
           max_width = 40,
@@ -645,19 +645,19 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
-  {
-    "leath-dub/snipe.nvim",
-    config = function()
-      local snipe = require "snipe"
-      snipe.setup {
-        hints = {
-          dictionary = "adflewcmpghio",
-        },
-      }
-      vim.keymap.set("n", "gb", snipe.create_buffer_menu_toggler(), { desc = "show buffer menu" })
-    end,
-    event = "VeryLazy",
-  },
+  -- {
+  --   "leath-dub/snipe.nvim",
+  --   config = function()
+  --     local snipe = require "snipe"
+  --     snipe.setup {
+  --       hints = {
+  --         dictionary = "adflewcmpghio",
+  --       },
+  --     }
+  --     vim.keymap.set("n", "gb", snipe.create_buffer_menu_toggler(), { desc = "show buffer menu" })
+  --   end,
+  --   event = "VeryLazy",
+  -- },
 
   -- format code
   {
