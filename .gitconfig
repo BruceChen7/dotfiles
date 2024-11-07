@@ -1,6 +1,6 @@
-[user]
+[user "https://github.com"]
+    name = bofengqiye7
     email = bofengqiye7@gmail.com
-    name = BruceChen7
 
 [pager]
     ; diff = delta

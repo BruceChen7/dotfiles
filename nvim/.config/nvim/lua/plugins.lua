@@ -150,7 +150,7 @@ require("lazy").setup {
       keymap = {
         -- ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
         ["<C-e>"] = { "hide" },
-        ["<c-y>"] = { "select_and_accept", "fallback" },
+        -- ["<c-y>"] = { "select_and_accept", "fallback" },
         ["<enter>"] = { "select_and_accept", "fallback" },
         ["<C-k>"] = { "select_prev", "fallback" },
         ["<C-j>"] = { "select_next", "fallback" },
@@ -790,9 +790,11 @@ require("lazy").setup {
   -- },
 
   {
-    "yetone/avante.nvim",
+    "BruceChen7/avante.nvim",
     event = "VeryLazy",
     build = "make BUILD_FROM_SOURCE=true",
+    -- auto_suggestions_provider = "deepseek",
+    branch = "fix/fix-get-user-message",
     opts = {
       -- add any opts here
       behaviour = {
@@ -860,6 +862,7 @@ require("lazy").setup {
         },
       },
     },
+    -- version = "v0.*",
     dependencies = {
       -- "nvim-tree/nvim-web-devicons",
       "echasnovski/mini.nvim",
