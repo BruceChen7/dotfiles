@@ -135,6 +135,10 @@ require("mini.tabline").setup {
   -- 需要设置buffer variable，这样才不会改变
   format = function(buf_id, label)
     local suffix = vim.bo[buf_id].modified and "+ " or ""
+    -- 如果是quickfix， 则不显示buf_num
+    if vim.bo[buf_id].buftype == "quickfix" then
+      return ""
+    end
     local num = get_buffer_num(buf_id)
     local buf_num = num
     set_buffer_num(buf_id, buf_num)

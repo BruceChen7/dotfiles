@@ -25,7 +25,7 @@ M.relative_path = function(src, link_to_file_path)
   -- end
   local cmd = "python3 -c \"import os.path; print(os.path.relpath('" .. link_to_file_path .. "', '" .. src .. "'))\""
   local res = vim.fn.system(cmd)
-  print("res is ", res, "cmd is ", cmd)
+  -- print("res is ", res, "cmd is ", cmd)
   return string.gsub(res, "\n", "")
 end
 

@@ -47,7 +47,9 @@ require("lazy").setup {
   { "skywind3000/vim-preview" },
   { "skywind3000/vim-quickui" },
   { "skywind3000/asynctasks.vim" },
-  { "skywind3000/asyncrun.vim" },
+  {
+    "skywind3000/asyncrun.vim",
+  },
 
   {
     "anuvyklack/hydra.nvim",
@@ -871,17 +873,17 @@ require("lazy").setup {
     dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
   },
 
-  {
-    "rcarriga/nvim-dap-ui",
-    dependencies = {
-      "mfussenegger/nvim-dap",
-      "nvim-neotest/nvim-nio",
-    },
-    config = function()
-      require "config/dap"
-    end,
-    event = "LspAttach",
-  },
+  -- {
+  --   "rcarriga/nvim-dap-ui",
+  --   dependencies = {
+  --     "mfussenegger/nvim-dap",
+  --     "nvim-neotest/nvim-nio",
+  --   },
+  --   config = function()
+  --     require "config/dap"
+  --   end,
+  --   event = "LspAttach",
+  -- },
 
   {
     "nvim-pack/nvim-spectre",

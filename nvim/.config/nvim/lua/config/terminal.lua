@@ -157,6 +157,22 @@ local function get_test_command()
   end
 end
 -- use go test
+-- vim.keymap.set("n", "<F2>", function()
+--   local cmd = get_test_command()
+--   if cmd == nil then
+--     return
+--   end
+--   local utils = require "utils"
+--   if utils.is_mac() then
+--     local spex_cmd =
+--       "inp-client --mode=forward --local_network=unix --local_address=/tmp/spex.sock --remote_network=unix --remote_address=/run/spex/spex.sock"
+--     vim.fn.jobstart(spex_cmd, {
+--       on_stdout = function(_, _) end,
+--     })
+--   end
+--   require("toggleterm").exec(cmd, 1, 12)
+-- end, { desc = "open go test in terminal" })
+
 vim.keymap.set("n", "<F2>", function()
   local cmd = get_test_command()
   if cmd == nil then
@@ -170,8 +186,52 @@ vim.keymap.set("n", "<F2>", function()
       on_stdout = function(_, _) end,
     })
   end
-  require("toggleterm").exec(cmd, 1, 12)
-end, { desc = "open go test in terminal" })
+
+  -- - `%\\s%\\+`：匹配一个或多个空白字符（`\s`）。`\\s` 表示一个空白字符，`%\\+` 表示一个或多个。
+  -- - `Error Trace:`：匹配字符串 `"Error Trace:"`。
+  -- - `%\\s%\\+`：再次匹配一个或多个空白字符。
+  -- - `%f`：匹配文件名。
+  -- - `:`：匹配冒号字符。
+  -- - `%l`：匹配行号。
+  vim.fn["asyncrun#run"]("", {
+    mode = "async",
+    -- should be false
+    raw = false,
+    -- errorformat = "%p%s%f:%l",
+    -- program = "go",
+    errorformat = "%\\s%\\+Error Trace:%\\s%\\+%f:%l",
+  }, cmd)
+end, { desc = "open go test in quickfix" })
+
+local get_go_build_cmd = function()
+  local utils = require "utils"
+  if utils.is_in_working_dir() then
+    -- 获取当前buffer完整路径
+    local buf_path = vim.fn.expand "%:p"
+    if string.find(buf_path, "video/platform/app/shopconsole") then
+      -- 路径匹配，执行相应的操作
+      -- 你可以在这里添加更多的逻辑
+      return "go build app/shopconsole/main.go"
+    end
+
+    if string.find(buf_path, "botapi") then
+      return "go build cmd/main.go"
+    end
+  end
+end
+
+vim.keymap.set("n", "<F5>", function()
+  local cmd = get_go_build_cmd()
+  if cmd == nil then
+    return
+  end
+  vim.fn["asyncrun#run"]("", {
+    mode = "async",
+    -- should be false
+    raw = false,
+    errorformat = "%f:%l:%c: %m",
+  }, cmd)
+end, { desc = "open go build in quickfix" })
 
 vim.keymap.set("n", "<leader>tl", function()
   local cmd = 'git log -p "' .. vim.fn.expand "%:p" .. '"'
@@ -219,25 +279,25 @@ vim.keymap.set("n", "\\fh", function()
   require("toggleterm").exec(cmd, 1, 12)
 end, { desc = "file differences b" })
 
-vim.keymap.set({ "n", "t" }, "<c-0>", function()
-  local utils = require "utils"
-  local root_dir = utils.find_root_dir()
-  if root_dir ~= nil then
-    vim.cmd("1ToggleTerm dir=" .. root_dir)
-    return
-  end
-  vim.cmd "1ToggleTerm "
-end, { desc = "open terminal 1" })
-
-vim.keymap.set({ "n", "t" }, "<c-9>", function()
-  local utils = require "utils"
-  local root_dir = utils.find_root_dir()
-  if root ~= nil then
-    vim.cmd("2ToggleTerm dir=" .. root_dir)
-    return
-  end
-  vim.cmd "2ToggleTerm"
-end, { desc = "open terminal 2" })
+-- vim.keymap.set({ "n", "t" }, "<c-0>", function()
+--   local utils = require "utils"
+--   local root_dir = utils.find_root_dir()
+--   if root_dir ~= nil then
+--     vim.cmd("1ToggleTerm dir=" .. root_dir)
+--     return
+--   end
+--   vim.cmd "1ToggleTerm "
+-- end, { desc = "open terminal 1" })
+--
+-- vim.keymap.set({ "n", "t" }, "<c-9>", function()
+--   local utils = require "utils"
+--   local root_dir = utils.find_root_dir()
+--   if root ~= nil then
+--     vim.cmd("2ToggleTerm dir=" .. root_dir)
+--     return
+--   end
+--   vim.cmd "2ToggleTerm"
+-- end, { desc = "open terminal 2" })
 
 -- 记录终端缓冲区的编号
 -- TODO: Save the current window layout
@@ -269,9 +329,9 @@ local function toggle_terminal()
   end
 end
 
-vim.keymap.set({ "n", "t" }, "<c-8>", function()
-  toggle_terminal()
-end, { desc = "toggle fullscreen terminal" })
+-- vim.keymap.set({ "n", "t" }, "<c-8>", function()
+--   toggle_terminal()
+-- end, { desc = "toggle fullscreen terminal" })
 -- 设置快捷键
 -- vim.keymap.set({ "n", "t" }, "<c-8>", toggle_terminal, { desc = "toggle fullscreen terminal" })
 
