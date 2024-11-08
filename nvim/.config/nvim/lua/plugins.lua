@@ -790,78 +790,9 @@ require("lazy").setup {
   -- },
 
   {
-    "BruceChen7/avante.nvim",
-    event = "VeryLazy",
+    "yetone/avante.nvim",
+    lazy = false,
     build = "make BUILD_FROM_SOURCE=true",
-    -- auto_suggestions_provider = "deepseek",
-    branch = "fix/fix-get-user-message",
-    opts = {
-      -- add any opts here
-      behaviour = {
-        auto_suggestions = false,
-        -- auto_set_keymaps = false,
-      },
-      provider = "deepseek",
-      mappings = {
-        ask = "\\ak",
-        edit = "\\am",
-        refresh = "\\ar",
-        --- @class AvanteConflictMappings
-        diff = {
-          ours = "\\co",
-          theirs = "\\ct",
-          none = "\\c0",
-          both = "\\cb",
-          next = "]x",
-          prev = "[x",
-        },
-        jump = {
-          next = "]]",
-          prev = "[[",
-        },
-        submit = {
-          normal = "<CR>",
-          insert = "<S-CR>",
-        },
-        suggestion = {
-          accept = "<c-l>",
-          -- next = "<\\n>",
-          -- prev = "<[\\p>",
-          -- dismiss = "<\\]>",
-        },
-      },
-      vendors = {
-        ["deepseek"] = {
-          endpoint = "https://api.deepseek.com/beta/chat/completions",
-          model = "deepseek-coder",
-          api_key_name = "DEEPSEEK_API_KEY",
-          parse_curl_args = function(opts, code_opts)
-            return {
-              url = opts.endpoint,
-              headers = {
-                ["Accept"] = "application/json",
-                ["Content-Type"] = "application/json",
-                ["Authorization"] = "Bearer " .. os.getenv(opts.api_key_name),
-              },
-              body = {
-                model = opts.model,
-                messages = { -- you can make your own message, but this is very advanced
-                  { role = "system", content = code_opts.system_prompt },
-                  { role = "user", content = require("avante.providers.openai").get_user_message(code_opts) },
-                },
-                -- https://platform.deepseek.com/api-docs/zh-cn/quick_start/parameter_settings
-                temperature = 0.0,
-                max_tokens = 8092,
-                stream = true, -- this will be set by default.
-              },
-            }
-          end,
-          parse_response_data = function(data_stream, event_state, opts)
-            require("avante.providers").openai.parse_response(data_stream, event_state, opts)
-          end,
-        },
-      },
-    },
     -- version = "v0.*",
     dependencies = {
       -- "nvim-tree/nvim-web-devicons",
@@ -874,15 +805,10 @@ require("lazy").setup {
           "MunifTanjim/nui.nvim",
         },
       },
-      --- The below is optional, make sure to setup it properly if you have lazy=true
-      -- {
-      --   "MeanderingProgrammer/render-markdown.nvim",
-      --   opts = {
-      --     file_types = { "markdown", "Avante" },
-      --   },
-      --   ft = { "markdown", "Avante" },
-      -- },
     },
+    config = function()
+      require "config/avante"
+    end,
   },
 
   {

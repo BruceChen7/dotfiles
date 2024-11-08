@@ -138,13 +138,20 @@ local function get_test_command()
         .. " && export SP_UNIX_SOCKET=/tmp/spex.sock"
     end
   end
+
+  -- get current working directory
+  local cwd = vim.fn.getcwd()
+  local relative_path = utils.relative_path(cwd, dir)
   if export_cmd == "" then
-    return " cd " .. dir .. " && go test -tags='integration_test,unit_test'  -gcflags=all=-l -run " .. function_name
+    return "go test ./"
+      .. relative_path
+      .. " -tags='integration_test,unit_test' -gcflags=all=-l -v -run "
+      .. function_name
   else
     local cmd = export_cmd
-      .. " && cd "
-      .. dir
-      .. " && go test -tags='integration_test,unit_test' -gcflags=all=-l -run "
+      .. " && go test ./"
+      .. relative_path
+      .. " -tags='integration_test,unit_test' -gcflags=all=-l -v -run "
       .. function_name
     return cmd
   end
@@ -160,7 +167,7 @@ vim.keymap.set("n", "<F2>", function()
     local spex_cmd =
       "inp-client --mode=forward --local_network=unix --local_address=/tmp/spex.sock --remote_network=unix --remote_address=/run/spex/spex.sock"
     vim.fn.jobstart(spex_cmd, {
-      on_stdout = function(_, data) end,
+      on_stdout = function(_, _) end,
     })
   end
   require("toggleterm").exec(cmd, 1, 12)

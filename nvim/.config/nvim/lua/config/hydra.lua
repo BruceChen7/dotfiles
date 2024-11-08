@@ -60,14 +60,14 @@ Hydra {
         -- use lua to get the last edit position like in normal mode g;
         vim.cmd "silent normal! g;"
       end,
-      { desc = "last edit position in current file" },
+      { desc = "last edit position in current file", silent = true },
     },
     {
       ",",
       function()
         vim.cmd "silent normal! g,"
       end,
-      { desc = "next edit position in current file" },
+      { desc = "next edit position in current file", silent = true },
     },
   },
 }
