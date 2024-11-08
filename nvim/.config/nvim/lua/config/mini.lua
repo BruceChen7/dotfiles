@@ -94,9 +94,18 @@ require("mini.pick").setup {
   },
 }
 
-require("mini.visits").setup {}
+require("mini.visits").setup {
+  list = {
+    filter = function(data)
+      -- 获取当前工作目录
+      local cwd = vim.fn.getcwd()
+      -- if buf_path contains cwd then return true
+      return vim.startswith(data.path, cwd)
+    end,
+  },
+}
 
-vim.keymap.set("n", "<m-b>", ":lua MiniVisits.select_path()<cr>")
+vim.keymap.set("n", "<m-b>", "<cmd>lua MiniVisits.select_path()<cr>")
 
 require("mini.extra").setup {}
 
