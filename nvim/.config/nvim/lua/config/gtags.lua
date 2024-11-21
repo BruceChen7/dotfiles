@@ -61,6 +61,12 @@ if vim.fn.executable "gtags" and vim.fn.executable "gtags-cscope" then
   -- If it is neovim in mac
   local utils = require "utils"
   if utils.is_mac() then
-    vim.env.GTAGSCONF = "/usr/local/share/gtags/gtags.conf"
+    -- if `/usr/share/local/gtags/gtags.conf` exists
+    if vim.fn.filereadable "/usr/local/share/gtags/gtags.conf" == 1 then
+      vim.env.GTAGSCONF = "/usr/local/share/gtags/gtags.conf"
+    end
+    if vim.fn.filereadable "/opt/homebrew/share/gtags/gtags.conf" == 1 then
+      vim.env.GTAGSCONF = "/opt/homebrew/share/gtags/gtags.conf"
+    end
   end
 end
