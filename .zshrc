@@ -51,10 +51,7 @@ zstyle ':prezto:load' pmodule \
 # default bundles
 zplug Vifon/deer
 zplug zdharma/fast-syntax-highlighting, defer:2
-# zplug "plugins/git", from:prezto
-# zplug "modules/prompt", from:prezto
 zplug zsh-users/zsh-autosuggestions, defer:2
-# zplug "modules/fzf", from:prezto
 
 # check login shell
 if [[ -o login ]]; then

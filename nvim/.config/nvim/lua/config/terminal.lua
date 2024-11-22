@@ -193,13 +193,19 @@ vim.keymap.set("n", "<F2>", function()
   -- - `%f`：匹配文件名。
   -- - `:`：匹配冒号字符。
   -- - `%l`：匹配行号。
+  utils.change_to_current_buffer_root_dir()
   vim.fn["asyncrun#run"]("", {
     mode = "async",
     -- should be false
     raw = false,
     -- errorformat = "%p%s%f:%l",
     -- program = "go",
-    errorformat = "%\\s%\\+Error Trace:%\\s%\\+%f:%l",
+    -- errorformat = "%\\s%\\+Error Trace:%\\s%\\+%f:%l",
+    --
+    -- `%-G%.%#`: 忽略所有行，除非它们匹配后面的模式。
+    --  `%.%# %trror: %m`: 匹配以任意字符开头，后跟 `error:` 的行，并提取错误消息 `%m`。
+    --  用 `,` 分隔匹配的多个模式
+    errorformat = "%.%# %trror: %m, %f:%l:%c: %m, %f:%l: %m, %f:%l:%c %m",
   }, cmd)
 end, { desc = "open go test in quickfix" })
 
@@ -216,6 +222,16 @@ local get_go_build_cmd = function()
 
     if string.find(buf_path, "botapi") then
       return "go build cmd/main.go"
+    end
+
+    start, _ = string.find(buf_path, "coreapi")
+    if start ~= nil then
+      return "go build app/chat-api/main.go"
+    end
+
+    start, _ = string.find(buf_path, "bff")
+    if start ~= nil then
+      return "make build-with-proto"
     end
   end
 end

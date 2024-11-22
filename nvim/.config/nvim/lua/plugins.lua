@@ -114,6 +114,7 @@ require("lazy").setup {
     event = "BufReadPre",
     -- event = "LspAttach",
     version = "v0.*", -- REQUIRED release tag to download pre-built binaries
+    -- build = "cargo build --release",
     opts = {
       -- sources = {
       --   providers = {
@@ -167,22 +168,18 @@ require("lazy").setup {
       },
       nerd_font_variant = "normal",
       windows = {
-        documentation = {
-          min_width = 15,
-          max_width = 50,
-          max_height = 15,
-          border = vim.g.border,
-          auto_show = true,
-          auto_show_delay_ms = 200,
-        },
+        -- documentation = {
+        --   min_width = 15,
+        --   max_width = 50,
+        --   max_height = 15,
+        --   border = vim.g.border,
+        --   auto_show = true,
+        --   auto_show_delay_ms = 200,
+        -- },
         autocomplete = {
           min_width = 20,
           max_width = 40,
           max_height = 15,
-          border = vim.g.border,
-          draw = "reversed",
-          scrolloff = 2,
-          direction_priority = { "s", "n" },
         },
       },
       kind_icons = {
@@ -488,9 +485,17 @@ require("lazy").setup {
         },
       }
     end,
-    commit = "13d25ad8bd55aa34cc0aa3082e78a4157c401346",
+    -- commit = "13d25ad8bd55aa34cc0aa3082e78a4157c401346",
     -- 手动打开，否则对大量pb生成的go文件进行reference，implementation的时候，很慢
     cmd = "LspLensOn",
+  },
+
+  {
+    "tpope/vim-fugitive",
+    config = function()
+      require "config/fugtive"
+    end,
+    event = "VeryLazy",
   },
 
   {
@@ -542,6 +547,31 @@ require("lazy").setup {
         desc = "Remote Flash",
       },
     },
+  },
+
+  {
+    "tzachar/highlight-undo.nvim",
+    config = function()
+      require("highlight-undo").setup {
+        duration = 300,
+        undo = {
+          hlgroup = "HighlightUndo",
+          mode = "n",
+          lhs = "u",
+          map = "undo",
+          opts = {},
+        },
+        redo = {
+          hlgroup = "HighlightUndo",
+          mode = "n",
+          lhs = "<C-r>",
+          map = "redo",
+          opts = {},
+        },
+        highlight_for_count = true,
+      }
+    end,
+    event = "VeryLazy",
   },
 
   -- skip to inner bracket
@@ -633,7 +663,7 @@ require("lazy").setup {
     config = function()
       require "config/gp"
     end,
-    event = "VeryLazy",
+    event = "BufReadPre",
   },
 
   -- find files
@@ -998,6 +1028,8 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
+  { "meznaric/key-analyzer.nvim", opts = {} },
+
   {
     "Kurama622/llm.nvim",
     dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" },
@@ -1019,6 +1051,6 @@ require("lazy").setup {
       buffer_leader_key = "\\m", -- Per Buffer Mappings
       seperate_by_branch = true,
     },
-    event = "VeryLazy",
+    event = "BufReadPre",
   },
 }
