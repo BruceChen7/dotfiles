@@ -116,30 +116,6 @@ require("lazy").setup {
     version = "v0.*", -- REQUIRED release tag to download pre-built binaries
     -- build = "cargo build --release",
     opts = {
-      -- sources = {
-      --   providers = {
-      --     { "blink.cmp.sources.lsp", name = "LSP" },
-      --
-      --     {
-      --       "blink.cmp.sources.snippets",
-      --       name = "Snippets",
-      --       score_offset = -1,
-      --       -- keyword_length = 1, -- not supported yet
-      --     },
-      --     {
-      --       "blink.cmp.sources.path",
-      --       name = "Path",
-      --       score_offset = 3,
-      --       opts = { get_cwd = vim.uv.cwd },
-      --     },
-      --     -- {
-      --     --   "blink.cmp.sources.buffer",
-      --     --   name = "Buffer",
-      --     --   keyword_length = 4,
-      --     --   fallback_for = { "Path" }, -- PENDING https://github.com/Saghen/blink.cmp/issues/122
-      --     -- },
-      --   },
-      -- },
       trigger = {
         completion = {
           keyword_range = "prefix", -- full|prefix
@@ -148,8 +124,21 @@ require("lazy").setup {
         --   enabled = true,
         -- },
       },
-      -- keymap = "default",
+      appearance = {
+        -- Sets the fallback highlight groups to nvim-cmp's highlight groups
+        -- Useful for when your theme doesn't support blink.cmp
+        -- will be removed in a future release
+        use_nvim_cmp_as_default = true,
+        -- Set to 'mono' for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
+        -- Adjusts spacing to ensure icons are aligned
+        nerd_font_variant = "normal",
+      },
 
+      sources = {
+        completion = {
+          enabled_providers = { "lsp", "path", "snippets", "buffer" },
+        },
+      },
       keymap = {
         -- ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
         ["<C-e>"] = { "hide" },
@@ -157,57 +146,13 @@ require("lazy").setup {
         ["<enter>"] = { "select_and_accept", "fallback" },
         ["<C-k>"] = { "select_prev", "fallback" },
         ["<C-j>"] = { "select_next", "fallback" },
-
         ["<C-b>"] = { "scroll_documentation_up", "fallback" },
         ["<C-f>"] = { "scroll_documentation_down", "fallback" },
         ["<Tab>"] = { "snippet_forward", "fallback" },
         ["<S-Tab>"] = { "snippet_backward", "fallback" },
       },
-      highlight = {
-        use_nvim_cmp_as_default = true,
-      },
-      nerd_font_variant = "normal",
-      windows = {
-        -- documentation = {
-        --   min_width = 15,
-        --   max_width = 50,
-        --   max_height = 15,
-        --   border = vim.g.border,
-        --   auto_show = true,
-        --   auto_show_delay_ms = 200,
-        -- },
-        autocomplete = {
-          min_width = 20,
-          max_width = 40,
-          max_height = 15,
-        },
-      },
-      kind_icons = {
-        Text = " ",
-        Method = "󰊕",
-        Function = "󰊕",
-        Constructor = "",
-        Field = "󰇽",
-        Variable = "󰂡",
-        Class = "⬟",
-        Interface = "",
-        Module = "",
-        Property = "󰜢",
-        Unit = "",
-        Value = "󰎠",
-        Enum = "",
-        Keyword = "󰌋",
-        Snippet = "󰒕",
-        Color = "󰏘",
-        Reference = "",
-        File = "󰉋",
-        Folder = "󰉋",
-        EnumMember = "",
-        Constant = "󰏿",
-        Struct = "",
-        Event = "",
-        Operator = "󰆕",
-        TypeParameter = "󰅲",
+      signature = {
+        enabled = true,
       },
     },
   },
@@ -614,7 +559,14 @@ require("lazy").setup {
         if not utils.is_mac() then
           return "fcitx5-remote"
         else
-          return "im-select"
+          -- return "im-select"
+          --  check macism has been installed
+          local macism_exists = vim.fn.system "which macism"
+          if macism_exists == "" then
+            vim.notify "macism not installed"
+            return
+          end
+          return "macism"
         end
       end
 
@@ -623,7 +575,6 @@ require("lazy").setup {
         default_im_select = get_im_select(),
         default_command = get_default_command(),
         set_default_events = { "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" },
-
         -- Restore the previous used input method state when the following events
         -- are triggered, if you don't want to restore previous used im in Insert mode,
         -- e.g. deprecated `disable_auto_restore = 1`, just let it empty
@@ -675,6 +626,7 @@ require("lazy").setup {
       require "config/fzf"
     end,
     event = "VeryLazy",
+    -- commit = "48f8a85291e56309087960cc9918d02e6131db3b",
   },
 
   -- {

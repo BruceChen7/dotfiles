@@ -96,6 +96,7 @@ capabilities.textDocument.foldingRange = {
   dynamicRegistration = false,
   lineFoldingOnly = true,
 }
+-- capabilities.offsetEncoding = "utf-8"
 require("lsp-setup").setup {
   default_mappings = false,
   capabilities = capabilities,
