@@ -32,7 +32,7 @@
   "leaf.nvim": { "branch": "main", "commit": "6cfd0b095a74269c0243c07185e161610d63cac7" },
   "live-command.nvim": { "branch": "main", "commit": "b0723697bf60d89ede953c4a5fedce3157784c15" },
   "llm.nvim": { "branch": "main", "commit": "ffc8da5db748aaef0f14a8b1e12d0546cc560b98" },
-  "lsp-lens.nvim": { "branch": "main", "commit": "13d25ad8bd55aa34cc0aa3082e78a4157c401346" },
+  "lsp-lens.nvim": { "branch": "main", "commit": "48bb1a7e271424c15f3d588d54adc9b7c319d977" },
   "lsp-progress.nvim": { "branch": "main", "commit": "d5f4d28efe75ce636bfbe271eb45f39689765aab" },
   "lsp-setup.nvim": { "branch": "main", "commit": "6e4e977512ce426d8b52c27f3b6e6aefc73e1452" },
   "lsp_extensions.nvim": { "branch": "master", "commit": "92c08d4914d5d272fae13c499aafc9f14eb05ada" },
