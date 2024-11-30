@@ -167,6 +167,8 @@ require("fzf-lua").setup {
       ["f4"] = "toggle-preview",
       ["ctrl-l"] = "preview-page-down",
       ["ctrl-h"] = "preview-page-up",
+      -- Send all selected results to qf
+      ["ctrl-q"] = "select-all+accept",
     },
   },
   actions = {
