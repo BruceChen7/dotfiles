@@ -16,8 +16,14 @@ u.map("i", "<c-a>", "<home>")
 u.map("i", "<c-e>", "<end>")
 u.map("i", "<c-d>", "<del>")
 u.map("i", "<c-_>", "<c-k>")
+
 u.map("n", "<space>p", 'viw"0p', { desc = "Paste and Store Register 0" })
 u.map("n", "<space>y", "yiw")
+-- paste over currently selected text without yanking it
+-- 当你在可视模式下选中一段文本后，按下p键时，它将删除选中的文本，并将其粘贴到当前光标位置的下一行。
+-- 同时，它会将粘贴的文本放入黑洞寄存器（"_），这意味着它不会影响你之前的剪贴板内容。
+-- 一半操作是使用viw命令选中文本，另一半是使用p命令粘贴文本，p粘贴的文本是之前复制的文本
+u.map("v", "p", '"_dP', default_options)
 
 vim.api.nvim_set_keymap("c", "<C-a>", "<home>", { noremap = true })
 vim.api.nvim_set_keymap("c", "<c-e>", "<end>", { noremap = true })
@@ -26,12 +32,6 @@ u.map("v", "<", "<gv", default_options)
 u.map("v", ">", ">gv", default_options)
 -- not include last whitespace character
 u.map("x", "$", "g_", default_options)
-
--- paste over currently selected text without yanking it
--- 当你在可视模式下选中一段文本后，按下p键时，它将删除选中的文本，并将其粘贴到当前光标位置的下一行。
--- 同时，它会将粘贴的文本放入黑洞寄存器（"_），这意味着它不会影响你之前的剪贴板内容。
--- 一半操作是使用viw命令选中文本，另一半是使用p命令粘贴文本，p粘贴的文本是之前复制的文本
-u.map("v", "p", '"_dP', default_options)
 
 vim.keymap.set({ "n" }, "vv", "V", { noremap = true })
 vim.keymap.set({ "n" }, "vvv", "<C-V>", { noremap = true })

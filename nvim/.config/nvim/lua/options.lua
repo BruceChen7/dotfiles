@@ -83,16 +83,6 @@ o.listchars = "tab:|  ,trail:.,extends:>,precedes:<"
 -- 文件换行符，默认使用 unix 换行符
 o.ffs = "unix,dos,mac"
 
--- 允许代码折叠
-o.foldenable = true
-
--- 代码折叠默认使用缩进
--- o.fdm = "indent"
-
--- 默认打开所有缩进
-o.foldlevel = 99
-
---文件搜索和补全时忽略下面扩展名
 o.suffixes = ".bak,~,.o,.h,.info,.swp,.obj,.pyc,.pyo,.egg-info,.class"
 
 vim.api.nvim_create_augroup("wrap_group", {})

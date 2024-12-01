@@ -1,3 +1,8 @@
+# exit for non-interactive shell
+# Because `.zshrc` is typically only executed in interactive shells,
+# non-interactive shells (such as script execution) do not need to load these configurations.
+[[ $- != *i* ]] && return
+
 # https://github.com/dreamsofautonomy/zensh
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
@@ -10,6 +15,8 @@ if [[ -f "/opt/homebrew/bin/brew" ]] then
   # If you're using macOS, you'll want this enabled
   eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
+
+
 
 # Set the directory we want to store zinit and plugins
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
