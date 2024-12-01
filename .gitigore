@@ -4,3 +4,4 @@ cache
 *.DS_Store
 .vim/cache/
 .DS_Store
+.tasks
