@@ -209,3 +209,46 @@ vim.api.nvim_create_autocmd({ "BufDelete", "BufWinEnter" }, {
 })
 
 require("mini.notify").setup()
+
+-- https://www.youtube.com/watch?v=cNK5kYJ7mrs&t=742s
+require("mini.operators").setup {
+  -- Evaluate text and replace with output
+  evaluate = {
+    prefix = "g=",
+
+    -- Function which does the evaluation
+    func = nil,
+  },
+
+  -- Exchange text regions
+  exchange = {
+    prefix = "ge",
+
+    -- Whether to reindent new text to match previous indent
+    reindent_linewise = true,
+  },
+
+  -- Multiply (duplicate) text
+  multiply = {
+    prefix = "gm",
+
+    -- Function which can modify text before multiplying
+    func = nil,
+  },
+
+  -- Replace text with register
+  replace = {
+    prefix = "gp",
+
+    -- Whether to reindent new text to match previous indent
+    reindent_linewise = true,
+  },
+
+  -- Sort text
+  sort = {
+    prefix = "\\gs",
+
+    -- Function whichwhichwhichwhichwhichwhichwhichwhich does the sort
+    func = nil,
+  },
+}

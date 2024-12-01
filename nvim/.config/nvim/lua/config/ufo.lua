@@ -60,9 +60,12 @@ vim.o.foldlevelstart = -1
 -- 允许代码折叠
 vim.o.foldenable = true
 
-vim.keymap.set("n", "zR", require("ufo").openAllFolds, { desc = "Open All Folds" })
+vim.keymap.set("n", "zR", function()
+  vim.o.foldlevel = 4
+  require("ufo").openAllFolds()
+end, { desc = "Open All Folds" })
 vim.keymap.set("n", "zM", function()
-  vim.o.foldlevel = 3
+  vim.o.foldlevel = 4
   require("ufo").closeAllFolds()
 end, { desc = "Close All Folds" })
 vim.keymap.set("n", "K", function()
