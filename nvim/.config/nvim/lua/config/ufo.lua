@@ -54,7 +54,7 @@ vim.o.foldcolumn = "1"
 vim.o.fillchars = [[eob: ,fold: ,foldopen:,foldsep: ,foldclose:]]
 -- This sets the fold level to a high value (99),
 -- which effectively means all folds are open by default.
-vim.o.foldlevel = 3 -- Using ufo provider need a large value, feel free to decrease the value
+vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
 -- This starts with all folds closed when opening a file.
 vim.o.foldlevelstart = -1
 -- 允许代码折叠

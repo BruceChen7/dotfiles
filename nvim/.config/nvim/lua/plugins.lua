@@ -995,6 +995,7 @@ require("lazy").setup {
   -- colorscheme
   { "yorumicolors/yorumi.nvim" },
 
+  -- https://www.reddit.com/r/neovim/comments/1h0ln84/made_a_plugin_to_remind_you_what_youre_currently/
   {
     "Hashino/doing.nvim",
     config = function()
@@ -1004,18 +1005,20 @@ require("lazy").setup {
 
         -- doesn"t display on buffers that match filetype/filename to entries
         -- can be either an array or a function that returns an array
+        ignored_buffers = { "NvimTree" },
+
         -- if plugin should manage the winbar
-        -- winbar = { enabled = true },
+        winbar = { enabled = true },
         store = {
           -- name of tasks file
           file_name = ".tasks",
           -- automatically create a task file when openning directories
+          -- Automatically create only when adding tasks
           auto_create_file = false,
         },
       }
       local api = require "doing.api"
       vim.keymap.set("n", "<leader>de", api.edit, { desc = "[E]dit what tasks you`re [D]oing" })
-      vim.keymap.set("n", "<leader>dn", api.done, { desc = "[D]o[n]e with current task" })
       vim.keymap.set("n", "<leader>dt", api.toggle, { desc = "[T]oggle current task" })
     end,
     event = "VeryLazy",
