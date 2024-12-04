@@ -404,14 +404,14 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
-  {
-    "akinsho/git-conflict.nvim",
-    version = "*",
-    config = function()
-      require("git-conflict").setup {}
-    end,
-    event = "VeryLazy",
-  },
+  -- {
+  --   "akinsho/git-conflict.nvim",
+  --   version = "*",
+  --   config = function()
+  --     require("git-conflict").setup {}
+  --   end,
+  --   event = "VeryLazy",
+  -- },
 
   {
     "VidocqH/lsp-lens.nvim",
@@ -944,19 +944,19 @@ require("lazy").setup {
   -- },
 
   -- https://www.reddit.com/r/neovim/comments/1ca3rm8/shoutout_to_andrewferrierdebugprintnvim_add/
-  {
-    "andrewferrier/debugprint.nvim",
-    opts = {},
-    dependencies = {
-      "echasnovski/mini.nvim", -- Needed to enable :ToggleCommentDebugPrints for NeoVim <= 0.9
-      "nvim-treesitter/nvim-treesitter", -- Needed to enable treesitter for NeoVim 0.8
-    },
-    -- Remove the following line to use development versions,
-    -- not just the formal releases
-    version = "*",
-    event = "VeryLazy",
-  },
-
+  -- {
+  --   "andrewferrier/debugprint.nvim",
+  --   opts = {},
+  --   dependencies = {
+  --     "echasnovski/mini.nvim", -- Needed to enable :ToggleCommentDebugPrints for NeoVim <= 0.9
+  --     "nvim-treesitter/nvim-treesitter", -- Needed to enable treesitter for NeoVim 0.8
+  --   },
+  --   -- Remove the following line to use development versions,
+  --   -- not just the formal releases
+  --   version = "*",
+  --   event = "VeryLazy",
+  -- },
+  --
   {
     "stevearc/oil.nvim",
     config = function()
@@ -996,33 +996,33 @@ require("lazy").setup {
   { "yorumicolors/yorumi.nvim" },
 
   -- https://www.reddit.com/r/neovim/comments/1h0ln84/made_a_plugin_to_remind_you_what_youre_currently/
-  {
-    "Hashino/doing.nvim",
-    config = function()
-      require("doing").setup {
-        message_timeout = 2000,
-        doing_prefix = "Doing: ",
-
-        -- doesn"t display on buffers that match filetype/filename to entries
-        -- can be either an array or a function that returns an array
-        ignored_buffers = { "NvimTree" },
-
-        -- if plugin should manage the winbar
-        winbar = { enabled = true },
-        store = {
-          -- name of tasks file
-          file_name = ".tasks",
-          -- automatically create a task file when openning directories
-          -- Automatically create only when adding tasks
-          auto_create_file = false,
-        },
-      }
-      local api = require "doing.api"
-      vim.keymap.set("n", "<leader>de", api.edit, { desc = "[E]dit what tasks you`re [D]oing" })
-      vim.keymap.set("n", "<leader>dt", api.toggle, { desc = "[T]oggle current task" })
-    end,
-    event = "VeryLazy",
-  },
+  -- {
+  --   "Hashino/doing.nvim",
+  --   config = function()
+  --     require("doing").setup {
+  --       message_timeout = 2000,
+  --       doing_prefix = "Doing: ",
+  --
+  --       -- doesn"t display on buffers that match filetype/filename to entries
+  --       -- can be either an array or a function that returns an array
+  --       ignored_buffers = { "NvimTree" },
+  --
+  --       -- if plugin should manage the winbar
+  --       winbar = { enabled = true },
+  --       store = {
+  --         -- name of tasks file
+  --         file_name = ".tasks",
+  --         -- automatically create a task file when openning directories
+  --         -- Automatically create only when adding tasks
+  --         auto_create_file = false,
+  --       },
+  --     }
+  --     local api = require "doing.api"
+  --     vim.keymap.set("n", "<leader>de", api.edit, { desc = "[E]dit what tasks you`re [D]oing" })
+  --     vim.keymap.set("n", "<leader>dt", api.toggle, { desc = "[T]oggle current task" })
+  --   end,
+  --   event = "VeryLazy",
+  -- },
   {
     "otavioschwanck/arrow.nvim",
     opts = {

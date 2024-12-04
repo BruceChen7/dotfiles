@@ -61,11 +61,11 @@ vim.o.foldlevelstart = -1
 vim.o.foldenable = true
 
 vim.keymap.set("n", "zR", function()
-  vim.o.foldlevel = 4
+  vim.o.foldlevel = 10
   require("ufo").openAllFolds()
 end, { desc = "Open All Folds" })
 vim.keymap.set("n", "zM", function()
-  vim.o.foldlevel = 4
+  vim.o.foldlevel = 10
   require("ufo").closeAllFolds()
 end, { desc = "Close All Folds" })
 vim.keymap.set("n", "K", function()

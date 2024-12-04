@@ -24,7 +24,7 @@ local miniclue = require "mini.clue"
 miniclue.setup {
   triggers = {
     -- Leader triggers
-    { mode = "n", keys = "<Leader>" },
+    { mode = "n", keys = "<leader>" },
     { mode = "n", keys = "\\" },
     { mode = "v", keys = "\\" },
     { mode = "v", keys = "<leader>" },
