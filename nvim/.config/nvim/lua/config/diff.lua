@@ -453,3 +453,6 @@ require("diffview").setup {
     },
   },
 }
+
+-- visual line mode set key
+vim.keymap.set("v", "<space>dv", "<cmd>DiffviewFileHistory<CR>", { desc = "view file git history" })
