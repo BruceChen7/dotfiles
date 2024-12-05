@@ -120,9 +120,13 @@ require("lazy").setup {
         completion = {
           keyword_range = "prefix", -- full|prefix
         },
-        -- signature_help = {
-        --   enabled = true,
-        -- },
+        signature_help = {
+          enabled = true,
+          blocked_trigger_characters = {},
+          blocked_retrigger_characters = {},
+          -- when true, will show the signature help window when the cursor comes after a trigger character when entering insert mode
+          show_on_insert_on_trigger_character = true,
+        },
       },
       appearance = {
         -- Sets the fallback highlight groups to nvim-cmp's highlight groups
@@ -133,12 +137,15 @@ require("lazy").setup {
         -- Adjusts spacing to ensure icons are aligned
         nerd_font_variant = "normal",
       },
-
+      -- keymap = "default",
       sources = {
         completion = {
           enabled_providers = { "lsp", "path", "snippets", "buffer" },
         },
       },
+
+      opts_extend = { "sources.completion.enabled_providers" },
+
       keymap = {
         -- ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
         ["<C-e>"] = { "hide" },
@@ -153,6 +160,39 @@ require("lazy").setup {
       },
       signature = {
         enabled = true,
+      },
+
+      nerd_font_variant = "normal",
+      windows = {
+        autocomplete = {
+          min_width = 20,
+          max_width = 40,
+          max_height = 15,
+        },
+        documentation = {
+          min_width = 10,
+          max_width = 100,
+          max_height = 50,
+          border = "padded",
+          winblend = 0,
+          winhighlight = "Normal:BlinkCmpDoc,FloatBorder:BlinkCmpDocBorder,CursorLine:BlinkCmpDocCursorLine,Search:None",
+          -- note that the gutter will be disabled when border ~= 'none'
+          scrollbar = true,
+          -- which directions to show the documentation window,
+          -- for each of the possible autocomplete window directions,
+          -- falling back to the next direction when there's not enough space
+          direction_priority = {
+            autocomplete_north = { "e", "w", "n", "s" },
+            autocomplete_south = { "e", "w", "s", "n" },
+          },
+          -- Controls whether the documentation window will automatically show when selecting a completion item
+          auto_show = true,
+          auto_show_delay_ms = 500,
+          update_delay_ms = 50,
+          -- whether to use treesitter highlighting, disable if you run into performance issues
+          -- WARN: temporary, eventually blink will support regex highlighting
+          treesitter_highlighting = true,
+        },
       },
     },
   },
@@ -301,14 +341,14 @@ require("lazy").setup {
     },
   },
   -- show signature
-  {
-    "ray-x/lsp_signature.nvim",
-    event = "LspAttach",
-    opts = {},
-    config = function(_, opts)
-      require("lsp_signature").setup(opts)
-    end,
-  },
+  -- {
+  --   "ray-x/lsp_signature.nvim",
+  --   event = "LspAttach",
+  --   opts = {},
+  --   config = function(_, opts)
+  --     require("lsp_signature").setup(opts)
+  --   end,
+  -- },
 
   {
     "TimUntersberger/neogit",

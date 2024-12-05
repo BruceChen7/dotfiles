@@ -224,7 +224,11 @@ local get_go_build_cmd = function()
       return "go build cmd/main.go"
     end
 
-    start, _ = string.find(buf_path, "coreapi")
+    local start, _ = string.find(buf_path, "coreapi")
+    if start ~= nil then
+      return "go build app/chat-api/main.go"
+    end
+    start, _ = string.find(buf_path, "workbenchapi")
     if start ~= nil then
       return "go build app/chat-api/main.go"
     end

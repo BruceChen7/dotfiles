@@ -105,7 +105,7 @@ require("lsp-setup").setup {
     enabled = false,
   },
   on_attach = function(client, bufnr)
-    require("lsp_signature").on_attach({}, bufnr)
+    -- require("lsp_signature").on_attach({}, bufnr)
   end,
   servers = {
     lua_ls = {
