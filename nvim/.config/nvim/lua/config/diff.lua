@@ -179,11 +179,11 @@ require("diffview").setup {
     },
     diff1 = {
       -- Mappings in single window diff layouts
-      { "n", "g?", actions.help { "view", "diff1" }, { desc = "Open the help panel" } },
+      { "n", "??", actions.help { "view", "diff1" }, { desc = "Open the help panel" } },
     },
     diff2 = {
       -- Mappings in 2-way diff layouts
-      { "n", "g?", actions.help { "view", "diff2" }, { desc = "Open the help panel" } },
+      { "n", "??", actions.help { "view", "diff2" }, { desc = "Open the help panel" } },
     },
     diff3 = {
       -- Mappings in 3-way diff layouts
@@ -199,7 +199,7 @@ require("diffview").setup {
         actions.diffget "theirs",
         { desc = "Obtain the diff hunk from the THEIRS version of the file" },
       },
-      { "n", "g?", actions.help { "view", "diff3" }, { desc = "Open the help panel" } },
+      { "n", "??", actions.help { "view", "diff3" }, { desc = "Open the help panel" } },
     },
     diff4 = {
       -- Mappings in 4-way diff layouts
@@ -221,7 +221,7 @@ require("diffview").setup {
         actions.diffget "theirs",
         { desc = "Obtain the diff hunk from the THEIRS version of the file" },
       },
-      { "n", "g?", actions.help { "view", "diff4" }, { desc = "Open the help panel" } },
+      { "n", "??", actions.help { "view", "diff4" }, { desc = "Open the help panel" } },
     },
     file_panel = {
       {
@@ -341,7 +341,7 @@ require("diffview").setup {
       { "n", "g<C-x>", actions.cycle_layout, { desc = "Cycle available layouts" } },
       { "n", "[x", actions.prev_conflict, { desc = "Go to the previous conflict" } },
       { "n", "]x", actions.next_conflict, { desc = "Go to the next conflict" } },
-      { "n", "g?", actions.help "file_panel", { desc = "Open the help panel" } },
+      { "n", "??", actions.help "file_panel", { desc = "Open the help panel" } },
       {
         "n",
         "<leader>cO",
@@ -440,12 +440,12 @@ require("diffview").setup {
       { "n", "<leader>e", actions.focus_files, { desc = "Bring focus to the file panel" } },
       { "n", "<leader>b", actions.toggle_files, { desc = "Toggle the file panel" } },
       { "n", "g<C-x>", actions.cycle_layout, { desc = "Cycle available layouts" } },
-      { "n", "g?", actions.help "file_history_panel", { desc = "Open the help panel" } },
+      { "n", "??", actions.help "file_history_panel", { desc = "Open the help panel" } },
     },
     option_panel = {
       { "n", "<tab>", actions.select_entry, { desc = "Change the current option" } },
       { "n", "q", actions.close, { desc = "Close the panel" } },
-      { "n", "g?", actions.help "option_panel", { desc = "Open the help panel" } },
+      { "n", "??", actions.help "option_panel", { desc = "Open the help panel" } },
     },
     help_panel = {
       { "n", "q", actions.close, { desc = "Close help menu" } },

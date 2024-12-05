@@ -149,7 +149,7 @@ require("lazy").setup {
       keymap = {
         -- ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
         ["<C-e>"] = { "hide" },
-        -- ["<c-y>"] = { "select_and_accept", "fallback" },
+        ["<C-y>"] = { "fallback" },
         ["<enter>"] = { "select_and_accept", "fallback" },
         ["<C-k>"] = { "select_prev", "fallback" },
         ["<C-j>"] = { "select_next", "fallback" },
@@ -392,7 +392,6 @@ require("lazy").setup {
 
   {
     "sindrets/diffview.nvim",
-    dependencies = { "nvim-lua/plenary.nvim", opt = true },
     config = function()
       require "config/diff"
     end,
