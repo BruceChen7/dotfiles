@@ -455,4 +455,5 @@ require("diffview").setup {
 }
 
 -- visual line mode set key
-vim.keymap.set("v", "<space>dv", "<cmd>DiffviewFileHistory<CR>", { desc = "view file git history" })
+-- 正确的写法则是将整个字符串作为一个 Vim 命令来执行
+vim.keymap.set("v", "<leader>dv", ":'<,'>DiffviewFileHistory<CR>", { noremap = true, silent = true })
