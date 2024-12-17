@@ -275,7 +275,6 @@ require("lsp-setup").setup {
           },
           analyses = {
             -- find structs that would use less memory if their fields were sorted
-            fieldalignment = true,
             unusedparams = true,
             shadow = true,
             unusedwrite = true, -- checks for unused writes, an instances of writes to struct fields and arrays that are never read
