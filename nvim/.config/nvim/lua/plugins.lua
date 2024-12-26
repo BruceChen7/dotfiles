@@ -116,18 +116,6 @@ require("lazy").setup {
     version = "v0.*", -- REQUIRED release tag to download pre-built binaries
     -- build = "cargo build --release",
     opts = {
-      trigger = {
-        completion = {
-          keyword_range = "prefix", -- full|prefix
-        },
-        signature_help = {
-          enabled = true,
-          blocked_trigger_characters = {},
-          blocked_retrigger_characters = {},
-          -- when true, will show the signature help window when the cursor comes after a trigger character when entering insert mode
-          show_on_insert_on_trigger_character = true,
-        },
-      },
       appearance = {
         -- Sets the fallback highlight groups to nvim-cmp's highlight groups
         -- Useful for when your theme doesn't support blink.cmp
@@ -137,14 +125,16 @@ require("lazy").setup {
         -- Adjusts spacing to ensure icons are aligned
         nerd_font_variant = "normal",
       },
-      -- keymap = "default",
-      sources = {
-        completion = {
-          enabled_providers = { "lsp", "path", "snippets", "buffer" },
-        },
+      completion = {
+        keyword = { range = "full" },
+        accept = { auto_brackets = { enabled = true } },
       },
-
-      opts_extend = { "sources.completion.enabled_providers" },
+      sources = {
+        -- Remove 'buffer' if you don't want text completions, by default it's only enabled when LSP returns no items
+        default = { "lsp", "path", "snippets", "buffer" },
+        -- Disable cmdline completions
+        cmdline = {},
+      },
 
       keymap = {
         -- ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
@@ -160,39 +150,6 @@ require("lazy").setup {
       },
       signature = {
         enabled = true,
-      },
-
-      nerd_font_variant = "normal",
-      windows = {
-        autocomplete = {
-          min_width = 20,
-          max_width = 40,
-          max_height = 15,
-        },
-        documentation = {
-          min_width = 10,
-          max_width = 100,
-          max_height = 50,
-          border = "padded",
-          winblend = 0,
-          winhighlight = "Normal:BlinkCmpDoc,FloatBorder:BlinkCmpDocBorder,CursorLine:BlinkCmpDocCursorLine,Search:None",
-          -- note that the gutter will be disabled when border ~= 'none'
-          scrollbar = true,
-          -- which directions to show the documentation window,
-          -- for each of the possible autocomplete window directions,
-          -- falling back to the next direction when there's not enough space
-          direction_priority = {
-            autocomplete_north = { "e", "w", "n", "s" },
-            autocomplete_south = { "e", "w", "s", "n" },
-          },
-          -- Controls whether the documentation window will automatically show when selecting a completion item
-          auto_show = true,
-          auto_show_delay_ms = 500,
-          update_delay_ms = 50,
-          -- whether to use treesitter highlighting, disable if you run into performance issues
-          -- WARN: temporary, eventually blink will support regex highlighting
-          treesitter_highlighting = true,
-        },
       },
     },
   },
@@ -1078,6 +1035,17 @@ require("lazy").setup {
           "vimopts",
           "filetype",
         },
+      }
+    end,
+  },
+
+  {
+    "Goose97/timber.nvim",
+    version = "*", -- Use for stability; omit to use `main` branch for the latest features
+    event = "VeryLazy",
+    config = function()
+      require("timber").setup {
+        -- Configuration here, or leave empty to use defaults
       }
     end,
   },

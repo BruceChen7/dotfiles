@@ -109,104 +109,104 @@ vim.keymap.set("n", "<m-b>", "<cmd>lua MiniVisits.select_path()<cr>")
 
 require("mini.extra").setup {}
 
-local buf_num_2_id = {}
-local get_buffer_num = function(buf_id)
-  if buf_num_2_id[buf_id] == nil then
-    local max = buf_num_2_id["max"] or 0
-    buf_num_2_id[buf_id] = max + 1
-    buf_num_2_id["max"] = max + 1
-  end
-  return buf_num_2_id[buf_id]
-end
-
-local tweak_buffer_num_2_id = function()
-  local max = 0
-  local visible_buffers = require("utils").find_all_visible_buffers()
-  for _, buf_id in ipairs(visible_buffers) do
-    max = math.max(max, buf_num_2_id[buf_id] or 0)
-  end
-  buf_num_2_id["max"] = max
-end
-
-local set_buffer_num = function(buf_id, buf_num)
-  if buf_num_2_id[buf_id] == nil then
-    buf_num_2_id[buf_id] = buf_num
-    if buf_num_2_id["max"] == nil then
-      buf_num_2_id["max"] = 1
-    else
-      buf_num_2_id["max"] = buf_num_2_id["max"] + 1
-    end
-  end
-end
-
-require("mini.tabline").setup {
-  show_icons = true,
-  -- 需要设置buffer variable，这样才不会改变
-  format = function(buf_id, label)
-    local suffix = vim.bo[buf_id].modified and "+ " or ""
-    -- 如果是quickfix， 则不显示buf_num
-    if vim.bo[buf_id].buftype == "quickfix" then
-      return ""
-    end
-    local num = get_buffer_num(buf_id)
-    local buf_num = num
-    set_buffer_num(buf_id, buf_num)
-    tweak_buffer_num_2_id()
-    -- set `buf_id` to string
-    return tostring(buf_num) .. "." .. MiniTabline.default_format(buf_id, label) .. suffix
-  end,
-}
-
--- use \\1 .. \\9 to get buffer
-for i = 1, 9 do
-  vim.keymap.set("n", string.format("\\%d", i), function()
-    -- 遍历 buf_num_2_id， 如果value == i， 则返回key
-    local buffer_ids = {}
-    for k, v in pairs(buf_num_2_id) do
-      if v == i and type(k) == "number" then
-        table.insert(buffer_ids, k)
-      end
-    end
-    local buffer_id = buffer_ids[1] or -1
-    local utils = require "utils"
-    local visible_buff = utils.find_all_visible_buffers()
-    if buffer_id == -1 then
-      return
-    end
-    local in_visual_buffer = false
-    for _, v in pairs(visible_buff) do
-      if v == buffer_id then
-        in_visual_buffer = true
-        break
-      end
-    end
-    if not in_visual_buffer then
-      return
-    end
-    vim.cmd(string.format("b %d", buffer_id))
-  end, { desc = string.format("go to buffer %d", i) })
-end
-
--- Reset Number
-local reset_buffer_numbers = function()
-  buf_num_2_id = {}
-  buf_num_2_id["max"] = 0
-end
-
-local rebuild_buffer_numbers = function()
-  reset_buffer_numbers()
-  local visible_buffers = require("utils").find_all_visible_buffers()
-  for i, buf_id in ipairs(visible_buffers) do
-    set_buffer_num(buf_id, i)
-  end
-end
-
--- Use autocmd event to trigger numbering rebuild
-vim.api.nvim_create_autocmd({ "BufDelete", "BufWinEnter" }, {
-  callback = function()
-    rebuild_buffer_numbers()
-  end,
-})
+-- local buf_num_2_id = {}
+-- local get_buffer_num = function(buf_id)
+--   if buf_num_2_id[buf_id] == nil then
+--     local max = buf_num_2_id["max"] or 0
+--     buf_num_2_id[buf_id] = max + 1
+--     buf_num_2_id["max"] = max + 1
+--   end
+--   return buf_num_2_id[buf_id]
+-- end
+--
+-- local tweak_buffer_num_2_id = function()
+--   local max = 0
+--   local visible_buffers = require("utils").find_all_visible_buffers()
+--   for _, buf_id in ipairs(visible_buffers) do
+--     max = math.max(max, buf_num_2_id[buf_id] or 0)
+--   end
+--   buf_num_2_id["max"] = max
+-- end
+--
+-- local set_buffer_num = function(buf_id, buf_num)
+--   if buf_num_2_id[buf_id] == nil then
+--     buf_num_2_id[buf_id] = buf_num
+--     if buf_num_2_id["max"] == nil then
+--       buf_num_2_id["max"] = 1
+--     else
+--       buf_num_2_id["max"] = buf_num_2_id["max"] + 1
+--     end
+--   end
+-- end
+--
+-- require("mini.tabline").setup {
+--   show_icons = true,
+--   -- 需要设置buffer variable，这样才不会改变
+--   format = function(buf_id, label)
+--     local suffix = vim.bo[buf_id].modified and "+ " or ""
+--     -- 如果是quickfix， 则不显示buf_num
+--     if vim.bo[buf_id].buftype == "quickfix" then
+--       return ""
+--     end
+--     local num = get_buffer_num(buf_id)
+--     local buf_num = num
+--     set_buffer_num(buf_id, buf_num)
+--     tweak_buffer_num_2_id()
+--     -- set `buf_id` to string
+--     return tostring(buf_num) .. "." .. MiniTabline.default_format(buf_id, label) .. suffix
+--   end,
+-- }
+--
+-- -- use \\1 .. \\9 to get buffer
+-- for i = 1, 9 do
+--   vim.keymap.set("n", string.format("\\%d", i), function()
+--     -- 遍历 buf_num_2_id， 如果value == i， 则返回key
+--     local buffer_ids = {}
+--     for k, v in pairs(buf_num_2_id) do
+--       if v == i and type(k) == "number" then
+--         table.insert(buffer_ids, k)
+--       end
+--     end
+--     local buffer_id = buffer_ids[1] or -1
+--     local utils = require "utils"
+--     local visible_buff = utils.find_all_visible_buffers()
+--     if buffer_id == -1 then
+--       return
+--     end
+--     local in_visual_buffer = false
+--     for _, v in pairs(visible_buff) do
+--       if v == buffer_id then
+--         in_visual_buffer = true
+--         break
+--       end
+--     end
+--     if not in_visual_buffer then
+--       return
+--     end
+--     vim.cmd(string.format("b %d", buffer_id))
+--   end, { desc = string.format("go to buffer %d", i) })
+-- end
+--
+-- -- Reset Number
+-- local reset_buffer_numbers = function()
+--   buf_num_2_id = {}
+--   buf_num_2_id["max"] = 0
+-- end
+--
+-- local rebuild_buffer_numbers = function()
+--   reset_buffer_numbers()
+--   local visible_buffers = require("utils").find_all_visible_buffers()
+--   for i, buf_id in ipairs(visible_buffers) do
+--     set_buffer_num(buf_id, i)
+--   end
+-- end
+--
+-- -- Use autocmd event to trigger numbering rebuild
+-- vim.api.nvim_create_autocmd({ "BufDelete", "BufWinEnter" }, {
+--   callback = function()
+--     rebuild_buffer_numbers()
+--   end,
+-- })
 
 require("mini.notify").setup()
 
