@@ -1059,4 +1059,17 @@ require("lazy").setup {
     },
     event = "BufReadPre",
   },
+  {
+    "aaronik/treewalker.nvim",
+    opts = {
+      highlight = true, -- Whether to briefly highlight the node after jumping to it
+      highlight_duration = 250, -- How long should above highlight last (in ms)
+    },
+    config = function()
+      vim.keymap.set("n", "<m-j>", ":Treewalker Down<CR>", { noremap = true })
+      vim.keymap.set("n", "<m-k>", ":Treewalker Up<CR>", { noremap = true })
+      vim.keymap.set("n", "<m-h>", ":Treewalker Left<CR>", { noremap = true })
+      vim.keymap.set("n", "<m-l>", ":Treewalker Right<CR>", { noremap = true })
+    end,
+  },
 }
