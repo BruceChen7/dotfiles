@@ -791,23 +791,23 @@ require("lazy").setup {
     end,
   },
 
-  {
-    "magicalne/nvim.ai",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-treesitter/nvim-treesitter",
-    },
-    opts = {
-      provider = "deepseek", -- You can configure your provider, model or keymaps here.
-      keymaps = {
-        toggle = "\\na",
-        inline_assist = "\\ni",
-        accept_code = "\\ia",
-        reject_code = "\\ir",
-      },
-    },
-    event = "VeryLazy",
-  },
+  -- {
+  --   "magicalne/nvim.ai",
+  --   dependencies = {
+  --     "nvim-lua/plenary.nvim",
+  --     "nvim-treesitter/nvim-treesitter",
+  --   },
+  --   opts = {
+  --     provider = "deepseek", -- You can configure your provider, model or keymaps here.
+  --     keymaps = {
+  --       toggle = "\\na",
+  --       inline_assist = "\\ni",
+  --       accept_code = "\\ia",
+  --       reject_code = "\\ir",
+  --     },
+  --   },
+  --   event = "VeryLazy",
+  -- },
 
   -- "Preview command results with `:Norm`"
   {

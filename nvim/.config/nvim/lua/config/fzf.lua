@@ -1,3 +1,31 @@
+-- https://github.com/megalithic/dotfiles/blob/main/config/nvim/lua/plugins/extended/fzf.lua#L38
+local function ivy(opts, ...)
+  opts = opts or {}
+  opts["winopts"] = opts.winopts or {}
+
+  return vim.tbl_deep_extend("force", {
+    prompt = prompt,
+    fzf_opts = { ["--layout"] = "reverse" },
+    winopts = {
+      title_pos = opts["winopts"].title and "center" or nil,
+      height = 0.35,
+      width = 1.00,
+      row = 1,
+      col = 1,
+      border = { " ", " ", " ", " ", " ", " ", " ", " " },
+      preview = {
+        layout = "flex",
+        hidden = "nohidden",
+        flip_columns = 130,
+        scrollbar = "float",
+        scrolloff = "-1",
+        scrollchars = { "█", "░" },
+      },
+    },
+  }, opts, ...)
+end
+local fzf_lua = require "fzf-lua"
+
 vim.keymap.set("n", "<space>tg", function()
   local utils = require "utils"
   utils.change_to_current_buffer_root_dir()
@@ -12,7 +40,9 @@ vim.keymap.set(
   { noremap = true, silent = true, desc = "Find References" }
 )
 vim.keymap.set("n", "<m-m>", "<cmd>FzfLua buffers<CR>", { noremap = true, silent = true, desc = "find buffers" })
-vim.keymap.set("n", "<m-o>", "<cmd>FzfLua oldfiles<CR>", { noremap = true, silent = true, desc = "find oldfiles" })
+vim.keymap.set("n", "<m-o>", function()
+  fzf_lua.oldfiles(ivy())
+end, { noremap = true, silent = true, desc = "find oldfiles" })
 vim.keymap.set("n", "g1", "<cmd>FzfLua grep_cword<CR>", { noremap = true, silent = true, desc = "find current word" })
 vim.keymap.set("n", "<c-p>", function()
   local utils = require "utils"
@@ -20,8 +50,9 @@ vim.keymap.set("n", "<c-p>", function()
   if not root then
     root = vim.fn.getcwd()
   end
-  require("fzf-lua").files { cwd = root }
+  fzf_lua.files(ivy { cwd = root })
 end, { desc = "FzfLua find_files" })
+
 vim.keymap.set(
   "n",
   "gi",
@@ -43,7 +74,7 @@ vim.keymap.set(
 )
 
 local actions = require "fzf-lua.actions"
-require("fzf-lua").setup {
+fzf_lua.setup {
   -- fzf_bin         = 'sk',            -- use skim instead of fzf?
   -- https://github.com/lotabout/skim
   defaults = { file_icons = "mini" },
