@@ -1069,17 +1069,17 @@ require("lazy").setup {
     event = "BufReadPre",
   },
 
-  {
-    "3rd/image.nvim",
-    opts = {},
-  },
-  {
-    "vhyrro/luarocks.nvim",
-    priority = 1001, -- this plugin needs to run before anything else
-    opts = {
-      rocks = { "magick" },
-    },
-  },
+  -- {
+  --   "3rd/image.nvim",
+  --   opts = {},
+  -- },
+  -- {
+  --   "vhyrro/luarocks.nvim",
+  --   priority = 1001, -- this plugin needs to run before anything else
+  --   opts = {
+  --     rocks = { "magick" },
+  --   },
+  -- },
   {
     "aaronik/treewalker.nvim",
     opts = {
