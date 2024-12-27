@@ -490,30 +490,30 @@ require("lazy").setup {
     },
   },
 
-  {
-    "tzachar/highlight-undo.nvim",
-    config = function()
-      require("highlight-undo").setup {
-        duration = 300,
-        undo = {
-          hlgroup = "HighlightUndo",
-          mode = "n",
-          lhs = "u",
-          map = "undo",
-          opts = {},
-        },
-        redo = {
-          hlgroup = "HighlightUndo",
-          mode = "n",
-          lhs = "<C-r>",
-          map = "redo",
-          opts = {},
-        },
-        highlight_for_count = true,
-      }
-    end,
-    event = "VeryLazy",
-  },
+  -- {
+  --   "tzachar/highlight-undo.nvim",
+  --   config = function()
+  --     require("highlight-undo").setup {
+  --       duration = 300,
+  --       undo = {
+  --         hlgroup = "HighlightUndo",
+  --         mode = "n",
+  --         lhs = "u",
+  --         map = "undo",
+  --         opts = {},
+  --       },
+  --       redo = {
+  --         hlgroup = "HighlightUndo",
+  --         mode = "n",
+  --         lhs = "<C-r>",
+  --         map = "redo",
+  --         opts = {},
+  --       },
+  --       highlight_for_count = true,
+  --     }
+  --   end,
+  --   event = "VeryLazy",
+  -- },
 
   -- skip to inner bracket
   {
@@ -1050,6 +1050,15 @@ require("lazy").setup {
     end,
   },
   {
+    "MeanderingProgrammer/render-markdown.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter", "echasnovski/mini.nvim" }, -- if you use the mini.nvim suite
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+    ---@module 'render-markdown'
+    ---@type render.md.UserConfig
+    opts = {},
+  },
+  {
     "otavioschwanck/arrow.nvim",
     opts = {
       show_icons = true,
@@ -1058,6 +1067,18 @@ require("lazy").setup {
       seperate_by_branch = true,
     },
     event = "BufReadPre",
+  },
+
+  {
+    "3rd/image.nvim",
+    opts = {},
+  },
+  {
+    "vhyrro/luarocks.nvim",
+    priority = 1001, -- this plugin needs to run before anything else
+    opts = {
+      rocks = { "magick" },
+    },
   },
   {
     "aaronik/treewalker.nvim",
