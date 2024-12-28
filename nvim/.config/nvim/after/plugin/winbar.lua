@@ -1,6 +1,3 @@
-vim.opt.tabline = ""
-vim.opt.showtabline = 0
-
 local function get_winbar_path()
   local full_path = vim.fn.expand "%:p"
   return full_path:gsub(vim.fn.expand "$HOME", "~")
@@ -34,4 +31,12 @@ end
 -- Autocmd to update the winbar on BufEnter and WinEnter events
 vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
   callback = update_winbar,
+})
+
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    vim.opt.tabline = ""
+    vim.opt.showtabline = 0
+  end,
+  once = true,
 })
