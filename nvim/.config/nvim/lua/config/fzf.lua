@@ -33,12 +33,6 @@ vim.keymap.set("n", "<space>tg", function()
 end, { desc = "FzfLua live_grep" })
 
 vim.keymap.set("n", "<space>tr", "<cmd>FzfLua grep_last<CR>", { desc = "FzfLua resume" })
-vim.keymap.set(
-  "n",
-  "grr",
-  "<cmd>FzfLua lsp_references resume <CR>",
-  { noremap = true, silent = true, desc = "Find References" }
-)
 vim.keymap.set("n", "<m-m>", "<cmd>FzfLua buffers<CR>", { noremap = true, silent = true, desc = "find buffers" })
 vim.keymap.set("n", "<m-o>", function()
   fzf_lua.oldfiles(ivy())
@@ -53,12 +47,6 @@ vim.keymap.set("n", "<c-p>", function()
   fzf_lua.files(ivy { cwd = root })
 end, { desc = "FzfLua find_files" })
 
-vim.keymap.set(
-  "n",
-  "gi",
-  "<cmd>FzfLua lsp_implementations<CR>",
-  { noremap = true, silent = true, desc = "Find Implementation" }
-)
 vim.keymap.set(
   "n",
   "<space>gs",

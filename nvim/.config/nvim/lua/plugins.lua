@@ -128,6 +128,11 @@ require("lazy").setup {
       completion = {
         keyword = { range = "full" },
         accept = { auto_brackets = { enabled = true } },
+        menu = {
+          auto_show = function()
+            return vim.bo.buftype ~= "prompt" and vim.b.completion ~= false and vim.bo.filetype ~= "TelescopePrompt"
+          end,
+        },
       },
       sources = {
         -- Remove 'buffer' if you don't want text completions, by default it's only enabled when LSP returns no items
@@ -614,16 +619,16 @@ require("lazy").setup {
   },
 
   -- find files
-  {
-    "ibhagwan/fzf-lua",
-    -- optional for icon support
-    -- dependencies = { "nvim-tree/nvim-web-devicons" },
-    config = function()
-      require "config/fzf"
-    end,
-    event = "VeryLazy",
-    -- commit = "48f8a85291e56309087960cc9918d02e6131db3b",
-  },
+  -- {
+  --   "ibhagwan/fzf-lua",
+  --   -- optional for icon support
+  --   -- dependencies = { "nvim-tree/nvim-web-devicons" },
+  --   config = function()
+  --     require "config/fzf"
+  --   end,
+  --   event = "VeryLazy",
+  --   -- commit = "48f8a85291e56309087960cc9918d02e6131db3b",
+  -- },
 
   -- {
   --   "leath-dub/snipe.nvim",
@@ -921,6 +926,29 @@ require("lazy").setup {
     end,
     event = "VeryLazy",
   },
+  {
+    "nvim-telescope/telescope.nvim",
+    config = function()
+      require "config/telescope"
+    end,
+
+    branch = "0.1.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      {
+        "nvim-telescope/telescope-fzf-native.nvim",
+        build = "make",
+      },
+      "debugloop/telescope-undo.nvim",
+    },
+    event = "VeryLazy",
+    -- cmd = "Telescope",
+  },
+  {
+    "nvim-telescope/telescope-frecency.nvim",
+    -- install the latest stable version
+    version = "*",
+  },
 
   -- {
   --   "olimorris/codecompanion.nvim",
@@ -938,7 +966,7 @@ require("lazy").setup {
   --   end,
   --   event = "VeryLazy",
   -- },
-
+  --
   -- https://www.reddit.com/r/neovim/comments/1ca3rm8/shoutout_to_andrewferrierdebugprintnvim_add/
   -- {
   --   "andrewferrier/debugprint.nvim",
