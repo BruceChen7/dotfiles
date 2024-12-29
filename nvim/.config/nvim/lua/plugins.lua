@@ -191,48 +191,6 @@ require("lazy").setup {
       }
     end,
   },
-  --
-  -- {
-  --   "L3MON4D3/LuaSnip",
-  --   config = function()
-  --     require "config/lua_snip"
-  --   end,
-  --   build = "make install_jsregexp",
-  --   event = "InsertEnter",
-  -- },
-
-  -- {
-  --   "numToStr/Navigator.nvim",
-  --   config = function()
-  --     require("Navigator").setup()
-  --     vim.keymap.set({ "n", "t" }, "<c-h>", "<CMD>NavigatorLeft<CR>")
-  --     vim.keymap.set({ "n", "t" }, "<c-l>", "<CMD>NavigatorRight<CR>")
-  --     vim.keymap.set({ "n", "t" }, "<c-k>", "<CMD>NavigatorUp<CR>")
-  --     vim.keymap.set({ "n", "t" }, "<c-j>", "<CMD>NavigatorDown<CR>")
-  --     -- vim.keymap.set({ "n", "t" }, "<c-p>", "<CMD>NavigatorPrevious<CR>")
-  --   end,
-  -- },
-  --
-  -- {
-  --   "L3MON4D3/LuaSnip",
-  --   config = function()
-  --     require "config/lua_snip"
-  --   end,
-  --   build = "make install_jsregexp",
-  --   event = "InsertEnter",
-  -- },
-  -- {
-  --   "rafamadriz/friendly-snippets",
-  --   config = function()
-  --     require("luasnip.loaders.from_vscode").lazy_load()
-  --   end,
-  --   event = "InsertEnter",
-  -- },
-  --
-  -- {
-  --   "saadparwaiz1/cmp_luasnip",
-  --   event = "InsertEnter",
-  -- },
 
   {
     "anuvyklack/hydra.nvim",
@@ -302,15 +260,6 @@ require("lazy").setup {
       term_clors = true,
     },
   },
-  -- show signature
-  -- {
-  --   "ray-x/lsp_signature.nvim",
-  --   event = "LspAttach",
-  --   opts = {},
-  --   config = function(_, opts)
-  --     require("lsp_signature").setup(opts)
-  --   end,
-  -- },
 
   {
     "TimUntersberger/neogit",
@@ -533,17 +482,6 @@ require("lazy").setup {
     event = "InsertEnter",
   },
 
-  -- {
-  --   "rcarriga/nvim-notify",
-  --   event = "VeryLazy",
-  --   config = function()
-  --     local notfify = require "notify"
-  --     notfify.setup {
-  --       timeout = 5000,
-  --     }
-  --   end,
-  -- },
-
   {
     "keaising/im-select.nvim",
     config = function()
@@ -761,18 +699,6 @@ require("lazy").setup {
     end,
     event = "VeryLazy",
   },
-
-  -- set `;,` to select next diagnostic
-  -- seems not working together with hydra.nvim
-  -- hardl
-  -- {
-  --   "mawkler/demicolon.nvim",
-  --   dependencies = {
-  --     "nvim-treesitter/nvim-treesitter",
-  --     "nvim-treesitter/nvim-treesitter-textobjects",
-  --   },
-  --   opts = {},
-  -- },
 
   {
     "yetone/avante.nvim",
@@ -1084,7 +1010,14 @@ require("lazy").setup {
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
     ---@module 'render-markdown'
     ---@type render.md.UserConfig
-    opts = {},
+    opts = {
+      file_types = { "markdown", "Avante" },
+      code = {
+        sign = false,
+        style = "normal",
+      },
+    },
+    ft = { "markdown", "Avante" },
   },
   {
     "otavioschwanck/arrow.nvim",
