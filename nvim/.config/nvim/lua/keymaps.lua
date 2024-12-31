@@ -206,7 +206,7 @@ end
 
 vim.keymap.set("n", "<leader>rt", retab_directory, { silent = true, desc = "Retab directory" })
 
-local function quitWindow()
+local function quit_window()
   local buf_total_num = vim.fn.len(vim.fn.getbufinfo { buflisted = 1 })
   local buf_name = vim.fn.bufname()
   if vim.o.filetype == "neo-tree" then
@@ -240,8 +240,8 @@ local function quitWindow()
   end
 end
 
-vim.keymap.set("n", "X", function()
-  quitWindow()
+vim.keymap.set("n", "\\q", function()
+  quit_window()
 end, { silent = true, desc = "Quit window" })
 
 vim.api.nvim_create_autocmd("BufHidden", {
