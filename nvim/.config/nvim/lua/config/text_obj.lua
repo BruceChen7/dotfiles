@@ -20,7 +20,7 @@ tc.setup {
     "svelte",
   },
   highlight = {
-    enable = false,
+    enable = true,
     additional_vim_regex_highlighting = false,
     -- disable = function(lang, bufnr) -- Disable in large C++ buffers
     --   return lang == ("cpp" or lang == "go") and api.nvim_buf_line_count(bufnr) > 20000

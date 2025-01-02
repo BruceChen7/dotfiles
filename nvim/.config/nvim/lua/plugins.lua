@@ -133,6 +133,10 @@ require("lazy").setup {
             return vim.bo.buftype ~= "prompt" and vim.b.completion ~= false and vim.bo.filetype ~= "TelescopePrompt"
           end,
         },
+        documentation = {
+          auto_show = true,
+          auto_show_delay_ms = 200,
+        },
       },
       sources = {
         -- Remove 'buffer' if you don't want text completions, by default it's only enabled when LSP returns no items
@@ -396,8 +400,8 @@ require("lazy").setup {
   {
     "ojroques/nvim-osc52",
     config = function()
-      vim.keymap.set("n", "\\c", require("osc52").copy_operator, { expr = true })
-      vim.keymap.set("x", "\\c", require("osc52").copy_visual)
+      vim.keymap.set("n", "\\c", require("osc52").copy_operator, { expr = true, desc = "copy to clipboard" })
+      vim.keymap.set("x", "\\c", require("osc52").copy_visual, { desc = "copy to clipboard" })
     end,
     event = "VeryLazy",
   },
