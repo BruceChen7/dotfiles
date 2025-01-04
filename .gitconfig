@@ -1,52 +1,6 @@
-[user "https://github.com"]
-    name = bofengqiye7
-    email = bofengqiye7@gmail.com
-
 [pager]
-    ; diff = delta
-    ; log = delta
-    ; reflog = delta
-    ; show = delta
      difftool = true
 
-; {{{ delta配置 用于查看diff
-; https://github.com/yan42685/dotfiles/blob/master/.gitconfig
-[delta]
-    plus-color = "#012800"
-    minus-color = "#340001"
-    syntax-theme = "TwoDark"
-    plus-emph-style = "#8c99a2 bold ul auto"
-    minus-emph-style = "#8c99a2 bold ul auto"
-    plus-style = "white #0e3c15 "
-    minus-style="white #5a0c0f"
-    line-numbers = true
-    side-by-side = true
-    features = unobtrusive-line-numbers decorations
-    whitespace-error-style = 22 reverse
-    inspect-raw-lines = false
-    navigate = true  # 用n和N在文件之间跳转
-
-[delta "unobtrusive-line-numbers"]
-    line-numbers = true
-    line-numbers-minus-style = "#444444"
-    line-numbers-zero-style = "#444444"
-    line-numbers-plus-style = "#444444"
-    line-numbers-left-format = "{nm:>4}┊"
-    line-numbers-right-format = "{np:>4}│"
-    line-numbers-left-style = blue
-    line-numbers-right-style = blue
-
-[delta "decorations"]
-    commit-decoration-style = bold yellow box ul
-    file-style = bold yellow ul
-    file-decoration-style = none
-    hunk-header-decoration-style = yellow box
-
-; }}}
-
-[interactive]
-    ; diffFilter = delta --color-only
-    
 [core]
     quotepath = false
     editor = nvim
