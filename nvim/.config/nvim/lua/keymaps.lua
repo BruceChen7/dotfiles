@@ -25,6 +25,23 @@ u.map("n", "<space>y", "yiw")
 -- 一半操作是使用viw命令选中文本，另一半是使用p命令粘贴文本，p粘贴的文本是之前复制的文本
 u.map("v", "p", '"_dP', default_options)
 
+local function paste_and_preserve_column()
+  -- 获取当前光标的列位置
+  local col = vim.fn.col "."
+  local count = vim.v.count > 0 and vim.v.count or 1
+
+  -- 复制当前行
+  vim.cmd("normal! " .. "yy")
+
+  -- 执行粘贴操作
+  vim.cmd("normal! " .. count .. "p")
+
+  -- 恢复光标的列位置
+  vim.fn.cursor(vim.fn.line ".", col)
+end
+
+vim.keymap.set({ "i", "n" }, "\\p", paste_and_preserve_column, { silent = true, desc = "Paste and Preserve Column" })
+
 vim.api.nvim_set_keymap("c", "<C-a>", "<home>", { noremap = true })
 vim.api.nvim_set_keymap("c", "<c-e>", "<end>", { noremap = true })
 
