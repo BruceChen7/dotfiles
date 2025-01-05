@@ -240,8 +240,49 @@ local get_go_build_cmd = function()
   end
 end
 
+local get_zig_cmd = function()
+  local buf_path = vim.fn.expand "%:p"
+
+  -- This line is searching for a directory named "zig-redis" starting from the current buffer's path (`buf_path`) and
+  -- looking upwards through parent directories.
+
+  -- 1. `vim.fn.finddir()` - A Vim function that searches for a directory
+  -- 2. `"zig-redis"` - The name of the directory to search for
+  -- 3. `buf_path` - The full path of the current buffer/file
+  -- 4. `";"` - This tells Vim to search upwards through parent directories until it finds the directory or reaches the root
+  local zig_redis_path = vim.fn.finddir("zigredis", buf_path .. ";")
+  -- 字符串中找到`/zigredis`
+  local start, end_ = string.find(buf_path, "/zigredis")
+
+  if start and end_ then
+    -- vim 的工作目录切换到zig_redis_path
+    vim.fn.chdir(zig_redis_path)
+    return "zig build"
+  end
+
+  local zig_caskdb_path = vim.fn.finddir("zig-caskdb", buf_path .. ";")
+  start, end_ = string.find(buf_path, "zig%-caskdb")
+
+  -- 2. 避免与 Lua 的关键字 `end` 冲突
+  if start and end_ then
+    vim.fn.chdir(zig_caskdb_path)
+    return "zig build"
+  end
+end
+
+local get_build_cmd = function()
+  local filetype = vim.bo.filetype
+  if filetype == "go" then
+    return get_go_build_cmd()
+  end
+  if filetype == "zig" then
+    return get_zig_cmd()
+  end
+end
+
 vim.keymap.set("n", "<F5>", function()
-  local cmd = get_go_build_cmd()
+  local cmd = get_build_cmd()
+  print("cmd is ", cmd)
   if cmd == nil then
     return
   end
@@ -251,7 +292,7 @@ vim.keymap.set("n", "<F5>", function()
     raw = false,
     errorformat = "%f:%l:%c: %m",
   }, cmd)
-end, { desc = "open go build in quickfix" })
+end, { desc = "make build" })
 
 vim.keymap.set("n", "<leader>tl", function()
   local cmd = 'git log -p "' .. vim.fn.expand "%:p" .. '"'

@@ -27,10 +27,12 @@
     ds = diff --staged
     dc = diff --cached
 
-; see https://stackoverflow.com/questions/8801729/is-it-possible-to-have-different-git-configuration-for-different-projects
-; how to set up user name in differenct project
-[github]
-    user = BruceChen7
+
+[includeIf "hasconfig:remote.*.url:git@github.com:*/**"]
+    path = ~/.config/git/config-github
+
+[includeIf "hasconfig:remote.*.url:git@codeberg.org:*/**"]
+    path = ~/.config/git/config-codeberg
 
 [net]
     git-fetch-with-cli = true
