@@ -40,7 +40,7 @@ local function paste_and_preserve_column()
   vim.fn.cursor(vim.fn.line ".", col)
 end
 
-vim.keymap.set({ "i", "n" }, "\\p", paste_and_preserve_column, { silent = true, desc = "Paste and Preserve Column" })
+vim.keymap.set({ "n" }, "\\p", paste_and_preserve_column, { silent = true, desc = "Paste and Preserve Column" })
 
 vim.api.nvim_set_keymap("c", "<C-a>", "<home>", { noremap = true })
 vim.api.nvim_set_keymap("c", "<c-e>", "<end>", { noremap = true })

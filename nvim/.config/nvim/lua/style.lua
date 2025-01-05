@@ -65,7 +65,7 @@ augroup InitFileTypesGroup
 augroup END
 ]]
 
-function getColorscheme()
+local function getColorscheme()
   local colorschemes = { --"vscode",
     "nightfox",
     -- "dayfox",
@@ -97,7 +97,5 @@ function getColorscheme()
   return scheme
 end
 
-vim.cmd [[
-  let scheme = v:lua.getColorscheme()
-  execute 'colorscheme ' . scheme
-]]
+local scheme = getColorscheme()
+vim.api.nvim_command("colorscheme " .. scheme)
