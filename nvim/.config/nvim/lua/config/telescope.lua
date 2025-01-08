@@ -187,3 +187,58 @@ vim.keymap.set("n", "<m-b>", "<cmd>Telescope buffers<CR>", { noremap = true, sil
 vim.keymap.set("n", "<m-o>", function()
   vim.cmd "Telescope frecency"
 end, { desc = "Telescope frequency buffer" })
+
+local current_branch = function()
+  local output = vim.fn.system "git symbolic-ref --short HEAD 2>/dev/null"
+  local branch = output:gsub("%s+$", "")
+  return branch
+end
+
+local get_branches = function()
+  local current = current_branch()
+
+  local job = require("plenary.job"):new {
+    command = "git",
+    args = { "for-each-ref", "--format=%(refname:short)" },
+  }
+
+  job:sync()
+  local result = job:result()
+
+  local branches = {}
+  for _, v in pairs(result) do
+    if v ~= current then
+      table.insert(branches, v)
+    end
+  end
+
+  return branches
+end
+
+local diff_files_to = function(branch)
+  local branches = get_branches()
+
+  if not vim.tbl_contains(branches, branch) then
+    if vim.tbl_contains(branches, "master") then
+      branch = "master"
+    elseif vim.tbl_contains(branches, "main") then
+      branch = "main"
+    else
+      return
+    end
+  end
+
+  require("telescope.builtin").find_files {
+    prompt_title = "Changed from <" .. branch .. ">",
+    find_command = { "git", "diff", "--diff-filter=d", "--name-only", branch },
+    previewer = true,
+  }
+end
+
+vim.api.nvim_create_user_command("DiffFilesTo", function(args)
+  diff_files_to(args.args)
+end, { nargs = 1 })
+
+vim.keymap.set("n", "\\rr", function()
+  diff_files_to "release"
+end, { desc = "Diff files to release" })

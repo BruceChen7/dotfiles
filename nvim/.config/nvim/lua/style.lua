@@ -67,21 +67,21 @@ augroup END
 
 local function getColorscheme()
   local colorschemes = { --"vscode",
-    "nightfox",
+    -- "nightfox",
     -- "dayfox",
     -- "nordfox",
     -- "duskfox",
     -- "terafox",
     -- "tokyonight",
-    "tokyonight-storm",
-    "tokyonight-moon",
-    "tokyonight-day",
-    "kanagawa",
-    "kanagawa-dragon",
-    "catppuccin",
-    "catppuccin-frappe",
+    -- "tokyonight-storm",
+    -- "tokyonight-moon",
+    -- "tokyonight-day",
+    -- "kanagawa",
+    -- "kanagawa-dragon",
+    -- "catppuccin",
+    -- "catppuccin-frappe",
     "gruvbox-material",
-    "yorumi",
+    -- "yorumi",
   }
   local u = require "util"
   local len = u.tableLength(colorschemes)
