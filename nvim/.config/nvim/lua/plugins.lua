@@ -1118,10 +1118,10 @@ require("lazy").setup {
       highlight_duration = 250, -- How long should above highlight last (in ms)
     },
     config = function()
-      vim.keymap.set("n", "<m-j>", ":Treewalker Down<CR>", { noremap = true })
-      vim.keymap.set("n", "<m-k>", ":Treewalker Up<CR>", { noremap = true })
-      vim.keymap.set("n", "<m-h>", ":Treewalker Left<CR>", { noremap = true })
-      vim.keymap.set("n", "<m-l>", ":Treewalker Right<CR>", { noremap = true })
+      vim.keymap.set("n", "\\wj", ":Treewalker Down<CR>", { noremap = true, desc = "treewalker down" })
+      vim.keymap.set("n", "\\wk", ":Treewalker Up<CR>", { noremap = true, desc = "Treewalker up" })
+      vim.keymap.set("n", "\\wh", ":Treewalker Left<CR>", { noremap = true, desc = "treewalker left" })
+      vim.keymap.set("n", "\\wl", ":Treewalker Right<CR>", { noremap = true, desc = "treewalker right" })
     end,
   },
 }

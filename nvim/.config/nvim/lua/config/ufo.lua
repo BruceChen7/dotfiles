@@ -74,3 +74,20 @@ vim.keymap.set("n", "K", function()
     vim.lsp.buf.hover()
   end
 end, { desc = "Peek Folded Lines" })
+
+vim.keymap.set("n", "zgj", function()
+  local ufo = require "ufo"
+  ufo.goNextClosedFold()
+end, { desc = "go to next closed fold" })
+
+vim.keymap.set("n", "zgk", function()
+  local ufo = require "ufo"
+  ufo.goPreviousClosedFold()
+end, { desc = "go to preivious closed fold" })
+
+vim.keymap.set("n", "zgK", function()
+  local winid = require("ufo").peekFoldedLinesUnderCursor()
+  if not winid then
+    vim.lsp.buf.hover()
+  end
+end, { desc = "go to preivious closed fold" })

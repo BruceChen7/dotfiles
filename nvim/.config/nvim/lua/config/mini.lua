@@ -32,11 +32,28 @@ miniclue.setup {
     { mode = "v", keys = "g" },
     { mode = "n", keys = "n" },
     { mode = "n", keys = "z" },
+    { mode = "n", keys = "\\w" },
   },
   clues = {
     miniclue.gen_clues.marks(),
     miniclue.gen_clues.windows(),
     miniclue.gen_clues.registers(),
+
+    -- https://www.reddit.com/r/neovim/comments/1hugify/treewalker_miniclue_submodes_is_life/
+    { mode = "n", keys = "\\wj", postkeys = "\\w", desc = "Down" },
+    { mode = "n", keys = "\\wk", postkeys = "\\w", desc = "Up" },
+    { mode = "n", keys = "\\wh", postkeys = "\\w", desc = "Left" },
+    { mode = "n", keys = "\\wl", postkeys = "\\w", desc = "Right" },
+
+    { mode = "n", keys = "\\bn", postkeys = "\\b", desc = "next buffer" },
+    { mode = "n", keys = "\\bp", postkeys = "\\b", desc = "previous buffer" },
+
+    { mode = "n", keys = "<space>v.", postkeys = "<space>v", desc = "decrease buffer size" },
+    { mode = "n", keys = "<space>v,", postkeys = "<space>v", desc = "increase buffer size" },
+
+    { mode = "n", keys = "zgj", postkeys = "zg", desc = "next close fold" },
+    { mode = "n", keys = "zgk", postkeys = "zg", desc = "privious close fold" },
+    { mode = "n", keys = "zgK", postkeys = "zg", desc = "peek fold" },
   },
   window = {
     delay = 200,

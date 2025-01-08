@@ -1,31 +1,6 @@
 local Hydra = require "hydra"
 local gitsigns = require "gitsigns"
 local before = require "before"
-local ufo = require "ufo"
-
-Hydra {
-  name = "Window",
-  mode = { "n", "t" },
-  -- Do not use <space> in terminal mode, otherwise it will cause a delay of timoutlen ms when inputting <space> in terminal mode
-  body = "\\b",
-  heads = {
-    {
-      "p",
-      function()
-        vim.cmd "bprevious"
-      end,
-      { desc = "previous buffer" },
-    },
-
-    {
-      "n",
-      function()
-        vim.cmd "bnext"
-      end,
-      { desc = "next buffer" },
-    },
-  },
-}
 
 Hydra {
   name = "go to next tab page",
@@ -95,39 +70,6 @@ Hydra {
 }
 
 Hydra {
-  name = "go to closed fold",
-  mode = { "n" },
-  body = "zg",
-  heads = {
-    {
-      "j",
-      function()
-        ufo.goNextClosedFold()
-      end,
-      { desc = "next fold" },
-    },
-    {
-      "k",
-      function()
-        ufo.goPreviousClosedFold()
-      end,
-      { desc = "previous fold" },
-    },
-
-    {
-      "K",
-      function()
-        local winid = require("ufo").peekFoldedLinesUnderCursor()
-        if not winid then
-          vim.lsp.buf.hover()
-        end
-      end,
-      { desc = "Peek Folded Lines" },
-    },
-  },
-}
-
-Hydra {
   name = "git hunk navigation",
   mode = { "n" },
   body = "<space>h",
@@ -145,27 +87,6 @@ Hydra {
         gitsigns.next_hunk()
       end,
       { desc = "next hunk", mode = { "n" } },
-    },
-  },
-}
-
-Hydra {
-  name = "resize buffer",
-  mode = { "n" },
-  body = "<space>v",
-  heads = {
-    {
-      ",",
-      function()
-        vim.cmd ":vertical resize -5<cr>"
-      end,
-    },
-
-    {
-      ".",
-      function()
-        vim.cmd ":vertical resize +5<cr>"
-      end,
     },
   },
 }

@@ -440,3 +440,19 @@ vim.keymap.set("n", "<leader>wx", function()
   vim.cmd "wincmd x"
   vim.api.nvim_set_current_win(winid)
 end, { desc = "swap windows" })
+
+vim.keymap.set({ "n", "t" }, "\\bp", function()
+  vim.cmd "bprevious"
+end, { desc = "previous buffer" })
+
+vim.keymap.set({ "n", "t" }, "\\bn", function()
+  vim.cmd "bnext"
+end, { desc = "next buffer" })
+
+vim.keymap.set("n", "<space>v.", function()
+  vim.cmd ":vertical resize +5<cr>"
+end, { desc = "vertical size increase" })
+
+vim.keymap.set("n", "<space>v,", function()
+  vim.cmd ":vertical resize -5<cr>"
+end, { desc = "vertical size decrease" })

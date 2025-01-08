@@ -84,6 +84,7 @@ o.listchars = "tab:|  ,trail:.,extends:>,precedes:<"
 o.ffs = "unix,dos,mac"
 
 o.suffixes = ".bak,~,.o,.h,.info,.swp,.obj,.pyc,.pyo,.egg-info,.class"
+o.jumpoptions = "stack"
 
 vim.api.nvim_create_augroup("wrap_group", {})
 
