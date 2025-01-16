@@ -43,6 +43,7 @@ end
 
 local ts_utils = require "nvim-treesitter.ts_utils"
 local function get_go_nearest_function()
+  -- vim.g._ts_force_sync_parsing = true
   local node = ts_utils.get_node_at_cursor()
   -- 获取父parent node
   while node and node:type() ~= "function_declaration" do
@@ -57,6 +58,7 @@ local function get_go_nearest_function()
     for i = 0, child_count - 1 do
       child = node:child(i)
       if child:type() == "identifier" then
+        -- vim.g._ts_force_sync_parsing = false
         return vim.treesitter.get_node_text(child, 0)
       end
     end
