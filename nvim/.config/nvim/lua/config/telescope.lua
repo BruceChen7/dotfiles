@@ -67,9 +67,6 @@ telescope.setup {
         ["<C-v>"] = actions.select_vertical,
         ["<C-t>"] = actions.select_tab,
 
-        ["<C-h>"] = actions.preview_scrolling_up,
-        ["<C-l>"] = actions.preview_scrolling_down,
-
         ["<PageUp>"] = actions.results_scrolling_up,
         ["<PageDown>"] = actions.results_scrolling_down,
 
