@@ -1030,7 +1030,7 @@ require("lazy").setup {
     keys = {
       -- files
       {
-        "<m-m>",
+        "<m-o>",
         function()
           Snacks.picker.smart()
         end,
