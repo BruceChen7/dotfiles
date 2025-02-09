@@ -45,79 +45,79 @@ local function find_definition()
   ]]
 end
 
-vim.keymap.set("n", "gd", function()
-  -- find_definition()
-  local exists, telescope = pcall(require, "telescope")
-  if exists then
-    vim.cmd [[
-  execute 'Telescope lsp_definitions'
-  ]]
-  end
-  exists, _ = pcall(require, "fzf-lua")
-  if exists then
-    find_definition()
-  end
-end, { noremap = true, silent = true, desc = "Find Definition" })
+-- vim.keymap.set("n", "gd", function()
+--   -- find_definition()
+--   local exists, telescope = pcall(require, "telescope")
+--   if exists then
+--     vim.cmd [[
+--   execute 'Telescope lsp_definitions'
+--   ]]
+--   end
+--   exists, _ = pcall(require, "fzf-lua")
+--   if exists then
+--     find_definition()
+--   end
+-- end, { noremap = true, silent = true, desc = "Find Definition" })
 
-vim.keymap.set("n", "grr", function()
-  local exists, telescope = pcall(require, "telescope")
-  if exists then
-    vim.cmd [[
-    execute 'Telescope lsp_references'
-    ]]
-  end
-  exists, _ = pcall(require, "fzf-lua")
-  if exists then
-    vim.cmd [[
-    execute 'FzfLua lsp_references'
-    ]]
-  end
-end, { noremap = true, silent = true, desc = "Find References" })
+-- vim.keymap.set("n", "grr", function()
+--   local exists, telescope = pcall(require, "telescope")
+--   if exists then
+--     vim.cmd [[
+--     execute 'Telescope lsp_references'
+--     ]]
+--   end
+--   exists, _ = pcall(require, "fzf-lua")
+--   if exists then
+--     vim.cmd [[
+--     execute 'FzfLua lsp_references'
+--     ]]
+--   end
+-- end, { noremap = true, silent = true, desc = "Find References" })
 
-vim.keymap.set("n", "gi", function()
-  local exists, telescope = pcall(require, "telescope")
-  if exists then
-    vim.cmd [[
-    execute 'Telescope lsp_implementations'
-    ]]
-  end
-  local exists, _ = pcall(require, "fzf-lua")
-  if exists then
-    vim.cmd [[
-    execute 'FzfLua lsp_implementations'
-    ]]
-  end
-end, { noremap = true, silent = true, desc = "Find Implementation" })
+-- vim.keymap.set("n", "gi", function()
+--   local exists, telescope = pcall(require, "telescope")
+--   if exists then
+--     vim.cmd [[
+--     execute 'Telescope lsp_implementations'
+--     ]]
+--   end
+--   local exists, _ = pcall(require, "fzf-lua")
+--   if exists then
+--     vim.cmd [[
+--     execute 'FzfLua lsp_implementations'
+--     ]]
+--   end
+-- end, { noremap = true, silent = true, desc = "Find Implementation" })
 
-vim.keymap.set("n", "gD", function()
-  local exists, telescope = pcall(require, "telescope")
-  if exists then
-    vim.cmd [[
-    execute 'Telescope lsp_type_definitions'
-    ]]
-  end
-  local exists, _ = pcall(require, "fzf-lua")
-  if exists then
-    vim.cmd [[
-    execute 'FzfLua lsp_type_definitions'
-    ]]
-  end
-end, { noremap = true, silent = true, desc = "Find Type Definition" })
-
-vim.keymap.set("n", "gs", function()
-  local exists, telescope = pcall(require, "telescope")
-  if exists then
-    vim.cmd [[
-    execute 'Telescope lsp_document_symbols'
-    ]]
-  end
-  local exists, _ = pcall(require, "fzf-lua")
-  if exists then
-    vim.cmd [[
-    execute 'FzfLua lsp_document_symbols'
-    ]]
-  end
-end, { noremap = true, silent = true, desc = "Find Document Symbols" })
+-- vim.keymap.set("n", "gD", function()
+--   local exists, telescope = pcall(require, "telescope")
+--   if exists then
+--     vim.cmd [[
+--     execute 'Telescope lsp_type_definitions'
+--     ]]
+--   end
+--   local exists, _ = pcall(require, "fzf-lua")
+--   if exists then
+--     vim.cmd [[
+--     execute 'FzfLua lsp_type_definitions'
+--     ]]
+--   end
+-- end, { noremap = true, silent = true, desc = "Find Type Definition" })
+--
+-- vim.keymap.set("n", "gs", function()
+--   local exists, telescope = pcall(require, "telescope")
+--   if exists then
+--     vim.cmd [[
+--     execute 'Telescope lsp_document_symbols'
+--     ]]
+--   end
+--   local exists, _ = pcall(require, "fzf-lua")
+--   if exists then
+--     vim.cmd [[
+--     execute 'FzfLua lsp_document_symbols'
+--     ]]
+--   end
+-- end, { noremap = true, silent = true, desc = "Find Document Symbols" })
 
 vim.keymap.set("n", "\\gr", "<cmd>lua vim.lsp.buf.rename()<CR>", { noremap = true, silent = true, desc = "Rename" })
 
