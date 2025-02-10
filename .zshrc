@@ -158,3 +158,7 @@ eval "$(zoxide init zsh)"
 
 zinit ice depth=1
 zinit light jeffreytse/zsh-vi-mode
+
+export ATUIN_NOBIND="true"
+eval "$(atuin init zsh)"
+bindkey '^r' _atuin_search_widget

@@ -45,37 +45,19 @@ require("avante").setup {
     },
   },
   vendors = {
-    ["deepseek"] = {
-      endpoint = "https://api.deepseek.com/beta/chat/completions",
-      model = "deepseek-coder",
+    deepseek = {
+      __inherited_from = "openai",
       api_key_name = "DEEPSEEK_API_KEY",
-      parse_curl_args = function(opts, code_opts)
-        return {
-          url = opts.endpoint,
-          headers = {
-            ["Accept"] = "application/json",
-            ["Content-Type"] = "application/json",
-            ["Authorization"] = "Bearer " .. os.getenv(opts.api_key_name),
-          },
-          body = {
-            model = opts.model,
-            messages = { -- you can make your own message, but this is very advanced
-              { role = "system", content = code_opts.system_prompt },
-              {
-                role = "user",
-                content = parse_user_messages(require("avante.providers.openai").parse_messages(code_opts)),
-              },
-            },
-            -- https://platform.deepseek.com/api-docs/zh-cn/quick_start/parameter_settings
-            temperature = 0.0,
-            max_tokens = 8092,
-            stream = true, -- this will be set by default.
-          },
-        }
-      end,
-      parse_response_data = function(data_stream, event_state, opts)
-        require("avante.providers").openai.parse_response(data_stream, event_state, opts)
-      end,
+      endpoint = "https://api.deepseek.com",
+      model = "deepseek-chat",
     },
   },
+  -- vendors = {
+  --   ["deepseek"] = {
+  --     endpoint = "https://api.deepseek.com/beta/chat/completions",
+  --     model = "deepseek-coder",
+  --     api_key_name = "DEEPSEEK_API_KEY",
+  --     __inherited_from = "openai",
+  --   },
+  -- },
 }

@@ -34,6 +34,9 @@
 [includeIf "hasconfig:remote.*.url:git@codeberg.org:*/**"]
     path = ~/.config/git/config-codeberg
 
+[includeIf "hasconfig:remote.*.url:gitlab@git.garena.com:*/**"]
+    path = ~/.config/git/config-gitlab
+
 [net]
     git-fetch-with-cli = true
 
