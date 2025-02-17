@@ -143,7 +143,16 @@ require("lazy").setup {
         -- Remove 'buffer' if you don't want text completions, by default it's only enabled when LSP returns no items
         default = { "lsp", "path", "snippets", "buffer" },
         -- Disable cmdline completions
-        cmdline = {},
+        -- cmdline = {},
+      },
+      cmdline = {
+        sources = nil,
+        keymap = {
+          -- sets <CR> to accept the item and run the command immediately
+          -- use `select_accept_and_enter` to accept the item or the first item if none are selected
+          ["<CR>"] = { "accept_and_enter", "fallback" },
+          ["<tab>"] = { "select_next", "fallback" },
+        },
       },
 
       keymap = {
@@ -1228,7 +1237,7 @@ require("lazy").setup {
         desc = "Quickfix List",
       },
       {
-        "<leader>sR",
+        "<leader>tr",
         function()
           Snacks.picker.resume()
         end,
@@ -1402,7 +1411,7 @@ require("lazy").setup {
   --   build = false, -- so that it doesn't build the rock https://github.com/3rd/image.nvim/issues/91#issuecomment-2453430239
   --   opts = {},
   -- },
-
+  --
   {
     "aaronik/treewalker.nvim",
     opts = {
