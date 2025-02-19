@@ -137,7 +137,12 @@ require("lazy").setup {
           auto_show = true,
           auto_show_delay_ms = 200,
         },
-        -- from
+        list = {
+          selection = {
+            preselect = false,
+            auto_insert = false,
+          },
+        },
       },
       sources = {
         -- Remove 'buffer' if you don't want text completions, by default it's only enabled when LSP returns no items
@@ -152,6 +157,7 @@ require("lazy").setup {
           -- use `select_accept_and_enter` to accept the item or the first item if none are selected
           ["<CR>"] = { "accept_and_enter", "fallback" },
           ["<tab>"] = { "select_next", "fallback" },
+          ["<S-Tab>"] = { "select_prev", "fallback" },
         },
       },
 
@@ -1034,6 +1040,7 @@ require("lazy").setup {
       -- refer to the configuration section below
       bigfile = { enabled = false },
       picker = { enabled = true },
+      image = { enabled = true },
     },
 
     keys = {
