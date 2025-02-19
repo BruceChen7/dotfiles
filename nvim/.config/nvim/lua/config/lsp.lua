@@ -216,6 +216,7 @@ require("lsp-setup").setup {
         "--completion-style=detailed",
         "-j=8",
         "--clang-tidy",
+        "--function-arg-placeholders=false",
       },
       filetypes = { "c", "cpp", "objc", "objcpp" },
     },
