@@ -132,9 +132,14 @@ local function get_test_command()
       project_name = "luckyvideo"
     end
 
+    if last_part == "knowledge-platform" then
+      last_part = "knowledgeplatform"
+    end
+
     if utils.is_in_working_dir() then
       export_cmd = "export env=test && export cid=global && export PROJECT_NAME="
         .. project_name
+        .. " && export DISABLE_PPROF=true"
         .. " && export MODULE_NAME="
         .. last_part
         .. " && export SP_UNIX_SOCKET=/tmp/spex.sock"
@@ -145,13 +150,13 @@ local function get_test_command()
   local cwd = vim.fn.getcwd()
   local relative_path = utils.relative_path(cwd, dir)
   if export_cmd == "" then
-    return "go test ./"
+    return "go test -count=1 ./"
       .. relative_path
       .. " -tags='integration_test,unit_test' -gcflags=all=-l -v -run "
       .. function_name
   else
     local cmd = export_cmd
-      .. " && go test ./"
+      .. " && go test -count=1 ./"
       .. relative_path
       .. " -tags='integration_test,unit_test' -gcflags=all=-l -v -run "
       .. function_name
@@ -181,7 +186,12 @@ vim.keymap.set("n", "<F2>", function()
     return
   end
   local utils = require "utils"
-  if utils.is_mac() then
+  if utils.is_m1_mac() then
+    local spex_cmd = "socat -d -d -d UNIX-LISTEN:${SP_UNIX_SOCKET},reuseaddr,fork TCP:${SP_AGENT_DOMAIN}"
+    vim.fn.jobstart(spex_cmd, {
+      on_stdout = function(_, _) end,
+    })
+  elseif utils.is_mac() then
     local spex_cmd =
       "inp-client --mode=forward --local_network=unix --local_address=/tmp/spex.sock --remote_network=unix --remote_address=/run/spex/spex.sock"
     vim.fn.jobstart(spex_cmd, {
@@ -391,17 +401,6 @@ local function toggle_terminal()
     print("new terminal " .. terminal_buffer_nr)
   end
 end
-
--- vim.keymap.set({ "n", "t" }, "<c-8>", function()
---   toggle_terminal()
--- end, { desc = "toggle fullscreen terminal" })
--- 设置快捷键
--- vim.keymap.set({ "n", "t" }, "<c-8>", toggle_terminal, { desc = "toggle fullscreen terminal" })
-
--- vim.keymap.set({ "n", "t" }, "<c-8>", function()
---   vim.cmd "enew" -- Create a new buffer
---   vim.cmd "terminal" -- Open a terminal buffer in the new buffer
--- end, { desc = "open fullscreen terminal" })
 
 require("toggleterm").setup {
   --  -- size can be a number or function which is passed the current terminal

@@ -33,6 +33,13 @@ M.is_mac = function()
   return vim.loop.os_uname().sysname:find "Darwin"
 end
 
+M.is_m1_mac = function()
+  if not M.is_mac() then
+    return false
+  end
+  return vim.loop.os_uname().machine:find "arm64" ~= nil
+end
+
 M.is_in_working_dir = function()
   local buf_name = vim.api.nvim_buf_get_name(0)
   -- buf_name contains `mms` or `video` string
