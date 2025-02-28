@@ -151,14 +151,20 @@ require("lazy").setup {
         -- cmdline = {},
       },
       cmdline = {
-        sources = nil,
-        keymap = {
-          -- sets <CR> to accept the item and run the command immediately
-          -- use `select_accept_and_enter` to accept the item or the first item if none are selected
-          ["<CR>"] = { "accept_and_enter", "fallback" },
-          ["<tab>"] = { "select_next", "fallback" },
-          ["<S-Tab>"] = { "select_prev", "fallback" },
-        },
+        enabled = true,
+        keymap = { preset = "cmdline" },
+        sources = function()
+          local type = vim.fn.getcmdtype()
+          -- Search forward and backward
+          if type == "/" or type == "?" then
+            return { "buffer" }
+          end
+          -- Commands
+          if type == ":" or type == "@" then
+            return { "cmdline" }
+          end
+          return {}
+        end,
       },
 
       keymap = {
