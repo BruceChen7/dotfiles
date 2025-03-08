@@ -16,9 +16,12 @@ map(
   "<cmd>lua require'dap'.repl.toggle()<CR>",
   { silent = true, desc = "toggle debugger REPL" }
 )
+vim.keymap.set("n", "\\gb", dap.run_to_cursor, { silent = true, desc = "DAP run to cursor" })
 
-require("dap").defaults.fallback.switchbuf = "useopen"
+-- require("dap").defaults.fallback.switchbuf = "useopen"
 require("dap-view").setup {}
+
+require("nvim-dap-virtual-text").setup()
 
 map({ "n", "v" }, "\\dv", function()
   require("dap-view").toggle()
