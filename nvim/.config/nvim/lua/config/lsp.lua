@@ -353,6 +353,7 @@ require("lsp-setup").setup {
             fillreturns = true,
             nilness = true, -- check for redundant or impossible nil comparisons
             -- ST1003 = true,
+            modernize = true,
           },
           staticcheck = false,
           hints = {

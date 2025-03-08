@@ -5,8 +5,8 @@ require("avante").setup {
     -- auto_set_keymaps = false,
     enable_cursor_planning_mode = true, -- enable cursor planning mode!
   },
-  provider = "deepseek",
-  -- provider = "freedeepseek",
+  -- provider = "deepseek",
+  provider = "freedeepseek",
   cursor_applying_provider = "groq",
   -- auto_suggestions_provider = "deepseek",
   mappings = {
@@ -51,12 +51,12 @@ require("avante").setup {
       model = "llama-3.3-70b-versatile",
       max_tokens = 32768, -- remember to increase this value, otherwise it will stop generating halfway
     },
-    -- freedeepseek = {
-    --   __inherited_from = "openai",
-    --   api_key_name = "FREE_DEEPSEEK_API_KEY",
-    --   endpoint = "https://ai.nahcrof.com/v2",
-    --   model = "deepseek-v3",
-    -- },
+    freedeepseek = {
+      __inherited_from = "openai",
+      api_key_name = "FREE_DEEPSEEK_API_KEY",
+      endpoint = "https://ai.nahcrof.com/v2",
+      model = "deepseek-r1",
+    },
   },
   -- vendors = {
   --   ["deepseek"] = {

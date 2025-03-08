@@ -808,17 +808,16 @@ require("lazy").setup {
     dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
   },
 
-  -- {
-  --   "rcarriga/nvim-dap-ui",
-  --   dependencies = {
-  --     "mfussenegger/nvim-dap",
-  --     "nvim-neotest/nvim-nio",
-  --   },
-  --   config = function()
-  --     require "config/dap"
-  --   end,
-  --   event = "LspAttach",
-  -- },
+  {
+    "mfussenegger/nvim-dap",
+    dependencies = {
+      { "igorlfs/nvim-dap-view" },
+    },
+    config = function()
+      require "config/dap"
+    end,
+    event = "LspAttach",
+  },
 
   {
     "nvim-pack/nvim-spectre",

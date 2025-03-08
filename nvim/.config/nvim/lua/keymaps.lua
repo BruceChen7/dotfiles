@@ -453,6 +453,15 @@ vim.keymap.set("n", "<space>v.", function()
   vim.cmd ":vertical resize +5<cr>"
 end, { desc = "vertical size increase" })
 
+-- 假设你粘贴了一段代码或文本，然后想要快速选择这段内容进行编辑，只需按下 `gV`，Neovim 就会自动选择你刚刚粘贴的内容。
+vim.keymap.set("n", "gV", "`[v`]", { desc = "select last paste area" })
+
+-- 1. Enter visual mode and select a block of text.
+-- 2. Press `g/`.
+-- 3. Neovim will exit visual mode and start a search that is limited to the selected text.
+-- * https://www.reddit.com/r/neovim/comments/1ixsk40/share_your_tips_and_tricks_in_neovim/
+vim.keymap.set("x", "g/", "<Esc>/\\%V")
+
 vim.keymap.set("n", "<space>v,", function()
   vim.cmd ":vertical resize -5<cr>"
 end, { desc = "vertical size decrease" })
