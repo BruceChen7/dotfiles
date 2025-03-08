@@ -812,6 +812,7 @@ require("lazy").setup {
     "mfussenegger/nvim-dap",
     dependencies = {
       { "igorlfs/nvim-dap-view" },
+      { "theHamsta/nvim-dap-virtual-text" },
     },
     config = function()
       require "config/dap"

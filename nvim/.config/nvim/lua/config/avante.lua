@@ -55,7 +55,7 @@ require("avante").setup {
       __inherited_from = "openai",
       api_key_name = "FREE_DEEPSEEK_API_KEY",
       endpoint = "https://ai.nahcrof.com/v2",
-      model = "deepseek-r1",
+      model = "deepseek-v3",
     },
   },
   -- vendors = {
