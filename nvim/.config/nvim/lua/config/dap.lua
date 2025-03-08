@@ -16,6 +16,8 @@ map(
   "<cmd>lua require'dap'.repl.toggle()<CR>",
   { silent = true, desc = "toggle debugger REPL" }
 )
+
+local dap = require "dap"
 vim.keymap.set("n", "\\gb", dap.run_to_cursor, { silent = true, desc = "DAP run to cursor" })
 
 -- require("dap").defaults.fallback.switchbuf = "useopen"
@@ -27,7 +29,6 @@ map({ "n", "v" }, "\\dv", function()
   require("dap-view").toggle()
 end, { silent = true, desc = "DAP viewer toggle" })
 
-local dap = require "dap"
 dap.listeners.before.attach.dapui_config = function()
   vim.cmd "DapViewOpen"
 end
