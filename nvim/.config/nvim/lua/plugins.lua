@@ -1054,7 +1054,9 @@ require("lazy").setup {
       {
         "<m-o>",
         function()
-          Snacks.picker.smart()
+          Snacks.picker.smart {
+            multi = { "recent", "buffers", "files" },
+          }
         end,
         desc = "Smart Find Files",
       },

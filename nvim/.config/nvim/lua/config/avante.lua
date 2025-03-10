@@ -3,7 +3,7 @@ require("avante").setup {
   behaviour = {
     auto_suggestions = false,
     -- auto_set_keymaps = false,
-    enable_cursor_planning_mode = true, -- enable cursor planning mode!
+    enable_cursor_planning_mode = false, -- enable cursor planning mode!
   },
   -- provider = "deepseek",
   provider = "freedeepseek",
@@ -55,15 +55,7 @@ require("avante").setup {
       __inherited_from = "openai",
       api_key_name = "FREE_DEEPSEEK_API_KEY",
       endpoint = "https://ai.nahcrof.com/v2",
-      model = "deepseek-v3",
+      model = "deepseek-r1",
     },
   },
-  -- vendors = {
-  --   ["deepseek"] = {
-  --     endpoint = "https://api.deepseek.com/beta/chat/completions",
-  --     model = "deepseek-coder",
-  --     api_key_name = "DEEPSEEK_API_KEY",
-  --     __inherited_from = "openai",
-  --   },
-  -- },
 }
