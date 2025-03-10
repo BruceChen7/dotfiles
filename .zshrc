@@ -157,7 +157,8 @@ export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
 eval "$(zoxide init zsh)"
 
 zinit ice depth=1
-zinit light jeffreytse/zsh-vi-mode
+# if set, atuin not working
+# zinit light jeffreytse/zsh-vi-mode
 
 export ATUIN_NOBIND="true"
 eval "$(atuin init zsh)"

@@ -1026,15 +1026,15 @@ require("lazy").setup {
     },
     ft = { "markdown", "Avante" },
   },
-  {
-    "otavioschwanck/arrow.nvim",
-    opts = {
-      show_icons = true,
-      leader_key = "\\\\", -- Recommended to be a single key
-      buffer_leader_key = "\\m", -- Per Buffer Mappings
-      seperate_by_branch = true,
-    },
-  },
+  -- {
+  --   "otavioschwanck/arrow.nvim",
+  --   opts = {
+  --     show_icons = true,
+  --     leader_key = "\\\\", -- Recommended to be a single key
+  --     buffer_leader_key = "\\m", -- Per Buffer Mappings
+  --     seperate_by_branch = true,
+  --   },
+  -- },
   {
     "folke/snacks.nvim",
     priority = 1000,
@@ -1224,7 +1224,7 @@ require("lazy").setup {
         desc = "Location List",
       },
       {
-        "<leader>sm",
+        "\\\\",
         function()
           Snacks.picker.marks()
         end,
