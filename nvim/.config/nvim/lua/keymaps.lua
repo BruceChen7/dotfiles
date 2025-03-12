@@ -134,7 +134,7 @@ vim.keymap.set("n", "<leader>ll", function()
     vim.cmd(cmd)
     print(cmd .. " done")
   end
-end)
+end, { desc = "source current file" })
 
 local id = vim.api.nvim_create_augroup("startup", {
   clear = false,
