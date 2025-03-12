@@ -123,7 +123,7 @@ require("lazy").setup {
         use_nvim_cmp_as_default = true,
         -- Set to 'mono' for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
         -- Adjusts spacing to ensure icons are aligned
-        nerd_font_variant = "normal",
+        nerd_font_variant = "mono",
       },
       completion = {
         keyword = { range = "full" },
@@ -147,12 +147,29 @@ require("lazy").setup {
       sources = {
         -- Remove 'buffer' if you don't want text completions, by default it's only enabled when LSP returns no items
         default = { "lsp", "path", "snippets", "buffer" },
-        -- Disable cmdline completions
-        -- cmdline = {},
       },
       cmdline = {
         enabled = true,
-        keymap = { preset = "cmdline" },
+        -- keymap = { preset = "cmdline" },
+        -- https://cmp.saghen.dev/modes/cmdline.html
+        keymap = {
+          ["<Tab>"] = {
+            function(cmp)
+              if cmp.is_ghost_text_visible() and not cmp.is_menu_visible() then
+                return cmp.accept()
+              end
+            end,
+            "show_and_insert",
+            "select_next",
+          },
+          ["<S-Tab>"] = { "show_and_insert", "select_prev" },
+
+          ["<C-j>"] = { "select_next" },
+          ["<C-k>"] = { "select_prev" },
+
+          ["<C-y>"] = { "select_and_accept" },
+          ["<C-e>"] = { "cancel" },
+        },
         sources = function()
           local type = vim.fn.getcmdtype()
           -- Search forward and backward
@@ -1026,15 +1043,6 @@ require("lazy").setup {
     },
     ft = { "markdown", "Avante" },
   },
-  -- {
-  --   "otavioschwanck/arrow.nvim",
-  --   opts = {
-  --     show_icons = true,
-  --     leader_key = "\\\\", -- Recommended to be a single key
-  --     buffer_leader_key = "\\m", -- Per Buffer Mappings
-  --     seperate_by_branch = true,
-  --   },
-  -- },
   {
     "folke/snacks.nvim",
     priority = 1000,

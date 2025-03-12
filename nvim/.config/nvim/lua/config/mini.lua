@@ -33,6 +33,10 @@ miniclue.setup {
     { mode = "n", keys = "n" },
     { mode = "n", keys = "z" },
     { mode = "n", keys = "\\w" },
+    { mode = "n", keys = "'" },
+    { mode = "n", keys = "`" },
+    { mode = "x", keys = "'" },
+    { mode = "x", keys = "`" },
   },
   clues = {
     miniclue.gen_clues.marks(),
