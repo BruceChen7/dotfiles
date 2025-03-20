@@ -192,7 +192,22 @@ local function run_test_command(cmd)
   vim.fn["asyncrun#run"]("", {
     mode = "async",
     raw = false,
-    errorformat = "%.%# %trror: %m, %f:%l:%c: %m, %f:%l: %m, %f:%l:%c %m",
+    -- Error format pattern for parsing compiler output
+    -- %.%# - Match any characters up to a newline
+    -- %trror: - Match "error:" (case-insensitive)
+    -- %m - Match error message
+    -- %f:%l:%c: - Match filename:line:column:
+    -- %m - Match error message
+    -- %f:%l: - Match filename:line:
+    -- %m - Match error message
+    -- %f:%l:%c - Match filename:line:column
+    -- %m - Match error message
+    errorformat = {
+      "%.%# %trror: %m",          -- Match error messages with "error:"
+      "%f:%l:%c: %m",             -- Match messages with filename:line:column:message
+      "%f:%l: %m",                -- Match messages with filename:line:message
+      "%f:%l:%c %m",              -- Match messages with filename:line:column message
+    },
   }, cmd)
 end
 
