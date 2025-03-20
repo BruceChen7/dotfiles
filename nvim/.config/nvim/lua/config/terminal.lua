@@ -223,31 +223,22 @@ end, { desc = "open go test in quickfix" })
 
 local get_go_build_cmd = function()
   local utils = require "utils"
-  if utils.is_in_working_dir() then
-    -- 获取当前buffer完整路径
-    local buf_path = vim.fn.expand "%:p"
-    if string.find(buf_path, "video/platform/app/shopconsole") then
-      -- 路径匹配，执行相应的操作
-      -- 你可以在这里添加更多的逻辑
-      return "go build app/shopconsole/main.go"
-    end
+  if not utils.is_in_working_dir() then
+    return nil
+  end
+  
+  local buf_path = vim.fn.expand "%:p"
+  local build_commands = {
+    ["video/platform/app/shopconsole"] = "go build app/shopconsole/main.go",
+    ["botapi"] = "go build cmd/main.go",
+    ["coreapi"] = "go build app/chat-api/main.go",
+    ["workbenchapi"] = "go build app/chat-api/main.go",
+    ["bff"] = "make build-with-proto"
+  }
 
-    if string.find(buf_path, "botapi") then
-      return "go build cmd/main.go"
-    end
-
-    local start, _ = string.find(buf_path, "coreapi")
-    if start ~= nil then
-      return "go build app/chat-api/main.go"
-    end
-    start, _ = string.find(buf_path, "workbenchapi")
-    if start ~= nil then
-      return "go build app/chat-api/main.go"
-    end
-
-    start, _ = string.find(buf_path, "bff")
-    if start ~= nil then
-      return "make build-with-proto"
+  for pattern, cmd in pairs(build_commands) do
+    if string.find(buf_path, pattern) then
+      return cmd
     end
   end
 end
