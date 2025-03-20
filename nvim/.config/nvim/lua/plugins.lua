@@ -1424,6 +1424,62 @@ require("lazy").setup {
   -- },
   --
   {
+    "aweis89/aider.nvim",
+    dependencies = {
+      -- required for core functionality
+      "akinsho/toggleterm.nvim",
+
+      -- Optional, but great for diff viewing and after_update_hook integration
+      "sindrets/diffview.nvim",
+
+      -- Optional but will show aider spinner whenever active
+      "folke/snacks.nvim",
+
+      -- Only if you care about using the /editor command
+      "willothy/flatten.nvim",
+    },
+    lazy = false,
+    opts = {
+      -- Auto trigger diffview after Aider's file changes
+      after_update_hook = function()
+        require("diffview").open { "HEAD^" }
+      end,
+    },
+    keys = {
+      {
+        "<leader>as",
+        "<cmd>AiderSpawn<CR>",
+        desc = "Toggle Aidper (default)",
+      },
+      {
+        "<leader>a<space>",
+        "<cmd>AiderToggle<CR>",
+        desc = "Toggle Aider",
+      },
+      {
+        "<leader>af",
+        "<cmd>AiderToggle float<CR>",
+        desc = "Toggle Aider Float",
+      },
+      {
+        "<leader>av",
+        "<cmd>AiderToggle vertical<CR>",
+        desc = "Toggle Aider Float",
+      },
+      {
+        "<leader>al",
+        "<cmd>AiderAdd<CR>",
+        desc = "Add file to Aider",
+      },
+      {
+        "<leader>ad",
+        "<cmd>AiderAsk<CR>",
+        desc = "Aider Ask with selection",
+        mode = { "v", "n" },
+      },
+    },
+  },
+  {
     "aaronik/treewalker.nvim",
     opts = {
       highlight = true, -- Whether to briefly highlight the node after jumping to it
