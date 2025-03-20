@@ -28,26 +28,34 @@ end
 
 local ts_utils = require "nvim-treesitter.ts_utils"
 local function get_go_nearest_function()
-  -- vim.g._ts_force_sync_parsing = true
+  -- Get the current node at cursor position
   local node = ts_utils.get_node_at_cursor()
-  -- 获取父parent node
+
+  -- Traverse up the node tree to find the nearest function declaration
   while node and node:type() ~= "function_declaration" do
-    -- print(node:type())
-    node = node:parent()
+    node = node:parent() -- Move to parent node
   end
+
+  -- Check if we found a valid function declaration
   if node and node:type() == "function_declaration" then
-    -- local text = vim.treesitter.get_node_text(node, 0)
+    -- Get first child node
     local child = node:child(0)
-    local child_count = node:child_count()
-    -- 遍历child_count次
+    local child_count = node:child_count() -- Get total number of children
+
+    -- Iterate through all child nodes
     for i = 0, child_count - 1 do
-      child = node:child(i)
+      child = node:child(i) -- Get current child node
+
+      -- Check if child is an identifier (function name)
       if child:type() == "identifier" then
-        -- vim.g._ts_force_sync_parsing = false
+        -- Return the function name text
         return vim.treesitter.get_node_text(child, 0)
       end
     end
   end
+
+  -- If no function name found, return nil
+  return nil
 end
 
 local function get_zig_test_declaration()
@@ -227,7 +235,7 @@ local get_go_build_cmd = function()
   }
 
   for pattern, cmd in pairs(build_commands) do
-    if string.find(buf_path, pattern) then
+    if string.find(buf_path, pattern, 1, true) then
       return cmd
     end
   end

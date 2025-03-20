@@ -1452,7 +1452,7 @@ require("lazy").setup {
         desc = "Toggle Aidper (default)",
       },
       {
-        "<leader>a<space>",
+        "<leader>aa",
         "<cmd>AiderToggle<CR>",
         desc = "Toggle Aider",
       },
@@ -1478,6 +1478,11 @@ require("lazy").setup {
         mode = { "v", "n" },
       },
     },
+    config = function()
+      require("aider").setup {
+        aider_args = { "--no-git" },
+      }
+    end,
   },
   {
     "aaronik/treewalker.nvim",
