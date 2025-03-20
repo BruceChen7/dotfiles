@@ -1,3 +1,8 @@
+function _G.AiderTestCmd()
+  print("Aider test command executed")
+  return "ok"
+end
+
 function _G.set_terminal_keymaps()
   local opts = { buffer = 0 }
   -- using <esc> to enter normal mode
