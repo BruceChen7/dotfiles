@@ -190,41 +190,47 @@ vim.keymap.set("n", "<F2>", function()
   if cmd == nil then
     return
   end
+
   local utils = require "utils"
-  if utils.is_m1_mac() then
-    local spex_cmd = "socat -d -d -d UNIX-LISTEN:${SP_UNIX_SOCKET},reuseaddr,fork TCP:${SP_AGENT_DOMAIN}"
-    vim.fn.jobstart(spex_cmd, {
-      on_stdout = function(_, _) end,
-    })
-  elseif utils.is_mac() then
-    local spex_cmd =
-      "inp-client --mode=forward --local_network=unix --local_address=/tmp/spex.sock --remote_network=unix --remote_address=/run/spex/spex.sock"
-    vim.fn.jobstart(spex_cmd, {
-      on_stdout = function(_, _) end,
-    })
+  local spex_config = get_spex_config()
+  if spex_config then
+    start_spex_job(spex_config)
   end
 
-  -- - `%\\s%\\+`：匹配一个或多个空白字符（`\s`）。`\\s` 表示一个空白字符，`%\\+` 表示一个或多个。
-  -- - `Error Trace:`：匹配字符串 `"Error Trace:"`。
-  -- - `%\\s%\\+`：再次匹配一个或多个空白字符。
-  -- - `%f`：匹配文件名。
-  -- - `:`：匹配冒号字符。
-  -- - `%l`：匹配行号。
   utils.change_to_current_buffer_root_dir()
+  run_test_command(cmd)
+end, { desc = "open go test in quickfix" })
+
+-- Helper function to get SPEX configuration based on platform
+local function get_spex_config()
+  local utils = require "utils"
+  if utils.is_m1_mac() then
+    return {
+      command = "socat -d -d -d UNIX-LISTEN:${SP_UNIX_SOCKET},reuseaddr,fork TCP:${SP_AGENT_DOMAIN}",
+    }
+  elseif utils.is_mac() then
+    return {
+      command = "inp-client --mode=forward --local_network=unix --local_address=/tmp/spex.sock --remote_network=unix --remote_address=/run/spex/spex.sock",
+    }
+  end
+  return nil
+end
+
+-- Helper function to start SPEX job
+local function start_spex_job(config)
+  vim.fn.jobstart(config.command, {
+    on_stdout = function(_, _) end,
+  })
+end
+
+-- Helper function to run test command
+local function run_test_command(cmd)
   vim.fn["asyncrun#run"]("", {
     mode = "async",
-    -- should be false
     raw = false,
-    -- errorformat = "%p%s%f:%l",
-    -- program = "go",
-    -- errorformat = "%\\s%\\+Error Trace:%\\s%\\+%f:%l",
-    --
-    -- `%-G%.%#`: 忽略所有行，除非它们匹配后面的模式。
-    --  `%.%# %trror: %m`: 匹配以任意字符开头，后跟 `error:` 的行，并提取错误消息 `%m`。
-    --  用 `,` 分隔匹配的多个模式
     errorformat = "%.%# %trror: %m, %f:%l:%c: %m, %f:%l: %m, %f:%l:%c %m",
   }, cmd)
-end, { desc = "open go test in quickfix" })
+end
 
 local get_go_build_cmd = function()
   local utils = require "utils"
