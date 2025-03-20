@@ -148,23 +148,7 @@ local function get_test_command()
     return cmd
   end
 end
--- use go test
--- vim.keymap.set("n", "<F2>", function()
---   local cmd = get_test_command()
---   if cmd == nil then
---     return
---   end
---   local utils = require "utils"
---   if utils.is_mac() then
---     local spex_cmd =
---       "inp-client --mode=forward --local_network=unix --local_address=/tmp/spex.sock --remote_network=unix --remote_address=/run/spex/spex.sock"
---     vim.fn.jobstart(spex_cmd, {
---       on_stdout = function(_, _) end,
---     })
---   end
---   require("toggleterm").exec(cmd, 1, 12)
--- end, { desc = "open go test in terminal" })
---
+
 -- Helper function to get SPEX configuration based on platform
 local function get_spex_config()
   local utils = require "utils"
@@ -203,10 +187,10 @@ local function run_test_command(cmd)
     -- %f:%l:%c - Match filename:line:column
     -- %m - Match error message
     errorformat = {
-      "%.%# %trror: %m",          -- Match error messages with "error:"
-      "%f:%l:%c: %m",             -- Match messages with filename:line:column:message
-      "%f:%l: %m",                -- Match messages with filename:line:message
-      "%f:%l:%c %m",              -- Match messages with filename:line:column message
+      "%.%# %trror: %m", -- Match error messages with "error:"
+      "%f:%l:%c: %m", -- Match messages with filename:line:column:message
+      "%f:%l: %m", -- Match messages with filename:line:message
+      "%f:%l:%c %m", -- Match messages with filename:line:column message
     },
   }, cmd)
 end
