@@ -1439,12 +1439,6 @@ require("lazy").setup {
       "willothy/flatten.nvim",
     },
     lazy = false,
-    opts = {
-      -- Auto trigger diffview after Aider's file changes
-      after_update_hook = function()
-        require("diffview").open { "HEAD^" }
-      end,
-    },
     keys = {
       {
         "<leader>as",
@@ -1481,6 +1475,16 @@ require("lazy").setup {
     config = function()
       require("aider").setup {
         aider_args = { "--no-git" },
+        auto_show = {
+          on_ask = true, -- e.x. `ai? comment`
+          on_change_req = true, -- e.x. `ai! comment`
+          on_file_add = true, -- e.x. when using Telescope or `AiderLoad` to add files
+        },
+
+        use_git_stash = false,
+        after_update_hook = function()
+          -- require("diffview").open { "HEAD^" }
+        end,
       }
     end,
   },
