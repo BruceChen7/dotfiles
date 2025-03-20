@@ -73,9 +73,8 @@ local function get_zig_test_declaration()
 end
 
 local function get_test_command()
-  -- 让vim 重新刷新当前buffer
   vim.api.nvim_command "redraw"
-  -- 获取当前buffer的文件类型
+  -- Get the current buffer's file type
   local buf_name = vim.api.nvim_buf_get_name(0)
   local dir = vim.fn.fnamemodify(buf_name, ":p:h")
   local filetype = vim.bo.filetype

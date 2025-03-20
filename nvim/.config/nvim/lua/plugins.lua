@@ -1474,7 +1474,7 @@ require("lazy").setup {
     },
     config = function()
       require("aider").setup {
-        aider_args = { "--no-git" },
+        aider_args = { "--no-auto-commits", "--no-dirty-commits" },
         auto_show = {
           on_ask = true, -- e.x. `ai? comment`
           on_change_req = true, -- e.x. `ai! comment`
