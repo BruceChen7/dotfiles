@@ -226,14 +226,14 @@ local get_go_build_cmd = function()
   if not utils.is_in_working_dir() then
     return nil
   end
-  
+
   local buf_path = vim.fn.expand "%:p"
   local build_commands = {
     ["video/platform/app/shopconsole"] = "go build app/shopconsole/main.go",
     ["botapi"] = "go build cmd/main.go",
     ["coreapi"] = "go build app/chat-api/main.go",
     ["workbenchapi"] = "go build app/chat-api/main.go",
-    ["bff"] = "make build-with-proto"
+    ["bff"] = "make build-with-proto",
   }
 
   for pattern, cmd in pairs(build_commands) do
