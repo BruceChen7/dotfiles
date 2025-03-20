@@ -1,8 +1,3 @@
-function _G.AiderTestCmd()
-  print("Aider test command executed")
-  return "ok"
-end
-
 function _G.set_terminal_keymaps()
   local opts = { buffer = 0 }
   -- using <esc> to enter normal mode
@@ -29,21 +24,6 @@ local function _Tig_TOGGLE()
   end
   local tig = Terminal:new { cmd = "tig -C " .. root, hidden = true }
   tig:toggle()
-end
-
--- https://devhints.io/tig
-local function _Tig_Blame()
-  local root = find_root(vim.fn.expand "%:p")
-  if not root then
-    root = vim.fn.getcwd()
-    vim.notify "use working directory instead"
-  end
-  local file_name = vim.fn.expand "%:p"
-  if not file_name then
-    return
-  end
-  local tig_name_file_blame = Terminal:new { cmd = "tig -C " .. root .. " " .. file_name }
-  tig_name_file_blame:toggle()
 end
 
 local ts_utils = require "nvim-treesitter.ts_utils"
@@ -184,23 +164,7 @@ end
 --   end
 --   require("toggleterm").exec(cmd, 1, 12)
 -- end, { desc = "open go test in terminal" })
-
-vim.keymap.set("n", "<F2>", function()
-  local cmd = get_test_command()
-  if cmd == nil then
-    return
-  end
-
-  local utils = require "utils"
-  local spex_config = get_spex_config()
-  if spex_config then
-    start_spex_job(spex_config)
-  end
-
-  utils.change_to_current_buffer_root_dir()
-  run_test_command(cmd)
-end, { desc = "open go test in quickfix" })
-
+--
 -- Helper function to get SPEX configuration based on platform
 local function get_spex_config()
   local utils = require "utils"
@@ -231,6 +195,22 @@ local function run_test_command(cmd)
     errorformat = "%.%# %trror: %m, %f:%l:%c: %m, %f:%l: %m, %f:%l:%c %m",
   }, cmd)
 end
+
+vim.keymap.set("n", "<F2>", function()
+  local cmd = get_test_command()
+  if cmd == nil then
+    return
+  end
+
+  local utils = require "utils"
+  local spex_config = get_spex_config()
+  if spex_config then
+    start_spex_job(spex_config)
+  end
+
+  utils.change_to_current_buffer_root_dir()
+  run_test_command(cmd)
+end, { desc = "open go test in quickfix" })
 
 local get_go_build_cmd = function()
   local utils = require "utils"
