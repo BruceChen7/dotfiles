@@ -379,7 +379,7 @@ require("lazy").setup {
   },
 
   -- colorscheme
-  { "folke/tokyonight.nvim" },
+  -- { "folke/tokyonight.nvim" },
 
   {
     "gennaro-tedesco/nvim-peekup",
@@ -1372,57 +1372,64 @@ require("lazy").setup {
     },
   },
 
-  -- {
-  --   "xzbdmw/colorful-menu.nvim",
-  --   config = function()
-  --     -- You don't need to set these options.
-  --     require("colorful-menu").setup {
-  --       ft = {
-  --         lua = {
-  --           -- Maybe you want to dim arguments a bit.
-  --           auguments_hl = "@comment",
-  --         },
-  --         go = {
-  --           -- When true, label for field and variable will format like "foo: Foo"
-  --           -- instead of go's original syntax "foo Foo".
-  --           add_colon_before_type = false,
-  --         },
-  --         typescript = {
-  --           -- Add more filetype when needed, these three taken from lspconfig are default value.
-  --           enabled = { "typescript", "typescriptreact", "typescript.tsx" },
-  --           -- Or "vtsls", their information is different, so we
-  --           -- need to know in advance.
-  --           ls = "typescript-language-server",
-  --           extra_info_hl = "@comment",
-  --         },
-  --         rust = {
-  --           -- Such as (as Iterator), (use std::io).
-  --           extra_info_hl = "@comment",
-  --         },
-  --         c = {
-  --           -- Such as "From <stdio.h>"
-  --           extra_info_hl = "@comment",
-  --         },
-  --
-  --         -- If true, try to highlight "not supported" languages.
-  --         fallback = true,
-  --       },
-  --       -- If the built-in logic fails to find a suitable highlight group,
-  --       -- this highlight is applied to the label.
-  --       fallback_highlight = "@variable",
-  --       -- If provided, the plugin truncates the final displayed text to
-  --       -- this width (measured in display cells). Any highlights that extend
-  --       -- beyond the truncation point are ignored. Default 60.
-  --       max_width = 60,
-  --     }
-  --   end,
-  -- },
-  -- {
-  --   "3rd/image.nvim",
-  --   build = false, -- so that it doesn't build the rock https://github.com/3rd/image.nvim/issues/91#issuecomment-2453430239
-  --   opts = {},
-  -- },
-  --
+  {
+    "aweis89/aider.nvim",
+    dependencies = {
+      -- required for core functionality
+      "akinsho/toggleterm.nvim",
+
+      -- Optional, but great for diff viewing and after_update_hook integration
+      "sindrets/diffview.nvim",
+
+      -- Optional but will show aider spinner whenever active
+      "folke/snacks.nvim",
+
+      -- Only if you care about using the /editor command
+      "willothy/flatten.nvim",
+    },
+    lazy = false,
+    opts = {
+      -- Auto trigger diffview after Aider's file changes
+      after_update_hook = function()
+        require("diffview").open { "HEAD^" }
+      end,
+    },
+    keys = {
+      {
+        "<leader>as",
+        "<cmd>AiderSpawn<CR>",
+        desc = "Toggle Aidper (default)",
+      },
+      {
+        "<leader>a<space>",
+        "<cmd>AiderToggle<CR>",
+        desc = "Toggle Aider",
+      },
+      {
+        "<leader>av",
+        "<cmd>AiderToggle vertical<CR>",
+        desc = "Toggle Aider Float",
+      },
+      {
+        "<leader>al",
+        "<cmd>AiderAdd<CR>",
+        desc = "Add file to aider",
+      },
+      {
+        "<leader>ad",
+        "<cmd>AiderAsk<CR>",
+        desc = "Ask with selection",
+        mode = { "v", "n" },
+      },
+      {
+        "<C-x>",
+        "<cmd>AiderToggle<CR>",
+        desc = "Toggle Aider",
+        mode = { "i", "t", "n" },
+      },
+    },
+  },
+
   {
     "aweis89/aider.nvim",
     dependencies = {
