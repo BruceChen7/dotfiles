@@ -5,8 +5,8 @@ require("avante").setup {
     -- auto_set_keymaps = false,
     enable_cursor_planning_mode = false, -- enable cursor planning mode!
   },
-  provider = "deepseek",
-  -- provider = "freedeepseek",
+  -- provider = "deepseek",
+  provider = "freedeepseek",
   cursor_applying_provider = "groq",
   -- auto_suggestions_provider = "deepseek",
   mappings = {
