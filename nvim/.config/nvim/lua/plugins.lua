@@ -1388,64 +1388,6 @@ require("lazy").setup {
       "willothy/flatten.nvim",
     },
     lazy = false,
-    opts = {
-      -- Auto trigger diffview after Aider's file changes
-      after_update_hook = function()
-        require("diffview").open { "HEAD^" }
-      end,
-    },
-    keys = {
-      {
-        "<leader>as",
-        "<cmd>AiderSpawn<CR>",
-        desc = "Toggle Aidper (default)",
-      },
-      {
-        "<leader>a<space>",
-        "<cmd>AiderToggle<CR>",
-        desc = "Toggle Aider",
-      },
-      {
-        "<leader>av",
-        "<cmd>AiderToggle vertical<CR>",
-        desc = "Toggle Aider Float",
-      },
-      {
-        "<leader>al",
-        "<cmd>AiderAdd<CR>",
-        desc = "Add file to aider",
-      },
-      {
-        "<leader>ad",
-        "<cmd>AiderAsk<CR>",
-        desc = "Ask with selection",
-        mode = { "v", "n" },
-      },
-      {
-        "<C-x>",
-        "<cmd>AiderToggle<CR>",
-        desc = "Toggle Aider",
-        mode = { "i", "t", "n" },
-      },
-    },
-  },
-
-  {
-    "aweis89/aider.nvim",
-    dependencies = {
-      -- required for core functionality
-      "akinsho/toggleterm.nvim",
-
-      -- Optional, but great for diff viewing and after_update_hook integration
-      "sindrets/diffview.nvim",
-
-      -- Optional but will show aider spinner whenever active
-      "folke/snacks.nvim",
-
-      -- Only if you care about using the /editor command
-      "willothy/flatten.nvim",
-    },
-    lazy = false,
     keys = {
       {
         "<leader>as",

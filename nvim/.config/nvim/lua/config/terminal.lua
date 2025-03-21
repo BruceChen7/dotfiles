@@ -193,12 +193,13 @@ local function run_test_command(cmd)
     -- %m - Match error message
     -- %f:%l:%c - Match filename:line:column
     -- %m - Match error message
-    errorformat = {
-      "%.%# %trror: %m", -- Match error messages with "error:"
-      "%f:%l:%c: %m", -- Match messages with filename:line:column:message
-      "%f:%l: %m", -- Match messages with filename:line:message
-      "%f:%l:%c %m", -- Match messages with filename:line:column message
-    },
+    -- errorformat = {
+    --   "%.%# %trror: %m", -- Match error messages with "error:"
+    --   "%f:%l:%c: %m", -- Match messages with filename:line:column:message
+    --   "%f:%l: %m", -- Match messages with filename:line:message
+    --   "%f:%l:%c %m", -- Match messages with filename:line:column message
+    -- },
+    errorformat = "%.%# %trror: %m, %f:%l:%c: %m, %f:%l: %m, %f:%l:%c %m",
   }, cmd)
 end
 
