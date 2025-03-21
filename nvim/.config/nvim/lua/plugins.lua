@@ -985,6 +985,13 @@ require("lazy").setup {
     end,
   },
 
+  -- {
+  --   "milanglacier/minuet-ai.nvim",
+  --   config = function()
+  --     require "config/minuet_ai"
+  --   end,
+  -- },
+
   -- colorscheme
   { "yorumicolors/yorumi.nvim" },
 
