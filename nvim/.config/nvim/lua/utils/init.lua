@@ -80,4 +80,37 @@ M.is_terminal_buffer = function()
   local bufname = vim.fn.bufname "%"
   return string.find(bufname, "^term://") ~= nil
 end
+
+M.get_go_nearest_function = function()
+  local ts_utils = require "nvim-treesitter.ts_utils"
+  -- Get the current node at cursor position
+  local node = ts_utils.get_node_at_cursor()
+
+  -- Traverse up the node tree to find the nearest function declaration
+  while node and node:type() ~= "function_declaration" do
+    node = node:parent() -- Move to parent node
+  end
+
+  -- Check if we found a valid function declaration
+  if node and node:type() == "function_declaration" then
+    -- Get first child node
+    local child = node:child(0)
+    local child_count = node:child_count() -- Get total number of children
+
+    -- Iterate through all child nodes
+    for i = 0, child_count - 1 do
+      child = node:child(i) -- Get current child node
+
+      -- Check if child is an identifier (function name)
+      if child:type() == "identifier" then
+        -- Return the function name text
+        return vim.treesitter.get_node_text(child, 0)
+      end
+    end
+  end
+
+  -- If no function name found, return nil
+  return nil
+end
+
 return M

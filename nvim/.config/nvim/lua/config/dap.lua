@@ -153,3 +153,34 @@ dap.configurations.go = {
     program = "./${relativeFileDirname}",
   },
 }
+--
+
+vim.keymap.set("n", "<F6>", function()
+  local utils = require "utils"
+  local cwd = vim.fn.getcwd()
+  local buf_name = vim.api.nvim_buf_get_name(0)
+  local dir = vim.fn.fnamemodify(buf_name, ":p:h")
+  local testpath = utils.relative_path(cwd, dir)
+  local go_ts = require "utils"
+  local testname = go_ts.get_go_nearest_function()
+  if testname == nil then
+    return
+  end
+
+  print("testname is " .. testname)
+  print("relative_path is " .. testpath)
+
+  local build_flags = "-tags='integration_test,unit_test' -gcflags=all=-l"
+  local config = {
+    type = "go",
+    name = testname,
+    request = "launch",
+    mode = "test",
+    program = testpath,
+    args = { "-test.run", "^" .. testname .. "$" },
+    buildFlags = build_flags,
+    outputMode = "remote",
+  }
+  local dap = require "dap"
+  dap.run(config)
+end, { silent = true, desc = "debug test case" })

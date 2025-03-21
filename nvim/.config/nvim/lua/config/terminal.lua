@@ -26,39 +26,8 @@ local function _Tig_TOGGLE()
   tig:toggle()
 end
 
-local ts_utils = require "nvim-treesitter.ts_utils"
-local function get_go_nearest_function()
-  -- Get the current node at cursor position
-  local node = ts_utils.get_node_at_cursor()
-
-  -- Traverse up the node tree to find the nearest function declaration
-  while node and node:type() ~= "function_declaration" do
-    node = node:parent() -- Move to parent node
-  end
-
-  -- Check if we found a valid function declaration
-  if node and node:type() == "function_declaration" then
-    -- Get first child node
-    local child = node:child(0)
-    local child_count = node:child_count() -- Get total number of children
-
-    -- Iterate through all child nodes
-    for i = 0, child_count - 1 do
-      child = node:child(i) -- Get current child node
-
-      -- Check if child is an identifier (function name)
-      if child:type() == "identifier" then
-        -- Return the function name text
-        return vim.treesitter.get_node_text(child, 0)
-      end
-    end
-  end
-
-  -- If no function name found, return nil
-  return nil
-end
-
 local function get_zig_test_declaration()
+  local ts_utils = require "nvim-treesitter.ts_utils"
   local node = ts_utils.get_node_at_cursor()
   -- 获取父parent node
   while node and node:type() ~= "TestDecl" do
@@ -95,7 +64,8 @@ local function get_test_command()
     return
   end
   -- 获取当前buffer的绝对路径
-  local function_name = get_go_nearest_function()
+  local go_ts = require "utils"
+  local function_name = go_ts.get_go_nearest_function()
   -- function name whether start with Test
   if not function_name then
     -- message notice
