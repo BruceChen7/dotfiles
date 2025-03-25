@@ -59,50 +59,16 @@ require("lazy").setup {
     end,
   },
 
-  -- -- adds vscode-like pictograms to neovim built-in lsp
-  { "onsails/lspkind-nvim" },
-
-  -- {
-  --   "iguanacucumber/magazine.nvim",
-  --   name = "nvim-cmp", -- Otherwise highlighting gets messed up
-  --   config = function()
-  --     require "config/cmp"
-  --     require "config/md_source"
-  --   end,
-  -- },
-  -- {
-  --   -- "hrsh7th/nvim-cmp", -- Autocompletion plugin
-  --   "yioneko/nvim-cmp",
-  --   branch = "perf",
-  --   event = "InsertEnter",
-  --   dependencies = {
-  --     "hrsh7th/cmp-nvim-lsp",
-  --     "hrsh7th/cmp-cmdline",
-  --     "hrsh7th/cmp-buffer",
-  --     "hrsh7th/cmp-path",
-  --     "hrsh7th/cmp-nvim-lua",
-  --     "hrsh7th/cmp-nvim-lsp-document-symbol",
-  --     "tamago324/cmp-zsh",
-  --     "hrsh7th/cmp-calc",
-  --   },
-  --   -- event = "InsertEnter",
-  --   config = function()
-  --     require "config/cmp"
-  --     require "config/md_source"
-  --   end,
-  --   -- branch = "main",
-  --   -- https://www.reddit.com/r/neovim/comments/162q5ca/whats_your_favorite_unknown_nvimvim_plugin/
-  --   -- commit = "6c84bc75c64f778e9f1dcb798ed41c7fcb93b639",
-  --   -- ft = { "go", "lua", "python", "zig", "rust" },
-  -- },
-
-  -- {
-  --   "j-hui/fidget.nvim",
-  --   config = function()
-  --     require("fidget").setup()
-  --   end,
-  --   event = "VeryLazy",
-  -- },
+  {
+    "Goose97/timber.nvim",
+    version = "*", -- Use for stability; omit to use `main` branch for the latest features
+    event = "VeryLazy",
+    config = function()
+      require("timber").setup {
+        -- Configuration here, or leave empty to use defaults
+      }
+    end,
+  },
 
   {
     "skywind3000/gutentags_plus",
@@ -985,13 +951,6 @@ require("lazy").setup {
     end,
   },
 
-  -- {
-  --   "milanglacier/minuet-ai.nvim",
-  --   config = function()
-  --     require "config/minuet_ai"
-  --   end,
-  -- },
-
   -- colorscheme
   { "yorumicolors/yorumi.nvim" },
 
@@ -1394,7 +1353,7 @@ require("lazy").setup {
       -- Only if you care about using the /editor command
       "willothy/flatten.nvim",
     },
-    lazy = false,
+    lazy = true,
     keys = {
       {
         "<leader>as",
