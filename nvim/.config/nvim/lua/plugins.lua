@@ -57,6 +57,7 @@ require("lazy").setup {
     config = function()
       require "config/hydra"
     end,
+    lazy = true,
   },
 
   {
@@ -79,7 +80,7 @@ require("lazy").setup {
     "saghen/blink.cmp",
     event = "BufReadPre",
     -- event = "LspAttach",
-    version = "v0.*", -- REQUIRED release tag to download pre-built binaries
+    version = "v1.*", -- REQUIRED release tag to download pre-built binaries
     -- build = "cargo build --release",
     opts = {
       appearance = {
@@ -937,6 +938,7 @@ require("lazy").setup {
       require "config/lsp"
     end,
     event = "VeryLazy",
+    -- lazy = true,
   },
 
   { "meznaric/key-analyzer.nvim", opts = {} },

@@ -18,6 +18,7 @@ map(
 )
 
 local dap = require "dap"
+dap.set_log_level "TRACE"
 vim.keymap.set("n", "\\gb", dap.run_to_cursor, { silent = true, desc = "DAP run to cursor" })
 
 -- require("dap").defaults.fallback.switchbuf = "useopen"
@@ -125,33 +126,6 @@ dap.configurations.go = {
     request = "launch",
     program = "${file}",
   },
-  {
-    type = "go",
-    name = "Debug Package",
-    request = "launch",
-    program = "${fileDirname}",
-  },
-  {
-    type = "go",
-    name = "Attach",
-    mode = "local",
-    request = "attach",
-    processId = require("dap.utils").pick_process,
-  },
-  {
-    type = "go",
-    name = "Debug test",
-    request = "launch",
-    mode = "test",
-    program = "${file}",
-  },
-  {
-    type = "go",
-    name = "Debug test (go.mod)",
-    request = "launch",
-    mode = "test",
-    program = "./${relativeFileDirname}",
-  },
 }
 --
 
@@ -164,6 +138,7 @@ vim.keymap.set("n", "<F6>", function()
   local go_ts = require "utils"
   local testname = go_ts.get_go_nearest_function()
   if testname == nil then
+    print "testname is nil"
     return
   end
 
@@ -179,8 +154,8 @@ vim.keymap.set("n", "<F6>", function()
     program = testpath,
     args = { "-test.run", "^" .. testname .. "$" },
     buildFlags = build_flags,
-    outputMode = "remote",
   }
+  print(vim.inspect(config))
   local dap = require "dap"
   dap.run(config)
 end, { silent = true, desc = "debug test case" })
