@@ -145,7 +145,7 @@ vim.keymap.set("n", "<F6>", function()
   print("testname is " .. testname)
   print("relative_path is " .. testpath)
 
-  local build_flags = "-tags='integration_test,unit_test' -gcflags=all=-l"
+  local build_flags = "-tags='integration_test,unit_test' -gcflags=all=-l -v -run"
   local config = {
     type = "go",
     name = testname,
