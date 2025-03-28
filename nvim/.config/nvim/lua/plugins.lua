@@ -1340,71 +1340,65 @@ require("lazy").setup {
     },
   },
 
-  {
-    "aweis89/aider.nvim",
-    dependencies = {
-      -- required for core functionality
-      "akinsho/toggleterm.nvim",
-
-      -- Optional, but great for diff viewing and after_update_hook integration
-      "sindrets/diffview.nvim",
-
-      -- Optional but will show aider spinner whenever active
-      "folke/snacks.nvim",
-
-      -- Only if you care about using the /editor command
-      "willothy/flatten.nvim",
-    },
-    lazy = true,
-    keys = {
-      {
-        "<leader>as",
-        "<cmd>AiderSpawn<CR>",
-        desc = "Toggle Aidper (default)",
-      },
-      {
-        "<leader>aa",
-        "<cmd>AiderToggle<CR>",
-        desc = "Toggle Aider",
-      },
-      {
-        "<leader>af",
-        "<cmd>AiderToggle float<CR>",
-        desc = "Toggle Aider Float",
-      },
-      {
-        "<leader>av",
-        "<cmd>AiderToggle vertical<CR>",
-        desc = "Toggle Aider Float",
-      },
-      {
-        "<leader>al",
-        "<cmd>AiderAdd<CR>",
-        desc = "Add file to Aider",
-      },
-      {
-        "<leader>ad",
-        "<cmd>AiderAsk<CR>",
-        desc = "Aider Ask with selection",
-        mode = { "v", "n" },
-      },
-    },
-    config = function()
-      require("aider").setup {
-        aider_args = { "--no-auto-commits", "--no-dirty-commits" },
-        auto_show = {
-          on_ask = true, -- e.x. `ai? comment`
-          on_change_req = true, -- e.x. `ai! comment`
-          on_file_add = true, -- e.x. when using Telescope or `AiderLoad` to add files
-        },
-
-        use_git_stash = false,
-        after_update_hook = function()
-          -- require("diffview").open { "HEAD^" }
-        end,
-      }
-    end,
-  },
+  -- {
+  --   "aweis89/aider.nvim",
+  --   dependencies = {
+  --     -- required for core functionality
+  --     "akinsho/toggleterm.nvim",
+  --
+  --     -- Optional, but great for diff viewing and after_update_hook integration
+  --     "sindrets/diffview.nvim",
+  --
+  --     -- Optional but will show aider spinner whenever active
+  --     "folke/snacks.nvim",
+  --
+  --     -- Only if you care about using the /editor command
+  --     "willothy/flatten.nvim",
+  --   },
+  --   keys = {
+  --     {
+  --       "<leader>aa",
+  --       "<cmd>AiderToggle<CR>",
+  --       desc = "Toggle Aider",
+  --     },
+  --     {
+  --       "<leader>af",
+  --       "<cmd>AiderToggle float<CR>",
+  --       desc = "Toggle Aider Float",
+  --     },
+  --     {
+  --       "<leader>av",
+  --       "<cmd>AiderToggle vertical<CR>",
+  --       desc = "Toggle Aider Float",
+  --     },
+  --     {
+  --       "<leader>al",
+  --       "<cmd>AiderAdd<CR>",
+  --       desc = "Add file to Aider",
+  --     },
+  --     {
+  --       "<leader>ad",
+  --       "<cmd>AiderAsk<CR>",
+  --       desc = "Aider Ask with selection",
+  --       mode = { "v", "n" },
+  --     },
+  --   },
+  --   config = function()
+  --     require("aider").setup {
+  --       aider_args = { "--no-auto-commits", "--no-dirty-commits", "--subtree-only" },
+  --       auto_show = {
+  --         on_ask = true, -- e.x. `ai? comment`
+  --         on_change_req = true, -- e.x. `ai! comment`
+  --         on_file_add = true, -- e.x. when using Telescope or `AiderLoad` to add files
+  --       },
+  --
+  --       use_git_stash = false,
+  --       after_update_hook = function()
+  --         -- require("diffview").open { "HEAD^" }
+  --       end,
+  --     }
+  --   end,
+  -- },
   {
     "aaronik/treewalker.nvim",
     opts = {
@@ -1416,6 +1410,32 @@ require("lazy").setup {
       vim.keymap.set("n", "\\wk", ":Treewalker Up<CR>", { noremap = true, desc = "Treewalker up" })
       vim.keymap.set("n", "\\wh", ":Treewalker Left<CR>", { noremap = true, desc = "treewalker left" })
       vim.keymap.set("n", "\\wl", ":Treewalker Right<CR>", { noremap = true, desc = "treewalker right" })
+    end,
+  },
+
+  {
+    "GeorgesAlkhouri/nvim-aider",
+    cmd = {
+      "AiderTerminalToggle",
+      "AiderHealth",
+    },
+    keys = {
+      { "<leader>a/", "<cmd>AiderTerminalToggle<cr>", desc = "Open Aider" },
+      { "<leader>as", "<cmd>AiderTerminalSend<cr>", desc = "Send to Aider", mode = { "n", "v" } },
+      { "<leader>ac", "<cmd>AiderQuickSendCommand<cr>", desc = "Send Command To Aider" },
+      { "<leader>ab", "<cmd>AiderQuickSendBuffer<cr>", desc = "Send Buffer To Aider" },
+      { "<leader>a+", "<cmd>AiderQuickAddFile<cr>", desc = "Add File to Aider" },
+      { "<leader>a-", "<cmd>AiderQuickDropFile<cr>", desc = "Drop File from Aider" },
+      { "<leader>ar", "<cmd>AiderQuickReadOnlyFile<cr>", desc = "Add File as Read-Only" },
+      -- Example nvim-tree.lua integration if needed
+      { "<leader>a+", "<cmd>AiderTreeAddFile<cr>", desc = "Add File from Tree to Aider", ft = "NvimTree" },
+      { "<leader>a-", "<cmd>AiderTreeDropFile<cr>", desc = "Drop File from Tree from Aider", ft = "NvimTree" },
+    },
+    dependencies = {
+      "folke/snacks.nvim",
+    },
+    config = function()
+      require "config/aider"
     end,
   },
 }

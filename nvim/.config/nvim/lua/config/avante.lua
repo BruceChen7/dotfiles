@@ -13,6 +13,10 @@ require("avante").setup {
     ask = "\\ak",
     edit = "\\am",
     refresh = "\\ar",
+    focus = "\\af",
+    select_history = "\\ah", -- Select history command
+    select_model = "\\a?", -- Select model command
+
     --- @class AvanteConflictMappings
     diff = {
       ours = "\\co",
@@ -35,6 +39,13 @@ require("avante").setup {
       -- next = "<\\n>",
       -- prev = "<[\\p>",
       -- dismiss = "<\\]>",
+    },
+    toggle = {
+      default = "\\at",
+      debug = "\\ad",
+      hint = "\\ah",
+      suggestion = "\\as",
+      repomap = "\\aR",
     },
   },
   vendors = {
