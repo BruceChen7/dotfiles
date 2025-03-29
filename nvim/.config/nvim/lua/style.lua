@@ -65,7 +65,7 @@ augroup InitFileTypesGroup
 augroup END
 ]]
 
-local function getColorscheme()
+local function color_scheme()
   local colorschemes = { --"vscode",
     -- "nightfox",
     -- "dayfox",
@@ -97,5 +97,5 @@ local function getColorscheme()
   return scheme
 end
 
-local scheme = getColorscheme()
+local scheme = color_scheme()
 vim.api.nvim_command("colorscheme " .. scheme)
