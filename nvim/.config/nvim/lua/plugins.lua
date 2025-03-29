@@ -422,7 +422,7 @@ require("lazy").setup {
         },
         exclude = {
           -- do not show them on the vuffers list
-          filenames = { "term://" },
+          filenames = { "term://", "fern" },
           filetypes = { "lazygit", "NvimTree", "qf" },
         },
         handlers = {
@@ -434,14 +434,14 @@ require("lazy").setup {
         keymaps = {
           -- if false, no bindings will be provided at all
           -- thus you will have to bind on your own
-          use_default = false,
+          use_default = true,
           -- key maps on the vuffers list
           -- - may map multiple keys for the same action
           --    open = { "<CR>", "<C-l>" }
           -- - disable a specific binding using "false"
           --    open = false
           view = {
-            open = "<c-9>",
+            open = "<cr>",
             delete = "d",
             pin = "p",
             unpin = "P",
@@ -461,13 +461,20 @@ require("lazy").setup {
           modified_icon = "󰛿", -- when a buffer is modified, this icon will be shown
           pinned_icon = "󰐾",
           window = {
-            auto_resize = false,
+            auto_resize = true,
             width = 35,
             focus_on_open = false,
           },
         },
       }
+      vim.keymap.set(
+        "n",
+        "\\\\",
+        "<cmd>lua require('vuffers').toggle()<cr>",
+        { noremap = true, desc = "toggle vuffers" }
+      )
     end,
+    event = "VeryLazy",
   },
 
   {
@@ -1255,7 +1262,7 @@ require("lazy").setup {
         desc = "Location List",
       },
       {
-        "\\\\",
+        "<leader>sm",
         function()
           Snacks.picker.marks()
         end,
@@ -1504,5 +1511,6 @@ require("lazy").setup {
     config = function()
       require "config/aider"
     end,
+    event = "VeryLazy",
   },
 }

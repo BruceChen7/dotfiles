@@ -33,6 +33,11 @@ vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
   callback = update_winbar,
 })
 
+-- This code is in your nvim/.config/nvim/after/plugin/winbar.lua file and is doing a few things:
+--  1 It creates an autocmd that triggers on VimEnter (when Vim starts up)
+--  2 When triggered, it:
+--     • Sets tabline option to empty string (""), which hides the tab bar
+--     • Sets showtabline option to 0, which means "never show the tab bar"
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
     vim.opt.tabline = ""
