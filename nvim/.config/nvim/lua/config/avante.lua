@@ -3,7 +3,7 @@ require("avante").setup {
   behaviour = {
     auto_suggestions = false,
     -- auto_set_keymaps = false,
-    enable_cursor_planning_mode = false, -- enable cursor planning mode!
+    enable_cursor_planning_mode = false, -- enable cursor planning mod
   },
   -- provider = "deepseek",
   provider = "freedeepseek",
@@ -54,19 +54,23 @@ require("avante").setup {
       api_key_name = "DEEPSEEK_API_KEY",
       endpoint = "https://api.deepseek.com",
       model = "deepseek-chat",
+      max_tokens = 8192, -- remember to increase this value, otherwise it will stop generating halfway
     },
     groq = { -- define groq provider
       __inherited_from = "openai",
-      api_key_name = "GROQ_API_KEY",
-      endpoint = "https://api.groq.com/openai/v1/",
-      model = "llama-3.3-70b-versatile",
+      -- api_key_name = "GROQ_API_KEY",
+      api_key_name = "FREE_DEEPSEEK_API_KEY",
+      -- endpoint = "https://api.groq.com/openai/v1/",
+      endpoint = "https://ai.nahcrof.com/v2",
+      model = "llama3.3-70b",
       max_tokens = 32768, -- remember to increase this value, otherwise it will stop generating halfway
     },
     freedeepseek = {
       __inherited_from = "openai",
       api_key_name = "FREE_DEEPSEEK_API_KEY",
       endpoint = "https://ai.nahcrof.com/v2",
-      model = "deepseek-r1",
+      model = "deepseek-v3-0324",
+      max_tokens = 8192, -- remember to increase this value, otherwise it will stop generating halfway
     },
   },
 }

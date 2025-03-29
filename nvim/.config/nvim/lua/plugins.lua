@@ -611,7 +611,7 @@ require("lazy").setup {
         async_switch_im = true,
       }
     end,
-    event = "InsertEnter",
+    -- event = "InsertEnter",
   },
 
   -- amongst your other plugins
@@ -1414,65 +1414,6 @@ require("lazy").setup {
     },
   },
 
-  -- {
-  --   "aweis89/aider.nvim",
-  --   dependencies = {
-  --     -- required for core functionality
-  --     "akinsho/toggleterm.nvim",
-  --
-  --     -- Optional, but great for diff viewing and after_update_hook integration
-  --     "sindrets/diffview.nvim",
-  --
-  --     -- Optional but will show aider spinner whenever active
-  --     "folke/snacks.nvim",
-  --
-  --     -- Only if you care about using the /editor command
-  --     "willothy/flatten.nvim",
-  --   },
-  --   keys = {
-  --     {
-  --       "<leader>aa",
-  --       "<cmd>AiderToggle<CR>",
-  --       desc = "Toggle Aider",
-  --     },
-  --     {
-  --       "<leader>af",
-  --       "<cmd>AiderToggle float<CR>",
-  --       desc = "Toggle Aider Float",
-  --     },
-  --     {
-  --       "<leader>av",
-  --       "<cmd>AiderToggle vertical<CR>",
-  --       desc = "Toggle Aider Float",
-  --     },
-  --     {
-  --       "<leader>al",
-  --       "<cmd>AiderAdd<CR>",
-  --       desc = "Add file to Aider",
-  --     },
-  --     {
-  --       "<leader>ad",
-  --       "<cmd>AiderAsk<CR>",
-  --       desc = "Aider Ask with selection",
-  --       mode = { "v", "n" },
-  --     },
-  --   },
-  --   config = function()
-  --     require("aider").setup {
-  --       aider_args = { "--no-auto-commits", "--no-dirty-commits", "--subtree-only" },
-  --       auto_show = {
-  --         on_ask = true, -- e.x. `ai? comment`
-  --         on_change_req = true, -- e.x. `ai! comment`
-  --         on_file_add = true, -- e.x. when using Telescope or `AiderLoad` to add files
-  --       },
-  --
-  --       use_git_stash = false,
-  --       after_update_hook = function()
-  --         -- require("diffview").open { "HEAD^" }
-  --       end,
-  --     }
-  --   end,
-  -- },
   {
     "aaronik/treewalker.nvim",
     opts = {

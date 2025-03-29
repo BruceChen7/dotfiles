@@ -27,16 +27,19 @@ local function _Tig_TOGGLE()
 end
 
 local function get_zig_test_declaration()
-  local ts_utils = require "nvim-treesitter.ts_utils"
-  local node = ts_utils.get_node_at_cursor()
+  -- 定义一个函数来获取Zig测试声明
+  local ts_utils = require "nvim-treesitter.ts_utils" -- 导入Treesitter的utils模块
+  local node = ts_utils.get_node_at_cursor() -- 获取当前光标下的节点
   -- 获取父parent node
   while node and node:type() ~= "TestDecl" do
-    -- print(node:type())
-    node = node:parent()
+    -- print(node:type()) -- 打印节点类型（调试用）
+    node = node:parent() -- 获取父节点
   end
   if node and node:type() == "TestDecl" then
+    -- 如果节点类型是TestDecl，则返回true
     return true
   else
+    -- 否则返回false
     return false
   end
 end
@@ -173,21 +176,30 @@ local function run_test_command(cmd)
   }, cmd)
 end
 
+-- 设置按键映射，按下<F2>时执行以下函数
 vim.keymap.set("n", "<F2>", function()
+  -- 获取测试命令
   local cmd = get_test_command()
   if cmd == nil then
+    -- 如果命令为空，则返回
     return
   end
 
   local utils = require "utils"
+  -- 加载utils模块
   local spex_config = get_spex_config()
+  -- 获取spex配置
   if spex_config then
+    -- 如果配置存在，则启动spex作业
     start_spex_job(spex_config)
   end
 
   utils.change_to_current_buffer_root_dir()
+  -- 切换到当前缓冲区的根目录
   run_test_command(cmd)
+  -- 运行测试命令
 end, { desc = "open go test in quickfix" })
+-- 设置按键映射的描述
 
 local get_go_build_cmd = function()
   local utils = require "utils"
