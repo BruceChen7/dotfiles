@@ -203,14 +203,6 @@ require("lazy").setup {
   },
 
   {
-    "anuvyklack/hydra.nvim",
-    event = "VeryLazy",
-    config = function()
-      require "config/hydra"
-    end,
-  },
-
-  {
     "lewis6991/gitsigns.nvim",
     dependencies = {
       "nvim-lua/plenary.nvim",

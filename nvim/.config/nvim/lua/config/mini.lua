@@ -21,6 +21,9 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 require("mini.pairs").setup {}
 
 local miniclue = require "mini.clue"
+
+-- 1. 当用户按下 `keys` 定义的按键组合时，会显示对应的 clue 提示
+-- 2. 执行完该操作后，`postkeys` 会自动输入指定的按键序列，让用户保持在原来的"模式"中
 miniclue.setup {
   triggers = {
     -- Leader triggers
@@ -58,6 +61,18 @@ miniclue.setup {
     { mode = "n", keys = "zgj", postkeys = "zg", desc = "next close fold" },
     { mode = "n", keys = "zgk", postkeys = "zg", desc = "privious close fold" },
     { mode = "n", keys = "zgK", postkeys = "zg", desc = "peek fold" },
+
+    { mode = "n", keys = "<space>g;", postkeys = "<space>g", desc = "edit last pos navigation" },
+    { mode = "n", keys = "<space>g,", postkeys = "<space>g,", desc = "edit next pos navigation" },
+
+    { mode = { "n", "t" }, keys = "\\tn", postkeys = "\\t", desc = "next tab page" },
+    { mode = { "n", "t" }, keys = "\\tp", postkeys = "\\t", desc = "previous tab page" },
+
+    { mode = "n", keys = "<space>h-", postkeys = "<space>h", desc = "previous hunk" },
+    { mode = "n", keys = "<space>h=", postkeys = "<space>h", desc = "next hunk" },
+
+    { mode = "n", keys = "g;", postkeys = "g", desc = "last edit position in current file" },
+    { mode = "n", keys = "g,", postkeys = "g", desc = "next edit position in current file" },
   },
   window = {
     delay = 200,

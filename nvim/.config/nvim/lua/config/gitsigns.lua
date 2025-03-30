@@ -90,6 +90,8 @@ signs.setup {
       gs.diffthis "~"
     end)
     map("n", "<leader>td", gs.toggle_deleted)
+    map("n", "<space>h-", gs.prev_hunk, { desc = "Previous Hunk" })
+    map("n", "<space>h=", gs.next_hunk, { desc = "Next Hunk" })
 
     -- Text object
     map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>")

@@ -465,3 +465,11 @@ vim.keymap.set("x", "g/", "<Esc>/\\%V")
 vim.keymap.set("n", "<space>v,", function()
   vim.cmd ":vertical resize -5<cr>"
 end, { desc = "vertical size decrease" })
+
+vim.keymap.set("n", "g;", function()
+  vim.cmd "silent normal! g;"
+end, { silent = true, desc = "last edit position in current file" })
+
+vim.keymap.set("n", "g,", function()
+  vim.cmd "silent normal! g,"
+end, { silent = true, desc = "next edit position in current file" })
