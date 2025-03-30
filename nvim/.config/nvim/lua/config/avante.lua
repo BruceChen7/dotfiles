@@ -3,7 +3,7 @@ require("avante").setup {
   behaviour = {
     auto_suggestions = false,
     -- auto_set_keymaps = false,
-    enable_cursor_planning_mode = false, -- enable cursor planning mod
+    enable_cursor_planning_mode = true, -- enable cursor planning mod
   },
   -- provider = "deepseek",
   provider = "freedeepseek",

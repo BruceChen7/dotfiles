@@ -788,7 +788,7 @@ require("lazy").setup {
     "yetone/avante.nvim",
     lazy = false,
     build = "make BUILD_FROM_SOURCE=true",
-    -- version = "v0.*",
+    version = "v0.*",
     dependencies = {
       -- "nvim-tree/nvim-web-devicons",
       "echasnovski/mini.nvim",
