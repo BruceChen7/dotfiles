@@ -247,6 +247,25 @@ require("mini.extra").setup {}
 require("mini.notify").setup()
 
 -- https://www.youtube.com/watch?v=cNK5kYJ7mrs&t=742s
+--
+-- ### Usage
+-- To use Mini Operators, you need to configure the plugin and define the operators you want to use. Here's an example of how to use the plugin:
+--
+-- #### Evaluate
+-- To evaluate text, you can use the `g=` prefix. For example, if you want to evaluate a mathematical expression, you can select the text and press `g=`.
+--
+-- #### Exchange
+-- To exchange two text regions, you can use the `ge` prefix. For example, if you want to swap two lines of text, you can select the first line and press `ge`, then select the second line and press `ge` again.
+--
+-- #### Multiply
+-- To multiply text, you can use the `gm` prefix. For example, if you want to duplicate a line of text, you can select the line and press `gm`.
+--
+-- #### Replace
+-- To replace text with the contents of a register, you can use the `gp` prefix. For example, if you want to replace a line of text with the contents of register `a`, you can select the line and press `gp`, then press `a`.
+--
+-- #### Sort
+-- To sort text, you can use the `\\gs` prefix. For example, if you want to sort a list of lines, you can select the lines and press `\\gs`.
+--
 require("mini.operators").setup {
   -- Evaluate text and replace with output
   evaluate = {
