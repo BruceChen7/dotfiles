@@ -6,7 +6,8 @@ require("avante").setup {
     enable_cursor_planning_mode = true, -- enable cursor planning mod
   },
   -- provider = "deepseek",
-  provider = "freedeepseek",
+  -- provider = "freedeepseek",
+  provider = "openrouter",
   cursor_applying_provider = "groq",
   -- auto_suggestions_provider = "deepseek",
   mappings = {
@@ -47,14 +48,40 @@ require("avante").setup {
       suggestion = "\\as",
       repomap = "\\aR",
     },
+    cancel = {
+      normal = { "<C-c>", "<Esc>", "q" },
+      insert = { "<C-c>" },
+    },
+    sidebar = {
+      apply_all = "A",
+      apply_cursor = "a",
+      retry_user_request = "r",
+      edit_user_request = "e",
+      switch_windows = "<Tab>",
+      reverse_switch_windows = "<S-Tab>",
+      remove_file = "d",
+      add_file = "@",
+      close = { "q" },
+      close_from_input = nil, -- e.g., { normal = "<Esc>", insert = "<C-d>" }
+    },
   },
   vendors = {
+    openrouter = {
+      __inherited_from = "openai",
+      endpoint = "https://openrouter.ai/api/v1",
+      api_key_name = "OPENROUTER_API_KEY",
+      -- model = "google/gemini-2.5-pro-exp-03-25:free",
+      -- model = "deepseek/deepseek-r1:free",
+      model = "deepseek/deepseek-chat-v3-0324:free",
+      disable_tools = true,
+    },
     deepseek = {
       __inherited_from = "openai",
       api_key_name = "DEEPSEEK_API_KEY",
       endpoint = "https://api.deepseek.com",
       model = "deepseek-chat",
       max_tokens = 8192, -- remember to increase this value, otherwise it will stop generating halfway
+      temperature = 0,
     },
     groq = { -- define groq provider
       __inherited_from = "openai",
@@ -71,6 +98,7 @@ require("avante").setup {
       endpoint = "https://ai.nahcrof.com/v2",
       model = "deepseek-v3-0324",
       max_tokens = 8192, -- remember to increase this value, otherwise it will stop generating halfway
+      temperature = 0,
     },
   },
 }
