@@ -72,7 +72,11 @@ require("lazy").setup {
     event = "BufReadPre",
     -- event = "LspAttach",
     version = "v1.*", -- REQUIRED release tag to download pre-built binaries
-    -- build = "cargo build --release",
+    build = "cargo build --release",
+    dependencies = {
+      "Kaiser-Yang/blink-cmp-avante",
+      -- ... Other dependencies
+    },
     opts = {
       appearance = {
         -- Sets the fallback highlight groups to nvim-cmp's highlight groups
@@ -104,7 +108,16 @@ require("lazy").setup {
       },
       sources = {
         -- Remove 'buffer' if you don't want text completions, by default it's only enabled when LSP returns no items
-        default = { "lsp", "path", "snippets", "buffer" },
+        default = { "avante", "lsp", "path", "snippets", "buffer" },
+        providers = {
+          avante = {
+            module = "blink-cmp-avante",
+            name = "Avante",
+            opts = {
+              -- options for blink-cmp-avante
+            },
+          },
+        },
       },
       cmdline = {
         enabled = true,
