@@ -1095,6 +1095,7 @@ require("lazy").setup {
       },
     },
     ft = { "markdown", "Avante" },
+    version = "v8.1.0",
   },
   {
     "folke/snacks.nvim",
