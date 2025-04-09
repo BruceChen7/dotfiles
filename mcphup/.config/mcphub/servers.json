@@ -1,0 +1,19 @@
+{
+  "nativeMCPServers": [
+  ],
+  "mcpServers": {
+    "repomix": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "repomix",
+        "--mcp"
+      ],
+      "disabled_tools": [
+      ],
+      "custom_instructions": {
+        "disabled": false
+      }
+    }
+  }
+}
