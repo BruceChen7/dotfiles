@@ -1466,7 +1466,7 @@ require("lazy").setup {
         vim.api.nvim_set_keymap(
           "n",
           "<leader>aa",
-          ":AiderOpen --no-auto-commits --model openrouter/deepseek/deepseek-chat-v3-0324:free --stream --watch-files --subtree-only<CR>",
+          ":AiderOpen --no-auto-commits --model openrouter/deepseek/deepseek-chat-v3-0324:free --stream --watch-files --subtree-only <CR>",
           { noremap = true, silent = true, desc = "Aider Open" }
         ),
         vim.api.nvim_set_keymap(

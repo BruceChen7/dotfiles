@@ -8,7 +8,8 @@ require("avante").setup {
   -- provider = "deepseek",
   -- provider = "freedeepseek",
   provider = "openrouter",
-  cursor_applying_provider = "groq",
+  -- cursor_applying_provider = "groq",
+  cursor_applying_provider = "real_groq",
   -- auto_suggestions_provider = "deepseek",
   mappings = {
     ask = "\\ak",
@@ -91,6 +92,13 @@ require("avante").setup {
       -- endpoint = "https://api.groq.com/openai/v1/",
       endpoint = "https://ai.nahcrof.com/v2",
       model = "llama3.3-70b",
+      max_tokens = 32768, -- remember to increase this value, otherwise it will stop generating halfway
+    },
+    real_groq = { -- define groq provider
+      __inherited_from = "openai",
+      api_key_name = "GROQ_API_KEY",
+      endpoint = "https://api-proxy.me/groq/v1",
+      model = "llama-3.3-70b-versatile",
       max_tokens = 32768, -- remember to increase this value, otherwise it will stop generating halfway
     },
     freedeepseek = {
