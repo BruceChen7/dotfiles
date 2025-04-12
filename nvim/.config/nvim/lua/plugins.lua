@@ -798,7 +798,7 @@ require("lazy").setup {
     "yetone/avante.nvim",
     lazy = false,
     build = "make BUILD_FROM_SOURCE=true",
-    version = "v0.*",
+    -- version = "v0.*",
     dependencies = {
       -- "nvim-tree/nvim-web-devicons",
       "echasnovski/mini.nvim",
@@ -815,6 +815,19 @@ require("lazy").setup {
       require "config/avante"
     end,
   },
+
+  -- {
+  --   "augmentcode/augment.vim",
+  --   config = function()
+  --     -- inoremap <c-y> <cmd>call augment#Accept()<cr>
+  --     vim.keymap.set(
+  --       "i",
+  --       "<C-y>",
+  --       "<cmd>call augment#Accept()<CR>",
+  --       { noremap = true, silent = true, desc = "Accept augment completion" }
+  --     )
+  --   end,
+  -- },
 
   -- {
   --   "magicalne/nvim.ai",
@@ -1452,7 +1465,7 @@ require("lazy").setup {
         vim.api.nvim_set_keymap(
           "n",
           "<leader>aa",
-          ":AiderOpen --no-auto-commits --stream --watch-files --subtree-only<CR>",
+          ":AiderOpen --no-auto-commits --model openrouter/deepseek/deepseek-chat-v3-0324:free --stream --watch-files --subtree-only<CR>",
           { noremap = true, silent = true, desc = "Aider Open" }
         ),
         vim.api.nvim_set_keymap(
