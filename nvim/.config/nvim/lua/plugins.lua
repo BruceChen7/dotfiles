@@ -754,11 +754,12 @@ require("lazy").setup {
       end, { desc = "Toggle Tiny Inline Diagnostic" })
     end,
   },
+
   {
     "carbon-steel/detour.nvim",
     config = function()
-      vim.keymap.set("n", "<c-w><enter>", ":Detour<cr>")
-      vim.keymap.set("n", "<c-w>.", ":DetourCurrentWindow<cr>")
+      vim.keymap.set("n", "<c-w><enter>", "<cmd>Detour<cr>")
+      vim.keymap.set("n", "<c-w>.", "<cmd>DetourCurrentWindow<cr>")
     end,
     event = "VeryLazy",
   },
@@ -1445,10 +1446,10 @@ require("lazy").setup {
       highlight_duration = 250, -- How long should above highlight last (in ms)
     },
     config = function()
-      vim.keymap.set("n", "\\wj", ":Treewalker Down<CR>", { noremap = true, desc = "treewalker down" })
-      vim.keymap.set("n", "\\wk", ":Treewalker Up<CR>", { noremap = true, desc = "Treewalker up" })
-      vim.keymap.set("n", "\\wh", ":Treewalker Left<CR>", { noremap = true, desc = "treewalker left" })
-      vim.keymap.set("n", "\\wl", ":Treewalker Right<CR>", { noremap = true, desc = "treewalker right" })
+      vim.keymap.set("n", "\\wj", "<cmd>Treewalker Down<CR>", { noremap = true, desc = "treewalker down" })
+      vim.keymap.set("n", "\\wk", "<cmd>Treewalker Up<CR>", { noremap = true, desc = "Treewalker up" })
+      vim.keymap.set("n", "\\wh", "<cmd>Treewalker Left<CR>", { noremap = true, desc = "treewalker left" })
+      vim.keymap.set("n", "\\wl", "<cmd>Treewalker Right<CR>", { noremap = true, desc = "treewalker right" })
     end,
   },
 
@@ -1466,13 +1467,13 @@ require("lazy").setup {
         vim.api.nvim_set_keymap(
           "n",
           "<leader>aa",
-          ":AiderOpen --no-auto-commits --model openrouter/deepseek/deepseek-chat-v3-0324:free --stream --watch-files --subtree-only <CR>",
+          "<cmd>AiderOpen --no-auto-commits --model openrouter/deepseek/deepseek-chat-v3-0324:free --stream --watch-files --subtree-only <CR>",
           { noremap = true, silent = true, desc = "Aider Open" }
         ),
         vim.api.nvim_set_keymap(
           "n",
           "<leader>am",
-          ":AiderAddModifiedFiles<CR>",
+          "<cmd>AiderAddModifiedFiles<CR>",
           { noremap = true, silent = true, desc = "Aider Add Modified Files" }
         ),
       }

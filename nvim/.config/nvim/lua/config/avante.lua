@@ -9,7 +9,8 @@ require("avante").setup {
   -- provider = "freedeepseek",
   provider = "openrouter",
   -- cursor_applying_provider = "groq",
-  cursor_applying_provider = "real_groq",
+  -- cursor_applying_provider = "real_groq",
+  cursor_applying_provider = "week_operouter",
   -- auto_suggestions_provider = "deepseek",
   mappings = {
     ask = "\\ak",
@@ -77,6 +78,18 @@ require("avante").setup {
       disable_tools = true,
       temperature = 0,
     },
+
+    week_operouter = {
+      __inherited_from = "openai",
+      endpoint = "https://openrouter.ai/api/v1",
+      api_key_name = "OPENROUTER_API_KEY",
+      -- model = "google/gemini-2.5-pro-exp-03-25:free",
+      -- model = "deepseek/deepseek-r1:free",
+      model = "meta-llama/llama-3.3-70b-instruct:free",
+      disable_tools = true,
+      -- temperature = 0,
+    },
+
     deepseek = {
       __inherited_from = "openai",
       api_key_name = "DEEPSEEK_API_KEY",
@@ -89,8 +102,7 @@ require("avante").setup {
       __inherited_from = "openai",
       -- api_key_name = "GROQ_API_KEY",
       api_key_name = "FREE_DEEPSEEK_API_KEY",
-      -- endpoint = "https://api.groq.com/openai/v1/",
-      endpoint = "https://ai.nahcrof.com/v2",
+      endpoint = "https://api.groq.com/openai/v1/",
       model = "llama3.3-70b",
       max_tokens = 32768, -- remember to increase this value, otherwise it will stop generating halfway
     },
@@ -104,7 +116,7 @@ require("avante").setup {
     freedeepseek = {
       __inherited_from = "openai",
       api_key_name = "FREE_DEEPSEEK_API_KEY",
-      endpoint = "https://ai.nahcrof.com/v2",
+      endpoint = "https://api.deepseek.com",
       model = "deepseek-v3-0324",
       max_tokens = 8192, -- remember to increase this value, otherwise it will stop generating halfway
       temperature = 0,
