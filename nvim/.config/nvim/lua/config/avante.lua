@@ -6,11 +6,12 @@ require("avante").setup {
     enable_cursor_planning_mode = true, -- enable cursor planning mod
   },
   -- provider = "deepseek",
-  -- provider = "freedeepseek",
-  provider = "openrouter",
+  provider = "freedeepseek",
+  -- provider = "openrouter",
   -- cursor_applying_provider = "groq",
-  -- cursor_applying_provider = "real_groq",
-  cursor_applying_provider = "week_operouter",
+  cursor_applying_provider = "real_groq",
+  memory_summary_provider = "freedeepseek",
+  -- cursor_applying_provider = "week_operouter",
   -- auto_suggestions_provider = "deepseek",
   mappings = {
     ask = "\\ak",
@@ -116,7 +117,7 @@ require("avante").setup {
     freedeepseek = {
       __inherited_from = "openai",
       api_key_name = "FREE_DEEPSEEK_API_KEY",
-      endpoint = "https://api.deepseek.com",
+      endpoint = "https://ai.nahcrof.com/v2",
       model = "deepseek-v3-0324",
       max_tokens = 8192, -- remember to increase this value, otherwise it will stop generating halfway
       temperature = 0,
