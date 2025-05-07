@@ -6,8 +6,14 @@ require("avante").setup {
     enable_cursor_planning_mode = true, -- enable cursor planning mod
   },
   mode = "legacy",
-  -- provider = "deepseek",
-  provider = "freedeepseek",
+  -- provider = "freedeepseek",
+  provider = "gemini",
+  gemini = {
+    -- proxy = "https://api-proxy.me/gemini",
+    endpoint = "https://api-proxy.me/gemini/v1beta/models",
+    model = "gemini-2.5-pro-exp-03-25",
+    max_tokens = 40960,
+  },
   -- provider = "openrouter",
   -- cursor_applying_provider = "groq",
   cursor_applying_provider = "real_groq",
@@ -74,10 +80,8 @@ require("avante").setup {
       __inherited_from = "openai",
       endpoint = "https://openrouter.ai/api/v1",
       api_key_name = "OPENROUTER_API_KEY",
-      -- model = "google/gemini-2.5-pro-exp-03-25:free",
-      -- model = "deepseek/deepseek-r1:free",
+      model = "deepseek/deepseek-r1:free",
       -- model = "deepseek/deepseek-chat-v3-0324:free",
-      model = "qwen/qwen3-235b-a22b:free",
       disable_tools = true,
       temperature = 0,
     },
@@ -115,6 +119,7 @@ require("avante").setup {
       endpoint = "https://api-proxy.me/groq/v1",
       model = "llama-3.3-70b-versatile",
       max_tokens = 32768, -- remember to increase this value, otherwise it will stop generating halfway
+      disable_tools = true,
     },
     freedeepseek = {
       __inherited_from = "openai",
@@ -122,8 +127,9 @@ require("avante").setup {
       endpoint = "https://ai.nahcrof.com/v2",
       -- model = "deepseek-v3-0324",
       model = "qwen3-235b-a22b",
-      max_tokens = 8192, -- remember to increase this value, otherwise it will stop generating halfway
+      max_tokens = 40960, -- remember to increase this value, otherwise it will stop generating halfway
       temperature = 0,
+      disable_tools = true,
     },
   },
 }
