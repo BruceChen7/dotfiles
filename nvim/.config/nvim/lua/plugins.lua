@@ -1024,13 +1024,19 @@ require("lazy").setup {
     -- Optional dependencies
     event = "VeryLazy",
   },
+  {
+    "williamboman/mason-lspconfig.nvim",
+    version = "v1.*",
+    event = "VeryLazy",
+  },
 
   {
     "junnplus/lsp-setup.nvim",
     dependencies = {
       "neovim/nvim-lspconfig",
       "williamboman/mason.nvim", -- optional
-      "williamboman/mason-lspconfig.nvim", -- optional
+      -- :LspInstall command provided by mason-lspconfig
+      -- "williamboman/mason-lspconfig.nvim", -- optional
     },
     -- branch = "inlay-hints",
     config = function()
@@ -1469,7 +1475,7 @@ require("lazy").setup {
           "n",
           "<leader>aa",
           -- "<cmd>AiderOpen --no-auto-commits --chat-mode ask --model openrouter/deepseek/deepseek-chat-v3-0324:free --stream --watch-files --subtree-only <CR>",
-          "<cmd>AiderOpen --no-auto-commits --chat-mode ask --model openrouter/qwen/qwen3-235b-a22b:free --stream --watch-files --subtree-only <CR>",
+          "<cmd>AiderOpen --no-auto-commits --chat-mode ask --model openrouter/qwen/qwen3-235b-a22b --stream --watch-files --subtree-only <CR>",
           -- "<cmd>AiderOpen --no-auto-commits --chat-mode ask --stream --watch-files --subtree-only <CR>",
           { noremap = true, silent = true, desc = "Aider Open" }
         ),
