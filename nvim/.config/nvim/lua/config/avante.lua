@@ -127,8 +127,9 @@ require("avante").setup {
       endpoint = "https://ai.nahcrof.com/v2",
       -- model = "deepseek-v3-0324",
       model = "qwen3-235b-a22b",
-      max_tokens = 40960, -- remember to increase this value, otherwise it will stop generating halfway
-      temperature = 0,
+      max_tokens = 24000, -- remember to increase this value, otherwise it will stop generating halfway
+      -- https://github.com/Aider-AI/aider/pull/3908
+      temperature = 0.6,
       disable_tools = true,
     },
   },
