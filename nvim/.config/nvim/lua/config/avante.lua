@@ -6,8 +6,8 @@ require("avante").setup {
     enable_cursor_planning_mode = true, -- enable cursor planning mod
   },
   mode = "legacy",
-  -- provider = "freedeepseek",
-  provider = "gemini",
+  provider = "freedeepseek",
+  -- provider = "gemini",
   gemini = {
     -- proxy = "https://api-proxy.me/gemini",
     endpoint = "https://api-proxy.me/gemini/v1beta/models",
@@ -121,7 +121,7 @@ require("avante").setup {
       max_tokens = 32768, -- remember to increase this value, otherwise it will stop generating halfway
       disable_tools = true,
     },
-    freedeepseek = {
+    qwen3 = {
       __inherited_from = "openai",
       api_key_name = "FREE_DEEPSEEK_API_KEY",
       endpoint = "https://ai.nahcrof.com/v2",
@@ -130,6 +130,17 @@ require("avante").setup {
       max_tokens = 24000, -- remember to increase this value, otherwise it will stop generating halfway
       -- https://github.com/Aider-AI/aider/pull/3908
       temperature = 0.6,
+      disable_tools = true,
+    },
+    freedeepseek = {
+      __inherited_from = "openai",
+      api_key_name = "FREE_DEEPSEEK_API_KEY",
+      endpoint = "https://ai.nahcrof.com/v2",
+      -- model = "deepseek-v3-0324",
+      model = "deepseek-v3-0324",
+      -- https://ai.nahcrof.com/pricing
+      max_tokens = 134000,
+      temperature = 0,
       disable_tools = true,
     },
   },
