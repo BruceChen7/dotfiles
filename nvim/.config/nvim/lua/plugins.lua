@@ -1026,7 +1026,7 @@ require("lazy").setup {
   },
   {
     "williamboman/mason-lspconfig.nvim",
-    version = "v1.*",
+    -- version = "v1.*",
     event = "VeryLazy",
   },
 
