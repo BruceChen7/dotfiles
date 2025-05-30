@@ -137,7 +137,8 @@ require("avante").setup {
       api_key_name = "FREE_DEEPSEEK_API_KEY",
       endpoint = "https://ai.nahcrof.com/v2",
       -- model = "deepseek-v3-0324",
-      model = "deepseek-v3-0324",
+      -- model = "deepseek-v3-0324",
+      model = "deepseek-r1-0528",
       -- https://ai.nahcrof.com/pricing
       max_tokens = 134000,
       temperature = 0,

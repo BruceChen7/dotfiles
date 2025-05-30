@@ -3,7 +3,7 @@
     "always_allow_tool_actions": false,
     "default_model": {
       "provider": "openai",
-      "model": "deepseek-v3-0324"
+      "model": "deepseek-r1"
     },
     "version": "2"
   },
