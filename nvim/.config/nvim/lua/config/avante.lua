@@ -8,12 +8,6 @@ require("avante").setup {
   mode = "legacy",
   provider = "freedeepseek",
   -- provider = "gemini",
-  gemini = {
-    -- proxy = "https://api-proxy.me/gemini",
-    endpoint = "https://api-proxy.me/gemini/v1beta/models",
-    model = "gemini-2.5-pro-exp-03-25",
-    max_tokens = 40960,
-  },
   -- provider = "openrouter",
   -- cursor_applying_provider = "groq",
   cursor_applying_provider = "real_groq",
@@ -75,7 +69,13 @@ require("avante").setup {
       close_from_input = nil, -- e.g., { normal = "<Esc>", insert = "<C-d>" }
     },
   },
-  vendors = {
+  providers = {
+    gemini = {
+      -- proxy = "https://api-proxy.me/gemini",
+      endpoint = "https://api-proxy.me/gemini/v1beta/models",
+      model = "gemini-2.5-pro-exp-03-25",
+      max_tokens = 40960,
+    },
     openrouter = {
       __inherited_from = "openai",
       endpoint = "https://openrouter.ai/api/v1",
@@ -83,7 +83,9 @@ require("avante").setup {
       model = "deepseek/deepseek-r1:free",
       -- model = "deepseek/deepseek-chat-v3-0324:free",
       disable_tools = true,
-      temperature = 0,
+      extra_request_body = {
+        temperature = 0,
+      },
     },
 
     week_operouter = {
@@ -103,7 +105,9 @@ require("avante").setup {
       endpoint = "https://api.deepseek.com",
       model = "deepseek-chat",
       max_tokens = 8192, -- remember to increase this value, otherwise it will stop generating halfway
-      temperature = 0,
+      extra_request_body = {
+        temperature = 0,
+      },
     },
     groq = { -- define groq provider
       __inherited_from = "openai",
@@ -129,7 +133,9 @@ require("avante").setup {
       model = "qwen3-235b-a22b",
       max_tokens = 24000, -- remember to increase this value, otherwise it will stop generating halfway
       -- https://github.com/Aider-AI/aider/pull/3908
-      temperature = 0.6,
+      extra_request_body = {
+        temperature = 0,
+      },
       disable_tools = true,
     },
     freedeepseek = {
@@ -141,8 +147,10 @@ require("avante").setup {
       model = "deepseek-r1-0528",
       -- https://ai.nahcrof.com/pricing
       max_tokens = 134000,
-      temperature = 0,
       disable_tools = true,
+      extra_request_body = {
+        temperature = 0,
+      },
     },
   },
 }

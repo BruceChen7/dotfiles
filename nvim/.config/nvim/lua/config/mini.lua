@@ -92,6 +92,13 @@ require("mini.ai").setup {
   },
 }
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "avanteinput" },
+  callback = function()
+    vim.b.miniai_disable = true
+  end,
+})
+
 -- https://github.com/pkazmier/nvim/blob/main/lua/plugins/mini/statusline.lua
 require("mini.statusline").setup {}
 require("mini.files").setup {
