@@ -163,3 +163,9 @@ zinit ice depth=1
 export ATUIN_NOBIND="true"
 eval "$(atuin init zsh)"
 bindkey '^r' _atuin_search_widget
+
+# smart suggestion
+# https://github.com/yetone/smart-suggestion
+export SMART_SUGGESTION_AI_PROVIDER=deepseek
+export DEEPSEEK_BASE_URL="https://ai.nahcrof.com/v2"
+export DEEPSEEK_MODEL="deepseek-r1-turbo"
