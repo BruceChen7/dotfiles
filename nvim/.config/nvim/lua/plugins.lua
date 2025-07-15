@@ -75,7 +75,7 @@ require("lazy").setup {
     build = "cargo build --release",
     dependencies = {
       "Kaiser-Yang/blink-cmp-avante",
-      -- ... Other dependencies
+      "archie-judd/blink-cmp-words",
     },
     opts = {
       appearance = {
@@ -117,6 +117,44 @@ require("lazy").setup {
               -- options for blink-cmp-avante
             },
           },
+          thesaurus = {
+            name = "blink-cmp-words",
+            module = "blink-cmp-words.thesaurus",
+            -- All available options
+            opts = {
+              -- A score offset applied to returned items.
+              -- By default the highest score is 0 (item 1 has a score of -1, item 2 of -2 etc..).
+              score_offset = 0,
+
+              -- Default pointers define the lexical relations listed under each definition,
+              -- see Pointer Symbols below.
+              -- Default is as below ("antonyms", "similar to" and "also see").
+              pointer_symbols = { "!", "&", "^" },
+            },
+          },
+
+          -- Use the dictionary source
+          dictionary = {
+            name = "blink-cmp-words",
+            module = "blink-cmp-words.dictionary",
+            -- All available options
+            opts = {
+              -- The number of characters required to trigger completion.
+              -- Set this higher if completion is slow, 3 is default.
+              dictionary_search_threshold = 3,
+
+              -- See above
+              score_offset = 0,
+
+              -- See above
+              pointer_symbols = { "!", "&", "^" },
+            },
+          },
+        },
+        per_filetype = {
+          text = { "dictionary" },
+          markdown = { "thesaurus" },
+          gitcommit = { "dictionary" },
         },
       },
       cmdline = {
@@ -1459,6 +1497,31 @@ require("lazy").setup {
       vim.keymap.set("n", "\\wl", "<cmd>Treewalker Right<CR>", { noremap = true, desc = "treewalker right" })
     end,
   },
+  -- {
+  --   "sphamba/smear-cursor.nvim",
+  --
+  --   opts = {
+  --     -- Smear cursor when switching buffers or windows.
+  --     smear_between_buffers = true,
+  --     -- miliseconds
+  --     time_interval = 7,
+  --
+  --     -- Smear cursor when moving within line or to neighbor lines.
+  --     -- Use `min_horizontal_distance_smear` and `min_vertical_distance_smear` for finer control
+  --     smear_between_neighbor_lines = true,
+  --
+  --     -- Draw the smear in buffer space instead of screen space when scrolling
+  --     scroll_buffer_space = true,
+  --
+  --     -- Set to `true` if your font supports legacy computing symbols (block unicode symbols).
+  --     -- Smears will blend better on all backgrounds.
+  --     legacy_computing_symbols_support = false,
+  --
+  --     -- Smear cursor in insert mode.
+  --     -- See also `vertical_bar_cursor_insert_mode` and `distance_stop_animating_vertical_bar`.
+  --     smear_insert_mode = true,
+  --   },
+  -- },
 
   {
     "joshuavial/aider.nvim",

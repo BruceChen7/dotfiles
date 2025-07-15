@@ -6,6 +6,8 @@ require("avante").setup {
     enable_cursor_planning_mode = true, -- enable cursor planning mod
   },
   mode = "legacy",
+  -- mode = "agentic",
+  -- provider = "chatgpt",
   provider = "freedeepseek",
   -- provider = "gemini",
   -- provider = "openrouter",
@@ -144,9 +146,24 @@ require("avante").setup {
       endpoint = "https://ai.nahcrof.com/v2",
       -- model = "deepseek-v3-0324",
       -- model = "deepseek-v3-0324",
-      model = "deepseek-r1-0528",
+      -- model = "deepseek-r1-0528",
+      model = "kimi-k2",
       -- https://ai.nahcrof.com/pricing
-      max_tokens = 134000,
+      max_tokens = 8192,
+      disable_tools = true,
+      extra_request_body = {
+        temperature = 0.6,
+      },
+    },
+    -- https://linux.do/t/topic/783000
+    chatgpt = {
+      __inherited_from = "openai",
+      api_key_name = "FREE_DEEPSEEK_API_KEY",
+      endpoint = "https://api-0711-node144.be-a.dev/api/layers/openai/bulk",
+      model = "gpt-4.1",
+      -- https://ai.nahcrof.com/pricing
+      -- max_tokens = 134000,
+      -- max_tokens = 134000,
       disable_tools = true,
       extra_request_body = {
         temperature = 0,

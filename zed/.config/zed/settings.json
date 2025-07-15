@@ -3,9 +3,8 @@
     "always_allow_tool_actions": false,
     "default_model": {
       "provider": "openai",
-      "model": "deepseek-r1"
-    },
-    "version": "2"
+      "model": "deepseek-v3-0324"
+    }
   },
   "vim_mode": true,
   "telemetry": {
@@ -25,7 +24,8 @@
   },
   "language_models": {
     "openai": {
-      "api_url": "https://ai.nahcrof.com/v2",
+      // "api_url": "https://ai.nahcrof.com/v2",
+      "api_url": "https://api-0711-node144.be-a.dev/api/layers/openai/bulk",
       "available_models": [
         {
           "name": "deepseek-v3-0324",
@@ -45,9 +45,14 @@
           "display_name": "deepseek-r1",
           "max_tokens": 134000,
           "max_output_tokens": 68000
+        },
+        {
+          "name": "gpt-4.1-custom",
+          "display_name": "gpt-4.1",
+          "max_tokens": 134000,
+          "max_output_tokens": 68000
         }
-      ],
-      "version": "1"
+      ]
     }
   }
 }
