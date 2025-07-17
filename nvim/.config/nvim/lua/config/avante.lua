@@ -8,8 +8,8 @@ require("avante").setup {
   mode = "legacy",
   -- mode = "agentic",
   -- provider = "chatgpt",
-  provider = "freedeepseek",
-  -- provider = "gemini",
+  -- provider = "freedeepseek",
+  provider = "gemini",
   -- provider = "openrouter",
   -- cursor_applying_provider = "groq",
   cursor_applying_provider = "real_groq",
@@ -75,9 +75,11 @@ require("avante").setup {
     gemini = {
       -- proxy = "https://api-proxy.me/gemini",
       endpoint = "https://api-proxy.me/gemini/v1beta/models",
-      model = "gemini-2.5-pro-exp-03-25",
-      max_tokens = 40960,
+      model = "gemini-2.5-pro",
+      __inherited_from = "gemini",
+      api_key_name = "GEMINI_API_KEY",
     },
+
     openrouter = {
       __inherited_from = "openai",
       endpoint = "https://openrouter.ai/api/v1",
@@ -149,7 +151,7 @@ require("avante").setup {
       -- model = "deepseek-r1-0528",
       model = "kimi-k2",
       -- https://ai.nahcrof.com/pricing
-      max_tokens = 8192,
+      max_tokens = 134000,
       disable_tools = true,
       extra_request_body = {
         temperature = 0.6,

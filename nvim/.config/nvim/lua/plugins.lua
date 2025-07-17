@@ -154,7 +154,7 @@ require("lazy").setup {
         per_filetype = {
           text = { "dictionary" },
           markdown = { "thesaurus" },
-          gitcommit = { "dictionary" },
+          gitcommit = { "dictionary", "buffer", "path" },
         },
       },
       cmdline = {

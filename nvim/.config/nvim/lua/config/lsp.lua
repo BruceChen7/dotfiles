@@ -226,6 +226,14 @@ require("lsp-setup").setup {
         "--stdio",
       },
     },
+    jsonls = {
+      filetypes = { "json", "jsonc" },
+      cmd = { "vscode-json-language-server", "--stdio" },
+      init_options = {
+        provideFormatter = true,
+      },
+      root_markers = { ".git" },
+    },
     -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#svelte
     svelte = {
       cmd = {
