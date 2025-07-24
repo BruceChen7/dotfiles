@@ -155,6 +155,7 @@ require("lazy").setup {
           text = { "dictionary" },
           markdown = { "thesaurus" },
           gitcommit = { "dictionary", "buffer", "path" },
+          AvanteInput = { "dictionary", "buffer", "path" },
         },
       },
       cmdline = {
@@ -272,6 +273,15 @@ require("lazy").setup {
     config = function()
       require "config/text_obj"
     end,
+  },
+
+  -- https://github.com/ravsii/tree-sitter-d2
+  -- for d2 syntax highlight
+  {
+    "ravsii/tree-sitter-d2",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    build = "make nvim-install",
+    event = "VeryLazy",
   },
   -- Smartly select the inner part of texts
   {
@@ -563,31 +573,6 @@ require("lazy").setup {
     },
   },
 
-  -- {
-  --   "tzachar/highlight-undo.nvim",
-  --   config = function()
-  --     require("highlight-undo").setup {
-  --       duration = 300,
-  --       undo = {
-  --         hlgroup = "HighlightUndo",
-  --         mode = "n",
-  --         lhs = "u",
-  --         map = "undo",
-  --         opts = {},
-  --       },
-  --       redo = {
-  --         hlgroup = "HighlightUndo",
-  --         mode = "n",
-  --         lhs = "<C-r>",
-  --         map = "redo",
-  --         opts = {},
-  --       },
-  --       highlight_for_count = true,
-  --     }
-  --   end,
-  --   event = "VeryLazy",
-  -- },
-
   -- skip to inner bracket
   {
     "abecodes/tabout.nvim",
@@ -856,37 +841,6 @@ require("lazy").setup {
     end,
   },
 
-  -- {
-  --   "augmentcode/augment.vim",
-  --   config = function()
-  --     -- inoremap <c-y> <cmd>call augment#Accept()<cr>
-  --     vim.keymap.set(
-  --       "i",
-  --       "<C-y>",
-  --       "<cmd>call augment#Accept()<CR>",
-  --       { noremap = true, silent = true, desc = "Accept augment completion" }
-  --     )
-  --   end,
-  -- },
-
-  -- {
-  --   "magicalne/nvim.ai",
-  --   dependencies = {
-  --     "nvim-lua/plenary.nvim",
-  --     "nvim-treesitter/nvim-treesitter",
-  --   },
-  --   opts = {
-  --     provider = "deepseek", -- You can configure your provider, model or keymaps here.
-  --     keymaps = {
-  --       toggle = "\\na",
-  --       inline_assist = "\\ni",
-  --       accept_code = "\\ia",
-  --       reject_code = "\\ir",
-  --     },
-  --   },
-  --   event = "VeryLazy",
-  -- },
-
   -- "Preview command results with `:Norm`"
   {
     "smjonas/live-command.nvim",
@@ -1099,35 +1053,19 @@ require("lazy").setup {
   -- colorscheme
   { "yorumicolors/yorumi.nvim" },
 
-  -- https://www.reddit.com/r/neovim/comments/1h0ln84/made_a_plugin_to_remind_you_what_youre_currently/
-  -- {
-  --   "Hashino/doing.nvim",
-  --   config = function()
-  --     require("doing").setup {
-  --       message_timeout = 2000,
-  --       doing_prefix = "Doing: ",
-  --
-  --       -- doesn"t display on buffers that match filetype/filename to entries
-  --       -- can be either an array or a function that returns an array
-  --       ignored_buffers = { "NvimTree" },
-  --
-  --       -- if plugin should manage the winbar
-  --       winbar = { enabled = true },
-  --       store = {
-  --         -- name of tasks file
-  --         file_name = ".tasks",
-  --         -- automatically create a task file when openning directories
-  --         -- Automatically create only when adding tasks
-  --         auto_create_file = false,
-  --       },
-  --     }
-  --     local api = require "doing.api"
-  --     vim.keymap.set("n", "<leader>de", api.edit, { desc = "[E]dit what tasks you`re [D]oing" })
-  --     vim.keymap.set("n", "<leader>dt", api.toggle, { desc = "[T]oggle current task" })
-  --   end,
-  --   event = "VeryLazy",
-  -- },
-
+  -- used to help you learn vim most common commands
+  {
+    "shahshlok/vim-coach.nvim",
+    dependencies = {
+      "folke/snacks.nvim",
+    },
+    config = function()
+      require("vim-coach").setup()
+    end,
+    keys = {
+      { "<leader>?", "<cmd>VimCoach<cr>", desc = "Vim Coach" },
+    },
+  },
   {
     "MeanderingProgrammer/render-markdown.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter", "echasnovski/mini.nvim" }, -- if you use the mini.nvim suite

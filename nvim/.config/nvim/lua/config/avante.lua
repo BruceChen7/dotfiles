@@ -8,11 +8,11 @@ require("avante").setup {
   mode = "legacy",
   -- mode = "agentic",
   -- provider = "chatgpt",
-  -- provider = "freedeepseek",
-  provider = "gemini",
+  provider = "freedeepseek",
+  -- provider = "gemini",
   -- provider = "openrouter",
   -- cursor_applying_provider = "groq",
-  cursor_applying_provider = "real_groq",
+  cursor_applying_provider = "kimik2turbo",
   memory_summary_provider = "freedeepseek",
   -- cursor_applying_provider = "week_operouter",
   -- auto_suggestions_provider = "deepseek",
@@ -154,7 +154,22 @@ require("avante").setup {
       max_tokens = 134000,
       disable_tools = true,
       extra_request_body = {
-        temperature = 0.6,
+        temperature = 0.7,
+      },
+    },
+    kimik2turbo = {
+      __inherited_from = "openai",
+      api_key_name = "FREE_DEEPSEEK_API_KEY",
+      endpoint = "https://ai.nahcrof.com/v2",
+      -- model = "deepseek-v3-0324",
+      -- model = "deepseek-v3-0324",
+      -- model = "deepseek-r1-0528",
+      model = "kimi-k2-turbo",
+      -- https://ai.nahcrof.com/pricing
+      max_tokens = 134000,
+      disable_tools = true,
+      extra_request_body = {
+        temperature = 0.7,
       },
     },
     -- https://linux.do/t/topic/783000
