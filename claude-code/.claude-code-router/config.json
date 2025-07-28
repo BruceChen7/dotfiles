@@ -1,0 +1,31 @@
+{
+    "LOG": false,
+    "Providers": [
+        {
+            "name": "deepseek",
+            "api_base_url": "https://ai.nahcrof.com/v2/chat/completions",
+            "api_key": "api_key writen here",
+            "models": [
+                "kimi-k2-turbo",
+                "kimi-k2",
+                "deepseek-r1-0528",
+                "deepseek-v3-0324-turbo",
+                "qwen3-coder-turbo",
+                "qwen3-235b-a22b-2507-thinking"
+            ],
+            "transformer": {
+                "use": [
+                    [
+                        "maxtoken",
+                        {
+                            "max_tokens": 131000
+                        }
+                    ]
+                ]
+            }
+        }
+    ],
+    "Router": {
+        "default": "deepseek,qwen3-235b-a22b-2507-thinking"
+    }
+}
