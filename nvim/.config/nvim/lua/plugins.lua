@@ -1079,7 +1079,19 @@ require("lazy").setup {
       },
     },
     ft = { "markdown", "Avante" },
-    version = "v8.1.0",
+    version = "v8.*",
+  },
+  {
+    "developedbyed/marko.nvim",
+    config = function()
+      require("marko").setup {
+        width = 100,
+        height = 100,
+        border = "rounded",
+        title = " Marks ",
+      }
+    end,
+    event = "VeryLazy",
   },
   {
     "folke/snacks.nvim",
@@ -1461,32 +1473,32 @@ require("lazy").setup {
   --   },
   -- },
 
-  {
-    "joshuavial/aider.nvim",
-    config = function()
-      require("aider").setup {
-        auto_manage_context = false,
-        default_bindings = false,
-        debug = true,
-        vim = true,
-        ignore_buffers = {},
-
-        -- only necessary if you want to change the default keybindings. <Leader>C is not a particularly good choice. It's just shown as an example.
-        vim.api.nvim_set_keymap(
-          "n",
-          "<leader>aa",
-          -- "<cmd>AiderOpen --no-auto-commits --chat-mode ask --model openrouter/deepseek/deepseek-chat-v3-0324:free --stream --watch-files --subtree-only <CR>",
-          "<cmd>AiderOpen --no-auto-commits --chat-mode ask --model openrouter/qwen/qwen3-235b-a22b --stream --watch-files --subtree-only <CR>",
-          -- "<cmd>AiderOpen --no-auto-commits --chat-mode ask --stream --watch-files --subtree-only <CR>",
-          { noremap = true, silent = true, desc = "Aider Open" }
-        ),
-        vim.api.nvim_set_keymap(
-          "n",
-          "<leader>am",
-          "<cmd>AiderAddModifiedFiles<CR>",
-          { noremap = true, silent = true, desc = "Aider Add Modified Files" }
-        ),
-      }
-    end,
-  },
+  -- {
+  --   "joshuavial/aider.nvim",
+  --   config = function()
+  --     require("aider").setup {
+  --       auto_manage_context = false,
+  --       default_bindings = false,
+  --       debug = true,
+  --       vim = true,
+  --       ignore_buffers = {},
+  --
+  --       -- only necessary if you want to change the default keybindings. <Leader>C is not a particularly good choice. It's just shown as an example.
+  --       vim.api.nvim_set_keymap(
+  --         "n",
+  --         "<leader>aa",
+  --         -- "<cmd>AiderOpen --no-auto-commits --chat-mode ask --model openrouter/deepseek/deepseek-chat-v3-0324:free --stream --watch-files --subtree-only <CR>",
+  --         -- "<cmd>AiderOpen --no-auto-commits --chat-mode ask --model openrouter/qwen/qwen3-235b-a22b --stream --watch-files --subtree-only <CR>",
+  --         "<cmd>AiderOpen --no-auto-commits --chat-mode ask --stream --watch-files --subtree-only <CR>",
+  --         { noremap = true, silent = true, desc = "Aider Open" }
+  --       ),
+  --       vim.api.nvim_set_keymap(
+  --         "n",
+  --         "<leader>am",
+  --         "<cmd>AiderAddModifiedFiles<CR>",
+  --         { noremap = true, silent = true, desc = "Aider Add Modified Files" }
+  --       ),
+  --     }
+  --   end,
+  -- },
 }
