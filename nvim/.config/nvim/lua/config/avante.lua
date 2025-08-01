@@ -5,8 +5,8 @@ require("avante").setup {
     -- auto_set_keymaps = false,
     enable_cursor_planning_mode = true, -- enable cursor planning mod
   },
-  mode = "legacy",
-  -- mode = "agentic",
+  -- mode = "legacy",
+  mode = "agentic",
   -- provider = "chatgpt",
   provider = "freedeepseek",
   -- provider = "gemini",
@@ -149,10 +149,10 @@ require("avante").setup {
       -- model = "deepseek-v3-0324",
       -- model = "deepseek-v3-0324",
       -- model = "deepseek-r1-0528",
-      model = "kimi-k2",
+      model = "qwen3-coder",
       -- https://ai.nahcrof.com/pricing
       max_tokens = 134000,
-      disable_tools = true,
+      -- disable_tools = true,
       extra_request_body = {
         temperature = 0.7,
       },
