@@ -7,7 +7,7 @@
   {
     "context": "Workspace",
     "bindings": {
-      // "shift shift": "file_finder::Toggle"
+      "shift shift": "file_finder::Toggle"
     }
   },
   {
@@ -29,7 +29,7 @@
       "shift-l": "pane::ActivateNextItem",
       "alt-j": "editor::MoveLineDown",
       "alt-k": "editor::MoveLineUp",
-      "ctrl p": "file_finder::Toggle",
+      "ctrl-p": "file_finder::Toggle",
       "space c": "pane::CloseActiveItem",
       "space t": "workspace::NewCenterTerminal",
       "space e": "project_panel::ToggleFocus",
@@ -40,6 +40,7 @@
       "space l s": "project_symbols::Toggle",
       "space l i": "editor::GoToImplementationSplit",
       "g r r": "editor::FindAllReferences",
+      "g i ": "editor::GoToImplementation",
       "\\ g r": "editor::Rename",
       "g 1 ": "workspace::NewSearch",
       //Buffers
@@ -94,7 +95,7 @@
   {
     "context": "Workspace && !VimWaiting && vim_mode != insert",
     "bindings": {
-      "space p p": "projects::OpenRecent" // Open recent projects
+      "space space": "projects::OpenRecent" // Open recent projects
     }
   }
 ]
