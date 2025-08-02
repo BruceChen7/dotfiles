@@ -4,98 +4,137 @@
 // documentation: https://zed.dev/docs/key-bindings // // To see the default key bindings run `zed: open default keymap` // from the command palette.
 // https://github.com/anuragg-p/zed-nvim/blob/main/keymap.json
 [
-  {
-    "context": "Workspace",
-    "bindings": {
-      "shift shift": "file_finder::Toggle"
+    {
+        "context": "Workspace",
+        "bindings": {
+            "shift shift": "file_finder::Toggle"
+        }
+    },
+    {
+        "context": "Editor",
+        "bindings": {
+            // "j k": ["workspace::SendKeystrokes", "escape"]
+        }
+    },
+    {
+        "context": "vim_operator == none && !VimWaiting &&  vim_mode != insert",
+        "bindings": {
+            "ctrl-h": "workspace::ActivatePaneLeft",
+            "ctrl-l": "workspace::ActivatePaneRight",
+            "ctrl-k": "workspace::ActivatePaneUp",
+            "ctrl-j": "workspace::ActivatePaneDown",
+            "ctrl-q": "command_palette::Toggle",
+            "shift-f": "editor::UnfoldLines",
+            "shift-h": "pane::ActivatePreviousItem",
+            "shift-l": "pane::ActivateNextItem",
+            "alt-j": "editor::MoveLineDown",
+            "alt-k": "editor::MoveLineUp",
+            "ctrl-p": "file_finder::Toggle",
+            "space c": "pane::CloseActiveItem",
+            "space t": "workspace::NewCenterTerminal",
+            "space e": "project_panel::ToggleFocus",
+            "space p e": "workspace::ToggleLeftDock",
+            "space q": "pane::CloseAllItems",
+            "ctrl-space": "workspace::ToggleBottomDock",
+            // LSP
+            "space l s": "project_symbols::Toggle",
+            "space l i": "editor::GoToImplementationSplit",
+            "g r r": "editor::FindAllReferences",
+            "g i ": "editor::GoToImplementation",
+            "\\ g r": "editor::Rename",
+            "g 1 ": "workspace::NewSearch",
+            //Buffers
+            "space b l": "pane::CloseItemsToTheRight",
+            "space b h": "pane::CloseItemsToTheLeft",
+            "space b a": "pane::ReopenClosedItem",
+            //Folding
+            "space z f": [
+                "workspace::SendKeystrokes",
+                "shift-v shift-f ctrl-c"
+            ],
+            "space z a": [
+                "workspace::SendKeystrokes",
+                "g g shift-v shift-g shift-f ctrl-c g g"
+            ], // Fold all
+            "space z u": [
+                "workspace::SendKeystrokes",
+                "g g shift-v shift-g space z z ctrl-c g g"
+            ], // Unfold all
+            //Toggle Comments
+            "gcc": "editor::ToggleComments",
+            "space r": "command_palette::Toggle",
+            "space w": "workspace::Save",
+            "alt-1": [
+                "pane::ActivateItem",
+                0
+            ],
+            "alt-2": [
+                "pane::ActivateItem",
+                1
+            ],
+            "alt-3": [
+                "pane::ActivateItem",
+                2
+            ],
+            "alt-6": [
+                "pane::ActivateItem",
+                5
+            ],
+            "alt-4": [
+                "pane::ActivateItem",
+                3
+            ],
+            "alt-5": [
+                "pane::ActivateItem",
+                4
+            ],
+            "alt-7": [
+                "pane::ActivateItem",
+                6
+            ],
+            "alt-8": [
+                "pane::ActivateItem",
+                7
+            ]
+        }
+    },
+    // I dont know why this works!
+    {
+        "context": "Workspace && !VimWaiting &&  vim_mode != insert",
+        "bindings": {
+            "ctrl-h": "workspace::ActivatePaneLeft",
+            "ctrl-l": "workspace::ActivatePaneRight",
+            "ctrl-k": "workspace::ActivatePaneUp",
+            "ctrl-j": "workspace::ActivatePaneDown"
+        }
+    },
+    {
+        "context": "Terminal",
+        "bindings": {
+            "ctrl-space": "workspace::ToggleBottomDock",
+            "ctrl-o": "workspace::NewTerminal",
+            "ctrl-a": [
+                "workspace::SendKeystrokes",
+                "ctrl-k ctrl-o"
+            ],
+            "ctrl-n": [
+                "workspace::SendKeystrokes",
+                "ctrl-tab"
+            ],
+            "ctrl-p": [
+                "workspace::SendKeystrokes",
+                "ctrl-shift-tab"
+            ],
+            "ctrl-k": [
+                "workspace::SendKeystrokes",
+                "ctrl-alt-t"
+            ]
+        }
+    },
+    {
+        "context": "Workspace && !VimWaiting && vim_mode != insert",
+        "bindings": {
+            "space o": "projects::OpenRecent" // Open recent projects
+        }
     }
-  },
-  {
-    "context": "Editor",
-    "bindings": {
-      // "j k": ["workspace::SendKeystrokes", "escape"]
-    }
-  },
-  {
-    "context": "vim_operator == none && !VimWaiting &&  vim_mode != insert",
-    "bindings": {
-      "ctrl-h": "workspace::ActivatePaneLeft",
-      "ctrl-l": "workspace::ActivatePaneRight",
-      "ctrl-k": "workspace::ActivatePaneUp",
-      "ctrl-j": "workspace::ActivatePaneDown",
-      "ctrl-q": "command_palette::Toggle",
-      "shift-f": "editor::UnfoldLines",
-      "shift-h": "pane::ActivatePreviousItem",
-      "shift-l": "pane::ActivateNextItem",
-      "alt-j": "editor::MoveLineDown",
-      "alt-k": "editor::MoveLineUp",
-      "ctrl-p": "file_finder::Toggle",
-      "space c": "pane::CloseActiveItem",
-      "space t": "workspace::NewCenterTerminal",
-      "space e": "project_panel::ToggleFocus",
-      "space p e": "workspace::ToggleLeftDock",
-      "space q": "pane::CloseAllItems",
-      "ctrl-space": "workspace::ToggleBottomDock",
-      // LSP
-      "space l s": "project_symbols::Toggle",
-      "space l i": "editor::GoToImplementationSplit",
-      "g r r": "editor::FindAllReferences",
-      "g i ": "editor::GoToImplementation",
-      "\\ g r": "editor::Rename",
-      "g 1 ": "workspace::NewSearch",
-      //Buffers
-      "space b l": "pane::CloseItemsToTheRight",
-      "space b h": "pane::CloseItemsToTheLeft",
-      "space b a": "pane::ReopenClosedItem",
-      //Folding
-      "space z f": ["workspace::SendKeystrokes", "shift-v shift-f ctrl-c"],
-      "space z a": [
-        "workspace::SendKeystrokes",
-        "g g shift-v shift-g shift-f ctrl-c g g"
-      ], // Fold all
-      "space z u": [
-        "workspace::SendKeystrokes",
-        "g g shift-v shift-g space z z ctrl-c g g"
-      ], // Unfold all
-      //Toggle Comments
-      "gcc": "editor::ToggleComments",
-      "space r": "command_palette::Toggle",
-      "space w": "workspace::Save",
-      "alt-1": ["pane::ActivateItem", 0],
-      "alt-2": ["pane::ActivateItem", 1],
-      "alt-3": ["pane::ActivateItem", 2],
-      "alt-6": ["pane::ActivateItem", 5],
-      "alt-4": ["pane::ActivateItem", 3],
-      "alt-5": ["pane::ActivateItem", 4],
-      "alt-7": ["pane::ActivateItem", 6],
-      "alt-8": ["pane::ActivateItem", 7]
-    }
-  },
-  // I dont know why this works!
-  {
-    "context": "Workspace && !VimWaiting &&  vim_mode != insert",
-    "bindings": {
-      "ctrl-h": "workspace::ActivatePaneLeft",
-      "ctrl-l": "workspace::ActivatePaneRight",
-      "ctrl-k": "workspace::ActivatePaneUp",
-      "ctrl-j": "workspace::ActivatePaneDown"
-    }
-  },
-  {
-    "context": "Terminal",
-    "bindings": {
-      "ctrl-space": "workspace::ToggleBottomDock",
-      "ctrl-o": "workspace::NewTerminal",
-      "ctrl-a": ["workspace::SendKeystrokes", "ctrl-k ctrl-o"],
-      "ctrl-n": ["workspace::SendKeystrokes", "ctrl-tab"],
-      "ctrl-p": ["workspace::SendKeystrokes", "ctrl-shift-tab"],
-      "ctrl-k": ["workspace::SendKeystrokes", "ctrl-alt-t"]
-    }
-  },
-  {
-    "context": "Workspace && !VimWaiting && vim_mode != insert",
-    "bindings": {
-      "space space": "projects::OpenRecent" // Open recent projects
-    }
-  }
 ]
