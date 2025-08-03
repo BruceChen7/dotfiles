@@ -10,7 +10,7 @@
         {
             "name": "deepseek",
             "api_base_url": "https://ai.nahcrof.com/v2/chat/completions",
-            "api_key": "rNTBhJDLbgoRSEcgHDVd",
+            "api_key": "api key",
             "models": [
                 "kimi-k2-turbo",
                 "kimi-k2",
@@ -34,6 +34,6 @@
         }
     ],
     "Router": {
-        "default": "deepseek,kimi-k2"
+        "default": "deepseek,qwen3-coder"
     }
 }
