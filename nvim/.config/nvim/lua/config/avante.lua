@@ -3,16 +3,13 @@ require("avante").setup {
   behaviour = {
     auto_suggestions = false,
     -- auto_set_keymaps = false,
-    enable_cursor_planning_mode = true, -- enable cursor planning mod
   },
-  -- mode = "legacy",
   mode = "agentic",
   -- provider = "chatgpt",
   provider = "freedeepseek",
   -- provider = "gemini",
   -- provider = "openrouter",
   -- cursor_applying_provider = "groq",
-  cursor_applying_provider = "kimik2turbo",
   memory_summary_provider = "freedeepseek",
   -- cursor_applying_provider = "week_operouter",
   -- auto_suggestions_provider = "deepseek",
@@ -149,12 +146,12 @@ require("avante").setup {
       -- model = "deepseek-v3-0324",
       -- model = "deepseek-v3-0324",
       -- model = "deepseek-r1-0528",
-      model = "qwen3-coder",
+      model = "glm-4.5",
       -- https://ai.nahcrof.com/pricing
       max_tokens = 134000,
       -- disable_tools = true,
       extra_request_body = {
-        temperature = 0.7,
+        -- temperature = 0.7,
       },
     },
     kimik2turbo = {

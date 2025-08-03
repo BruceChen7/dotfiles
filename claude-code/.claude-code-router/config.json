@@ -1,17 +1,24 @@
 {
     "LOG": false,
+    "transformers": [
+        {
+            "name": "remove-tool-calls",
+            "path": "~/.claude-code-router/plugins/remove-tool-calls.transformer.js"
+        }
+    ],
     "Providers": [
         {
             "name": "deepseek",
             "api_base_url": "https://ai.nahcrof.com/v2/chat/completions",
-            "api_key": "api_key writen here",
+            "api_key": "rNTBhJDLbgoRSEcgHDVd",
             "models": [
                 "kimi-k2-turbo",
                 "kimi-k2",
                 "deepseek-r1-0528",
                 "deepseek-v3-0324-turbo",
                 "qwen3-coder-turbo",
-                "qwen3-235b-a22b-2507-thinking"
+                "qwen3-235b-a22b-2507-thinking",
+                "qwen3-coder"
             ],
             "transformer": {
                 "use": [
@@ -20,12 +27,13 @@
                         {
                             "max_tokens": 131000
                         }
-                    ]
+                    ],
+                    "remove-tool-calls"
                 ]
             }
         }
     ],
     "Router": {
-        "default": "deepseek,qwen3-235b-a22b-2507-thinking"
+        "default": "deepseek,kimi-k2"
     }
 }
