@@ -1,13 +1,13 @@
 require("avante").setup {
   -- add any opts here
+
   behaviour = {
     auto_suggestions = false,
-    -- auto_set_keymaps = false,
   },
   mode = "agentic",
   -- provider = "chatgpt",
-  provider = "freedeepseek",
-  memory_summary_provider = "freedeepseek",
+  provider = "glm45",
+  memory_summary_provider = "glm45",
   mappings = {
     ask = "\\ak",
     edit = "\\am",
@@ -72,7 +72,6 @@ require("avante").setup {
       api_key_name = "GEMINI_API_KEY",
     },
 
-
     deepseek = {
       __inherited_from = "openai",
       api_key_name = "DEEPSEEK_API_KEY",
@@ -96,7 +95,7 @@ require("avante").setup {
       },
       disable_tools = true,
     },
-    freedeepseek = {
+    glm45 = {
       __inherited_from = "openai",
       api_key_name = "FREE_DEEPSEEK_API_KEY",
       endpoint = "https://ai.nahcrof.com/v2",
