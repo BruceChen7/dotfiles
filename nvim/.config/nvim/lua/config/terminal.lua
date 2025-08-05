@@ -44,96 +44,111 @@ local function get_zig_test_declaration()
   end
 end
 
+-- Test command configurations
+local TEST_CONFIG = {
+  go = {
+    tags = "integration_test,unit_test",
+    gcflags = "all=-l",
+    default_project = "luckyvideo",
+  },
+}
+
+-- Validate that a function name is a valid test function
+local function validate_test_function(function_name)
+  if not function_name then
+    vim.notify "No function found"
+    return false
+  end
+  if string.sub(function_name, 1, 4) ~= "Test" then
+    vim.notify "Test function not found"
+    return false
+  end
+  return true
+end
+
+-- Get project name based on root directory
+local function get_project_name_by_root(root)
+  local last_part = string.match(root, "([^/]+)$")
+  local project_name = TEST_CONFIG.go.default_project
+
+  if last_part == "ecommerce" then
+    project_name = "core"
+  elseif last_part == "knowledge-platform" then
+    last_part = "knowledgeplatform"
+  end
+
+  return project_name, last_part
+end
+
+-- Build environment variables for Go testing
+local function build_go_test_env(utils, project_name, module_name)
+  if not utils.is_mac() or not utils.is_in_working_dir() then
+    return ""
+  end
+
+  return string.format(
+    "export env=test && export cid=global && export PROJECT_NAME=%s && export DISABLE_PPROF=true && export MODULE_NAME=%s && export SP_UNIX_SOCKET=/tmp/spex.sock",
+    project_name,
+    module_name
+  )
+end
+
+-- Build the complete Go test command
+local function build_go_test_command(utils, dir, function_name)
+  local cwd = vim.fn.getcwd()
+  local relative_path = utils.relative_path(cwd, dir)
+  local go_executable = vim.fn.executable "xgo" == 1 and "xgo" or "go"
+
+  local root = utils.find_root_dir()
+  local project_name, module_name = get_project_name_by_root(root)
+  local env_cmd = build_go_test_env(utils, project_name, module_name)
+
+  local test_cmd = string.format(
+    "%s test -count=1 ./%s -tags='%s' -gcflags=%s -v -run %s",
+    go_executable,
+    relative_path,
+    TEST_CONFIG.go.tags,
+    TEST_CONFIG.go.gcflags,
+    function_name
+  )
+
+  return env_cmd == "" and test_cmd or env_cmd .. " && " .. test_cmd
+end
+
+-- Main function to get appropriate test command based on file type
 local function get_test_command()
   vim.api.nvim_command "redraw"
-  -- Get the current buffer's file type
+
   local buf_name = vim.api.nvim_buf_get_name(0)
   local dir = vim.fn.fnamemodify(buf_name, ":p:h")
   local filetype = vim.bo.filetype
 
-  -- 如果是zig, 命令是zig build
+  -- Handle Zig testing
   if filetype == "zig" then
     if get_zig_test_declaration() then
-      return "cd  " .. dir .. " && zig test " .. buf_name
+      return string.format("cd %s && zig test %s", dir, buf_name)
     end
+    return nil
   end
 
+  -- Handle Python testing
   if filetype == "python" then
-    -- 获取当前buffer所在的目录
-    return "cd " .. dir .. " && python3 -m unittest discover -s ./"
+    return string.format("cd %s && python3 -m unittest discover -s ./", dir)
   end
 
+  -- Handle Go testing
   if filetype ~= "go" then
-    return
-  end
-  -- 获取当前buffer的绝对路径
-  local go_ts = require "utils"
-  local function_name = go_ts.get_go_nearest_function()
-  -- function name whether start with Test
-  if not function_name then
-    -- message notice
-    vim.notify "no function found"
-    return
-  end
-  if string.sub(function_name, 1, 4) ~= "Test" then
-    vim.notify "Test function not found"
-    return
+    return nil
   end
 
-  if function_name == nil then
-    vim.notify "no function found"
-    return
-  end
   local utils = require "utils"
-  local export_cmd = ""
-  if utils.is_mac() then
-    local root = utils.find_root_dir()
-    -- vim.notify("root is " .. root)
-    local last_part = string.match(root, "([^/]+)$")
-    local project_name = "luckyvideo"
-    if last_part == "ecommerce" then
-      project_name = "core"
-    else
-      project_name = "luckyvideo"
-    end
+  local function_name = utils.get_go_nearest_function()
 
-    if last_part == "knowledge-platform" then
-      last_part = "knowledgeplatform"
-    end
-
-    if utils.is_in_working_dir() then
-      export_cmd = "export env=test && export cid=global && export PROJECT_NAME="
-        .. project_name
-        .. " && export DISABLE_PPROF=true"
-        .. " && export MODULE_NAME="
-        .. last_part
-        .. " && export SP_UNIX_SOCKET=/tmp/spex.sock"
-    end
+  if not validate_test_function(function_name) then
+    return nil
   end
 
-  -- get current working directory
-  local cwd = vim.fn.getcwd()
-  local relative_path = utils.relative_path(cwd, dir)
-
-  -- Check if xgo is available, use it if present, otherwise fall back to go
-  local go_executable = vim.fn.executable "xgo" == 1 and "xgo" or "go"
-
-  if export_cmd == "" then
-    return go_executable
-      .. " test -count=1 ./"
-      .. relative_path
-      .. " -tags='integration_test,unit_test' -gcflags=all=-l -v -run "
-      .. function_name
-  else
-    local cmd = export_cmd
-      .. " && "
-      .. go_executable
-      .. " test -count=1 ./"
-      .. relative_path
-      .. " -tags='integration_test,unit_test' -gcflags=all=-l -v -run "
-      .. function_name
-    return cmd
-  end
+  return build_go_test_command(utils, dir, function_name)
 end
 
 -- Helper function to get SPEX configuration based on platform
