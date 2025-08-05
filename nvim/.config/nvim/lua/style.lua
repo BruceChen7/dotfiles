@@ -76,10 +76,10 @@ local function color_scheme()
     -- "tokyonight-storm",
     -- "tokyonight-moon",
     -- "tokyonight-day",
-    -- "kanagawa",
+    "kanagawa",
     -- "kanagawa-dragon",
-    -- "catppuccin",
-    -- "catppuccin-frappe",
+    "catppuccin",
+    "catppuccin-frappe",
     "gruvbox-material",
     -- "yorumi",
   }

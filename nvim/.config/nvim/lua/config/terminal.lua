@@ -114,14 +114,21 @@ local function get_test_command()
   -- get current working directory
   local cwd = vim.fn.getcwd()
   local relative_path = utils.relative_path(cwd, dir)
+
+  -- Check if xgo is available, use it if present, otherwise fall back to go
+  local go_executable = vim.fn.executable "xgo" == 1 and "xgo" or "go"
+
   if export_cmd == "" then
-    return "go test -count=1 ./"
+    return go_executable
+      .. " test -count=1 ./"
       .. relative_path
       .. " -tags='integration_test,unit_test' -gcflags=all=-l -v -run "
       .. function_name
   else
     local cmd = export_cmd
-      .. " && go test -count=1 ./"
+      .. " && "
+      .. go_executable
+      .. " test -count=1 ./"
       .. relative_path
       .. " -tags='integration_test,unit_test' -gcflags=all=-l -v -run "
       .. function_name

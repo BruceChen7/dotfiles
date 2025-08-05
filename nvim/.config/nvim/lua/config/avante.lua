@@ -6,15 +6,15 @@ require("avante").setup {
   },
   mode = "agentic",
   -- provider = "chatgpt",
-  provider = "glm45",
+  provider = "qwen3",
   memory_summary_provider = "glm45",
   mappings = {
     ask = "\\ak",
     edit = "\\am",
     refresh = "\\ar",
     focus = "\\af",
-    select_history = "\\ah", -- Select history command
-    select_model = "\\a?", -- Select model command
+    new_ask = "\\an",
+    stop = "\\as",
 
     --- @class AvanteConflictMappings
     diff = {
@@ -43,7 +43,7 @@ require("avante").setup {
       default = "\\at",
       debug = "\\ad",
       hint = "\\ah",
-      suggestion = "\\as",
+      suggestion = "\\aS",
       repomap = "\\aR",
     },
     cancel = {
@@ -61,6 +61,8 @@ require("avante").setup {
       add_file = "@",
       close = { "q" },
       close_from_input = nil, -- e.g., { normal = "<Esc>", insert = "<C-d>" }
+      next_prompt = "]p",
+      prev_prompt = "[p",
     },
   },
   providers = {
@@ -87,13 +89,12 @@ require("avante").setup {
       api_key_name = "FREE_DEEPSEEK_API_KEY",
       endpoint = "https://ai.nahcrof.com/v2",
       -- model = "deepseek-v3-0324",
-      model = "qwen3-235b-a22b",
-      max_tokens = 24000, -- remember to increase this value, otherwise it will stop generating halfway
+      model = "qwen3-coder",
+      max_tokens = 134000, -- remember to increase this value, otherwise it will stop generating halfway
       -- https://github.com/Aider-AI/aider/pull/3908
       extra_request_body = {
-        temperature = 0,
+        temperature = 0.7,
       },
-      disable_tools = true,
     },
     glm45 = {
       __inherited_from = "openai",
