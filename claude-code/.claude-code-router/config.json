@@ -27,8 +27,7 @@
                         {
                             "max_tokens": 131000
                         }
-                    ],
-                    "remove-tool-calls"
+                    ]
                 ]
             }
         }
