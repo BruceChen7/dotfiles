@@ -64,16 +64,96 @@ vim.keymap.set("n", "zR", function()
   vim.o.foldlevel = 10
   require("ufo").openAllFolds()
 end, { desc = "Open All Folds" })
+
 vim.keymap.set("n", "zM", function()
   vim.o.foldlevel = 10
   require("ufo").closeAllFolds()
 end, { desc = "Close All Folds" })
+
+local function handle_timestamp()
+  -- Check if there's already a timestamp floating window
+  if _G.timestamp_floating_win and vim.api.nvim_win_is_valid(_G.timestamp_floating_win) then
+    -- Close the existing window
+    vim.api.nvim_win_close(_G.timestamp_floating_win, false)
+    _G.timestamp_floating_win = nil
+    _G.timestamp_floating_buf = nil
+    return true
+  end
+
+  -- Get the current word under cursor
+  local current_word = vim.fn.expand "<cword>"
+
+  -- Check if it's a Unix timestamp (digits only)
+  if current_word:match "^%d+$" then
+    local timestamp = tonumber(current_word)
+    -- Check if it's a reasonable timestamp (between 1970 and 2100)
+    if timestamp >= 631152000 and timestamp <= 4102444800 then -- Jan 1, 1990 to Jan 1, 2100
+      -- Convert timestamp to local date
+      local formatted_date = os.date("%Y-%m-%d %H:%M:%S", timestamp)
+      local content = {
+        "Timestamp: " .. current_word,
+        "Converted: " .. formatted_date,
+        "Press K again to close",
+      }
+
+      -- Show in floating window
+      local buf = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
+
+      local opts = {
+        relative = "cursor",
+        width = 40,
+        height = 4,
+        col = 0,
+        row = 1,
+        style = "minimal",
+        border = "single",
+        focusable = true,
+        zindex = 100,
+      }
+
+      local win = vim.api.nvim_open_win(buf, false, opts)
+      vim.api.nvim_win_set_option(win, "winhighlight", "Normal:Normal,FloatBorder:FloatBorder")
+
+      -- Store the window ID and buffer ID
+      _G.timestamp_floating_win = win
+      _G.timestamp_floating_buf = buf
+
+      -- Set buffer to be readonly
+      vim.api.nvim_buf_set_option(buf, "modifiable", false)
+      vim.api.nvim_buf_set_option(buf, "readonly", true)
+
+      -- Create buffer-local keymap for focusing the window
+      vim.api.nvim_buf_set_keymap(buf, "n", "K", "", {
+        noremap = true,
+        silent = true,
+        callback = function()
+          vim.api.nvim_set_current_win(win)
+        end,
+        desc = "Focus timestamp window",
+      })
+      return true
+    end
+  end
+
+  -- Not a recognized timestamp, do nothing
+  return false
+end
+
 vim.keymap.set("n", "K", function()
   local winid = require("ufo").peekFoldedLinesUnderCursor()
-  if not winid then
+  if winid then
+    return -- UFO fold preview was shown
+  end
+
+  -- Handle timestamp window
+  handle_timestamp()
+
+  -- If it's not a timestamp and no window was created, show LSP hover
+  if not _G.timestamp_floating_win then
     vim.lsp.buf.hover()
   end
-end, { desc = "Peek Folded Lines" })
+end, { desc = "Peek Folded Lines or Toggle Timestamp Window" })
 
 vim.keymap.set("n", "zgj", function()
   local ufo = require "ufo"
@@ -83,11 +163,11 @@ end, { desc = "go to next closed fold" })
 vim.keymap.set("n", "zgk", function()
   local ufo = require "ufo"
   ufo.goPreviousClosedFold()
-end, { desc = "go to preivious closed fold" })
+end, { desc = "go to preivous closed fold" })
 
 vim.keymap.set("n", "zgK", function()
   local winid = require("ufo").peekFoldedLinesUnderCursor()
   if not winid then
     vim.lsp.buf.hover()
   end
-end, { desc = "go to preivious closed fold" })
+end, { desc = "go to preivous closed fold" })

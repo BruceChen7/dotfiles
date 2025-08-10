@@ -130,7 +130,7 @@ require("lazy").setup {
               -- Default pointers define the lexical relations listed under each definition,
               -- see Pointer Symbols below.
               -- Default is as below ("antonyms", "similar to" and "also see").
-              pointer_symbols = { "!", "&", "^" },
+              definition_pointers = { "!", "&", "^" },
             },
           },
 
@@ -148,7 +148,7 @@ require("lazy").setup {
               score_offset = 0,
 
               -- See above
-              pointer_symbols = { "!", "&", "^" },
+              definition_pointers = { "!", "&", "^" },
             },
           },
         },
@@ -1385,58 +1385,4 @@ require("lazy").setup {
       vim.keymap.set("n", "\\wl", "<cmd>Treewalker Right<CR>", { noremap = true, desc = "treewalker right" })
     end,
   },
-  -- {
-  --   "sphamba/smear-cursor.nvim",
-  --
-  --   opts = {
-  --     -- Smear cursor when switching buffers or windows.
-  --     smear_between_buffers = true,
-  --     -- miliseconds
-  --     time_interval = 7,
-  --
-  --     -- Smear cursor when moving within line or to neighbor lines.
-  --     -- Use `min_horizontal_distance_smear` and `min_vertical_distance_smear` for finer control
-  --     smear_between_neighbor_lines = true,
-  --
-  --     -- Draw the smear in buffer space instead of screen space when scrolling
-  --     scroll_buffer_space = true,
-  --
-  --     -- Set to `true` if your font supports legacy computing symbols (block unicode symbols).
-  --     -- Smears will blend better on all backgrounds.
-  --     legacy_computing_symbols_support = false,
-  --
-  --     -- Smear cursor in insert mode.
-  --     -- See also `vertical_bar_cursor_insert_mode` and `distance_stop_animating_vertical_bar`.
-  --     smear_insert_mode = true,
-  --   },
-  -- },
-
-  -- {
-  --   "joshuavial/aider.nvim",
-  --   config = function()
-  --     require("aider").setup {
-  --       auto_manage_context = false,
-  --       default_bindings = false,
-  --       debug = true,
-  --       vim = true,
-  --       ignore_buffers = {},
-  --
-  --       -- only necessary if you want to change the default keybindings. <Leader>C is not a particularly good choice. It's just shown as an example.
-  --       vim.api.nvim_set_keymap(
-  --         "n",
-  --         "<leader>aa",
-  --         -- "<cmd>AiderOpen --no-auto-commits --chat-mode ask --model openrouter/deepseek/deepseek-chat-v3-0324:free --stream --watch-files --subtree-only <CR>",
-  --         -- "<cmd>AiderOpen --no-auto-commits --chat-mode ask --model openrouter/qwen/qwen3-235b-a22b --stream --watch-files --subtree-only <CR>",
-  --         "<cmd>AiderOpen --no-auto-commits --chat-mode ask --stream --watch-files --subtree-only <CR>",
-  --         { noremap = true, silent = true, desc = "Aider Open" }
-  --       ),
-  --       vim.api.nvim_set_keymap(
-  --         "n",
-  --         "<leader>am",
-  --         "<cmd>AiderAddModifiedFiles<CR>",
-  --         { noremap = true, silent = true, desc = "Aider Add Modified Files" }
-  --       ),
-  --     }
-  --   end,
-  -- },
 }
