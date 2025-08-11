@@ -1019,6 +1019,7 @@ require("lazy").setup {
     ft = { "markdown", "Avante" },
     version = "v8.*",
   },
+
   {
     "developedbyed/marko.nvim",
     config = function()
