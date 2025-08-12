@@ -1,12 +1,21 @@
 {
   "context_servers": {
-    "mindpilot": {
+    "repomix": {
       "source": "custom",
       "enabled": true,
       "command": "npx",
       "args": [
-        "@mindpilot/mcp@latest"
+        "-y",
+        "repomix",
+        "--mcp"
       ],
+      "env": {}
+    },
+    "mindpilot": {
+      "source": "custom",
+      "enabled": false,
+      "command": "npx",
+      "args": ["@mindpilot/mcp@latest"],
       "env": {}
     }
   },
@@ -15,7 +24,7 @@
     "always_allow_tool_actions": true,
     "default_model": {
       "provider": "openai",
-      "model": "qwen3-coder"
+      "model": "glm-4.5"
     },
     "thread_summary_model": {
       "provider": "openai",
@@ -45,12 +54,6 @@
       // "api_url": "https://ai.nahcrof.com/v2",
       "api_url": "https://ai.nahcrof.com/v2",
       "available_models": [
-        {
-          "name": "kimi-k2",
-          "display_name": "kimi-k2",
-          "max_tokens": 134000,
-          "max_output_tokens": 68000
-        },
         {
           "name": "kimi-k2-turbo",
           "display_name": "kimi-k2-turbo",
