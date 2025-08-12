@@ -6,7 +6,7 @@ require("avante").setup {
   },
   mode = "agentic",
   -- provider = "chatgpt",
-  provider = "glm45",
+  provider = "qwen3",
   memory_summary_provider = "glm45",
   mappings = {
     ask = "\\ak",

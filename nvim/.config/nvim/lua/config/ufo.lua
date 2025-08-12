@@ -86,6 +86,13 @@ local function handle_timestamp()
   -- Check if it's a Unix timestamp (digits only)
   if current_word:match "^%d+$" then
     local timestamp = tonumber(current_word)
+
+    -- Check if it's a millisecond timestamp (13 digits)
+    if timestamp >= 631152000000 and timestamp <= 4102444800000 then -- Jan 1, 1990 to Jan 1, 2100 in milliseconds
+      -- Convert millisecond timestamp to seconds by dividing by 1000
+      timestamp = timestamp / 1000
+    end
+
     -- Check if it's a reasonable timestamp (between 1970 and 2100)
     if timestamp >= 631152000 and timestamp <= 4102444800 then -- Jan 1, 1990 to Jan 1, 2100
       -- Convert timestamp to local date
@@ -163,11 +170,11 @@ end, { desc = "go to next closed fold" })
 vim.keymap.set("n", "zgk", function()
   local ufo = require "ufo"
   ufo.goPreviousClosedFold()
-end, { desc = "go to preivous closed fold" })
+end, { desc = "go to previous closed fold" })
 
 vim.keymap.set("n", "zgK", function()
   local winid = require("ufo").peekFoldedLinesUnderCursor()
   if not winid then
     vim.lsp.buf.hover()
   end
-end, { desc = "go to preivous closed fold" })
+end, { desc = "go to previous closed fold" })
