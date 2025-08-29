@@ -30,40 +30,40 @@
             "alt-j": "editor::MoveLineDown",
             "alt-k": "editor::MoveLineUp",
             "ctrl-p": "file_finder::Toggle",
-            "space c": "pane::CloseActiveItem",
-            "space t": "workspace::NewCenterTerminal",
-            "space e": "project_panel::ToggleFocus",
-            "space p e": "workspace::ToggleLeftDock",
-            "space q": "pane::CloseAllItems",
+            "\\ c": "pane::CloseActiveItem",
+            "\\ t": "workspace::NewCenterTerminal",
+            "\\ e": "project_panel::ToggleFocus",
+            "\\ p e": "workspace::ToggleLeftDock",
+            "\\ q": "pane::CloseAllItems",
             "ctrl-space": "workspace::ToggleBottomDock",
             // LSP
-            "space l s": "project_symbols::Toggle",
-            "space l i": "editor::GoToImplementationSplit",
+            "\\ l s": "project_symbols::Toggle",
+            "\\ l i": "editor::GoToImplementationSplit",
             "g r r": "editor::FindAllReferences",
             "g i ": "editor::GoToImplementation",
             "\\ g r": "editor::Rename",
             "g 1 ": "workspace::NewSearch",
             //Buffers
-            "space b l": "pane::CloseItemsToTheRight",
-            "space b h": "pane::CloseItemsToTheLeft",
-            "space b a": "pane::ReopenClosedItem",
+            "\\ b l": "pane::CloseItemsToTheRight",
+            "\\ b h": "pane::CloseItemsToTheLeft",
+            "\\ b a": "pane::ReopenClosedItem",
             //Folding
-            "space z f": [
+            "\\ z f": [
                 "workspace::SendKeystrokes",
                 "shift-v shift-f ctrl-c"
             ],
-            "space z a": [
+            "\\ z a": [
                 "workspace::SendKeystrokes",
                 "g g shift-v shift-g shift-f ctrl-c g g"
             ], // Fold all
-            "space z u": [
+            "\\ z u": [
                 "workspace::SendKeystrokes",
                 "g g shift-v shift-g space z z ctrl-c g g"
             ], // Unfold all
             //Toggle Comments
             "gcc": "editor::ToggleComments",
-            "space r": "command_palette::Toggle",
-            "space w": "workspace::Save",
+            "\\ r": "command_palette::Toggle",
+            "\\ w": "workspace::Save",
             "alt-1": [
                 "pane::ActivateItem",
                 0
@@ -134,7 +134,7 @@
     {
         "context": "Workspace && !VimWaiting && vim_mode != insert",
         "bindings": {
-            "space o": "projects::OpenRecent" // Open recent projects
+            "\\ o": "projects::OpenRecent" // Open recent projects
         }
     }
 ]

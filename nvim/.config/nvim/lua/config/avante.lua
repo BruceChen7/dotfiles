@@ -4,7 +4,7 @@ require("avante").setup {
   behaviour = {
     auto_suggestions = false,
   },
-  mode = "agentic",
+  mode = "legacy",
   -- provider = "chatgpt",
   provider = "qwen3",
   memory_summary_provider = "glm45",
@@ -91,6 +91,7 @@ require("avante").setup {
       -- model = "deepseek-v3-0324",
       model = "qwen3-coder",
       max_tokens = 134000, -- remember to increase this value, otherwise it will stop generating halfway
+      disable_tools = true,
       -- https://github.com/Aider-AI/aider/pull/3908
       extra_request_body = {
         temperature = 0.7,

@@ -4,16 +4,12 @@
       "source": "custom",
       "enabled": true,
       "command": "npx",
-      "args": [
-        "-y",
-        "repomix",
-        "--mcp"
-      ],
+      "args": ["-y", "repomix", "--mcp"],
       "env": {}
     },
     "mindpilot": {
       "source": "custom",
-      "enabled": false,
+      "enabled": true,
       "command": "npx",
       "args": ["@mindpilot/mcp@latest"],
       "env": {}
@@ -24,7 +20,7 @@
     "always_allow_tool_actions": true,
     "default_model": {
       "provider": "openai",
-      "model": "qwen3-coder"
+      "model": "deepseek-v3.1"
     },
     "thread_summary_model": {
       "provider": "openai",
@@ -67,6 +63,12 @@
           "max_output_tokens": 68000
         },
         {
+          "name": "deepseek-v3.1",
+          "display_name": "deepseek-v3.1",
+          "max_tokens": 131000,
+          "max_output_tokens": 68000
+        },
+        {
           "name": "qwen3-coder",
           "display_name": "qwen3-coder",
           "max_tokens": 134000,
@@ -87,6 +89,12 @@
         {
           "name": "kimi-k2",
           "display_name": "kimi-k2",
+          "max_tokens": 134000,
+          "max_output_tokens": 134000
+        },
+        {
+          "name": "deepseek-v3-0324",
+          "display_name": "deepseek-v3-0324",
           "max_tokens": 134000,
           "max_output_tokens": 134000
         }

@@ -636,7 +636,7 @@ require("lazy").setup {
           zig = { "zigfmt" },
           markdown = { "autocorrect", "trim_empty_lines" },
           typst = { "autocorrect" },
-          python = { "ruff_format" },
+          python = { "ruff" },
         },
 
         format_on_save = function(bufnr)
