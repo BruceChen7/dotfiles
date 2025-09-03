@@ -197,7 +197,7 @@ require("lazy").setup {
 
       keymap = {
         -- ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
-        ["<C-e>"] = { "hide" },
+        ["<C-e>"] = { "hide", "fallback" },
         ["<C-y>"] = { "fallback" },
         ["<enter>"] = { "select_and_accept", "fallback" },
         ["<C-k>"] = { "select_prev", "fallback" },
@@ -869,6 +869,28 @@ require("lazy").setup {
   {
     "sainnhe/gruvbox-material",
   },
+  -- Lazy
+  {
+    "piersolenski/import.nvim",
+    dependencies = {
+      -- One of the following pickers is required:
+      -- "nvim-telescope/telescope.nvim",
+      "folke/snacks.nvim",
+      -- 'ibhagwan/fzf-lua',
+    },
+    opts = {
+      picker = "snacks",
+    },
+    keys = {
+      {
+        "\\i",
+        function()
+          require("import").pick()
+        end,
+        desc = "Import",
+      },
+    },
+  },
 
   -- Jump across files to the last edited location
   {
@@ -891,29 +913,6 @@ require("lazy").setup {
     end,
     event = "VeryLazy",
   },
-  -- {
-  --   "nvim-telescope/telescope.nvim",
-  --   config = function()
-  --     require "config/telescope"
-  --   end,
-  --
-  --   branch = "0.1.x",
-  --   dependencies = {
-  --     "nvim-lua/plenary.nvim",
-  --     {
-  --       "nvim-telescope/telescope-fzf-native.nvim",
-  --       build = "make",
-  --     },
-  --     "debugloop/telescope-undo.nvim",
-  --   },
-  --   event = "VeryLazy",
-  --   -- cmd = "Telescope",
-  -- },
-  -- {
-  --   "nvim-telescope/telescope-frecency.nvim",
-  --   -- install the latest stable version
-  --   version = "*",
-  -- },
 
   -- {
   --   "olimorris/codecompanion.nvim",

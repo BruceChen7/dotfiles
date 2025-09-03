@@ -20,7 +20,7 @@
     "always_allow_tool_actions": true,
     "default_model": {
       "provider": "openai",
-      "model": "deepseek-v3.1"
+      "model": "glm-4.5"
     },
     "thread_summary_model": {
       "provider": "openai",
