@@ -3,4 +3,5 @@
 .crush/
 .claude/
 **/lazy-lock.json
+*.pid
 

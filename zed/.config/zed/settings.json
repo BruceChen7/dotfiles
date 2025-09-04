@@ -20,7 +20,7 @@
     "always_allow_tool_actions": true,
     "default_model": {
       "provider": "openai",
-      "model": "glm-4.5"
+      "model": "qwen3-coder"
     },
     "thread_summary_model": {
       "provider": "openai",

@@ -8,9 +8,9 @@
     ],
     "Providers": [
         {
-            "name": "deepseek",
+            "name": "nahcrof",
             "api_base_url": "https://ai.nahcrof.com/v2/chat/completions",
-            "api_key": "api key",
+            "api_key": "$FREE_DEEPSEEK_API_KEY",
             "models": [
                 "kimi-k2-turbo",
                 "kimi-k2",
@@ -18,7 +18,10 @@
                 "deepseek-v3-0324-turbo",
                 "qwen3-coder-turbo",
                 "qwen3-235b-a22b-2507-thinking",
-                "qwen3-coder"
+                "qwen3-235b-a22b-2507-thinking-turbo",
+                "qwen3-coder",
+                "glm-4.5",
+                "gpt-oss-120b"
             ],
             "transformer": {
                 "use": [
@@ -27,12 +30,26 @@
                         {
                             "max_tokens": 131000
                         }
-                    ]
+                    ],
+                    "remove-tool-calls"
+                ]
+            }
+        },
+        {
+            "name": "openrouter",
+            "api_base_url": "https://openrouter.ai/api/v1/chat/completions",
+            "api_key": "${OPENROUTER_API_KEY}",
+            "models": [
+                "deepseek/deepseek-r1-0528:free"
+            ],
+            "transformer": {
+                "use": [
+                    "openrouter"
                 ]
             }
         }
     ],
     "Router": {
-        "default": "deepseek,qwen3-coder"
+        "default": "nahcrof,kimi-k2"
     }
 }
