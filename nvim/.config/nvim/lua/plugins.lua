@@ -914,37 +914,6 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
-  -- {
-  --   "olimorris/codecompanion.nvim",
-  --   dependencies = {
-  --     "nvim-lua/plenary.nvim",
-  --     "nvim-treesitter/nvim-treesitter",
-  --     -- "nvim-telescope/telescope.nvim", -- Optional
-  --     {
-  --       "stevearc/dressing.nvim", -- Optional: Improves the default Neovim UI
-  --       opts = {},
-  --     },
-  --   },
-  --   config = function()
-  --     require "config/codecompanion"
-  --   end,
-  --   event = "VeryLazy",
-  -- },
-  --
-  -- https://www.reddit.com/r/neovim/comments/1ca3rm8/shoutout_to_andrewferrierdebugprintnvim_add/
-  -- {
-  --   "andrewferrier/debugprint.nvim",
-  --   opts = {},
-  --   dependencies = {
-  --     "echasnovski/mini.nvim", -- Needed to enable :ToggleCommentDebugPrints for NeoVim <= 0.9
-  --     "nvim-treesitter/nvim-treesitter", -- Needed to enable treesitter for NeoVim 0.8
-  --   },
-  --   -- Remove the following line to use development versions,
-  --   -- not just the formal releases
-  --   version = "*",
-  --   event = "VeryLazy",
-  -- },
-  --
   {
     "stevearc/oil.nvim",
     config = function()
@@ -1022,7 +991,7 @@ require("lazy").setup {
       { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>", desc = "Add current buffer" },
       { "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send to Claude" },
       {
-        "<leader>as",
+        "<leader>aS",
         "<cmd>ClaudeCodeTreeAdd<cr>",
         desc = "Add file",
         ft = { "NvimTree", "neo-tree", "oil", "minifiles" },
