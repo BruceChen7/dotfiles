@@ -10,6 +10,12 @@ function _G.set_terminal_keymaps()
   -- vim.keymap.set("t", "<C-w>", [[<C-\><C-n><C-w>]], opts)
 end
 
+function _G.set_terminal_keymaps_by_ft(file_type)
+  if vim.bo.filetype == file_type then
+    vim.keymap.del("t", "<esc>", { buffer = 0 })
+  end
+end
+
 local Terminal = require("toggleterm.terminal").Terminal
 
 local lspconfig_util = require "lspconfig.util"
@@ -330,6 +336,17 @@ end, { desc = "open git diff in terminal" })
 
 -- if you only want these mappings for toggle term use term://*toggleterm#* instead
 vim.cmd "autocmd! TermOpen term://* lua set_terminal_keymaps()"
+
+-- Remove <esc> mapping and add jj mapping for snacks_terminal filetype
+vim.api.nvim_create_autocmd("TermOpen", {
+  pattern = "term://*",
+  callback = function()
+    if vim.bo.filetype == "snacks_terminal" then
+      vim.keymap.del("t", "<esc>", { buffer = 0 })
+      vim.keymap.set("t", "jj", [[<C-\><C-n>]], { buffer = 0 })
+    end
+  end,
+})
 
 -- Define a shortcut key to diff the current buffer with the release branch differences and display them in the terminal
 vim.keymap.set("n", "\\fh", function()
