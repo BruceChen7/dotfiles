@@ -10,12 +10,6 @@ function _G.set_terminal_keymaps()
   -- vim.keymap.set("t", "<C-w>", [[<C-\><C-n><C-w>]], opts)
 end
 
-function _G.set_terminal_keymaps_by_ft(file_type)
-  if vim.bo.filetype == file_type then
-    vim.keymap.del("t", "<esc>", { buffer = 0 })
-  end
-end
-
 local Terminal = require("toggleterm.terminal").Terminal
 
 local lspconfig_util = require "lspconfig.util"
