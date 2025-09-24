@@ -337,7 +337,7 @@ vim.api.nvim_create_autocmd("TermOpen", {
   callback = function()
     if vim.bo.filetype == "snacks_terminal" then
       vim.keymap.del("t", "<esc>", { buffer = 0 })
-      vim.keymap.set("t", "jj", [[<C-\><C-n>]], { buffer = 0 })
+      vim.keymap.set("t", "jk", [[<C-\><C-n>]], { buffer = 0 })
     end
   end,
 })

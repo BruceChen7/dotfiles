@@ -21,17 +21,20 @@
                 "qwen3-235b-a22b-2507-thinking-turbo",
                 "qwen3-coder",
                 "glm-4.5",
-                "gpt-oss-120b"
+                "gpt-oss-120b",
+                "kimi-k2-0905",
+                "kimi-k2-0905-turbo",
+                "qwen3-next-80b-a3b-instruct",
+                "deepseek-v3.1-terminus"
             ],
             "transformer": {
                 "use": [
                     [
                         "maxtoken",
                         {
-                            "max_tokens": 131000
+                            "max_tokens": 262000
                         }
-                    ],
-                    "remove-tool-calls"
+                    ]
                 ]
             }
         },
@@ -47,9 +50,28 @@
                     "openrouter"
                 ]
             }
+        },
+        {
+            "name": "iflow",
+            "api_base_url": "https://apis.iflow.cn/v1/chat/completions",
+            "api_key": "${IFLOW_API_KEY}",
+            "models": [
+                "qwen3-coder",
+                "kimi-k2-0905"
+            ],
+            "transformer": {
+                "use": [
+                    [
+                        "maxtoken",
+                        {
+                            "max_tokens": 256000
+                        }
+                    ]
+                ]
+            }
         }
     ],
     "Router": {
-        "default": "nahcrof,kimi-k2"
+        "default": "iflow,kimi-k2-0905"
     }
 }

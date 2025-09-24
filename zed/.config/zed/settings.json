@@ -20,7 +20,7 @@
     "always_allow_tool_actions": true,
     "default_model": {
       "provider": "openai",
-      "model": "qwen3-coder"
+      "model": "qwen3-next-80b-a3b-instruct"
     },
     "thread_summary_model": {
       "provider": "openai",
@@ -81,14 +81,14 @@
           "max_output_tokens": 134000
         },
         {
-          "name": "qwen3-235b-a22b-2507-thinking-turbo",
-          "display_name": "qwen3-235b-a22b-2507-thinking-turbo",
+          "name": "qwen3-next-80b-a3b-instruct",
+          "display_name": "qwen3-next-80b-a3b-instruct",
           "max_tokens": 134000,
           "max_output_tokens": 134000
         },
         {
-          "name": "kimi-k2",
-          "display_name": "kimi-k2",
+          "name": "kimi-k2-0905",
+          "display_name": "kimi-k2-0905",
           "max_tokens": 134000,
           "max_output_tokens": 134000
         },
