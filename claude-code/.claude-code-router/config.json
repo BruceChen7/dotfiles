@@ -1,5 +1,5 @@
 {
-    "LOG": false,
+    "LOG": true,
     "transformers": [
         {
             "name": "remove-tool-calls",
@@ -54,7 +54,7 @@
         {
             "name": "iflow",
             "api_base_url": "https://apis.iflow.cn/v1/chat/completions",
-            "api_key": "${IFLOW_API_KEY}",
+            "api_key": "$IFLOW_API_KEY",
             "models": [
                 "qwen3-coder",
                 "kimi-k2-0905"
@@ -72,6 +72,6 @@
         }
     ],
     "Router": {
-        "default": "iflow,kimi-k2-0905"
+        "default": "nahcrof,deepseek-v3.1-terminus"
     }
 }
