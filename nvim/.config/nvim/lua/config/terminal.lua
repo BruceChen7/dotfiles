@@ -339,6 +339,9 @@ vim.api.nvim_create_autocmd("TermOpen", {
       vim.keymap.del("t", "<esc>", { buffer = 0 })
       vim.keymap.set("t", "jk", [[<C-\><C-n>]], { buffer = 0 })
     end
+    if vim.bo.filetype == "opencode_terminal" then
+      vim.keymap.set("t", "jk", [[<C-\><C-n>]], { buffer = 0 })
+    end
   end,
 })
 

@@ -693,9 +693,9 @@ require("lazy").setup {
     event = "VeryLazy",
   },
 
-  -- https://github.com/echasnovski/mini.nvim/issues/1007
+  -- https://github.com/nvim-mini/mini.nvim/issues/1007
   {
-    "echasnovski/mini.icons",
+    "nvim-mini/mini.icons",
     lazy = true,
     opts = {},
     config = function()
@@ -724,28 +724,6 @@ require("lazy").setup {
       require "config/mcphub"
     end,
   },
-  -- {
-  --   "yetone/avante.nvim",
-  --   lazy = false,
-  --   build = "make BUILD_FROM_SOURCE=true",
-  --   -- version = "v0.*",
-  --   dependencies = {
-  --     -- "nvim-tree/nvim-web-devicons",
-  --     "echasnovski/mini.nvim",
-  --     "stevearc/dressing.nvim",
-  --     "nvim-lua/plenary.nvim",
-  --     {
-  --       "grapp-dev/nui-components.nvim",
-  --       dependencies = {
-  --         "MunifTanjim/nui.nvim",
-  --       },
-  --     },
-  --   },
-  --   config = function()
-  --     require "config/avante"
-  --   end,
-  -- },
-  --
   -- "Preview command results with `:Norm`"
   {
     "smjonas/live-command.nvim",
@@ -762,7 +740,7 @@ require("lazy").setup {
   },
 
   {
-    "echasnovski/mini.nvim",
+    "nvim-mini/mini.nvim",
     version = false,
     config = function()
       require "config/mini"
@@ -970,7 +948,7 @@ require("lazy").setup {
   },
   {
     "MeanderingProgrammer/render-markdown.nvim",
-    dependencies = { "nvim-treesitter/nvim-treesitter", "echasnovski/mini.nvim" }, -- if you use the mini.nvim suite
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.nvim" }, -- if you use the mini.nvim suite
     ---@module 'render-markdown'
     ---@type render.md.UserConfig
     opts = {
