@@ -4,4 +4,6 @@
 .claude/
 **/lazy-lock.json
 *.pid
+**/logs/
+**/logs/*
 
