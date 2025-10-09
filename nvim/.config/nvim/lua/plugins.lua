@@ -1317,19 +1317,12 @@ require("lazy").setup {
     },
     keys = {
       {
-        "<c-.>",
-        function()
-          require("sidekick.cli").toggle()
-        end,
-        desc = "Sidekick Toggle",
-        mode = { "n", "t", "i", "x" },
-      },
-      {
         "\\aa",
         function()
           require("sidekick.cli").toggle()
         end,
         desc = "Sidekick Toggle CLI",
+        mode = { "n", "t", "i", "x" },
       },
       {
         "\\as",
@@ -1364,7 +1357,7 @@ require("lazy").setup {
         desc = "Send Visual Selection",
       },
       {
-        "<leader>ap",
+        "\\ap",
         function()
           require("sidekick.cli").prompt()
         end,
@@ -1375,7 +1368,7 @@ require("lazy").setup {
       {
         "\\ac",
         function()
-          require("sidekick.cli").toggle { name = "claude", focus = true }
+          require("sidekick.cli").toggle { name = "ccr", focus = true }
         end,
         desc = "Sidekick Toggle Claude",
       },

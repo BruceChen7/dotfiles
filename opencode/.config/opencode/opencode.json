@@ -13,6 +13,9 @@
                 "deepseek-v3.1": {
                     "name": "deepseek-v3.1-terminus"
                 },
+                "kimi-k2-0905": {
+                    "name": "kimi-k2-0905"
+                },
                 "deepseek-v3.2": {
                     "name": "deepseek-v3.2-exp"
                 },
