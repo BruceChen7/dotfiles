@@ -919,34 +919,6 @@ require("lazy").setup {
   },
 
   {
-    "coder/claudecode.nvim",
-    dependencies = { "folke/snacks.nvim" },
-    opts = {
-      terminal_cmd = "ccr code", -- Point to local installation
-    },
-    config = true,
-    keys = {
-      -- Your keymaps here
-      -- { "<leader>a", nil, desc = "AI/Claude Code" },
-      { "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
-      { "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
-      { "<leader>ar", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },
-      { "<leader>aC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
-      { "<leader>am", "<cmd>ClaudeCodeSelectModel<cr>", desc = "Select Claude model" },
-      { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>", desc = "Add current buffer" },
-      { "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send to Claude" },
-      {
-        "<leader>aS",
-        "<cmd>ClaudeCodeTreeAdd<cr>",
-        desc = "Add file",
-        ft = { "NvimTree", "neo-tree", "oil", "minifiles" },
-      },
-      -- Diff management
-      { "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept diff" },
-      { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
-    },
-  },
-  {
     "MeanderingProgrammer/render-markdown.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.nvim" }, -- if you use the mini.nvim suite
     ---@module 'render-markdown'
@@ -1323,59 +1295,91 @@ require("lazy").setup {
       },
     },
   },
+
   {
-    "NickvanDyke/opencode.nvim",
-    dependencies = {
-      -- Recommended for better prompt input, and required to use `opencode.nvim`'s embedded terminal — otherwise optional
-      { "folke/snacks.nvim", opts = { input = { enabled = true } } },
+    "folke/sidekick.nvim",
+    opts = {
+      -- add any options here
+      cli = {
+        mux = {
+          backend = "tmux",
+          enabled = true,
+        },
+        tools = {
+          ccr = {
+            cmd = { "ccr", "code" },
+          },
+        },
+      },
     },
-    config = function()
-      vim.g.opencode_opts = {
-        -- Your configuration, if any — see `lua/opencode/config.lua`
-      }
-
-      -- Required for `opts.auto_reload`
-      vim.opt.autoread = true
-      -- Recommended keymaps
-      vim.keymap.set("n", "<leader>ot", function()
-        require("opencode").toggle()
-      end, { desc = "Toggle" })
-      vim.keymap.set("n", "<leader>oA", function()
-        require("opencode").ask()
-      end, { desc = "Ask" })
-      vim.keymap.set("n", "<leader>oa", function()
-        require("opencode").ask "@cursor: "
-      end, { desc = "Ask about this" })
-      vim.keymap.set("v", "<leader>oa", function()
-        require("opencode").ask "@selection: "
-      end, { desc = "Ask about selection" })
-      vim.keymap.set("n", "<leader>o+", function()
-        require("opencode").append_prompt "@buffer"
-      end, { desc = "Add buffer to prompt" })
-      vim.keymap.set("v", "<leader>o+", function()
-        require("opencode").append_prompt "@selection"
-      end, { desc = "Add selection to prompt" })
-      vim.keymap.set("n", "<leader>on", function()
-        require("opencode").command "session_new"
-      end, { desc = "New session" })
-      vim.keymap.set("n", "<leader>oy", function()
-        require("opencode").command "messages_copy"
-      end, { desc = "Copy last response" })
-      vim.keymap.set("n", "<S-C-u>", function()
-        require("opencode").command "messages_half_page_up"
-      end, { desc = "Messages half page up" })
-      vim.keymap.set("n", "<S-C-d>", function()
-        require("opencode").command "messages_half_page_down"
-      end, { desc = "Messages half page down" })
-      vim.keymap.set({ "n", "v" }, "<leader>os", function()
-        require("opencode").select()
-      end, { desc = "Select prompt" })
-
-      -- Example: keymap for custom prompt
-      vim.keymap.set("n", "<leader>oe", function()
-        require("opencode").prompt "Explain @cursor and its context"
-      end, { desc = "Explain this code" })
-    end,
+    nes = {
+      enabled = false,
+    },
+    keys = {
+      {
+        "<c-.>",
+        function()
+          require("sidekick.cli").toggle()
+        end,
+        desc = "Sidekick Toggle",
+        mode = { "n", "t", "i", "x" },
+      },
+      {
+        "\\aa",
+        function()
+          require("sidekick.cli").toggle()
+        end,
+        desc = "Sidekick Toggle CLI",
+      },
+      {
+        "\\as",
+        function()
+          require("sidekick.cli").select()
+        end,
+        -- Or to select only installed tools:
+        -- require("sidekick.cli").select({ filter = { installed = true } })
+        desc = "Select CLI",
+      },
+      {
+        "\\at",
+        function()
+          require("sidekick.cli").send { msg = "{this}" }
+        end,
+        mode = { "x", "n" },
+        desc = "Send This",
+      },
+      {
+        "\\af",
+        function()
+          require("sidekick.cli").send { msg = "{file}" }
+        end,
+        desc = "Send File",
+      },
+      {
+        "\\av",
+        function()
+          require("sidekick.cli").send { msg = "{selection}" }
+        end,
+        mode = { "x" },
+        desc = "Send Visual Selection",
+      },
+      {
+        "<leader>ap",
+        function()
+          require("sidekick.cli").prompt()
+        end,
+        mode = { "n", "x" },
+        desc = "Sidekick Select Prompt",
+      },
+      -- Example of a keybinding to open Claude directly
+      {
+        "\\ac",
+        function()
+          require("sidekick.cli").toggle { name = "claude", focus = true }
+        end,
+        desc = "Sidekick Toggle Claude",
+      },
+    },
   },
 
   {

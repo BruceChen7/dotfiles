@@ -14,37 +14,6 @@ vim.lsp.util.stylize_markdown = function(bufnr, contents, opts)
   return contents
 end
 
-local function find_definition()
-  -- 如果当前的文件是c, cpp, h文件
-  local file_type = vim.bo.filetype
-  if file_type == "c" or file_type == "cpp" or file_type == "h" then
-    -- get current cursor word
-    -- local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-    -- print("before row and new row", row, col)
-    vim.cmd [[
-      execute 'FzfLua lsp_definitions'
-    ]]
-    -- wait 10 ms
-    -- vim.defer_fn(function()
-    --   vim.cmd [[
-    --     let word = expand("<cword>")
-    --     silent execute 'Cscope find g ' . word
-    --   ]]
-    --   local next_row, next_col = unpack(vim.api.nvim_win_get_cursor(0))
-    --   if next_row == row and next_col == col then
-    --     vim.cmd [[
-    --       let word = expand("<cword>")
-    --       silent execute "Cstag " . word
-    --     ]]
-    --   end
-    -- end, 10)
-    return
-  end
-  vim.cmd [[
-    execute 'FzfLua lsp_definitions'
-  ]]
-end
-
 -- vim.keymap.set("n", "gd", function()
 --   -- find_definition()
 --   local exists, telescope = pcall(require, "telescope")
@@ -121,45 +90,6 @@ end
 
 vim.keymap.set("n", "\\gr", "<cmd>lua vim.lsp.buf.rename()<CR>", { noremap = true, silent = true, desc = "Rename" })
 
-local versionThan9 = vim.version().minor > 9
-vim.api.nvim_create_autocmd({ "InsertEnter" }, {
-  callback = function()
-    -- if filetype is go or rust or lua
-    -- pyright is not support textDocument/inlayHint
-    -- if vim.bo.filetype is go or rust or lua
-    -- thena vim.lsp.inlay_hint.enable(0, true)
-    local lang = {
-      "go",
-      "rust",
-      "lua",
-      "zig",
-      "typescript",
-    }
-
-    -- if versionThan9 then
-    --   local filetype = vim.bo.filetype
-    --   if contains(lang, filetype) then
-    --     vim.lsp.inlay_hint.enable(0, true)
-    --   end
-    -- end
-  end,
-})
-vim.api.nvim_create_autocmd({ "InsertLeave" }, {
-  callback = function()
-    local lang = {
-      "go",
-      "rust",
-      "lua",
-      "zig",
-      "typescript",
-    }
-    -- if versionThan9 then
-    --   if contains(lang, vim.bo.filetype) then
-    --     vim.lsp.inlay_hint.enable(0, false)
-    --   end
-    -- end
-  end,
-})
 -- https://github.com/kevinhwang91/nvim-ufo
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities.textDocument.foldingRange = {
