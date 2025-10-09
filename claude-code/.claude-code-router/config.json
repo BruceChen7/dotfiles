@@ -70,9 +70,27 @@
                     ]
                 ]
             }
+        },
+        {
+            "name": "coord",
+            "api_base_url": "https://api.coordcode.com/api9/v1/chat/completions",
+            "api_key": "$COORD_API_KEY",
+            "models": [
+                "glm-4.6"
+            ],
+            "transformer": {
+                "use": [
+                    [
+                        "maxtoken",
+                        {
+                            "max_tokens": 256000
+                        }
+                    ]
+                ]
+            }
         }
     ],
     "Router": {
-        "default": "nahcrof,deepseek-v3.2-exp"
+        "default": "coord,glm-4.6"
     }
 }
