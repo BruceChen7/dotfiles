@@ -13,6 +13,9 @@
                 "deepseek-v3.1": {
                     "name": "deepseek-v3.1-terminus"
                 },
+                "deepseek-v3.2": {
+                    "name": "deepseek-v3.2-exp"
+                },
                 "glm-4.5": {
                     "name": "glm-4.5"
                 },
