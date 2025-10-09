@@ -25,7 +25,8 @@
                 "kimi-k2-0905",
                 "kimi-k2-0905-turbo",
                 "qwen3-next-80b-a3b-instruct",
-                "deepseek-v3.1-terminus"
+                "deepseek-v3.1-terminus",
+                "deepseek-v3.2-exp"
             ],
             "transformer": {
                 "use": [
@@ -72,6 +73,6 @@
         }
     ],
     "Router": {
-        "default": "nahcrof,deepseek-v3.1-terminus"
+        "default": "nahcrof,deepseek-v3.2-exp"
     }
 }

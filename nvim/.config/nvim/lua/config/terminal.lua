@@ -3,27 +3,11 @@ function _G.set_terminal_keymaps()
   -- using <esc> to enter normal mode
   -- vim.keymap.set("t", "jk", [[<C-\><C-n>]], opts)
   vim.keymap.set("t", "<esc>", [[<C-\><C-n>]], opts)
-  -- vim.keymap.set("t", "<C-h>", [[<Cmd>wincmd h<CR>]], opts)
-  -- vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]], opts)
-  -- vim.keymap.set("t", "<C-k>", [[<Cmd>wincmd k<CR>]], opts)
-  -- vim.keymap.set("t", "<C-l>", [[<Cmd>wincmd l<CR>]], opts)
-  -- vim.keymap.set("t", "<C-w>", [[<C-\><C-n><C-w>]], opts)
-end
-
-local Terminal = require("toggleterm.terminal").Terminal
-
-local lspconfig_util = require "lspconfig.util"
-local find_root = lspconfig_util.root_pattern ".git"
-
-local function _Tig_TOGGLE()
-  local root = find_root(vim.fn.expand "%:p")
-  if not root then
-    -- FIXME(ming.chen): use vim.notify()
-    -- vim.notify("use working directory instead", vim.log.levels.INFO)
-    root = vim.fn.getcwd()
-  end
-  local tig = Terminal:new { cmd = "tig -C " .. root, hidden = true }
-  tig:toggle()
+  vim.keymap.set("t", "<C-h>", [[<Cmd>wincmd h<CR>]], opts)
+  vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]], opts)
+  vim.keymap.set("t", "<C-k>", [[<Cmd>wincmd k<CR>]], opts)
+  vim.keymap.set("t", "<C-l>", [[<Cmd>wincmd l<CR>]], opts)
+  vim.keymap.set("t", "<C-w>", [[<C-\><C-n><C-w>]], opts)
 end
 
 local function get_zig_test_declaration()
@@ -437,8 +421,9 @@ vim.api.nvim_create_autocmd({ "TermOpen", "BufEnter" }, {
   group = term_augroup,
   pattern = "term://*", --> only applicable for "BufEnter", an ignored Lua table key when evaluating TermOpen
   callback = function()
-    -- insert
+    -- if vim.api.nvim_buf_get_option(0, "filetype") ~= "opencode_terminal" then
     vim.cmd "startinsert"
+    -- end
   end,
 })
 -- Automatically close terminal unless exit code isn't 0
