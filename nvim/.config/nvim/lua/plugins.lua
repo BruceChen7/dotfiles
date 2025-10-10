@@ -1303,7 +1303,7 @@ require("lazy").setup {
       cli = {
         mux = {
           backend = "tmux",
-          enabled = true,
+          enabled = false,
         },
         tools = {
           ccr = {

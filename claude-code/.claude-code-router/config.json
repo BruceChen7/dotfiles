@@ -15,7 +15,6 @@
                 "kimi-k2-turbo",
                 "kimi-k2",
                 "deepseek-r1-0528",
-                "deepseek-v3-0324-turbo",
                 "qwen3-coder-turbo",
                 "qwen3-235b-a22b-2507-thinking",
                 "qwen3-235b-a22b-2507-thinking-turbo",
@@ -26,7 +25,8 @@
                 "kimi-k2-0905-turbo",
                 "qwen3-next-80b-a3b-instruct",
                 "deepseek-v3.1-terminus",
-                "deepseek-v3.2-exp"
+                "deepseek-v3.2-exp",
+                "glm-4.6"
             ],
             "transformer": {
                 "use": [
@@ -91,6 +91,6 @@
         }
     ],
     "Router": {
-        "default": "coord,glm-4.6"
+        "default": "nahcrof,deepseek-v3.2-exp"
     }
 }
