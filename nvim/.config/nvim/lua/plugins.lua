@@ -74,7 +74,6 @@ require("lazy").setup {
     version = "v1.*", -- REQUIRED release tag to download pre-built binaries
     build = "cargo build --release",
     dependencies = {
-      "Kaiser-Yang/blink-cmp-avante",
       "archie-judd/blink-cmp-words",
     },
     opts = {
@@ -109,15 +108,8 @@ require("lazy").setup {
       },
       sources = {
         -- Remove 'buffer' if you don't want text completions, by default it's only enabled when LSP returns no items
-        default = { "avante", "lsp", "path", "snippets", "buffer" },
+        default = { "lsp", "path", "snippets", "buffer" },
         providers = {
-          avante = {
-            module = "blink-cmp-avante",
-            name = "Avante",
-            opts = {
-              -- options for blink-cmp-avante
-            },
-          },
           thesaurus = {
             name = "blink-cmp-words",
             module = "blink-cmp-words.thesaurus",
@@ -156,7 +148,6 @@ require("lazy").setup {
           text = { "dictionary" },
           markdown = { "thesaurus" },
           gitcommit = { "dictionary", "buffer", "path" },
-          AvanteInput = { "dictionary", "buffer", "path" },
         },
       },
       cmdline = {
@@ -358,8 +349,6 @@ require("lazy").setup {
     end,
   },
 
-  -- colorscheme
-  -- { "folke/tokyonight.nvim" },
 
   {
     "gennaro-tedesco/nvim-peekup",
@@ -555,14 +544,6 @@ require("lazy").setup {
       require "config/codeium"
     end,
     event = "InsertEnter",
-  },
-
-  {
-    "robitx/gp.nvim",
-    config = function()
-      require "config/gp"
-    end,
-    event = "BufReadPre",
   },
 
   -- find files
@@ -821,7 +802,6 @@ require("lazy").setup {
       -- One of the following pickers is required:
       -- "nvim-telescope/telescope.nvim",
       "folke/snacks.nvim",
-      -- 'ibhagwan/fzf-lua',
     },
     opts = {
       picker = "snacks",
@@ -1317,7 +1297,7 @@ require("lazy").setup {
     },
     keys = {
       {
-        "\\aa",
+        "<space>aa",
         function()
           require("sidekick.cli").toggle()
         end,
@@ -1325,7 +1305,7 @@ require("lazy").setup {
         mode = { "n", "t", "i", "x" },
       },
       {
-        "\\as",
+        "<space>as",
         function()
           require("sidekick.cli").select()
         end,
@@ -1334,7 +1314,7 @@ require("lazy").setup {
         desc = "Select CLI",
       },
       {
-        "\\at",
+        "<space>at",
         function()
           require("sidekick.cli").send { msg = "{this}" }
         end,
@@ -1342,14 +1322,14 @@ require("lazy").setup {
         desc = "Send This",
       },
       {
-        "\\af",
+        "<space>af",
         function()
           require("sidekick.cli").send { msg = "{file}" }
         end,
         desc = "Send File",
       },
       {
-        "\\av",
+        "<space>av",
         function()
           require("sidekick.cli").send { msg = "{selection}" }
         end,
@@ -1357,7 +1337,7 @@ require("lazy").setup {
         desc = "Send Visual Selection",
       },
       {
-        "\\ap",
+        "<space>ap",
         function()
           require("sidekick.cli").prompt()
         end,
@@ -1366,7 +1346,7 @@ require("lazy").setup {
       },
       -- Example of a keybinding to open Claude directly
       {
-        "\\ac",
+        "<space>ac",
         function()
           require("sidekick.cli").toggle { name = "ccr", focus = true }
         end,
