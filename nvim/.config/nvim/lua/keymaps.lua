@@ -483,3 +483,31 @@ end, { silent = true, desc = "next edit position in current file" })
 -- https://github.com/kaddkaka/vim_examples?tab=readme-ov-file#repeat-last-change-in-all-of-file-global-repeat-similar-to-g
 -- Dependencies: Requires default register to contain text (from yank/delete operations)
 vim.keymap.set("n", "g.", ":%s//<c-r>./g<esc>", { desc = "replace with last yanked text" })
+
+-- toggle current buffer with the full-screen using :tabedit %
+-- https://www.reddit.com/r/neovim/comments/1msuasw/a_simple_shortcut_to_toggle_focus_on_a_splited/
+vim.keymap.set("n", "<m-e>", function()
+  local current_buf = vim.api.nvim_get_current_buf()
+  local tabs = vim.api.nvim_list_tabpages()
+  local pos = vim.api.nvim_win_get_cursor(0)
+
+  if #tabs > 1 then
+    for _, tab in ipairs(tabs) do
+      local win = vim.api.nvim_tabpage_get_win(tab)
+      local buf = vim.api.nvim_win_get_buf(win)
+
+      if buf == current_buf and tab ~= vim.api.nvim_get_current_tabpage() then
+        vim.api.nvim_win_set_cursor(win, pos)
+        vim.api.nvim_command "tabclose"
+        return
+      end
+    end
+  end
+
+  vim.cmd "tabedit %"
+
+  local win = vim.api.nvim_get_current_win()
+  local line_count = vim.api.nvim_buf_line_count(current_buf)
+  local line = math.min(pos[1], line_count)
+  vim.api.nvim_win_set_cursor(win, { line, pos[2] })
+end)
