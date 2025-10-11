@@ -1,6 +1,6 @@
 ---@diagnostic disable: missing-parameter
 local M = {}
-utils = require "utils"
+local utils = require "utils"
 
 M.setup = function()
   local news_keymaps = {

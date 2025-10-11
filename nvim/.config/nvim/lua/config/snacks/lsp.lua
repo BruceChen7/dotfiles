@@ -41,15 +41,7 @@ M.setup = function()
       end,
       desc = "Goto T[y]pe Definition",
     },
-    {
-      "<c-\\>",
-      function()
-        Snacks.terminal()
-      end,
-      desc = "Terminal",
-      mode = { "n", "t" },
-    },
-    {
+        {
       "gs",
       function()
         Snacks.picker.lsp_symbols()

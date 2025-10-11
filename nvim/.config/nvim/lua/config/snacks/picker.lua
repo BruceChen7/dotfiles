@@ -3,6 +3,7 @@ local M = {}
 local utils = require "utils"
 
 M.setup = function()
+  -- Smart file finding and buffers
   local picker_keymaps = {
     -- files
     {
@@ -42,7 +43,14 @@ M.setup = function()
       end,
       desc = "Command History",
     },
-    -- find
+    -- File operations
+    {
+      "<c-p>",
+      function()
+        Snacks.picker.files()
+      end,
+      desc = "Find Files",
+    },
     {
       "<leader>fp",
       function()
@@ -57,7 +65,7 @@ M.setup = function()
       end,
       desc = "Recent",
     },
-    -- Grep
+    -- Grep and search operations
     {
       "<leader>sb",
       function()
@@ -87,7 +95,7 @@ M.setup = function()
       desc = "Visual selection or word",
       mode = { "n", "x" },
     },
-    -- search
+    -- Search history and system operations
     {
       "<leader>s/",
       function()

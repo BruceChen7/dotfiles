@@ -6,7 +6,7 @@ M.register_keymaps = function(keymaps)
     vim.keymap.set(keymap.mode or "n", keymap[1], keymap[2], {
       desc = keymap.desc,
       noremap = true,
-      nowait = keymap.nowait,
+      nowait = keymap.nowait or false,
     })
   end
 end
