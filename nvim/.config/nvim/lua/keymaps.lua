@@ -486,7 +486,7 @@ vim.keymap.set("n", "g.", ":%s//<c-r>./g<esc>", { desc = "replace with last yank
 
 -- toggle current buffer with the full-screen using :tabedit %
 -- https://www.reddit.com/r/neovim/comments/1msuasw/a_simple_shortcut_to_toggle_focus_on_a_splited/
-vim.keymap.set("n", "<m-e>", function()
+vim.keymap.set({ "n" }, "<m-e>", function()
   local current_buf = vim.api.nvim_get_current_buf()
   local tabs = vim.api.nvim_list_tabpages()
   local pos = vim.api.nvim_win_get_cursor(0)

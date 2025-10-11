@@ -316,17 +316,23 @@ require("toggleterm").setup {
   start_in_insert = true,
 }
 
--- Terminal autocmds
-local term_augroup = vim.api.nvim_create_augroup("Terminal", { clear = true })
+-- if you only want these mappings for toggle term use term://*toggleterm#* instead
+vim.cmd "autocmd! TermOpen term://* lua set_terminal_keymaps()"
 
--- Terminal keymap adjustments
+-- Remove <esc> mapping and add jj mapping for specified terminal filetypes
 vim.api.nvim_create_autocmd("TermOpen", {
-  group = term_augroup,
   pattern = "term://*",
   callback = function()
-    vim.keymap.set("t", "jk", [[<C-\><C-n>]], { buffer = 0 })
+    local terminal_filetypes = { "sidekick_terminal", "snacks_terminal" }
+    if vim.tbl_contains(terminal_filetypes, vim.bo.filetype) then
+      vim.keymap.del("t", "<esc>", { buffer = 0 })
+      vim.keymap.set("t", "jk", [[<C-\><C-n>]], { buffer = 0 })
+    end
   end,
 })
+
+-- Terminal autocmds
+local term_augroup = vim.api.nvim_create_augroup("Terminal", { clear = true })
 
 -- Terminal insert mode handling
 vim.api.nvim_create_autocmd({ "TermOpen", "BufEnter" }, {
