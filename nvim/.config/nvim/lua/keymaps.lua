@@ -475,3 +475,11 @@ end, { silent = true, desc = "last edit position in current file" })
 vim.keymap.set("n", "g,", function()
   vim.cmd "silent normal! g,"
 end, { silent = true, desc = "next edit position in current file" })
+
+-- Replace with last yanked text
+-- 一般首先是使用/来搜索，然后在ciw类似
+-- Usage: After yanking/cutting text (y, yy, d, dd, etc.), press g. to replace all occurrences in file
+-- The <c-r>. inserts the contents of the default register (last yanked text) into the search part
+-- https://github.com/kaddkaka/vim_examples?tab=readme-ov-file#repeat-last-change-in-all-of-file-global-repeat-similar-to-g
+-- Dependencies: Requires default register to contain text (from yank/delete operations)
+vim.keymap.set("n", "g.", ":%s//<c-r>./g<esc>", { desc = "replace with last yanked text" })

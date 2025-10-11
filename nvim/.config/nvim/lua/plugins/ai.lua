@@ -25,7 +25,7 @@ return {
       {
         "<space>aa",
         function()
-          require("sidekick.cli").toggle { focus = false }
+          require("sidekick.cli").toggle { focus = true }
         end,
         desc = "Sidekick Toggle CLI",
         mode = { "n", "t", "i", "x" },
