@@ -324,7 +324,6 @@ vim.api.nvim_create_autocmd("TermOpen", {
   group = term_augroup,
   pattern = "term://*",
   callback = function()
-    vim.keymap.del("t", "<esc>", { buffer = 0 })
     vim.keymap.set("t", "jk", [[<C-\><C-n>]], { buffer = 0 })
   end,
 })
