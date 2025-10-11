@@ -1,4 +1,6 @@
 ---@diagnostic disable: missing-parameter
+local utils = require "utils"
+
 local M = {}
 
 M.setup = function()
@@ -27,12 +29,7 @@ M.setup = function()
     },
   }
 
-  for _, keymap in ipairs(git_keymaps) do
-    vim.keymap.set(keymap.mode or "n", keymap[1], keymap[2], {
-      desc = keymap.desc,
-      noremap = true,
-    })
-  end
+  utils.register_keymaps(git_keymaps)
 end
 
 return M

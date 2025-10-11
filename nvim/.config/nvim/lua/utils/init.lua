@@ -113,4 +113,14 @@ M.get_go_nearest_function = function()
   return nil
 end
 
+M.register_keymaps = function(keymaps)
+  for _, keymap in ipairs(keymaps) do
+    vim.keymap.set(keymap.mode or "n", keymap[1], keymap[2], {
+      desc = keymap.desc,
+      noremap = true,
+      nowait = keymap.nowait,
+    })
+  end
+end
+
 return M

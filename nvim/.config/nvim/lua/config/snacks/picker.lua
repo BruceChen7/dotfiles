@@ -1,5 +1,6 @@
 ---@diagnostic disable: missing-parameter
 local M = {}
+local utils = require "utils"
 
 M.setup = function()
   local picker_keymaps = {
@@ -207,13 +208,8 @@ M.setup = function()
       desc = "Colorschemes",
     },
   }
-
-  for _, keymap in ipairs(picker_keymaps) do
-    vim.keymap.set(keymap.mode or "n", keymap[1], keymap[2], {
-      desc = keymap.desc,
-      noremap = true,
-    })
-  end
+  utils.register_keymaps(picker_keymaps)
 end
 
 return M
+
