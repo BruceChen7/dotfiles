@@ -349,7 +349,6 @@ require("lazy").setup {
     end,
   },
 
-
   {
     "gennaro-tedesco/nvim-peekup",
   },
@@ -1289,6 +1288,9 @@ require("lazy").setup {
           ccr = {
             cmd = { "ccr", "code" },
           },
+          droid = {
+            cmd = { "droid" },
+          },
         },
       },
     },
@@ -1349,6 +1351,13 @@ require("lazy").setup {
         "<space>ac",
         function()
           require("sidekick.cli").toggle { name = "ccr", focus = true }
+        end,
+        desc = "Sidekick Toggle Claude",
+      },
+      {
+        "<space>ad",
+        function()
+          require("sidekick.cli").toggle { name = "droid", focus = true }
         end,
         desc = "Sidekick Toggle Claude",
       },
