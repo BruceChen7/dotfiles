@@ -1,0 +1,12 @@
+{
+    "custom_models": [
+        {
+            "model_display_name": "glm-4.6",
+            "model": "glm-4.6",
+            "base_url": "https://ai.nahcrof.com/v2/",
+            "api_key": "$FREE_DEEPSEEK_API_KEY",
+            "provider": "generic-chat-completion-api",
+            "max_tokens": 131000
+        }
+    ]
+}
