@@ -11,6 +11,9 @@ return {
       require("leaf").setup { theme = "dark" }
     end,
   },
+  {
+    "sainnhe/gruvbox-material",
+  },
 
   {
     "catppuccin/nvim",
@@ -25,3 +28,4 @@ return {
 
   { "yorumicolors/yorumi.nvim" },
 }
+

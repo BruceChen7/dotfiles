@@ -78,3 +78,4 @@ return {
     keys = { "<leader>?", "<cmd>VimCoach<cr>", desc = "Vim Coach" },
   },
 }
+

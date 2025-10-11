@@ -39,17 +39,19 @@ local plugins = {
   },
 
   -- 从各个文件导入插件配置
-  require("plugins.completion"),
-  require("plugins.lsp"),
-  require("plugins.treesitter"),
-  require("plugins.themes"),
-  require("plugins.editing"),
-  require("plugins.navigation"),
-  require("plugins.development"),
-  require("plugins.utils"),
-  require("plugins.localization"),
-  require("plugins.filemanagers"),
-  require("plugins.special"),
+  require "plugins.basic",
+  require "plugins.completion",
+  require "plugins.lsp",
+  require "plugins.treesitter",
+  require "plugins.themes",
+  require "plugins.editing",
+  require "plugins.navigation",
+  require "plugins.development",
+  require "plugins.utils",
+  require "plugins.localization",
+  require "plugins.filemanagers",
+  require "plugins.special",
+  require "plugins.ai",
 }
 
 require("lazy").setup(plugins)

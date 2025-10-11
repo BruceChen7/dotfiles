@@ -76,25 +76,27 @@ u.map("n", "<space>-", ":resize -3<cr>")
 u.map("n", "<space>,", ":vertical resize -5<cr>")
 u.map("n", "<space>.", ":vertical resize +5<cr>")
 
--- vim-preview
+-- vim-preview - 快速预览标签定义和跳转
+-- <m-;>: 打开预览窗口，如果已存在则跳转到预览窗口，否则创建并跳转
+-- <m-:>: 关闭预览窗口
 local first_init_window = {}
 vim.keymap.set("n", "<m-;>", function()
-  -- jump back to last window
-  -- Get the current windowid and tabid
+  -- jump back to last window - 跳转到最后一个窗口
+  -- Get the current windowid and tabid - 获取当前窗口ID和标签页ID
   local winid = vim.api.nvim_get_current_win()
   local tabid = vim.api.nvim_get_current_tabpage()
   local winid_str = tostring(winid)
   local tabid_str = tostring(tabid)
   local pid = vim.fn["preview#preview_check"]()
   local key = winid_str .. ":" .. tabid_str
-  vim.cmd "PreviewTag"
-  -- pid == 0 means no preview window
+  vim.cmd "PreviewTag" -- 打开预览窗口显示光标下的标签定义
+  -- pid == 0 means no preview window - pid为0表示没有预览窗口
   if not first_init_window[key] or pid == 0 then
-    vim.cmd "wincmd p"
+    vim.cmd "wincmd p" -- 跳转到上一个窗口（预览窗口）
     first_init_window[key] = true
   end
 end)
-u.map("n", "<m-:", ":PreviewClose<CR>")
+u.map("n", "<m-:", ":PreviewClose<CR>") -- 关闭预览窗口
 
 -- 自动打开 quickfix window ，高度为 10
 vim.g.asyncrun_open = 10
