@@ -1010,6 +1010,7 @@ require("lazy").setup {
         function()
           require("sidekick.cli").toggle { name = "claude", focus = true }
         end,
+        mode = { "n", "x", "t" },
         desc = "Sidekick Toggle Claude",
       },
       -- Example of a keybinding to open Claude directly
