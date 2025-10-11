@@ -315,15 +315,13 @@ end, { desc = "open git diff in terminal" })
 -- if you only want these mappings for toggle term use term://*toggleterm#* instead
 vim.cmd "autocmd! TermOpen term://* lua set_terminal_keymaps()"
 
--- Remove <esc> mapping and add jj mapping for snacks_terminal filetype
+-- Remove <esc> mapping and add jj mapping for specified terminal filetypes
 vim.api.nvim_create_autocmd("TermOpen", {
   pattern = "term://*",
   callback = function()
-    if vim.bo.filetype == "snacks_terminal" then
+    local terminal_filetypes = { "sidekick_terminal" }
+    if vim.tbl_contains(terminal_filetypes, vim.bo.filetype) then
       vim.keymap.del("t", "<esc>", { buffer = 0 })
-      vim.keymap.set("t", "jk", [[<C-\><C-n>]], { buffer = 0 })
-    end
-    if vim.bo.filetype == "opencode_terminal" then
       vim.keymap.set("t", "jk", [[<C-\><C-n>]], { buffer = 0 })
     end
   end,
