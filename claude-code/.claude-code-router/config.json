@@ -91,6 +91,6 @@
         }
     ],
     "Router": {
-        "default": "nahcrof,deepseek-v3.2-exp"
+        "default": "nahcrof,glm-4.6"
     }
 }
