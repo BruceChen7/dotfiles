@@ -242,7 +242,7 @@ local function quit_window()
   if vim.o.filetype == "packer" then
     vim.api.nvim_command "close"
   end
-  if buf_name:find "^diffview" then
+  if buf_name and buf_name:find "^diffview" then
     vim.api.nvim_command "DiffviewClose"
     -- vim.api.nvim_command("bdelete %s"):format(buf_id)
   end
@@ -486,7 +486,7 @@ vim.keymap.set("n", "g.", ":%s//<c-r>./g<esc>", { desc = "replace with last yank
 
 -- toggle current buffer with the full-screen using :tabedit %
 -- https://www.reddit.com/r/neovim/comments/1msuasw/a_simple_shortcut_to_toggle_focus_on_a_splited/
-vim.keymap.set({ "n" }, "<m-e>", function()
+vim.keymap.set({ "n", "t" }, "<m-e>", function()
   local current_buf = vim.api.nvim_get_current_buf()
   local tabs = vim.api.nvim_list_tabpages()
   local pos = vim.api.nvim_win_get_cursor(0)
@@ -504,7 +504,12 @@ vim.keymap.set({ "n" }, "<m-e>", function()
     end
   end
 
-  vim.cmd "tabedit %"
+  local file_path = vim.api.nvim_buf_get_name(current_buf)
+  if file_path == "" then
+    vim.notify("Cannot edit buffer: no file name", vim.log.levels.WARN)
+    return
+  end
+  vim.cmd("tabedit " .. vim.fn.fnameescape(file_path))
 
   local win = vim.api.nvim_get_current_win()
   local line_count = vim.api.nvim_buf_line_count(current_buf)
