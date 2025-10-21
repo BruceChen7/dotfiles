@@ -122,7 +122,7 @@ local change_color = function()
   vim.cmd(cmd)
 end
 
-vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>")
+vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>", { desc = "grep todo" })
 vim.keymap.set("n", "g3", function()
   change_color()
 end, { desc = "show change colorscheme" })
