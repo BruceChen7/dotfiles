@@ -112,9 +112,6 @@ eval "$(zoxide init --cmd cd zsh)"
 
 . "$HOME/.cargo/env"
 
-export DFT_BYTE_LIMIT=500000
-export DFT_GRAPH_LIMIT=30000
-
 function wk {
     if [[ -n "$TMUX" ]]
     then
@@ -124,8 +121,6 @@ function wk {
     fzf --bind=enter:replace-query+print-query |
     read session && tmux attach -t ${session:-default} || tmux new -s ${session:-default}
 }
-export DFT_BYTE_LIMIT=500000
-export DFT_GRAPH_LIMIT=30000
 
 eval "$(starship init zsh)"
 alias taw="tmux attach -t working"
@@ -145,16 +140,13 @@ function vf {
 bindkey -s '\eo' 'cd ..\n'
 
 export LC_CTYPE=en_US.UTF-8
-export LANG=zh_CN.UTF-8
 export LANGUAGE=zh_CN:en_US
 export TERM="xterm-256color"
 export VISUAL=nvim
 export EDITOR=nvim
-export LANG=zh_CN.UTF-8
 export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
 export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
 
-eval "$(zoxide init zsh)"
 
 zinit ice depth=1
 # if set, atuin not working

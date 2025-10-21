@@ -72,9 +72,9 @@
             }
         },
         {
-            "name": "coord",
-            "api_base_url": "https://api.coordcode.com/api9/v1/chat/completions",
-            "api_key": "$COORD_API_KEY",
+            "name": "agentrouter",
+            "api_base_url": "https://agentrouter.org/v1/chat/completions",
+            "api_key": "$AGENTS_ROUTER_KEY",
             "models": [
                 "glm-4.6"
             ],
@@ -91,6 +91,6 @@
         }
     ],
     "Router": {
-        "default": "nahcrof,glm-4.6"
+        "default": "agentrouter,glm-4.6"
     }
 }

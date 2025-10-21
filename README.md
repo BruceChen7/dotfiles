@@ -11,11 +11,41 @@ This repository contains my personal configuration files (dotfiles) for various 
 * Key mapping and shortcuts: `.hammerspoon/`, `kanata/`
 * Development tools: `atuin/`, `starship/`, `zls/`
 
-## Usage
-1. Clone the repository locally
-2. Create symbolic links to the home directory
-3. Adjust configurations as needed
-4. Restart relevant applications
+## Prerequisites
+- zsh (Z shell)
+- git
+- tmux (optional)
+- neovim (optional)
+- Various tools: fzf, zoxide, atuin, starship, etc.
+
+## Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/BruceChen7/dotfiles.git ~/.dotfiles
+   cd ~/.dotfiles
+   ```
+
+2. Run the installation script:
+   ```bash
+   chmod +x install.sh
+   ./install.sh
+   ```
+
+3. Restart your shell or run `source ~/.zshrc`
+
+## Manual Setup (Alternative)
+Create symbolic links manually:
+```bash
+ln -s ~/.dotfiles/.zshrc ~/.zshrc
+ln -s ~/.dotfiles/.tmux.conf ~/.tmux.conf
+# Add other files as needed
+```
+
+## Customization
+- Edit `.zshrc` for shell customizations
+- Modify `.gitconfig` for git settings
+- Adjust terminal emulator configs in respective directories
+- Update keybindings in `.zshrc` or Hammerspoon config
 
 ## License
 MIT License
