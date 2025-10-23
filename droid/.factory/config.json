@@ -7,6 +7,22 @@
             "api_key": "$FREE_DEEPSEEK_API_KEY",
             "provider": "generic-chat-completion-api",
             "max_tokens": 131000
+        },
+        {
+            "model_display_name": "deepseek-v3.2-exp",
+            "model": "deepseek-v3.2-exp",
+            "base_url": "https://ai.nahcrof.com/v2/",
+            "api_key": "$FREE_DEEPSEEK_API_KEY",
+            "provider": "generic-chat-completion-api",
+            "max_tokens": 131000
+        },
+        {
+            "model_display_name": "kimi-k2-0905-turbo",
+            "model": "kimi-k2-0905-turbo",
+            "base_url": "https://ai.nahcrof.com/v2/",
+            "api_key": "$FREE_DEEPSEEK_API_KEY",
+            "provider": "generic-chat-completion-api",
+            "max_tokens": 131000
         }
     ]
 }
