@@ -66,7 +66,7 @@ local function build_go_test_env(utils, project_name, module_name)
   end
 
   return string.format(
-    "export env=test && export cid=global && export PROJECT_NAME=%s && export DISABLE_PPROF=true && export MODULE_NAME=%s && export SP_UNIX_SOCKET=/tmp/spex.sock",
+    "export env=test && export cid=global && export PROJECT_NAME=%s && export DISABLE_PPROF=true && export MODULE_NAME=%s && export SP_UNIX_SOCKET=/tmp/spex.sock &  export set_id=common",
     project_name,
     module_name
   )

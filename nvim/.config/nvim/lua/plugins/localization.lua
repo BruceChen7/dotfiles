@@ -55,6 +55,7 @@ return {
     },
     opts = {
       picker = "snacks",
+      insert_at_top = false,
     },
     keys = {
       {
@@ -62,7 +63,7 @@ return {
         function()
           require("import").pick()
         end,
-        desc = "Import",
+        desc = "Import dependency",
       },
     },
   },
@@ -78,4 +79,3 @@ return {
     keys = { "<leader>?", "<cmd>VimCoach<cr>", desc = "Vim Coach" },
   },
 }
-
