@@ -218,7 +218,7 @@ vim.keymap.set("n", "<F2>", function()
 end, { desc = "open go test in quickfix" })
 
 -- Build command handlers
-local BUILD_COMMANDS = {
+local buildCommands = {
   go = {
     ["video/platform/app/shopconsole"] = "go build app/shopconsole/main.go",
     ["botapi"] = "go build cmd/main.go",
@@ -236,7 +236,7 @@ local function get_go_build_cmd()
   end
 
   local buf_path = vim.fn.expand "%:p"
-  for pattern, cmd in pairs(BUILD_COMMANDS.go) do
+  for pattern, cmd in pairs(buildCommands.go) do
     if string.find(buf_path, pattern, 1, true) then
       return cmd
     end
