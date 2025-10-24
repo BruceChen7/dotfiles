@@ -46,17 +46,63 @@ local function validate_test_function(function_name)
 end
 
 -- Project name resolution
+-- Maps directory structure to Go test project and module names
 local function get_project_name_by_root(root)
+  -- Extract the last directory name from the root path
   local last_part = string.match(root, "([^/]+)$")
   local project_name = TEST_CONFIG.go.default_project
+  local module_name = last_part
 
+  -- Special case handling for different project structures
   if last_part == "ecommerce" then
     project_name = "core"
   elseif last_part == "knowledge-platform" then
-    last_part = "knowledgeplatform"
+    module_name = "knowledgeplatform" -- Normalize module name for Go
+  elseif last_part == "platform" then
+    -- Handle complex platform structure with app/ subdirectories
+    local app_dir = root .. "/app"
+
+    if vim.fn.isdirectory(app_dir) == 1 then
+      local buf_path = vim.api.nvim_buf_get_name(0)
+      local module_from_buffer
+
+      -- Strategy 1: Direct path resolution for buffers inside app/
+      -- Example: /project/platform/app/shopconsole/main.go -> shopconsole
+      if buf_path:sub(1, #app_dir + 1) == app_dir .. "/" then
+        local remainder = buf_path:sub(#app_dir + 2)
+        -- Extract the first directory after app/ as the module name
+        module_from_buffer = remainder:match "([^/]+)"
+      end
+
+      -- Strategy 2: Fallback by scanning app/ directories if direct resolution fails
+      -- This handles cases where buffer is not in app/ or path structure varies
+      -- Uses vim.fn.globpath to find all directories under app/ and picks the first found
+      if not module_from_buffer then
+        -- Get all entries (files and directories) under app/
+        local entries = vim.fn.globpath(app_dir, "*", 0, 1)
+
+        -- Filter to only directories and extract their names
+        for _, entry in ipairs(entries) do
+          if vim.fn.isdirectory(entry) == 1 then
+            -- Extract directory name from full path
+            module_from_buffer = entry:match "([^/]+)$"
+            if module_from_buffer then
+              break -- Use the first directory found as the module name
+            end
+          end
+        end
+      end
+
+      -- Apply chatbotcommon project context if we successfully identified a module
+      -- This is necessary for platform projects that structure their microservices under app/
+      if module_from_buffer then
+        project_name = "chatbotcommon"
+        module_name = module_from_buffer
+      end
+    end
   end
 
-  return project_name, last_part
+  return project_name, module_name
 end
 
 -- Go test environment builder
@@ -65,8 +111,14 @@ local function build_go_test_env(utils, project_name, module_name)
     return ""
   end
 
+  local cid = "global"
+  if project_name == "chatbotcommon" then
+    cid = "sg"
+  end
+
   return string.format(
-    "export env=test && export cid=global && export PROJECT_NAME=%s && export DISABLE_PPROF=true && export MODULE_NAME=%s && export SP_UNIX_SOCKET=/tmp/spex.sock &  export set_id=common",
+    "export env=test && export cid=%s && export PROJECT_NAME=%s && export DISABLE_PPROF=true && export MODULE_NAME=%s && export SP_UNIX_SOCKET=/tmp/spex.sock &  export set_id=common",
+    cid,
     project_name,
     module_name
   )
