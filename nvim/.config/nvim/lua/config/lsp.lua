@@ -123,22 +123,17 @@ require("lsp-setup").setup {
         },
       },
     },
-    -- tsserver = {
-    --   settings = {
-    --     typescript = {
-    --       inlayHints = {
-    --         includeInlayParameterNameHints = "all",
-    --         includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-    --         includeInlayFunctionParameterTypeHints = true,
-    --         includeInlayVariableTypeHints = true,
-    --         includeInlayVariableTypeHintsWhenTypeMatchesName = false,
-    --         includeInlayPropertyDeclarationTypeHints = true,
-    --         includeInlayFunctionLikeReturnTypeHints = true,
-    --         includeInlayEnumMemberValueHints = true,
-    --       },
-    --     },
-    --   },
-    -- },
+    tsgo = {
+      cmd = { "tsgo", "--lsp", "--stdio" },
+      filetypes = {
+        "javascript",
+        "javascriptreact",
+        "javascript.jsx",
+        "typescript",
+        "typescriptreact",
+        "typescript.tsx",
+      },
+    },
     clangd = {
       cmd = {
         "clangd",

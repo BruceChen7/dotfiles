@@ -1,11 +1,11 @@
 return {
   { "skywind3000/asynctasks.vim" },
   { "skywind3000/asyncrun.vim" },
+  -- {
+  --   "suliatis/Jumppack.nvim",
+  --   config = true,
+  -- },
   {
-    "suliatis/Jumppack.nvim",
-    config = true,
-  },
-    {
     "obsidian-nvim/obsidian.nvim",
     version = "*", -- recommended, use latest release instead of latest commit
     ft = "markdown",
@@ -29,5 +29,5 @@ return {
 
       -- see below for full list of options 👇
     },
-  }
+  },
 }

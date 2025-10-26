@@ -28,8 +28,14 @@
     dc = diff --cached
 
 
+[includeIf "hasconfig:remote.*.url:ssh://git@github.com/**"]
+    path = ~/.config/git/config-github
+
 [includeIf "hasconfig:remote.*.url:git@github.com:*/**"]
     path = ~/.config/git/config-github
+
+[includeIf "hasconfig:remote.*.url:ssh://git@codeberg.org/**"]
+    path = ~/.config/git/config-codeberg
 
 [includeIf "hasconfig:remote.*.url:git@codeberg.org:*/**"]
     path = ~/.config/git/config-codeberg
