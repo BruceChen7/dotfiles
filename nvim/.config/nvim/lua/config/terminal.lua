@@ -1,4 +1,6 @@
 -- Terminal keymaps configuration
+local utils = require "utils"
+
 _G.set_terminal_keymaps = function()
   local opts = { buffer = 0 }
   -- using <esc> to enter normal mode
@@ -45,6 +47,31 @@ local function validate_test_function(function_name)
   return true
 end
 
+-- Project name resolution configurations
+local project_mappings = {
+  ecommerce = { project = "core", module = nil },
+  ["knowledge-platform"] = { project = nil, module = "knowledgeplatform" },
+}
+
+-- Helper function to find module from buffer path within app directory
+local function find_module_in_app_dir(app_dir, buf_path)
+  -- Strategy 1: Direct path resolution for buffers inside app/
+  if buf_path:sub(1, #app_dir + 1) == app_dir .. "/" then
+    local remainder = buf_path:sub(#app_dir + 2)
+    return remainder:match "([^/]+)"
+  end
+
+  -- Strategy 2: Fallback by scanning app/ directories
+  local entries = vim.fn.globpath(app_dir, "*", 0, 1)
+  for _, entry in ipairs(entries) do
+    if vim.fn.isdirectory(entry) == 1 then
+      return entry:match "([^/]+)$"
+    end
+  end
+
+  return nil
+end
+
 -- Project name resolution
 -- Maps directory structure to Go test project and module names
 local function get_project_name_by_root(root)
@@ -53,48 +80,25 @@ local function get_project_name_by_root(root)
   local project_name = TEST_CONFIG.go.default_project
   local module_name = last_part
 
-  -- Special case handling for different project structures
-  if last_part == "ecommerce" then
-    project_name = "core"
-  elseif last_part == "knowledge-platform" then
-    module_name = "knowledgeplatform" -- Normalize module name for Go
-  elseif last_part == "platform" then
-    -- Handle complex platform structure with app/ subdirectories
-    local app_dir = root .. "/app"
+  -- Check predefined project mappings
+  local mapping = project_mappings[last_part]
+  if mapping then
+    if mapping.project then
+      project_name = mapping.project
+    end
+    if mapping.module then
+      module_name = mapping.module
+    end
+  end
 
+  -- Handle complex platform structure with app/ subdirectories
+  if last_part == "platform" then
+    local app_dir = root .. "/app"
     if vim.fn.isdirectory(app_dir) == 1 then
       local buf_path = vim.api.nvim_buf_get_name(0)
-      local module_from_buffer
-
-      -- Strategy 1: Direct path resolution for buffers inside app/
-      -- Example: /project/platform/app/shopconsole/main.go -> shopconsole
-      if buf_path:sub(1, #app_dir + 1) == app_dir .. "/" then
-        local remainder = buf_path:sub(#app_dir + 2)
-        -- Extract the first directory after app/ as the module name
-        module_from_buffer = remainder:match "([^/]+)"
-      end
-
-      -- Strategy 2: Fallback by scanning app/ directories if direct resolution fails
-      -- This handles cases where buffer is not in app/ or path structure varies
-      -- Uses vim.fn.globpath to find all directories under app/ and picks the first found
-      if not module_from_buffer then
-        -- Get all entries (files and directories) under app/
-        local entries = vim.fn.globpath(app_dir, "*", 0, 1)
-
-        -- Filter to only directories and extract their names
-        for _, entry in ipairs(entries) do
-          if vim.fn.isdirectory(entry) == 1 then
-            -- Extract directory name from full path
-            module_from_buffer = entry:match "([^/]+)$"
-            if module_from_buffer then
-              break -- Use the first directory found as the module name
-            end
-          end
-        end
-      end
+      local module_from_buffer = find_module_in_app_dir(app_dir, buf_path)
 
       -- Apply chatbotcommon project context if we successfully identified a module
-      -- This is necessary for platform projects that structure their microservices under app/
       if module_from_buffer then
         project_name = "chatbotcommon"
         module_name = module_from_buffer
@@ -106,7 +110,7 @@ local function get_project_name_by_root(root)
 end
 
 -- Go test environment builder
-local function build_go_test_env(utils, project_name, module_name)
+local function build_go_test_env(project_name, module_name)
   if not utils.is_mac() or not utils.is_in_working_dir() then
     return ""
   end
@@ -125,13 +129,13 @@ local function build_go_test_env(utils, project_name, module_name)
 end
 
 -- Go test command builder
-local function build_go_test_command(utils, dir, function_name)
+local function build_go_test_command(dir, function_name)
   local cwd = vim.fn.getcwd()
   local relative_path = utils.relative_path(cwd, dir)
   local go_executable = vim.fn.executable "xgo" == 1 and "xgo" or "go"
   local root = utils.find_root_dir()
   local project_name, module_name = get_project_name_by_root(root)
-  local env_cmd = build_go_test_env(utils, project_name, module_name)
+  local env_cmd = build_go_test_env(project_name, module_name)
 
   local test_cmd = string.format(
     "%s test -count=1 ./%s -tags='%s' -gcflags=%s -v -run %s",
@@ -147,7 +151,7 @@ end
 
 -- Test command dispatcher
 local function get_test_command()
-  vim.api.nvim_command "redraw"
+  vim.cmd "redraw"
   local buf_name = vim.api.nvim_buf_get_name(0)
   local dir = vim.fn.fnamemodify(buf_name, ":p:h")
   local filetype = vim.bo.filetype
@@ -160,12 +164,11 @@ local function get_test_command()
       return string.format("cd %s && python3 -m unittest discover -s ./", dir)
     end,
     go = function()
-      local utils = require "utils"
       local function_name = utils.get_go_nearest_function()
       if not validate_test_function(function_name) then
         return nil
       end
-      return build_go_test_command(utils, dir, function_name)
+      return build_go_test_command(dir, function_name)
     end,
   }
 
@@ -285,61 +288,50 @@ vim.keymap.set("n", "<F5>", function()
   vim.fn["asyncrun#run"]("", { mode = "async", raw = false, errorformat = "%f:%l:%c: %m" }, cmd)
 end, { desc = "make build" })
 
+-- Helper function to create terminal keymap handlers
+local function create_terminal_handler(cmd_template)
+  return function()
+    local cmd = cmd_template:gsub("%%:p", vim.fn.expand "%:p")
+    require("toggleterm").exec(cmd, 1, 12)
+  end
+end
+
+-- Helper function to create terminal keymap handlers with utils
+local function create_terminal_handler_with_utils(cmd_template, use_root)
+  return function()
+    local utils = require "utils"
+    local cmd = cmd_template:gsub("%%:p", vim.fn.expand "%:p")
+    if use_root then
+      cmd = cmd:gsub("%%:root", utils.find_root_dir() or vim.fn.getcwd())
+    end
+    require("toggleterm").exec(cmd, 1, 12)
+  end
+end
+
 -- Terminal keymaps for git operations
 local terminal_keymaps = {
   {
     "<leader>tl",
-    function()
-      local cmd = 'git log -p "' .. vim.fn.expand "%:p" .. '"'
-      require("toggleterm").exec(cmd, 1, 12)
-    end,
+    create_terminal_handler('git log -p "%:p"', "open git log for this file in terminal"),
     "open git log for this file in terminal",
   },
   {
     "\\tf",
-    function()
-      local cmd = "git diff release -- " .. vim.fn.expand "%:p"
-      require("toggleterm").exec(cmd, 1, 12)
-    end,
-    "open git log for this file in terminal",
+    create_terminal_handler("git diff release -- %:p", "open git diff for this file in terminal"),
+    "open git diff for this file in terminal",
   },
   {
     "\\tb",
-    function()
-      local current_file_path_with_name = vim.fn.expand "%:p"
-      local cmd = "tig blame " .. current_file_path_with_name
-      require("toggleterm").exec(cmd, 1, 12)
-    end,
+    create_terminal_handler("tig blame %:p", "tig blame current file in terminal"),
     "tig blame current file in terminal",
   },
-  {
-    "<leader>tt",
-    function()
-      local utils = require "utils"
-      local root = utils.find_root_dir() or vim.fn.getcwd()
-      local cmd = 'tig -C "' .. root .. '"'
-      require("toggleterm").exec(cmd, 1, 12)
-    end,
-    "open tig",
-  },
+  { "<leader>tt", create_terminal_handler_with_utils('tig -C "%:root"', "open tig", true), "open tig" },
   {
     "\\gm",
-    function()
-      local utils = require "utils"
-      local cmd = "git diff master -- " .. utils.find_root_dir()
-      require("toggleterm").exec(cmd, 1, 12)
-    end,
+    create_terminal_handler_with_utils("git diff master -- %:root", "open git diff in terminal", true),
     "open git diff in terminal",
   },
-  {
-    "\\fh",
-    function()
-      local utils = require "utils"
-      local cmd = "git diff release -- " .. vim.fn.expand "%:p"
-      require("toggleterm").exec(cmd, 1, 12)
-    end,
-    "file differences b",
-  },
+  { "\\fh", create_terminal_handler("git diff release -- %:p", "file differences"), "file differences" },
 }
 
 -- Set terminal keymaps
@@ -368,42 +360,53 @@ require("toggleterm").setup {
   start_in_insert = true,
 }
 
--- if you only want these mappings for toggle term use term://*toggleterm#* instead
-vim.cmd "autocmd! TermOpen term://* lua set_terminal_keymaps()"
-
--- Remove <esc> mapping and add jj mapping for specified terminal filetypes
-vim.api.nvim_create_autocmd("TermOpen", {
-  pattern = "term://*",
-  callback = function()
-    local terminal_filetypes = { "sidekick_terminal", "snacks_terminal" }
-    if vim.tbl_contains(terminal_filetypes, vim.bo.filetype) then
-      vim.keymap.del("t", "<esc>", { buffer = 0 })
-      vim.keymap.set("t", "jk", [[<C-\><C-n>]], { buffer = 0 })
-    end
-  end,
-})
-
 -- Terminal autocmds
 local term_augroup = vim.api.nvim_create_augroup("Terminal", { clear = true })
 
--- Terminal insert mode handling
-vim.api.nvim_create_autocmd({ "TermOpen", "BufEnter" }, {
-  group = term_augroup,
-  pattern = "term://*",
-  callback = function()
-    vim.cmd "startinsert"
-  end,
-})
+-- Define autocmds in a single table for better organization
+local terminal_autocmds = {
+  -- Set terminal keymaps and handle special filetypes
+  {
+    event = "TermOpen",
+    pattern = "term://*",
+    callback = function()
+      -- Set common terminal keymaps
+      set_terminal_keymaps()
 
--- Terminal close handling
-vim.api.nvim_create_autocmd("TermClose", {
-  group = term_augroup,
-  callback = function()
-    if vim.v.event.status == 0 then
-      vim.api.nvim_buf_delete(0, {})
-      vim.notify_once "Previous terminal job was successful!"
-    else
-      vim.notify_once "Error code detected in the current terminal job!"
-    end
-  end,
-})
+      -- For specific terminal types, use jk instead of <esc>
+      local terminal_filetypes = { "sidekick_terminal", "snacks_terminal" }
+      if vim.tbl_contains(terminal_filetypes, vim.bo.filetype) then
+        vim.keymap.del("t", "<esc>", { buffer = 0 })
+        vim.keymap.set("t", "jk", [[<C-\><C-n>]], { buffer = 0 })
+      end
+    end,
+  },
+  {
+    event = { "TermOpen", "BufEnter" },
+    pattern = "term://*",
+    callback = function()
+      vim.cmd "startinsert"
+    end,
+  },
+  {
+    event = { "TermClose" },
+    pattern = "term://*",
+    callback = function()
+      if vim.v.event.status == 0 then
+        vim.api.nvim_buf_delete(0, {})
+        vim.notify_once "Previous terminal job was successful!"
+      else
+        vim.notify_once "Error code detected in the current terminal job!"
+      end
+    end,
+  },
+}
+
+-- Create all autocmds at once
+for _, autocmd in ipairs(terminal_autocmds) do
+  vim.api.nvim_create_autocmd(autocmd.event, {
+    group = term_augroup,
+    pattern = autocmd.pattern,
+    callback = autocmd.callback,
+  })
+end
