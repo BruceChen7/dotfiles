@@ -26,6 +26,22 @@
                     "name": "glm-4.6"
                 }
             }
+        },
+        "kyx": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "kyx",
+            "options": {
+                "baseURL": "https://api.kkyyxx.xyz/v1/",
+                "apiKey": "{env:KYX_KEY}"
+            },
+            "models": {
+                "deepseek/deepseek-v3.2-exp": {
+                    "name": "deepseek-ai/DeepSeek-V3.2-Exp"
+                },
+                "kimi-k2-0905": {
+                    "name": "kimi-k2-0905"
+                }
+            }
         }
     }
 }
