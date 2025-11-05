@@ -1,5 +1,6 @@
 -- Terminal keymaps configuration
 local utils = require "utils"
+local toggleterm = require "toggleterm"
 
 _G.set_terminal_keymaps = function()
   local opts = { buffer = 0 }
@@ -109,7 +110,7 @@ local function get_project_name_by_root(root)
 end
 
 -- Go test environment builder
-local function build_go_test_env(project_name, module_name)
+local function get_go_test_env(project_name, module_name)
   if not utils.is_mac() or not utils.is_in_working_dir() then
     return ""
   end
@@ -128,13 +129,13 @@ local function build_go_test_env(project_name, module_name)
 end
 
 -- Go test command builder
-local function build_go_test_command(dir, function_name)
+local function get_go_test_command(dir, function_name)
   local cwd = vim.fn.getcwd()
   local relative_path = utils.relative_path(cwd, dir)
   local go_executable = vim.fn.executable "xgo" == 1 and "xgo" or "go"
   local root = utils.find_root_dir()
   local project_name, module_name = get_project_name_by_root(root)
-  local env_cmd = build_go_test_env(project_name, module_name)
+  local env_cmd = get_go_test_env(project_name, module_name)
 
   local test_cmd = string.format(
     "%s test -count=1 ./%s -tags='%s' -gcflags=%s -v -run %s",
@@ -167,7 +168,7 @@ local function get_test_command()
       if not validate_test_function(function_name) then
         return nil
       end
-      return build_go_test_command(dir, function_name)
+      return get_go_test_command(dir, function_name)
     end,
   }
 
@@ -177,7 +178,10 @@ end
 
 -- SPEX configuration
 local function get_spex_config()
-  local utils = require "utils"
+  -- 如果 SP_UNIX_SOCKET 环境变量的值为空，那么不启动 SPEX 服务
+  if os.getenv "SP_UNIX_SOCKET" == nil then
+    return nil
+  end
   if utils.is_m1_mac() then
     return { command = "socat -d -d -d UNIX-LISTEN:${SP_UNIX_SOCKET},reuseaddr,fork TCP:${SP_AGENT_DOMAIN}" }
   elseif utils.is_mac() then
@@ -188,13 +192,49 @@ local function get_spex_config()
   return nil
 end
 
--- SPEX job starter
+-- SPEX job starter with error handling and status tracking
+local spex_job_id = nil
 local function start_spex_job(config)
-  vim.fn.jobstart(config.command, { on_stdout = function(_, _) end })
+  -- Check if SPEX job is already running
+  if spex_job_id and vim.fn.jobwait({ spex_job_id }, 0)[1] == -1 then
+    vim.notify("SPEX job is already running", vim.log.levels.DEBUG)
+    return spex_job_id
+  end
+
+  -- Start new SPEX job with proper error handling
+  spex_job_id = vim.fn.jobstart(config.command, {
+    on_stdout = function(_, data, _)
+      if data and #data > 0 then
+        vim.notify("SPEX: " .. table.concat(data, "\n"), vim.log.levels.DEBUG)
+      end
+    end,
+    on_stderr = function(_, data, _)
+      if data and #data > 0 and data[1] ~= "" then
+        vim.notify("SPEX Error: " .. table.concat(data, "\n"), vim.log.levels.WARN)
+      end
+    end,
+    on_exit = function(_, exit_code, _)
+      if exit_code ~= 0 then
+        vim.notify(string.format("SPEX job exited with code: %d", exit_code), vim.log.levels.ERROR)
+      else
+        vim.notify("SPEX job completed successfully", vim.log.levels.DEBUG)
+      end
+      spex_job_id = nil
+    end,
+  })
+
+  if spex_job_id <= 0 then
+    vim.notify("Failed to start SPEX job", vim.log.levels.ERROR)
+    spex_job_id = nil
+    return nil
+  end
+
+  vim.notify("SPEX job started with ID: " .. spex_job_id, vim.log.levels.DEBUG)
+  return spex_job_id
 end
 
 -- Test command runner
-local function run_test_command(cmd)
+local function run_test(cmd)
   vim.fn["asyncrun#run"]("", {
     mode = "async",
     raw = false,
@@ -209,14 +249,13 @@ vim.keymap.set("n", "<F2>", function()
     return
   end
 
-  local utils = require "utils"
   local spex_config = get_spex_config()
   if spex_config then
     start_spex_job(spex_config)
   end
 
   utils.change_to_current_buffer_root_dir()
-  run_test_command(cmd)
+  run_test(cmd)
 end, { desc = "open go test in quickfix" })
 
 -- Build command handlers
@@ -231,8 +270,7 @@ local buildCommands = {
 }
 
 -- Go build command builder
-local function get_go_build_cmd()
-  local utils = require "utils"
+local function get_go_build_command()
   if not utils.is_in_working_dir() then
     return nil
   end
@@ -246,7 +284,7 @@ local function get_go_build_cmd()
 end
 
 -- Zig build command builder
-local function get_zig_build_cmd()
+local function get_zig_build_command()
   local buf_path = vim.fn.expand "%:p"
 
   -- Search for zig-redis directory
@@ -267,43 +305,38 @@ local function get_zig_build_cmd()
 end
 
 -- Build command dispatcher
-local function get_build_cmd()
+local function get_build_command()
   local filetype = vim.bo.filetype
   if filetype == "go" then
-    return get_go_build_cmd()
+    return get_go_build_command()
   end
   if filetype == "zig" then
-    return get_zig_build_cmd()
+    return get_zig_build_command()
   end
 end
 
 -- F5 keymap - build project
 vim.keymap.set("n", "<F5>", function()
-  local cmd = get_build_cmd()
-  print("cmd is", cmd)
+  local cmd = get_build_command()
   if not cmd then
+    vim.notify("No build command found for current filetype", vim.log.levels.WARN)
     return
   end
+  vim.notify(string.format("Building with: %s", cmd), vim.log.levels.INFO)
   vim.fn["asyncrun#run"]("", { mode = "async", raw = false, errorformat = "%f:%l:%c: %m" }, cmd)
 end, { desc = "make build" })
 
--- Helper function to create terminal keymap handlers
-local function create_terminal_handler(cmd_template)
+-- Helper function to get terminal keymap handler
+-- @param cmd_template string: Command template with placeholders (%:p for file path, %:root for root dir)
+-- @param opts table: Optional configuration { use_root = boolean }
+local function get_terminal_handler(cmd_template, opts)
+  opts = opts or {}
   return function()
     local cmd = cmd_template:gsub("%%:p", vim.fn.expand "%:p")
-    require("toggleterm").exec(cmd, 1, 12)
-  end
-end
-
--- Helper function to create terminal keymap handlers with utils
-local function create_terminal_handler_with_utils(cmd_template, use_root)
-  return function()
-    local utils = require "utils"
-    local cmd = cmd_template:gsub("%%:p", vim.fn.expand "%:p")
-    if use_root then
+    if opts.use_root then
       cmd = cmd:gsub("%%:root", utils.find_root_dir() or vim.fn.getcwd())
     end
-    require("toggleterm").exec(cmd, 1, 12)
+    toggleterm.exec(cmd, 1, 12)
   end
 end
 
@@ -311,26 +344,34 @@ end
 local terminal_keymaps = {
   {
     "<leader>tl",
-    create_terminal_handler('git log -p "%:p"', "open git log for this file in terminal"),
+    get_terminal_handler 'git log -p "%:p"',
     "open git log for this file in terminal",
   },
   {
     "\\tf",
-    create_terminal_handler("git diff release -- %:p", "open git diff for this file in terminal"),
+    get_terminal_handler "git diff release -- %:p",
     "open git diff for this file in terminal",
   },
   {
     "\\tb",
-    create_terminal_handler("tig blame %:p", "tig blame current file in terminal"),
+    get_terminal_handler "tig blame %:p",
     "tig blame current file in terminal",
   },
-  { "<leader>tt", create_terminal_handler_with_utils('tig -C "%:root"', "open tig", true), "open tig" },
+  {
+    "<leader>tt",
+    get_terminal_handler('tig -C "%:root"', { use_root = true }),
+    "open tig",
+  },
   {
     "\\gm",
-    create_terminal_handler_with_utils("git diff master -- %:root", "open git diff in terminal", true),
+    get_terminal_handler("git diff master -- %:root", { use_root = true }),
     "open git diff in terminal",
   },
-  { "\\fh", create_terminal_handler("git diff release -- %:p", "file differences"), "file differences" },
+  {
+    "\\fh",
+    get_terminal_handler "git diff release -- %:p",
+    "file differences",
+  },
 }
 
 -- Set terminal keymaps
@@ -339,7 +380,7 @@ for _, mapping in ipairs(terminal_keymaps) do
 end
 
 -- ToggleTerm configuration
-require("toggleterm").setup {
+toggleterm.setup {
   size = function(term)
     if term.direction == "horizontal" then
       return 10
