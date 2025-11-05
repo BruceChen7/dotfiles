@@ -326,8 +326,34 @@ vim.keymap.set("n", "<F5>", function()
   vim.fn["asyncrun#run"]("", { mode = "async", raw = false, errorformat = "%f:%l:%c: %m" }, cmd)
 end, { desc = "make build" })
 
+-- Helper function to get the default branch (release -> master -> main)
+-- @return string: The branch name to use for diff operations
+local function get_default_branch()
+  local branches = vim.fn.systemlist "git branch -a"
+  if vim.v.shell_error ~= 0 then
+    return "main" -- fallback if not in a git repo
+  end
+
+  -- Check for release branch (both local and remote)
+  for _, branch in ipairs(branches) do
+    if branch:match "^%s*release$" or branch:match "remotes/origin/release$" then
+      return "release"
+    end
+  end
+
+  -- Check for master branch
+  for _, branch in ipairs(branches) do
+    if branch:match "^%s*master$" or branch:match "remotes/origin/master$" then
+      return "master"
+    end
+  end
+
+  -- Default to main
+  return "main"
+end
+
 -- Helper function to get terminal keymap handler
--- @param cmd_template string: Command template with placeholders (%:p for file path, %:root for root dir)
+-- @param cmd_template string: Command template with placeholders (%:p for file path, %:root for root dir, %:branch for default branch)
 -- @param opts table: Optional configuration { use_root = boolean }
 local function get_terminal_handler(cmd_template, opts)
   opts = opts or {}
@@ -336,6 +362,7 @@ local function get_terminal_handler(cmd_template, opts)
     if opts.use_root then
       cmd = cmd:gsub("%%:root", utils.find_root_dir() or vim.fn.getcwd())
     end
+    cmd = cmd:gsub("%%:branch", get_default_branch())
     toggleterm.exec(cmd, 1, 12)
   end
 end
@@ -349,7 +376,7 @@ local terminal_keymaps = {
   },
   {
     "\\tf",
-    get_terminal_handler "git diff release -- %:p",
+    get_terminal_handler "git diff %:branch -- %:p",
     "open git diff for this file in terminal",
   },
   {
@@ -364,12 +391,12 @@ local terminal_keymaps = {
   },
   {
     "\\gm",
-    get_terminal_handler("git diff master -- %:root", { use_root = true }),
+    get_terminal_handler("git diff %:branch -- %:root", { use_root = true }),
     "open git diff in terminal",
   },
   {
     "\\fh",
-    get_terminal_handler "git diff release -- %:p",
+    get_terminal_handler "git diff %:branch -- %:p",
     "file differences",
   },
 }
