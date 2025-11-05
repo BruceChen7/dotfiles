@@ -251,7 +251,7 @@ require("mini.extra").setup {}
 --   end,
 -- })
 
-require("mini.notify").setup()
+-- require("mini.notify").setup()
 
 -- https://www.youtube.com/watch?v=cNK5kYJ7mrs&t=742s
 --

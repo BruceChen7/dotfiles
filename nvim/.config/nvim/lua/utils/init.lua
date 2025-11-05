@@ -82,9 +82,60 @@ M.is_terminal_buffer = function()
 end
 
 M.get_go_nearest_function = function()
-  local ts_utils = require "nvim-treesitter.ts_utils"
-  -- Get the current node at cursor position
-  local node = ts_utils.get_node_at_cursor()
+  -- Get the current buffer and its language tree
+  local bufnr = vim.api.nvim_get_current_buf()
+  local lang_tree = vim.treesitter.get_parser(bufnr):parse()[1]
+  if not lang_tree then
+    return nil
+  end
+
+  -- Get cursor position (0-based for treesitter)
+  local cursor_line, cursor_col = unpack(vim.api.nvim_win_get_cursor(0))
+  cursor_line = cursor_line - 1 -- Convert to 0-based
+  cursor_col = cursor_col -- Already 0-based
+
+  -- Get the root node
+  local root = lang_tree:root()
+  if not root then
+    return nil
+  end
+
+  -- Find the node at cursor position
+  local function find_node_at_pos(node, line, col)
+    if not node then
+      return nil
+    end
+
+    -- Check if cursor is within this node's range
+    local start_line, start_col, end_line, end_col = node:range()
+    if
+      line < start_line
+      or line > end_line
+      or (line == start_line and col < start_col)
+      or (line == end_line and col >= end_col)
+    then
+      return nil
+    end
+
+    -- Check if this node contains the cursor position
+    local is_within = true
+    if node:child_count() > 0 then
+      -- Check children first
+      for child in node:iter_children() do
+        local child_result = find_node_at_pos(child, line, col)
+        if child_result then
+          return child_result
+        end
+      end
+    end
+
+    return node
+  end
+
+  local node = find_node_at_pos(root, cursor_line, cursor_col)
+  if not node then
+    return nil
+  end
 
   -- Traverse up the node tree to find the nearest function declaration
   while node and node:type() ~= "function_declaration" do

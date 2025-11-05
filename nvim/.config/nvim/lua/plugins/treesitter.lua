@@ -8,6 +8,7 @@ return {
     config = function()
       require "config/text_obj"
     end,
+    branch = "main",
   },
 
   -- https://github.com/ravsii/tree-sitter-d2
@@ -78,3 +79,4 @@ return {
     event = "VeryLazy",
   },
 }
+
