@@ -24,8 +24,7 @@ local TEST_CONFIG = {
 
 -- Zig test declaration detection
 local function get_zig_test_declaration()
-  local ts_utils = require "nvim-treesitter.ts_utils"
-  local node = ts_utils.get_node_at_cursor()
+  local node = utils.treesitter.get_node_at_cursor()
 
   while node and node:type() ~= "TestDecl" do
     node = node:parent()

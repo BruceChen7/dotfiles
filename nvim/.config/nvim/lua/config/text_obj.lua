@@ -5,8 +5,26 @@ require("nvim-treesitter").setup {
   install_dir = vim.fn.stdpath "data" .. "/site",
 }
 
-local lang =
-  { "c", "cpp", "python", "json", "yaml", "ruby", "go", "lua", "make", "cmake", "bash", "cmake", "toml", "vim", "yaml" }
+local lang = {
+  "c",
+  "cpp",
+  "python",
+  "json",
+  "yaml",
+  "ruby",
+  "go",
+  "lua",
+  "make",
+  "cmake",
+  "bash",
+  "cmake",
+  "toml",
+  "vim",
+  "yaml",
+  "zig",
+  "rust",
+  "markdown",
+}
 require("nvim-treesitter").install(lang)
 
 vim.api.nvim_create_autocmd("FileType", {
