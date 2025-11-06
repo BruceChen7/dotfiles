@@ -55,7 +55,16 @@ return {
     "rachartier/tiny-inline-diagnostic.nvim",
     event = "VeryLazy",
     config = function()
-      require("tiny-inline-diagnostic").setup()
+      require("tiny-inline-diagnostic").setup {
+        options = {
+          multilines = {
+            enabled = true,
+          },
+          show_source = {
+            enabled = true,
+          },
+        },
+      }
       require("tiny-inline-diagnostic").disable()
       vim.keymap.set("n", "\\td", function()
         require("tiny-inline-diagnostic").toggle()
