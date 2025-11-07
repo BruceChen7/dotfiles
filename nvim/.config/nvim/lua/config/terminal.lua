@@ -51,6 +51,7 @@ end
 local project_mappings = {
   ecommerce = { project = "core", module = nil },
   ["knowledge-platform"] = { project = nil, module = "knowledgeplatform" },
+  ["adminasynctask"] = { project = "chatbotcommon", module = "adminasynctask" },
 }
 
 -- Helper function to find module from buffer path within app directory
