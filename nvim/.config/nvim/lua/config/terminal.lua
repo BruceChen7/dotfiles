@@ -120,12 +120,16 @@ local function get_go_test_env(project_name, module_name)
     cid = "sg"
   end
 
-  return string.format(
-    "export env=test && export cid=%s && export PROJECT_NAME=%s && export DISABLE_PPROF=true && export MODULE_NAME=%s && export SP_UNIX_SOCKET=/tmp/spex.sock &  export set_id=common",
-    cid,
-    project_name,
-    module_name
-  )
+  local env_parts = {
+    "export env=test",
+    string.format("export cid=%s", cid),
+    string.format("export PROJECT_NAME=%s", project_name),
+    "export DISABLE_PPROF=true",
+    string.format("export MODULE_NAME=%s", module_name),
+    "export SP_UNIX_SOCKET=/tmp/spex.sock",
+    "export set_id=common",
+  }
+  return table.concat(env_parts, " && ")
 end
 
 -- Go test command builder
@@ -194,6 +198,16 @@ end
 
 -- SPEX job starter with error handling and status tracking
 local spex_job_id = nil
+
+-- Clean up SPEX job if it's still running
+local function cleanup_spex_job()
+  if spex_job_id and vim.fn.jobwait({ spex_job_id }, 0)[1] == -1 then
+    vim.notify("Stopping SPEX job: " .. spex_job_id, vim.log.levels.DEBUG)
+    vim.fn.jobstop(spex_job_id)
+    spex_job_id = nil
+  end
+end
+
 local function start_spex_job(config)
   -- Check if SPEX job is already running
   if spex_job_id and vim.fn.jobwait({ spex_job_id }, 0)[1] == -1 then
@@ -334,21 +348,17 @@ local function get_default_branch()
     return "main" -- fallback if not in a git repo
   end
 
-  -- Check for release branch (both local and remote)
-  for _, branch in ipairs(branches) do
-    if branch:match "^%s*release$" or branch:match "remotes/origin/release$" then
-      return "release"
+  -- Check branches in priority order: release -> master -> main
+  local priority = { "release", "master", "main" }
+  for _, target in ipairs(priority) do
+    for _, branch in ipairs(branches) do
+      if branch:match("^%s*" .. target .. "$") or branch:match("remotes/origin/" .. target .. "$") then
+        return target
+      end
     end
   end
 
-  -- Check for master branch
-  for _, branch in ipairs(branches) do
-    if branch:match "^%s*master$" or branch:match "remotes/origin/master$" then
-      return "master"
-    end
-  end
-
-  -- Default to main
+  -- Default to main if no matches found
   return "main"
 end
 
@@ -372,39 +382,37 @@ local terminal_keymaps = {
   {
     "<leader>tl",
     get_terminal_handler 'git log -p "%:p"',
-    "open git log for this file in terminal",
+    desc = "open git log for this file in terminal",
   },
   {
     "\\tf",
     get_terminal_handler "git diff %:branch -- %:p",
-    "open git diff for this file in terminal",
+    desc = "open git diff for this file in terminal",
   },
   {
     "\\tb",
     get_terminal_handler "tig blame %:p",
-    "tig blame current file in terminal",
+    desc = "tig blame current file in terminal",
   },
   {
     "<leader>tt",
     get_terminal_handler('tig -C "%:root"', { use_root = true }),
-    "open tig",
+    desc = "open tig",
   },
   {
     "\\gm",
     get_terminal_handler("git diff %:branch -- %:root", { use_root = true }),
-    "open git diff in terminal",
+    desc = "open git diff in terminal",
   },
   {
     "\\fh",
     get_terminal_handler "git diff %:branch -- %:p",
-    "file differences",
+    desc = "file differences",
   },
 }
 
--- Set terminal keymaps
-for _, mapping in ipairs(terminal_keymaps) do
-  vim.keymap.set("n", mapping[1], mapping[2], { desc = mapping[3] })
-end
+-- Set terminal keymaps using utility function
+utils.register_keymaps(terminal_keymaps)
 
 -- ToggleTerm configuration
 toggleterm.setup {
@@ -477,3 +485,10 @@ for _, autocmd in ipairs(terminal_autocmds) do
     callback = autocmd.callback,
   })
 end
+
+-- Clean up SPEX job when Neovim exits
+vim.api.nvim_create_autocmd("VimLeavePre", {
+  group = term_augroup,
+  callback = cleanup_spex_job,
+  desc = "Clean up SPEX job on exit",
+})
