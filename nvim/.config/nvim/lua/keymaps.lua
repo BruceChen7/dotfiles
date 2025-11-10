@@ -12,8 +12,6 @@ u.map("n", "<c-k>", "<c-w>k", { desc = "Window up" })
 u.map("n", "<space><space>", "<c-^>", { desc = "Last buffer" })
 
 -- 编辑模式
-u.map("i", "<c-a>", "<home>")
-u.map("i", "<c-e>", "<end>")
 u.map("i", "<c-d>", "<del>")
 u.map("i", "<c-_>", "<c-k>")
 
@@ -42,8 +40,14 @@ end
 
 vim.keymap.set({ "n" }, "\\p", paste_and_preserve_column, { silent = true, desc = "Paste and Preserve Column" })
 
-vim.api.nvim_set_keymap("c", "<C-a>", "<home>", { noremap = true })
-vim.api.nvim_set_keymap("c", "<c-e>", "<end>", { noremap = true })
+vim.keymap.set(
+  { "c", "i" },
+  "<C-a>",
+  "<home>",
+  { noremap = true },
+  { silent = true, desc = "move cursor to beginning of line" }
+)
+vim.keymap.set({ "c", "i" }, "<c-e>", "<end>", { silent = true, desc = "move cursor to end of line" })
 
 u.map("v", "<", "<gv", default_options)
 u.map("v", ">", ">gv", default_options)
@@ -516,3 +520,91 @@ vim.keymap.set({ "n", "t" }, "<m-e>", function()
   local line = math.min(pos[1], line_count)
   vim.api.nvim_win_set_cursor(win, { line, pos[2] })
 end)
+
+-- Smart jump over closing characters in insert mode
+-- Usage: Press <C-l> in insert mode to jump to the next closing character or move one char right
+-- Example: After typing `foo(bar|)` where | is cursor, <C-l> moves cursor past the )
+-- If no closing character found, simply moves cursor one position to the right
+vim.keymap.set("i", "<C-h>", function()
+  -- Define characters to jump over backwards (opening brackets, quotes, comma)
+  local openers = { "(", "[", "{", "<", "'", '"', "`", "," }
+
+  -- Get current line content and cursor position
+  local line = vim.api.nvim_get_current_line()
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+
+  -- Get text before cursor position
+  local before = line:sub(1, col)
+
+  -- Initialize closest opening character position
+  local opener_col = 0 -- Default to start of line
+  local opener_i = nil -- Index of the closest opener character
+
+  -- Find the nearest opening character before cursor (mirror of <C-l>)
+  -- <C-l> finds first occurrence after cursor, so <C-h> finds last occurrence before cursor
+  for i, opener in ipairs(openers) do
+    -- Search backwards: find rightmost occurrence of opener in before text
+    -- Using plain text search with true flag (mirrors <C-l>)
+    local pos = 1
+    local last_found = nil
+    while true do
+      local found = string.find(before, opener, pos, true)
+      if not found then
+        break
+      end
+      last_found = found
+      pos = found + 1
+    end
+
+    -- If found and it's closer to cursor than previous matches
+    if last_found and last_found > opener_col then
+      opener_col = last_found
+      opener_i = i
+    end
+  end
+
+  -- Move cursor: either to before the closest opener or one char left
+  if opener_i then
+    -- Jump to before the opening character
+    vim.api.nvim_win_set_cursor(0, { row, opener_col - 1 })
+  else
+    -- No opener found, just move one char left
+    vim.api.nvim_win_set_cursor(0, { row, math.max(0, col - 1) })
+  end
+end, { desc = "move before an opening element" })
+
+-- https://www.reddit.com/r/neovim/comments/1ohzz07/tired_of_using_arrow_keys_after_every_or_how_do/
+vim.keymap.set("i", "<C-l>", function()
+  -- Define characters to jump over (brackets, quotes, comma)
+  local closers = { ")", "]", "}", ">", "'", '"', "`", "," }
+
+  -- Get current line content and cursor position
+  local line = vim.api.nvim_get_current_line()
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+
+  -- Get text after cursor position
+  local after = line:sub(col + 1, -1)
+
+  -- Initialize closest closing character position
+  local closer_col = #after + 1 -- Default to end of line
+  local closer_i = nil -- Index of the closest closer character
+
+  -- Find the nearest closing character after cursor
+  for i, closer in ipairs(closers) do
+    local cur_index, _ = after:find(closer)
+    -- If this closer is found and closer than previous ones
+    if cur_index and (cur_index < closer_col) then
+      closer_col = cur_index
+      closer_i = i
+    end
+  end
+
+  -- Move cursor: either to the closest closer or one char right
+  if closer_i then
+    -- Jump past the closing character
+    vim.api.nvim_win_set_cursor(0, { row, col + closer_col })
+  else
+    -- No closer found, just move one char right
+    vim.api.nvim_win_set_cursor(0, { row, col + 1 })
+  end
+end, { desc = "move over a closing element" })

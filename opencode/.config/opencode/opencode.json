@@ -24,6 +24,12 @@
                 },
                 "glm-4.6": {
                     "name": "glm-4.6"
+                },
+                "deepseek-v3.1:free": {
+                    "name": "deepseek-v3.1:free"
+                },
+                "kimi-k2-thinking-turbo": {
+                    "name": "kimi-k2-thinking-turbo"
                 }
             }
         },
