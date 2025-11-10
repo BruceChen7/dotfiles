@@ -2,26 +2,177 @@ local u = require "util"
 -- https://github.com/Allaman/nvim/blob/main/lua/mappings.lua
 local default_options = { noremap = true, silent = true }
 
--- 窗口快捷键映射
--- why not use tab, because of c-i is the same as tab in normal mode
--- which means when you set <tab>h, when use c-i, it will wait timeout time, which is slow
-u.map("n", "<c-h>", "<c-w>h", { desc = "Window left" })
-u.map("n", "<c-l>", "<c-w>l", { desc = "Window right" })
-u.map("n", "<c-j>", "<c-w>j", { desc = "Window down" })
-u.map("n", "<c-k>", "<c-w>k", { desc = "Window up" })
-u.map("n", "<space><space>", "<c-^>", { desc = "Last buffer" })
+-- ============================================================================
+-- Configuration
+-- ============================================================================
+local config = {
+  -- Paths
+  diary_base_path = "~/work/notes/Calendar/Daily Notes/",
+  nvim_config_path = "~/.config/nvim/",
 
--- 编辑模式
-u.map("i", "<c-d>", "<del>")
-u.map("i", "<c-_>", "<c-k>")
+  -- Window sizing
+  resize_vertical_step = 5,
+  resize_horizontal_step = 3,
+  quickfix_height = 20,
+  asyncrun_height = 10,
 
-u.map("n", "<space>p", 'viw"0p', { desc = "Paste and Store Register 0" })
-u.map("n", "<space>y", "yiw")
--- paste over currently selected text without yanking it
+  -- Buffer management
+  persist_terminal_buffers = true,
+}
+
+-- ============================================================================
+-- Helper Functions
+-- ============================================================================
+
+-- Markdown Utilities
+local function trim_markdown_header(text)
+  text = vim.trim(text)
+  if not text:match "^#+" then
+    return nil, "Text must start with #"
+  end
+  -- Remove leading # symbols and whitespace
+  local header = text:gsub("^#+%s*", "")
+  return header, nil
+end
+
+local function parse_markdown_link(content)
+  local start_idx = content:find "%("
+  local end_idx = content:find "%)"
+  if not start_idx or not end_idx then
+    return nil, "Invalid markdown link format"
+  end
+
+  local link = content:sub(start_idx + 1, end_idx - 1)
+  local hash_idx = link:find "#"
+  if not hash_idx then
+    return nil, "Link must contain # anchor"
+  end
+
+  return {
+    file_path = link:sub(1, hash_idx - 1),
+    header = link:sub(hash_idx + 1),
+  }, nil
+end
+
+local function escape_markdown_spaces(text)
+  return text:gsub(" ", "%%20")
+end
+
+-- Window/Buffer Management
+local function is_special_buffer(bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+  local bufname = vim.api.nvim_buf_get_name(bufnr)
+  local filetype = vim.bo[bufnr].filetype
+
+  local special_types = { "neo-tree", "lazy", "packer", "vim" }
+  for _, ft in ipairs(special_types) do
+    if filetype == ft then
+      return true, ft
+    end
+  end
+
+  if bufname:find "^diffview" or bufname:find "DAP" or bufname:find "dap" then
+    return true, "special_window"
+  end
+
+  return false, nil
+end
+
+local function close_special_buffer(special_type)
+  local close_commands = {
+    ["neo-tree"] = function()
+      vim.cmd.NeoTreeClose()
+    end,
+    ["lazy"] = function()
+      vim.cmd.quit()
+    end,
+    ["packer"] = function()
+      vim.cmd.close()
+    end,
+    ["vim"] = function()
+      vim.cmd.quit()
+    end,
+    ["special_window"] = function()
+      local bufname = vim.fn.bufname()
+      if bufname:find "^diffview" then
+        vim.cmd.DiffviewClose()
+      else
+        vim.cmd.close { bang = true }
+      end
+    end,
+  }
+
+  local cmd = close_commands[special_type]
+  if cmd then
+    cmd()
+  end
+end
+
+local function resize_window(direction, amount)
+  local cmd = (direction == "horizontal") and "resize" or "vertical resize"
+  vim.cmd(string.format("%s %s%d", cmd, amount > 0 and "+" or "", amount))
+end
+
+-- ============================================================================
+-- Window & Buffer Navigation
+-- ============================================================================
+-- Use Ctrl+hjkl instead of Ctrl+w+hjkl for faster window switching
+-- Note: Avoid <Tab> mappings as Ctrl+i and <Tab> are equivalent in normal mode
+vim.keymap.set("n", "<c-h>", "<c-w>h", { desc = "Window left" })
+vim.keymap.set("n", "<c-l>", "<c-w>l", { desc = "Window right" })
+vim.keymap.set("n", "<c-j>", "<c-w>j", { desc = "Window down" })
+vim.keymap.set("n", "<c-k>", "<c-w>k", { desc = "Window up" })
+vim.keymap.set("n", "<space><space>", "<c-^>", { desc = "Last buffer" })
+
+-- ============================================================================
+-- Core Editing Keymaps
+-- ============================================================================
+vim.keymap.set("i", "<c-d>", "<del>", { desc = "Delete forward" })
+vim.keymap.set("i", "<c-_>", "<c-k>", { desc = "Digraph" })
+
+vim.keymap.set("n", "<space>p", 'viw"0p', { desc = "Paste and Store Register 0" })
+vim.keymap.set("n", "<space>y", "yiw", { desc = "Yank inner word" })
+
+-- Paste over selected text without yanking it
 -- 当你在可视模式下选中一段文本后，按下p键时，它将删除选中的文本，并将其粘贴到当前光标位置的下一行。
 -- 同时，它会将粘贴的文本放入黑洞寄存器（"_），这意味着它不会影响你之前的剪贴板内容。
--- 一半操作是使用viw命令选中文本，另一半是使用p命令粘贴文本，p粘贴的文本是之前复制的文本
-u.map("v", "p", '"_dP', default_options)
+vim.keymap.set("v", "p", '"_dP', { silent = true })
+
+vim.keymap.set({ "c", "i" }, "<C-a>", "<home>", { desc = "Move cursor to beginning of line" })
+vim.keymap.set({ "c", "i" }, "<c-e>", "<end>", { desc = "Move cursor to end of line" })
+
+vim.keymap.set("i", "jj", "<ESC>", { desc = "Exit insert mode" })
+vim.keymap.set("n", "W", ":w!<cr>", { desc = "Save file" })
+
+-- Yank to end of line
+vim.keymap.set("n", "Y", "y$", { silent = true })
+
+-- Cancel search highlighting with ESC
+vim.keymap.set("n", "<ESC>", ":nohlsearch<Bar>:echo<CR>", { silent = true })
+
+-- ============================================================================
+-- Visual Mode Operations
+-- ============================================================================
+vim.keymap.set("v", "<", "<gv", { silent = true, desc = "Indent left and reselect" })
+vim.keymap.set("v", ">", ">gv", { silent = true, desc = "Indent right and reselect" })
+
+-- Not include last whitespace character when $ in visual mode
+vim.keymap.set("x", "$", "g_", { silent = true })
+
+-- Quick visual mode shortcuts
+vim.keymap.set("n", "vv", "V", { desc = "Visual line mode" })
+vim.keymap.set("n", "vvv", "<C-V>", { desc = "Visual block mode" })
+
+-- Select last pasted text
+vim.keymap.set("n", "gV", "`[v`]", { desc = "Select last paste area" })
+
+-- Search within visual selection
+-- Usage: Select text in visual mode, press g/, then type search pattern
+vim.keymap.set("x", "g/", "<Esc>/\\%V", { desc = "Search in visual selection" })
+
+-- ============================================================================
+-- Paste & Copy Operations
+-- ============================================================================
 
 local function paste_and_preserve_column()
   -- 获取当前光标的列位置
@@ -40,76 +191,7 @@ end
 
 vim.keymap.set({ "n" }, "\\p", paste_and_preserve_column, { silent = true, desc = "Paste and Preserve Column" })
 
-vim.keymap.set(
-  { "c", "i" },
-  "<C-a>",
-  "<home>",
-  { noremap = true },
-  { silent = true, desc = "move cursor to beginning of line" }
-)
-vim.keymap.set({ "c", "i" }, "<c-e>", "<end>", { silent = true, desc = "move cursor to end of line" })
-
-u.map("v", "<", "<gv", default_options)
-u.map("v", ">", ">gv", default_options)
--- not include last whitespace character
-u.map("x", "$", "g_", default_options)
-
-vim.keymap.set({ "n" }, "vv", "V", { noremap = true })
-vim.keymap.set({ "n" }, "vvv", "<C-V>", { noremap = true })
-
--- Cancel search highlighting with ESC
-u.map("n", "<ESC>", ":nohlsearch<Bar>:echo<CR>", default_options)
-
--- yank
-u.map("n", "Y", "y$", default_options)
-
-u.map("n", "W", ":w!<cr>")
-u.map("i", "jj", "<ESC>")
-
--- u.map("n", "<leader>bn", ":bn<cr>")
--- u.map("n", "<leader>bp", ":bp<cr>")
-
-u.map("n", "\\tt", ":tabnew<cr>")
-u.map("n", "\\tq", ":tabclose<cr>")
--- u.map("n", "\\tn", ":tabnext<cr>")
--- u.map("n", "\\tp", ":tabprev<cr>")
-u.map("n", "<leader>to", ":tabonly<cr>")
-
-u.map("n", "<space>=", ":resize +3<cr>")
-u.map("n", "<space>-", ":resize -3<cr>")
-u.map("n", "<space>,", ":vertical resize -5<cr>")
-u.map("n", "<space>.", ":vertical resize +5<cr>")
-
--- vim-preview - 快速预览标签定义和跳转
--- <m-;>: 打开预览窗口，如果已存在则跳转到预览窗口，否则创建并跳转
--- <m-:>: 关闭预览窗口
-local first_init_window = {}
-vim.keymap.set("n", "<m-;>", function()
-  -- jump back to last window - 跳转到最后一个窗口
-  -- Get the current windowid and tabid - 获取当前窗口ID和标签页ID
-  local winid = vim.api.nvim_get_current_win()
-  local tabid = vim.api.nvim_get_current_tabpage()
-  local winid_str = tostring(winid)
-  local tabid_str = tostring(tabid)
-  local pid = vim.fn["preview#preview_check"]()
-  local key = winid_str .. ":" .. tabid_str
-  vim.cmd "PreviewTag" -- 打开预览窗口显示光标下的标签定义
-  -- pid == 0 means no preview window - pid为0表示没有预览窗口
-  if not first_init_window[key] or pid == 0 then
-    vim.cmd "wincmd p" -- 跳转到上一个窗口（预览窗口）
-    first_init_window[key] = true
-  end
-end)
-u.map("n", "<m-:", ":PreviewClose<CR>") -- 关闭预览窗口
-
--- 自动打开 quickfix window ，高度为 10
-vim.g.asyncrun_open = 10
-
--- 任务结束时候响铃提醒
-vim.g.asyncrun_bell = 1
--- quickfix 手动打开
-u.map("n", "<space>qf", ":call asyncrun#quickfix_toggle(20)<cr>", { desc = "quickfix toggle" })
-
+-- Smart home: toggle between first non-blank and line start
 local function home()
   local head = (vim.api.nvim_get_current_line():find "[^%s]" or 1) - 1
   local cursor = vim.api.nvim_win_get_cursor(0)
@@ -117,59 +199,134 @@ local function home()
   vim.api.nvim_win_set_cursor(0, cursor)
 end
 
-vim.keymap.set("n", "0", home, { desc = "home" }, home)
-vim.keymap.set({ "n", "i" }, "<home>", home)
+vim.keymap.set("n", "0", home, { desc = "Smart home" })
+vim.keymap.set({ "n", "i" }, "<home>", home, { desc = "Smart home" })
 
-local change_color = function()
-  local file = "~/.config/nvim/lua/style.lua"
-  local cmd = ":source " .. file
-  vim.cmd(cmd)
-end
+-- Replace all occurrences with last yanked text
+-- Usage: After yanking text (y, yy, etc.), press g. to replace all occurrences in file
+-- The <c-r>. inserts the contents of the default register into the search part
+vim.keymap.set("n", "g.", ":%s//<c-r>./g<esc>", { desc = "Replace with last yanked text" })
 
-vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>", { desc = "grep todo" })
-vim.keymap.set("n", "g3", function()
-  change_color()
-end, { desc = "show change colorscheme" })
-vim.keymap.set("n", "<space>vv", ":vsplit<CR>", { desc = "vsplit" })
-vim.keymap.set("n", "<space>ss", ":split<CR>", { desc = "split" })
+-- Navigate edit history
+vim.keymap.set("n", "g;", function()
+  vim.cmd "silent normal! g;"
+end, { silent = true, desc = "Last edit position in current file" })
 
-vim.keymap.set("n", "<leader>ll", function()
-  local file = vim.fn.expand "%:p"
-  if file:find(vim.fn.expand "~/.config/nvim/", 1, true) == 1 then
-    local cmd = ":source " .. file
-    vim.cmd(cmd)
-    print(cmd .. " done")
+vim.keymap.set("n", "g,", function()
+  vim.cmd "silent normal! g,"
+end, { silent = true, desc = "Next edit position in current file" })
+
+-- ============================================================================
+-- Tab Management
+-- ============================================================================
+vim.keymap.set("n", "\\tt", ":tabnew<cr>", { desc = "New tab" })
+vim.keymap.set("n", "\\tq", ":tabclose<cr>", { desc = "Close tab" })
+vim.keymap.set("n", "<leader>to", ":tabonly<cr>", { desc = "Close other tabs" })
+
+-- Toggle current buffer full-screen using :tabedit %
+-- If already in a separate tab, close it and return to split view
+vim.keymap.set({ "n", "t" }, "<m-e>", function()
+  local current_buf = vim.api.nvim_get_current_buf()
+  local tabs = vim.api.nvim_list_tabpages()
+  local pos = vim.api.nvim_win_get_cursor(0)
+
+  if #tabs > 1 then
+    for _, tab in ipairs(tabs) do
+      local win = vim.api.nvim_tabpage_get_win(tab)
+      local buf = vim.api.nvim_win_get_buf(win)
+
+      if buf == current_buf and tab ~= vim.api.nvim_get_current_tabpage() then
+        vim.api.nvim_win_set_cursor(win, pos)
+        vim.cmd.tabclose()
+        return
+      end
+    end
   end
-end, { desc = "source current file" })
 
-local id = vim.api.nvim_create_augroup("startup", {
-  clear = false,
-})
+  local file_path = vim.api.nvim_buf_get_name(current_buf)
+  if file_path == "" then
+    vim.notify("Cannot edit buffer: no file name", vim.log.levels.WARN)
+    return
+  end
+  vim.cmd("tabedit " .. vim.fn.fnameescape(file_path))
 
-local persistbuffer = function(bufnr)
-  bufnr = bufnr or vim.api.nvim_get_current_buf()
-  vim.fn.setbufvar(bufnr, "bufpersist", 1)
+  local win = vim.api.nvim_get_current_win()
+  local line_count = vim.api.nvim_buf_line_count(current_buf)
+  local line = math.min(pos[1], line_count)
+  vim.api.nvim_win_set_cursor(win, { line, pos[2] })
+end, { desc = "Toggle buffer full-screen" })
+
+-- ============================================================================
+-- Window Resizing
+-- ============================================================================
+vim.keymap.set("n", "<space>=", function()
+  resize_window("horizontal", config.resize_horizontal_step)
+end, { desc = "Increase window height" })
+
+vim.keymap.set("n", "<space>-", function()
+  resize_window("horizontal", -config.resize_horizontal_step)
+end, { desc = "Decrease window height" })
+
+vim.keymap.set("n", "<space>.", function()
+  resize_window("vertical", config.resize_vertical_step)
+end, { desc = "Increase window width" })
+
+vim.keymap.set("n", "<space>,", function()
+  resize_window("vertical", -config.resize_vertical_step)
+end, { desc = "Decrease window width" })
+
+vim.keymap.set("n", "<space>v.", function()
+  resize_window("vertical", config.resize_vertical_step)
+end, { desc = "Increase window width (alt)" })
+
+vim.keymap.set("n", "<space>v,", function()
+  resize_window("vertical", -config.resize_vertical_step)
+end, { desc = "Decrease window width (alt)" })
+
+vim.keymap.set("n", "<space>vv", ":vsplit<CR>", { desc = "Vertical split" })
+vim.keymap.set("n", "<space>ss", ":split<CR>", { desc = "Horizontal split" })
+
+-- ============================================================================
+-- Buffer Management
+-- ============================================================================
+vim.keymap.set({ "n", "t" }, "\\bp", function()
+  vim.cmd "bprevious"
+end, { desc = "Previous buffer" })
+
+vim.keymap.set({ "n", "t" }, "\\bn", function()
+  vim.cmd "bnext"
+end, { desc = "Next buffer" })
+
+-- Quit window with smart behavior
+local function quit_window()
+  -- Check for special buffers first
+  local is_special, special_type = is_special_buffer(0)
+  if is_special then
+    close_special_buffer(special_type)
+    return
+  end
+
+  -- Get window and buffer counts
+  local buf_count = #vim.fn.getbufinfo { buflisted = 1 }
+  local win_count = #vim.api.nvim_list_wins()
+
+  -- Decision logic
+  if buf_count > 1 and win_count > 1 then
+    vim.cmd.close { bang = true }
+  elseif buf_count > 1 then
+    vim.cmd.bdelete { bang = true }
+  else
+    vim.cmd.quit { bang = true }
+  end
 end
 
-vim.api.nvim_create_autocmd({ "BufRead" }, {
-  group = id,
-  pattern = { "*" },
-  callback = function()
-    vim.api.nvim_create_autocmd({ "InsertEnter", "BufModifiedSet" }, {
-      buffer = 0,
-      once = true,
-      callback = function()
-        persistbuffer()
-      end,
-    })
-  end,
-})
+vim.keymap.set("n", "\\q", quit_window, { silent = true, desc = "Quit window" })
 
+-- Close unused buffers (those without 'bufpersist' marker)
 vim.keymap.set("n", "<space>cu", function()
   local curbufnr = vim.api.nvim_get_current_buf()
   local buflist = vim.api.nvim_list_bufs()
   for _, bufnr in ipairs(buflist) do
-    -- get buffer type of each buffer
     local buftype = vim.bo[bufnr].buftype
     if
       vim.bo[bufnr].buflisted
@@ -180,33 +337,209 @@ vim.keymap.set("n", "<space>cu", function()
       vim.cmd("bd " .. tostring(bufnr))
     end
   end
-  local function display_all_windows()
-    local windows = vim.api.nvim_list_wins()
-    for _, winid in ipairs(windows) do
-      local bufnr = vim.api.nvim_win_get_buf(winid)
-      local bufname = vim.api.nvim_buf_get_name(bufnr)
-      -- buf name 中包含 DAP
-      if bufname:find "DAP" then
-        vim.api.nvim_win_close(winid, true)
-      end
-      if bufname:find "dap" then
-        vim.api.nvim_win_close(winid, true)
-      end
-      -- local win_info = string.format("Window ID: %d, Buffer: %s\n", winid, bufname)
-      -- print(win_info)
+
+  -- Close DAP windows
+  local windows = vim.api.nvim_list_wins()
+  for _, winid in ipairs(windows) do
+    local bufnr = vim.api.nvim_win_get_buf(winid)
+    local bufname = vim.api.nvim_buf_get_name(bufnr)
+    if bufname:find "DAP" or bufname:find "dap" then
+      vim.api.nvim_win_close(winid, true)
     end
   end
-  display_all_windows()
 end, { silent = true, desc = "Close unused buffers" })
 
-function retab_directory()
+-- ============================================================================
+-- Preview Window Integration (vim-preview plugin)
+-- ============================================================================
+-- <m-;>: Open/jump to preview window
+-- <m-:>: Close preview window
+local first_init_window = {}
+vim.keymap.set("n", "<m-;>", function()
+  local winid = vim.api.nvim_get_current_win()
+  local tabid = vim.api.nvim_get_current_tabpage()
+  local winid_str = tostring(winid)
+  local tabid_str = tostring(tabid)
+  local preview_id = vim.fn["preview#preview_check"]()
+  local key = winid_str .. ":" .. tabid_str
+  vim.cmd "PreviewTag"
+  -- preview_id == 0 means no preview window
+  if not first_init_window[key] or preview_id == 0 then
+    vim.cmd "wincmd p"
+    first_init_window[key] = true
+  end
+end, { desc = "Open/jump to preview window" })
+
+vim.keymap.set("n", "<m-:", ":PreviewClose<CR>", { desc = "Close preview window" })
+
+-- Swap buffers between current window and preview window
+vim.keymap.set("n", "<leader>sa", function()
+  local preview_id = vim.fn["preview#preview_check"]()
+  if preview_id == 0 then
+    return
+  end
+
+  local winid = vim.api.nvim_get_current_win()
+  local bufnr = vim.api.nvim_win_get_buf(winid)
+  local ids = vim.fn["preview#window_find"](preview_id)
+  local preview_winnr = ids[1]
+
+  vim.cmd(tostring(preview_winnr) .. "wincmd w")
+  local preview_winid = vim.api.nvim_get_current_win()
+  local preview_bufnr = vim.api.nvim_win_get_buf(preview_winid)
+
+  vim.api.nvim_win_set_buf(winid, preview_bufnr)
+  vim.api.nvim_win_set_buf(preview_winid, bufnr)
+end, { desc = "Swap preview buffers" })
+
+-- Swap windows
+vim.keymap.set("n", "<leader>wx", function()
+  local winid = vim.api.nvim_get_current_win()
+  vim.cmd "wincmd x"
+  vim.api.nvim_set_current_win(winid)
+end, { desc = "Swap windows" })
+
+-- ============================================================================
+-- Quickfix & Async Operations
+-- ============================================================================
+vim.g.asyncrun_open = config.asyncrun_height
+vim.g.asyncrun_bell = 1
+
+vim.keymap.set("n", "<space>qf", ":call asyncrun#quickfix_toggle(20)<cr>", { desc = "Quickfix toggle" })
+vim.keymap.set("n", "g2", ":AsyncTask grep-todo<CR>", { desc = "Grep todo" })
+
+-- ============================================================================
+-- Markdown Utilities
+-- ============================================================================
+-- Copy current line as markdown reference link
+local function copy_with_prefix()
+  -- Validate: has current line
+  local line_text = vim.fn.getline "."
+  if line_text == "" then
+    vim.notify("Current line is empty", vim.log.levels.WARN)
+    return
+  end
+
+  -- Validate: is markdown header
+  local header, err = trim_markdown_header(line_text)
+  if not header then
+    vim.notify(err or "Invalid header format", vim.log.levels.WARN)
+    return
+  end
+
+  -- Validate: has file name
+  local file_path = vim.fn.expand "%:p"
+  if file_path == "" then
+    vim.notify("No file name", vim.log.levels.WARN)
+    return
+  end
+
+  -- Build and copy link
+  local file_name = vim.fn.expand "%:t"
+  local link = string.format("[%s](%s#%s)", file_name, file_path, header)
+  vim.fn.setreg('"', link)
+  vim.notify("Copied: " .. link, vim.log.levels.INFO)
+end
+
+vim.keymap.set("n", "\\cy", copy_with_prefix, { silent = true, desc = "Copy with markdown reference link" })
+
+-- Paste markdown reference link as relative path
+local function paste_regester()
+  local content = vim.fn.getreg '"'
+
+  if content == "" then
+    vim.notify("Empty register", vim.log.levels.WARN)
+    return
+  end
+
+  -- Parse markdown link
+  local link_data, parse_err = parse_markdown_link(content)
+  if not link_data then
+    vim.notify(parse_err or "Invalid link format", vim.log.levels.ERROR)
+    return
+  end
+
+  -- Validate: has current file
+  local current_file_abs_path = vim.fn.expand "%:p"
+  if current_file_abs_path == "" then
+    vim.notify("No file name", vim.log.levels.WARN)
+    return
+  end
+
+  -- Calculate relative path
+  local utils = require "utils"
+  local current_file_name = vim.fn.expand "%:t"
+  local current_file_dir = vim.fn.fnamemodify(current_file_abs_path, ":h")
+
+  local relative_path
+  if current_file_abs_path == link_data.file_path then
+    relative_path = "./" .. current_file_name
+  else
+    relative_path = utils.relative_path(current_file_dir, link_data.file_path)
+  end
+
+  -- Build final link with escaped spaces
+  local escaped_header = escape_markdown_spaces(link_data.header)
+  local escaped_path = escape_markdown_spaces(relative_path)
+  local full_link = string.format("[%s](%s#%s)", link_data.header, escaped_path, escaped_header)
+
+  -- Paste and restore register
+  vim.fn.setreg('"', full_link)
+  vim.cmd 'normal! "0p'
+  vim.fn.setreg('"', content)
+end
+
+vim.keymap.set("n", "\\cp", paste_regester, { silent = true, desc = "Paste markdown" })
+
+-- ============================================================================
+-- Miscellaneous Utilities
+-- ============================================================================
+-- Change colorscheme
+local function change_color()
+  local file = config.nvim_config_path .. "lua/style.lua"
+  vim.cmd("source " .. file)
+end
+
+vim.keymap.set("n", "g3", change_color, { desc = "Change colorscheme" })
+
+-- Source current nvim config file
+vim.keymap.set("n", "<leader>ll", function()
+  local file = vim.fn.expand "%:p"
+  if file:find(vim.fn.expand(config.nvim_config_path), 1, true) == 1 then
+    vim.cmd("source " .. file)
+    print("source " .. file .. " done")
+  end
+end, { desc = "Source current file" })
+
+-- Change to root directory
+vim.keymap.set("n", "<space>tc", function()
+  local utils = require "utils"
+  utils.change_to_current_buffer_root_dir()
+  vim.cmd.redraw()
+  local root = utils.find_root_dir()
+  vim.notify("now is in " .. root)
+end, { silent = true, desc = "cd to root" })
+
+-- Create diary file
+local function mk_diary_file()
+  local now = os.date "%Y-%m-%d"
+  local year = os.date "%Y"
+  local dir = config.diary_base_path .. year
+  local file = dir .. "/" .. now .. ".md"
+  vim.cmd.edit(file)
+end
+
+vim.keymap.set("n", "<leader>md", mk_diary_file, { desc = "Create diary file" })
+
+-- Retab directory recursively
+local function retab_directory()
   local current_dir = vim.fn.expand "%:p:h"
 
   local function retab_file(file)
     if vim.fn.isdirectory(file) == 0 then
-      vim.api.nvim_command(":e " .. file)
-      vim.api.nvim_command ":set expandtab | retab"
-      vim.api.nvim_command ":w"
+      vim.cmd.edit(file)
+      vim.cmd "set expandtab | retab"
+      vim.cmd.write()
     end
   end
 
@@ -229,322 +562,48 @@ end
 
 vim.keymap.set("n", "<leader>rt", retab_directory, { silent = true, desc = "Retab directory" })
 
-local function quit_window()
-  local buf_total_num = vim.fn.len(vim.fn.getbufinfo { buflisted = 1 })
-  local buf_name = vim.fn.bufname()
-  if vim.o.filetype == "neo-tree" then
-    vim.api.nvim_command "NeoTreeClose"
-    return
-  end
-  if vim.bo.filetype == "lazy" then
-    vim.api.nvim_command "quit"
-    return
-  end
-  if vim.o.filetype == "vim" then
-    vim.api.nvim_command "quit"
-  end
-  if vim.o.filetype == "packer" then
-    vim.api.nvim_command "close"
-  end
-  if buf_name and buf_name:find "^diffview" then
-    vim.api.nvim_command "DiffviewClose"
-    -- vim.api.nvim_command("bdelete %s"):format(buf_id)
-  end
-  -- Get the number of windows
-  --
-  local window_count = vim.api.nvim_list_wins()
-  if buf_total_num ~= 1 and #window_count > 1 then
-    -- close means `close window`
-    vim.api.nvim_command "close!"
-  elseif buf_total_num ~= 1 then
-    vim.api.nvim_command "bdelete!"
-  else
-    vim.api.nvim_command "quit!"
-  end
-end
-
-vim.keymap.set("n", "\\q", function()
-  quit_window()
-end, { silent = true, desc = "Quit window" })
-
-vim.api.nvim_create_autocmd("BufHidden", {
-  desc = "Delete [No Name] buffers",
-  callback = function(event)
-    if event.file == "" and vim.bo[event.buf].buftype == "" and not vim.bo[event.buf].modified then
-      vim.schedule(function()
-        pcall(vim.api.nvim_buf_delete, event.buf, {})
-      end)
-    end
-  end,
-})
-
-local mk_diary_file = function()
-  local now = os.date "%Y-%m-%d"
-  local year = os.date "%Y"
-  local dir = "~/work/notes/Calendar/Daily Notes/" .. year
-  local file = dir .. "/" .. now .. ".md"
-  vim.api.nvim_command(":e " .. file)
-end
-
-vim.keymap.set("n", "<leader>md", mk_diary_file, { desc = "mk diary file" })
-
-vim.keymap.set("n", "<space>tc", function()
-  local utils = require "utils"
-  utils.change_to_current_buffer_root_dir()
-  vim.cmd.redraw()
-  local root = utils.find_root_dir()
-  vim.notify("now is in " .. root)
-end, { silent = true, desc = "cd to root" })
-
-local function copy_with_prefix()
-  local select = vim.fn.getline "."
-  -- 输出选择的文本
-  print("select is ", vim.inspect(select))
-
-  -- get select array first element
-
-  local selection = select
-  print("selection is ", selection)
-  local util = require "utils"
-  print("util is ", vim.inspect(util))
-
-  -- 删除两端的空白字符
-  selection = vim.trim(selection)
-  -- 如果选择的文本以#开头，则selection删除多个#
-  if string.sub(selection, 1, 1) == "#" then
-    -- trim开头的多个#
-    selection = util.remove_leading_char(selection, "#")
-  else
-    vim.notify "selection must start with #"
-    return
-  end
-
-  -- 移除最后不可打印字符
-  selection = string.gsub(selection, "%c", "")
-
-  selection = vim.trim(selection)
-  if selection == "" then
-    print "selection is empty"
-    return
-  end
-
-  -- 获取当前文件的绝对路径
-  local current_file_abs_path = vim.fn.expand "%:p"
-  if current_file_abs_path == "" then
-    print "No file name"
-    return
-  end
-  local current_file_name = vim.fn.expand "%:t"
-  print("current file is ", current_file_abs_path)
-
-  -- 添加前缀
-  local prefixed = "[" .. current_file_name .. "]" .. "(" .. current_file_abs_path .. "#" .. selection .. ")"
-
-  -- 放入寄存器
-  vim.fn.setreg('"', prefixed)
-  print("Copied to clipboard: " .. prefixed)
-end
-
-vim.keymap.set("n", "\\cy", function()
-  copy_with_prefix()
-end, { silent = true, desc = "copy with markdown reference link" })
-
--- 定义一个函数获取内容并粘贴
-local function paste_regester()
-  local content = vim.fn.getreg '"'
-
-  if content ~= "" then
-    -- content is `[2023-12-13.md](2023-12-13.md#test)`
-    -- 获取() 中的内容
-    local start_index = string.find(content, "%(")
-    local end_index = string.find(content, "%)")
-    local selection = string.sub(content, start_index + 1, end_index - 1)
-    start_index = string.find(selection, "#")
-    assert(start_index ~= nil)
-    -- including #
-    local header_content = string.sub(selection, start_index + 1)
-    local dest_file_path = string.sub(selection, 1, start_index - 1)
-
-    -- 获取当前文件的绝对路径
-    local current_file_abs_path = vim.fn.expand "%:p"
-    if current_file_abs_path == "" then
-      print "No file name"
-      return
-    end
-    print("current file is ", current_file_abs_path)
-    local utils = require "utils"
-
-    local current_file_name = vim.fn.expand "%:t"
-    local current_file_dir = vim.fn.fnamemodify(current_file_abs_path, ":h")
-    local relative_path = ""
-    if current_file_abs_path == dest_file_path then
-      relative_path = "./" .. current_file_name
-    else
-      relative_path = utils.relative_path(current_file_dir, dest_file_path)
-    end
-
-    -- 将header_content中的空格替换为%20
-    local escaped_header_content = string.gsub(header_content, " ", "%%20")
-    local relative_escaped_path = string.gsub(relative_path, " ", "%%20")
-    local full_link = "["
-      .. header_content
-      .. "]"
-      .. "("
-      .. relative_escaped_path
-      .. "#"
-      .. escaped_header_content
-      .. ")"
-    print("full link is ", full_link)
-
-    vim.fn.setreg('"', full_link)
-    vim.api.nvim_command 'normal! "0p'
-    vim.fn.setreg('"', content)
-  else
-    vim.notify "empty resgister"
-  end
-end
-
-vim.keymap.set("n", "\\cp", function()
-  paste_regester()
-end, { noremap = true, silent = true, desc = "paste markdown" })
-
--- Jump to last edit position on opening file
---
--- `au BufReadPost` that triggers when a buffer is read after the file has been loaded.
--- The condition checks if the file path (`expand('%:p')`) does not contain `.git/`
--- if the line number stored in the last known cursor position (`line("'\"")`) is valid (greater than 1 and less than or equal to the last line of the file).
--- If both conditions are met, it executes a normal mode command (`exe "normal! g'\""`) to move the cursor to the last known position.
-vim.cmd [[
-  au BufReadPost * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
-]]
-
--- todo
-vim.keymap.set("n", "<leader>sa", function()
-  -- 交换两个窗口的中的buffer
-  local pid = vim.fn["preview#preview_check"]()
-  if pid == 0 then
-    return
-  end
-
-  local winid = vim.api.nvim_get_current_win()
-  local bufnr = vim.api.nvim_win_get_buf(winid)
-  local ids = vim.fn["preview#window_find"](pid)
-  local preview_winnr = ids[1]
-
-  vim.cmd(tostring(preview_winnr) .. "wincmd w")
-  local preview_winid = vim.api.nvim_get_current_win()
-  print("preview_winid is ", preview_winid)
-  local preview_bufnr = vim.api.nvim_win_get_buf(preview_winid)
-  print("preview_bufnr is ", preview_bufnr)
-
-  vim.api.nvim_win_set_buf(winid, preview_bufnr)
-  vim.api.nvim_win_set_buf(preview_winid, bufnr)
-end, { desc = "swap preivew buffers" })
-
-vim.keymap.set("n", "<leader>wx", function()
-  local winid = vim.api.nvim_get_current_win()
-  vim.cmd "wincmd x"
-  vim.api.nvim_set_current_win(winid)
-end, { desc = "swap windows" })
-
-vim.keymap.set({ "n", "t" }, "\\bp", function()
-  vim.cmd "bprevious"
-end, { desc = "previous buffer" })
-
-vim.keymap.set({ "n", "t" }, "\\bn", function()
-  vim.cmd "bnext"
-end, { desc = "next buffer" })
-
-vim.keymap.set("n", "<space>v.", function()
-  vim.cmd ":vertical resize +5<cr>"
-end, { desc = "vertical size increase" })
-
--- 假设你粘贴了一段代码或文本，然后想要快速选择这段内容进行编辑，只需按下 `gV`，Neovim 就会自动选择你刚刚粘贴的内容。
-vim.keymap.set("n", "gV", "`[v`]", { desc = "select last paste area" })
-
--- 1. Enter visual mode and select a block of text.
--- 2. Press `g/`.
--- 3. Neovim will exit visual mode and start a search that is limited to the selected text.
--- * https://www.reddit.com/r/neovim/comments/1ixsk40/share_your_tips_and_tricks_in_neovim/
-vim.keymap.set("x", "g/", "<Esc>/\\%V")
-
-vim.keymap.set("n", "<space>v,", function()
-  vim.cmd ":vertical resize -5<cr>"
-end, { desc = "vertical size decrease" })
-
-vim.keymap.set("n", "g;", function()
-  vim.cmd "silent normal! g;"
-end, { silent = true, desc = "last edit position in current file" })
-
-vim.keymap.set("n", "g,", function()
-  vim.cmd "silent normal! g,"
-end, { silent = true, desc = "next edit position in current file" })
-
--- Replace with last yanked text
--- 一般首先是使用/来搜索，然后在ciw类似
--- Usage: After yanking/cutting text (y, yy, d, dd, etc.), press g. to replace all occurrences in file
--- The <c-r>. inserts the contents of the default register (last yanked text) into the search part
--- https://github.com/kaddkaka/vim_examples?tab=readme-ov-file#repeat-last-change-in-all-of-file-global-repeat-similar-to-g
--- Dependencies: Requires default register to contain text (from yank/delete operations)
-vim.keymap.set("n", "g.", ":%s//<c-r>./g<esc>", { desc = "replace with last yanked text" })
-
--- toggle current buffer with the full-screen using :tabedit %
--- https://www.reddit.com/r/neovim/comments/1msuasw/a_simple_shortcut_to_toggle_focus_on_a_splited/
-vim.keymap.set({ "n", "t" }, "<m-e>", function()
-  local current_buf = vim.api.nvim_get_current_buf()
-  local tabs = vim.api.nvim_list_tabpages()
-  local pos = vim.api.nvim_win_get_cursor(0)
-
-  if #tabs > 1 then
-    for _, tab in ipairs(tabs) do
-      local win = vim.api.nvim_tabpage_get_win(tab)
-      local buf = vim.api.nvim_win_get_buf(win)
-
-      if buf == current_buf and tab ~= vim.api.nvim_get_current_tabpage() then
-        vim.api.nvim_win_set_cursor(win, pos)
-        vim.api.nvim_command "tabclose"
-        return
-      end
-    end
-  end
-
-  local file_path = vim.api.nvim_buf_get_name(current_buf)
-  if file_path == "" then
-    vim.notify("Cannot edit buffer: no file name", vim.log.levels.WARN)
-    return
-  end
-  vim.cmd("tabedit " .. vim.fn.fnameescape(file_path))
-
-  local win = vim.api.nvim_get_current_win()
-  local line_count = vim.api.nvim_buf_line_count(current_buf)
-  local line = math.min(pos[1], line_count)
-  vim.api.nvim_win_set_cursor(win, { line, pos[2] })
-end)
-
+-- ============================================================================
+-- Smart Jump Over Closing/Opening Characters
+-- ============================================================================
 -- Smart jump over closing characters in insert mode
--- Usage: Press <C-l> in insert mode to jump to the next closing character or move one char right
+-- Usage: Press <C-l> in insert mode to jump to the next closing character
 -- Example: After typing `foo(bar|)` where | is cursor, <C-l> moves cursor past the )
--- If no closing character found, simply moves cursor one position to the right
-vim.keymap.set("i", "<C-h>", function()
-  -- Define characters to jump over backwards (opening brackets, quotes, comma)
-  local openers = { "(", "[", "{", "<", "'", '"', "`", "," }
-
-  -- Get current line content and cursor position
+vim.keymap.set("i", "<C-l>", function()
+  local closers = { ")", "]", "}", ">", "'", '"', "`", "," }
   local line = vim.api.nvim_get_current_line()
   local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+  local after = line:sub(col + 1, -1)
 
-  -- Get text before cursor position
+  local closer_col = #after + 1
+  local closer_i = nil
+
+  for i, closer in ipairs(closers) do
+    local cur_index, _ = after:find(closer, 1, true)
+    if cur_index and (cur_index < closer_col) then
+      closer_col = cur_index
+      closer_i = i
+    end
+  end
+
+  if closer_i then
+    vim.api.nvim_win_set_cursor(0, { row, col + closer_col })
+  else
+    vim.api.nvim_win_set_cursor(0, { row, col + 1 })
+  end
+end, { desc = "Move over a closing element" })
+
+-- Smart jump over opening characters in insert mode (backwards)
+-- Usage: Press <C-h> in insert mode to jump to before the nearest opening character
+vim.keymap.set("i", "<C-h>", function()
+  local openers = { "(", "[", "{", "<", "'", '"', "`", "," }
+  local line = vim.api.nvim_get_current_line()
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
   local before = line:sub(1, col)
 
-  -- Initialize closest opening character position
-  local opener_col = 0 -- Default to start of line
-  local opener_i = nil -- Index of the closest opener character
+  local opener_col = 0
+  local opener_i = nil
 
-  -- Find the nearest opening character before cursor (mirror of <C-l>)
-  -- <C-l> finds first occurrence after cursor, so <C-h> finds last occurrence before cursor
   for i, opener in ipairs(openers) do
-    -- Search backwards: find rightmost occurrence of opener in before text
-    -- Using plain text search with true flag (mirrors <C-l>)
     local pos = 1
     local last_found = nil
     while true do
@@ -556,55 +615,59 @@ vim.keymap.set("i", "<C-h>", function()
       pos = found + 1
     end
 
-    -- If found and it's closer to cursor than previous matches
     if last_found and last_found > opener_col then
       opener_col = last_found
       opener_i = i
     end
   end
 
-  -- Move cursor: either to before the closest opener or one char left
   if opener_i then
-    -- Jump to before the opening character
     vim.api.nvim_win_set_cursor(0, { row, opener_col - 1 })
   else
-    -- No opener found, just move one char left
     vim.api.nvim_win_set_cursor(0, { row, math.max(0, col - 1) })
   end
-end, { desc = "move before an opening element" })
+end, { desc = "Move before an opening element" })
 
--- https://www.reddit.com/r/neovim/comments/1ohzz07/tired_of_using_arrow_keys_after_every_or_how_do/
-vim.keymap.set("i", "<C-l>", function()
-  -- Define characters to jump over (brackets, quotes, comma)
-  local closers = { ")", "]", "}", ">", "'", '"', "`", "," }
+-- ============================================================================
+-- Auto-commands
+-- ============================================================================
+-- Buffer persistence system
+local augroup_id = vim.api.nvim_create_augroup("startup", {
+  clear = false,
+})
 
-  -- Get current line content and cursor position
-  local line = vim.api.nvim_get_current_line()
-  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+local function persistbuffer(bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+  vim.fn.setbufvar(bufnr, "bufpersist", 1)
+end
 
-  -- Get text after cursor position
-  local after = line:sub(col + 1, -1)
+vim.api.nvim_create_autocmd({ "BufRead" }, {
+  group = augroup_id,
+  pattern = { "*" },
+  callback = function()
+    vim.api.nvim_create_autocmd({ "InsertEnter", "BufModifiedSet" }, {
+      buffer = 0,
+      once = true,
+      callback = function()
+        persistbuffer()
+      end,
+    })
+  end,
+})
 
-  -- Initialize closest closing character position
-  local closer_col = #after + 1 -- Default to end of line
-  local closer_i = nil -- Index of the closest closer character
-
-  -- Find the nearest closing character after cursor
-  for i, closer in ipairs(closers) do
-    local cur_index, _ = after:find(closer)
-    -- If this closer is found and closer than previous ones
-    if cur_index and (cur_index < closer_col) then
-      closer_col = cur_index
-      closer_i = i
+-- Delete [No Name] buffers automatically
+vim.api.nvim_create_autocmd("BufHidden", {
+  desc = "Delete [No Name] buffers",
+  callback = function(event)
+    if event.file == "" and vim.bo[event.buf].buftype == "" and not vim.bo[event.buf].modified then
+      vim.schedule(function()
+        pcall(vim.api.nvim_buf_delete, event.buf, {})
+      end)
     end
-  end
+  end,
+})
 
-  -- Move cursor: either to the closest closer or one char right
-  if closer_i then
-    -- Jump past the closing character
-    vim.api.nvim_win_set_cursor(0, { row, col + closer_col })
-  else
-    -- No closer found, just move one char right
-    vim.api.nvim_win_set_cursor(0, { row, col + 1 })
-  end
-end, { desc = "move over a closing element" })
+-- Jump to last edit position on opening file
+vim.cmd [[
+  au BufReadPost * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+]]
