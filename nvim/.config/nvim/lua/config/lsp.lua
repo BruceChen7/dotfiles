@@ -224,7 +224,7 @@ require("lsp-setup").setup {
             compositeLiteralTypes = true,
             functionTypeParameters = true,
           },
-          -- semanticTokens = true,
+          semanticTokens = true,
         },
       },
       capabilities = {

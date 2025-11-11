@@ -218,22 +218,9 @@ local function start_spex_job(config)
 
   -- Start new SPEX job with proper error handling
   spex_job_id = vim.fn.jobstart(config.command, {
-    on_stdout = function(_, data, _)
-      if data and #data > 0 then
-        vim.notify("SPEX: " .. table.concat(data, "\n"), vim.log.levels.DEBUG)
-      end
-    end,
-    on_stderr = function(_, data, _)
-      if data and #data > 0 and data[1] ~= "" then
-        vim.notify("SPEX Error: " .. table.concat(data, "\n"), vim.log.levels.WARN)
-      end
-    end,
+    on_stdout = function(_, data, _) end,
+    on_stderr = function(_, data, _) end,
     on_exit = function(_, exit_code, _)
-      if exit_code ~= 0 then
-        vim.notify(string.format("SPEX job exited with code: %d", exit_code), vim.log.levels.ERROR)
-      else
-        vim.notify("SPEX job completed successfully", vim.log.levels.DEBUG)
-      end
       spex_job_id = nil
     end,
   })
