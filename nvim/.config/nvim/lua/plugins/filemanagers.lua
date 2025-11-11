@@ -1,11 +1,20 @@
 -- 文件管理器和终端插件
 return {
+  -- {
+  --   "stevearc/oil.nvim",
+  --   config = function()
+  --     require "config/oil"
+  --   end,
+  --   -- Optional dependencies
+  --   event = "VeryLazy",
+  -- },
   {
-    "stevearc/oil.nvim",
+    "A7Lavinraj/fyler.nvim",
+    dependencies = { "nvim-mini/mini.icons" },
+    branch = "stable",
     config = function()
-      require "config/oil"
+      require "config/fyler"
     end,
-    -- Optional dependencies
     event = "VeryLazy",
   },
 

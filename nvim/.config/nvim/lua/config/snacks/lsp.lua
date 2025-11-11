@@ -6,18 +6,11 @@ local M = {}
 M.setup = function()
   local lsp_keymaps = {
     {
-      "gd",
+      "gdd",
       function()
         Snacks.picker.lsp_definitions()
       end,
       desc = "Goto Definition",
-    },
-    {
-      "gD",
-      function()
-        Snacks.picker.lsp_declarations()
-      end,
-      desc = "Goto Declaration",
     },
     {
       "grr",
@@ -26,6 +19,13 @@ M.setup = function()
       end,
       nowait = true,
       desc = "References",
+    },
+    {
+      "gD",
+      function()
+        Snacks.picker.lsp_declarations()
+      end,
+      desc = "Goto Declaration",
     },
     {
       "\\gi",
@@ -41,8 +41,8 @@ M.setup = function()
       end,
       desc = "Goto T[y]pe Definition",
     },
-        {
-      "gs",
+    {
+      "gss",
       function()
         Snacks.picker.lsp_symbols()
       end,

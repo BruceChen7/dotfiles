@@ -118,10 +118,10 @@ end
 -- ============================================================================
 -- Use Ctrl+hjkl instead of Ctrl+w+hjkl for faster window switching
 -- Note: Avoid <Tab> mappings as Ctrl+i and <Tab> are equivalent in normal mode
-vim.keymap.set("n", "<c-h>", "<c-w>h", { desc = "Window left" })
-vim.keymap.set("n", "<c-l>", "<c-w>l", { desc = "Window right" })
-vim.keymap.set("n", "<c-j>", "<c-w>j", { desc = "Window down" })
-vim.keymap.set("n", "<c-k>", "<c-w>k", { desc = "Window up" })
+-- vim.keymap.set("n", "<c-h>", "<c-w>h", { desc = "Window left" })
+-- vim.keymap.set("n", "<c-l>", "<c-w>l", { desc = "Window right" })
+-- vim.keymap.set("n", "<c-j>", "<c-w>j", { desc = "Window down" })
+-- vim.keymap.set("n", "<c-k>", "<c-w>k", { desc = "Window up" })
 vim.keymap.set("n", "<space><space>", "<c-^>", { desc = "Last buffer" })
 
 -- ============================================================================
@@ -668,6 +668,49 @@ vim.api.nvim_create_autocmd("BufHidden", {
 })
 
 -- Jump to last edit position on opening file
-vim.cmd [[
-  au BufReadPost * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
-]]
+vim.api.nvim_create_autocmd("BufReadPost", {
+  callback = function()
+    local mark = vim.api.nvim_buf_get_mark(0, '"')
+    local lcount = vim.api.nvim_buf_line_count(0)
+    if mark[1] > 0 and mark[1] <= lcount then
+      pcall(vim.api.nvim_win_set_cursor, 0, mark)
+    end
+  end,
+  pattern = "*",
+})
+-- https://www.reddit.com/r/neovim/comments/1ormbls/keymaps_to_yank_file_namepath/
+-- Copy file paths to system clipboard and vim register
+-- <leader>yp: Copy relative path (e.g., "nvim/.config/nvim/lua/keymaps.lua")
+vim.keymap.set("n", "<leader>yr", function()
+  local path = vim.fn.expand "%:."
+  vim.fn.setreg("+", path) -- System clipboard
+  vim.fn.setreg('"', path) -- Vim default register
+end, { desc = "Copy relative path" })
+
+-- <leader>yP: Copy absolute path (e.g., "/Users/name/project/file.lua")
+vim.keymap.set("n", "<leader>ya", function()
+  local path = vim.fn.expand "%:p"
+  vim.fn.setreg("+", path) -- System clipboard
+  vim.fn.setreg('"', path) -- Vim default register
+end, { desc = "Copy absolute path" })
+
+vim.api.nvim_create_autocmd("TextYankPost", {
+  desc = "Highlight when yanking text",
+  callback = function()
+    vim.highlight.on_yank { higroup = "Visual", timeout = 300 }
+  end,
+})
+
+vim.keymap.set(
+  "n",
+  "gdx",
+  ":belowright split | lua vim.lsp.buf.definition()<CR>",
+  { desc = "Go to definition with horizontal split" }
+)
+vim.keymap.set(
+  "n",
+  "gdv",
+  ":vsplit | lua vim.lsp.buf.definition()<CR>",
+  { desc = "Go to definition with vertical split" }
+)
+vim.keymap.set("n", "gdt", ":tab split | lua vim.lsp.buf.definition()<CR>", { desc = "Go to definition with new tab" })

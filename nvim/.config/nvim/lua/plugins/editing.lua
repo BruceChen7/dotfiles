@@ -37,7 +37,7 @@ return {
         max_entries = 20,
         num_behavior = "prefix",
       }
-      vim.keymap.set("n", "<leader>y", "<cmd>YankBank<CR>", { noremap = true, desc = "yank history list" })
+      vim.keymap.set("n", "<leader>yy", "<cmd>YankBank<CR>", { noremap = true, desc = "yank history list" })
     end,
     event = "VeryLazy",
   },
@@ -103,4 +103,3 @@ return {
     event = "VeryLazy",
   },
 }
-
