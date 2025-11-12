@@ -6,7 +6,7 @@ local M = {}
 M.setup = function()
   local lsp_keymaps = {
     {
-      "gdd",
+      "gd",
       function()
         Snacks.picker.lsp_definitions()
       end,
@@ -42,7 +42,7 @@ M.setup = function()
       desc = "Goto T[y]pe Definition",
     },
     {
-      "gss",
+      "gs",
       function()
         Snacks.picker.lsp_symbols()
       end,

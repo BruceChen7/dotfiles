@@ -703,14 +703,14 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 
 vim.keymap.set(
   "n",
-  "gdx",
+  "\\gx",
   ":belowright split | lua vim.lsp.buf.definition()<CR>",
   { desc = "Go to definition with horizontal split" }
 )
 vim.keymap.set(
   "n",
-  "gdv",
+  "\\gv",
   ":vsplit | lua vim.lsp.buf.definition()<CR>",
   { desc = "Go to definition with vertical split" }
 )
-vim.keymap.set("n", "gdt", ":tab split | lua vim.lsp.buf.definition()<CR>", { desc = "Go to definition with new tab" })
+vim.keymap.set("n", "\\gt", ":tab split | lua vim.lsp.buf.definition()<CR>", { desc = "Go to definition with new tab" })
