@@ -1,6 +1,11 @@
 return {
   { "skywind3000/asynctasks.vim" },
-  { "skywind3000/asyncrun.vim" },
+  {
+    "skywind3000/asyncrun.vim",
+    config = function()
+      require "config/cmd"
+    end,
+  },
   -- {
   --   "suliatis/Jumppack.nvim",
   --   config = true,
@@ -68,7 +73,7 @@ return {
           [fik] = [=[\=substitute(submatch(0), '\.\(\l\)', '\u\1', 'g')]=],
         },
       }
-      vim.keymap.set("n", "<m-m>", "<cmd>Switch<cr>", { noremap = true, desc = "switch" })
+      vim.keymap.set("n", "<m-=>", "<cmd>Switch<cr>", { noremap = true, desc = "switch" })
     end,
     init = function()
       local custom_switches = vim.api.nvim_create_augroup("CustomSwitches", { clear = true })

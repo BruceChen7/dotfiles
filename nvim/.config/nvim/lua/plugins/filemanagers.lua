@@ -18,14 +18,14 @@ return {
   --   event = "VeryLazy",
   -- },
 
-  {
-    "akinsho/toggleterm.nvim",
-    version = "*",
-    config = function()
-      require "config/terminal"
-    end,
-    event = "VeryLazy",
-  },
+  -- {
+  --   "akinsho/toggleterm.nvim",
+  --   version = "*",
+  --   config = function()
+  --     require "config/terminal"
+  --   end,
+  --   event = "VeryLazy",
+  -- },
 
   {
     "bloznelis/before.nvim",
