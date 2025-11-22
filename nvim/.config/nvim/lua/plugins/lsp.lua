@@ -61,7 +61,7 @@ return {
             enabled = true,
           },
           show_source = {
-            enabled = true,
+            enabled = false,
           },
         },
       }
