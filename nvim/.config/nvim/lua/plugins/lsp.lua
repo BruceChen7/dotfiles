@@ -65,7 +65,7 @@ return {
           },
         },
       }
-      require("tiny-inline-diagnostic").disable()
+      require("tiny-inline-diagnostic").enable()
       vim.keymap.set("n", "\\td", function()
         require("tiny-inline-diagnostic").toggle()
       end, { desc = "Toggle Tiny Inline Diagnostic" })

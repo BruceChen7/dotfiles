@@ -9,6 +9,14 @@
             "max_tokens": 131000
         },
         {
+            "model_display_name": "agentrouter-gpt5",
+            "model": "gpt-5",
+            "base_url": "https://agentrouter.org/v1",
+            "api_key": "$AGENT_ROUTER_TOKEN",
+            "provider": "generic-chat-completion-api",
+            "max_tokens": 128000
+        },
+        {
             "model_display_name": "deepseek-v3.2-exp",
             "model": "deepseek-v3.2-exp",
             "base_url": "https://ai.nahcrof.com/v2/",
