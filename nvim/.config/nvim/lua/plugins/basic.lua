@@ -73,9 +73,11 @@ return {
           [fik] = [=[\=substitute(submatch(0), '\.\(\l\)', '\u\1', 'g')]=],
         },
       }
+      -- vim.keymap.set("n", "gs", "<Nop>")
       vim.keymap.set("n", "<m-=>", "<cmd>Switch<cr>", { noremap = true, desc = "switch" })
     end,
     init = function()
+      vim.g.switch_mapping = ""
       local custom_switches = vim.api.nvim_create_augroup("CustomSwitches", { clear = true })
       vim.api.nvim_create_autocmd("FileType", {
         group = custom_switches,

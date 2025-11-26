@@ -17,7 +17,7 @@ return {
     "ravsii/tree-sitter-d2",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     build = "make nvim-install",
-    event = "VeryLazy",
+    filetype = { "d2" },
   },
   -- Smartly select the inner part of texts
   {
