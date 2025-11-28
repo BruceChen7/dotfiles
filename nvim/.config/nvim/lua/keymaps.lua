@@ -223,38 +223,47 @@ vim.keymap.set("n", "\\tt", ":tabnew<cr>", { desc = "New tab" })
 vim.keymap.set("n", "\\tq", ":tabclose<cr>", { desc = "Close tab" })
 vim.keymap.set("n", "<leader>to", ":tabonly<cr>", { desc = "Close other tabs" })
 
--- Toggle current buffer full-screen using :tabedit %
--- If already in a separate tab, close it and return to split view
-vim.keymap.set({ "n", "t" }, "<m-e>", function()
-  local current_buf = vim.api.nvim_get_current_buf()
-  local tabs = vim.api.nvim_list_tabpages()
-  local pos = vim.api.nvim_win_get_cursor(0)
+-- ============================================================================
+-- Multi-mode mappings (n + t)
+-- ============================================================================
+local nt_mappings = {
+  { "<m-e>", function()
+    local current_buf = vim.api.nvim_get_current_buf()
+    local tabs = vim.api.nvim_list_tabpages()
+    local pos = vim.api.nvim_win_get_cursor(0)
 
-  if #tabs > 1 then
-    for _, tab in ipairs(tabs) do
-      local win = vim.api.nvim_tabpage_get_win(tab)
-      local buf = vim.api.nvim_win_get_buf(win)
+    if #tabs > 1 then
+      for _, tab in ipairs(tabs) do
+        local win = vim.api.nvim_tabpage_get_win(tab)
+        local buf = vim.api.nvim_win_get_buf(win)
 
-      if buf == current_buf and tab ~= vim.api.nvim_get_current_tabpage() then
-        vim.api.nvim_win_set_cursor(win, pos)
-        vim.cmd.tabclose()
-        return
+        if buf == current_buf and tab ~= vim.api.nvim_get_current_tabpage() then
+          vim.api.nvim_win_set_cursor(win, pos)
+          vim.cmd.tabclose()
+          return
+        end
       end
     end
-  end
 
-  local file_path = vim.api.nvim_buf_get_name(current_buf)
-  if file_path == "" then
-    vim.notify("Cannot edit buffer: no file name", vim.log.levels.WARN)
-    return
-  end
-  vim.cmd("tabedit " .. vim.fn.fnameescape(file_path))
+    local file_path = vim.api.nvim_buf_get_name(current_buf)
+    if file_path == "" then
+      vim.notify("Cannot edit buffer: no file name", vim.log.levels.WARN)
+      return
+    end
+    vim.cmd("tabedit " .. vim.fn.fnameescape(file_path))
 
-  local win = vim.api.nvim_get_current_win()
-  local line_count = vim.api.nvim_buf_line_count(current_buf)
-  local line = math.min(pos[1], line_count)
-  vim.api.nvim_win_set_cursor(win, { line, pos[2] })
-end, { desc = "Toggle buffer full-screen" })
+    local win = vim.api.nvim_get_current_win()
+    local line_count = vim.api.nvim_buf_line_count(current_buf)
+    local line = math.min(pos[1], line_count)
+    vim.api.nvim_win_set_cursor(win, { line, pos[2] })
+  end, { desc = "Toggle buffer full-screen" } },
+  { "\\bp", function() vim.cmd "bprevious" end, { desc = "Previous buffer" } },
+  { "\\bn", function() vim.cmd "bnext" end, { desc = "Next buffer" } },
+}
+
+for _, mapping in ipairs(nt_mappings) do
+  vim.keymap.set({ "n", "t" }, mapping[1], mapping[2], mapping[3])
+end
 
 -- ============================================================================
 -- Window Resizing

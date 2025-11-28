@@ -3,15 +3,7 @@
 # non-interactive shells (such as script execution) do not need to load these configurations.
 [[ $- != *i* ]] && return
 
-# https://github.com/dreamsofautonomy/zensh
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-# if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-#   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-# fi
-#
-if [[ -f "/opt/homebrew/bin/brew" ]] then
+if [[ -f "/opt/homebrew/bin/brew" ]]; then
   # If you're using macOS, you'll want this enabled
   eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
@@ -50,30 +42,38 @@ fi
 # Source/Load zinit
 source "${ZINIT_HOME}/zinit.zsh"
 
-# Add in Powerlevel10k
-# Add in zsh plugins
-zinit light zsh-users/zsh-syntax-highlighting
+# Add in zsh plugins with optimized loading
+# Delay syntax highlighting for better performance
+zinit wait lucid for \
+    zsh-users/zsh-syntax-highlighting \
+    zsh-users/zsh-autosuggestions
+
+# Load completions immediately but with deferred initialization
+zinit ice blockf lucid
 zinit light zsh-users/zsh-completions
-zinit light zsh-users/zsh-autosuggestions
+
+# fzf-tab with deferred loading
+zinit ice wait lucid
 zinit light Aloxaf/fzf-tab
 
-# Add in snippets
-zinit snippet OMZL::git.zsh
-zinit snippet OMZP::git
-zinit snippet OMZP::sudo
-# zinit snippet OMZP::archlinux
-# zinit snippet OMZP::aws
-# zinit snippet OMZP::kubectl
-# zinit snippet OMZP::kubectx
-zinit snippet OMZP::command-not-found
+# Add in snippets - async loading
+zinit wait lucid for \
+    OMZL::git.zsh \
+    OMZP::git \
+    OMZP::sudo \
+    OMZP::command-not-found
 
-# Load completions
-autoload -Uz compinit && compinit
+#
+# Optimized completions loading - only run compinit if needed
+autoload -Uz compinit
+if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
+    compinit
+else
+    compinit -C
+fi
 
 zinit cdreplay -q
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-# [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Keybindings
 bindkey -e
@@ -100,6 +100,8 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+# Disable fzf-tab for vf command
+zstyle ':fzf-tab:complete:vf:*' disabled-on any
 
 # Aliases
 alias ls='ls --color'
@@ -110,7 +112,8 @@ alias c='clear'
 eval "$(fzf --zsh)"
 eval "$(zoxide init --cmd cd zsh)"
 
-. "$HOME/.cargo/env"
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
+
 
 function wk {
     if [[ -n "$TMUX" ]]
@@ -125,7 +128,7 @@ function wk {
 eval "$(starship init zsh)"
 alias taw="tmux attach -t working"
 alias tas="tmux new -s working"
-alias vim=nvim
+alias v=nvim
 alias cat=bat
 alias ll="exa -al"
 
@@ -140,12 +143,13 @@ function vf {
 bindkey -s '\eo' 'cd ..\n'
 
 export LC_CTYPE=en_US.UTF-8
-export LANGUAGE=zh_CN:en_US
+export LANG=en_US.UTF-8
 export TERM="xterm-256color"
 export VISUAL=nvim
 export EDITOR=nvim
 export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
 export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
+export PATH="$HOME/.local/bin:$PATH"
 
 
 zinit ice depth=1
@@ -156,8 +160,4 @@ export ATUIN_NOBIND="true"
 eval "$(atuin init zsh)"
 bindkey '^r' _atuin_search_widget
 
-# smart suggestion
-# https://github.com/yetone/smart-suggestion
-export SMART_SUGGESTION_AI_PROVIDER=deepseek
-export DEEPSEEK_BASE_URL="https://ai.nahcrof.com/v2"
-export DEEPSEEK_MODEL="deepseek-r1-turbo"
+[[ -f ~/.secrets ]] && source ~/.secrets
