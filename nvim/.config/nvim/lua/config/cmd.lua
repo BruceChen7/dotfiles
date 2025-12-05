@@ -39,6 +39,9 @@ local project_mappings = {
   ecommerce = { project = "core", module = nil },
   ["knowledge-platform"] = { project = nil, module = "knowledgeplatform" },
   ["adminasynctask"] = { project = "chatbotcommon", module = "adminasynctask" },
+  ["crm-proactive-push "] = { project = "crm", module = "proactivepush" },
+  ["crm-proactive-task"] = { project = "crm", module = "proactivetask " },
+  ["crm-main-service"] = { project = "crm", module = "crmmain" },
 }
 
 -- Helper function to find module from buffer path within app directory
@@ -130,7 +133,7 @@ local function get_go_test_command(dir, function_name)
   local env_cmd = get_go_test_env(project_name, module_name)
 
   local test_cmd = string.format(
-    "%s test -count=1 ./%s -tags='%s' -gcflags=%s -v -run %s",
+    "%s test -count=1 ./%s -tags='%s' -gcflags=%s -ldflags=--checklinkname=0 -v -run %s",
     go_executable,
     relative_path,
     TEST_CONFIG.go.tags,
