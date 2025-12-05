@@ -79,6 +79,22 @@ return {
           },
         },
       }
+
+      -- 创建Go格式化器工厂函数
+      local function make_go_formatter(cmd_name)
+        return function(bufnr)
+          local filename = vim.api.nvim_buf_get_name(bufnr)
+          -- 如果以.pb.go结尾，什么都不执行
+          if filename:match "%.pb%.go$" then
+            -- print("skip " .. filename)
+            return { command = "" }
+          end
+          -- 返回指定的命令配置
+          return { command = cmd_name }
+        end
+      end
+      require("conform").formatters.gofmt = make_go_formatter "gofmt"
+      require("conform").formatters.goimports = make_go_formatter "goimports"
     end,
     event = "VeryLazy",
   },
