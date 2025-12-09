@@ -4,11 +4,21 @@ require("snacks").setup {
   image = { enabled = true },
   terminal = { enabled = true },
   explorer = { enabled = true },
+  lazygit = { enabled = true },
 }
 
 vim.keymap.set("n", "<leader>e", function()
   Snacks.explorer()
 end, { desc = "Snacks Explorer" })
+
+vim.keymap.set("n", "<leader>lg", function()
+  Snacks.lazygit()
+end, { desc = "Snacks Lazygit" })
+
+vim.keymap.set("n", "<leader>lf", function()
+  Snacks.lazygit.log_file()
+end, { desc = "Snacks Lazygit log current file" })
+
 -- 加载 snacks 目录下的快捷键配置
 local snacks_dir = vim.fn.stdpath "config" .. "/lua/config/snacks"
 if vim.fn.isdirectory(snacks_dir) == 1 then
