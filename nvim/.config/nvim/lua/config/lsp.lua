@@ -163,6 +163,7 @@ require("lsp-setup").setup {
     },
     -- https://neovimcraft.com/plugin/ray-x/go.nvim/
     -- https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#completionClientCapabilities
+    -- https://github.com/golang/tools/blob/master/gopls/doc/settings.md
     gopls = {
       cmd = {
         "gopls",
@@ -177,6 +178,8 @@ require("lsp-setup").setup {
           gofumpt = true,
           usePlaceholders = false,
           buildFlags = { "-tags=integration_test unit_test gasit perf_optimized" },
+          autocompleteUnimportedPackages = true,
+          editorContextMenuCommands = {},
           codelenses = {
             gc_details = true,
             -- test = true,
@@ -191,7 +194,10 @@ require("lsp-setup").setup {
             fillreturns = true,
             nilness = true, -- check for redundant or impossible nil comparisons
             -- ST1003 = true,
+            atomic = true,
             modernize = true,
+            QF1005 = true,
+            QF1006 = true,
           },
           staticcheck = false,
           hints = {
@@ -232,6 +238,7 @@ require("lsp-setup").setup {
           },
         },
       },
+      filetypes = { "go", "gomod", "gowork", "gotmpl" },
     },
   },
 }
