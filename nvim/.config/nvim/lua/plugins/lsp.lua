@@ -73,6 +73,11 @@ return {
   },
 
   {
+    "neovim/nvim-lspconfig",
+    version = "v2.*",
+  },
+
+  {
     "junnplus/lsp-setup.nvim",
     dependencies = {
       "neovim/nvim-lspconfig",
