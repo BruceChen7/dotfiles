@@ -123,6 +123,23 @@ local function get_go_test_env(project_name, module_name)
   return table.concat(env_parts, " && ")
 end
 
+-- Check if Go version is greater than 1.21
+local function go_version_gt_1_21()
+  local handle = io.popen "go version 2>/dev/null"
+  if not handle then
+    return false
+  end
+  local result = handle:read "*a"
+  handle:close()
+
+  local major, minor = result:match "go(%d+)%.(%d+)"
+  if major and minor then
+    major, minor = tonumber(major), tonumber(minor)
+    return major > 1 or (major == 1 and minor > 21)
+  end
+  return false
+end
+
 -- Go test command builder
 local function get_go_test_command(dir, function_name)
   local cwd = vim.fn.getcwd()
@@ -132,12 +149,14 @@ local function get_go_test_command(dir, function_name)
   local project_name, module_name = get_project_name_by_root(root)
   local env_cmd = get_go_test_env(project_name, module_name)
 
+  local ldflags = go_version_gt_1_21() and " -ldflags=--checklinkname=0" or ""
   local test_cmd = string.format(
-    "%s test -count=1 ./%s -tags='%s' -gcflags=%s -ldflags=--checklinkname=0 -v -run %s",
+    "%s test -count=1 ./%s -tags='%s' -gcflags=%s%s -v -run %s",
     go_executable,
     relative_path,
     TEST_CONFIG.go.tags,
     TEST_CONFIG.go.gcflags,
+    ldflags,
     function_name
   )
 

@@ -22,6 +22,9 @@
                 "deepseek-v3.2-exp": {
                     "name": "deepseek-v3.2-exp"
                 },
+                "deepseek-v3.2": {
+                    "name": "deepseek-v3.2"
+                },
                 "glm-4.6": {
                     "name": "glm-4.6"
                 },
@@ -33,21 +36,14 @@
                 }
             }
         },
-        "kyx": {
+        "anyrouter": {
             "npm": "@ai-sdk/openai-compatible",
-            "name": "kyx",
+            "name": "anyrouter",
             "options": {
-                "baseURL": "https://api.kkyyxx.xyz/v1/",
+                "baseURL": "https://anyrouter.top",
                 "apiKey": "{env:KYX_KEY}"
             },
-            "models": {
-                "deepseek/deepseek-v3.2-exp": {
-                    "name": "deepseek-ai/DeepSeek-V3.2-Exp"
-                },
-                "kimi-k2-0905": {
-                    "name": "kimi-k2-0905"
-                }
-            }
+            "models": {}
         }
     }
 }
