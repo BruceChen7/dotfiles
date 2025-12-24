@@ -39,13 +39,22 @@ return {
   {
     "AndrewRadev/switch.vim",
     config = function()
-      -- Vim 正则: \< \> 词边界, \l 小写, \u 大写, \+ 一个或多个, \(\) 捕获组
-      local camel_case = [=[\<\(\l\)\(\l\+\(\u\l\+\)\+\)\>]=] -- myVariableName: 小写开头 + (小写 + 大写小写)+
-      local pascal_case = [=[\<\(\u\l\+\)\(\u\l\+\)\+\>]=] -- MyVariableName: (大写小写)+
-      local snake_case = [=[\<\(\l\+\)\(_\l\+\)\+\>]=] -- my_variable_name: 小写 + (_小写)+
-      local screaming = [=[\<\(\u\+\)\(_\u\+\)\+\>]=] -- MY_VARIABLE_NAME: 大写 + (_大写)+
-      local kebab_case = [=[\<\(\l\+\)\(\-\l\+\)\+\>]=] -- my-variable-name: 小写 + (-小写)+
-      local dot_case = [=[\<\(\l\+\)\(\.\l\+\)\+\>]=] -- my.variable.name: 小写 + (.小写)+
+      -- camelCase -> PascalCase
+      local camel_to_pascal_pat = [=[\<\(\l\)\(\l\+\(\u\l\+\)\+\)\>]=]
+      local camel_to_pascal_repl = [=[\=toupper(submatch(1)) . submatch(2)]=]
+      -- PascalCase -> snake_case
+      local pascal_to_snake_pat = [=[\<\(\u\l\+\)\(\u\l\+\)\+\>]=]
+      local pascal_to_snake_repl = [=[\=tolower(substitute(submatch(0), '\(\l\)\(\u\)', '\1_\2', 'g'))]=]
+      -- snake_case -> UPPER_CASE
+      local snake_to_upper_pat = [=[\<\(\l\+\)\(_\l\+\)\+\>]=]
+      local snake_to_upper_repl = [=[\U\0]=]
+      -- UPPER_CASE -> kebab-case
+      local upper_to_kebab_pat = [=[\<\(\u\+\)\(_\u\+\)\+\>]=]
+      local upper_to_kebab_repl = [=[\=tolower(substitute(submatch(0), '_', '-', 'g'))]=]
+      -- kebab-case -> camelCase
+      local kebab_to_camel_pat = [=[\<\(\l\+\)\(-\l\+\)\+\>]=]
+      local kebab_to_camel_repl = [=[\=substitute(submatch(0), '-\(\l\)', '\u\1', 'g')]=]
+
       vim.g["switch_custom_definitions"] = {
         vim.fn["switch#NormalizedCaseWords"] {
           "sunday",
@@ -56,69 +65,70 @@ return {
           "friday",
           "saturday",
         },
-        vim.fn["switch#NormalizedCase"] { "yes", "no" },
-        vim.fn["switch#NormalizedCase"] { "true", "false" },
-        vim.fn["switch#NormalizedCase"] { "on", "off" },
-        vim.fn["switch#NormalizedCase"] { "left", "right" },
-        vim.fn["switch#NormalizedCase"] { "up", "down" },
-        vim.fn["switch#NormalizedCase"] { "enable", "disable" },
-        vim.fn["switch#NormalizedCase"] { "Always", "Never" },
-        vim.fn["switch#NormalizedCase"] { "debug", "info", "warning", "error", "critical" },
-        vim.fn["switch#NormalizedCase"] { "==", "!=", "~=" },
+        vim.fn["switch#Words"] { "yes", "no" },
+        vim.fn["switch#Words"] { "true", "false" },
+        vim.fn["switch#Words"] { "on", "off" },
+        vim.fn["switch#Words"] { "left", "right" },
+        vim.fn["switch#Words"] { "up", "down" },
+        vim.fn["switch#Words"] { "enable", "disable" },
+        vim.fn["switch#Words"] { "Always", "Never" },
+        vim.fn["switch#Words"] { "debug", "info", "warning", "error", "critical" },
+        vim.fn["switch#Words"] { "==", "!=", "~=" },
         -- 编程常用
-        vim.fn["switch#NormalizedCase"] { "public", "private", "protected" },
-        vim.fn["switch#NormalizedCase"] { "const", "let", "var" },
-        vim.fn["switch#NormalizedCase"] { "import", "export" },
-        vim.fn["switch#NormalizedCase"] { "async", "sync" },
-        vim.fn["switch#NormalizedCase"] { "static", "dynamic" },
-        vim.fn["switch#NormalizedCase"] { "get", "set" },
-        vim.fn["switch#NormalizedCase"] { "push", "pop" },
-        vim.fn["switch#NormalizedCase"] { "add", "remove" },
-        vim.fn["switch#NormalizedCase"] { "show", "hide" },
-        vim.fn["switch#NormalizedCase"] { "open", "close" },
-        vim.fn["switch#NormalizedCase"] { "start", "stop" },
-        vim.fn["switch#NormalizedCase"] { "begin", "end" },
-        vim.fn["switch#NormalizedCase"] { "first", "last" },
-        vim.fn["switch#NormalizedCase"] { "next", "prev" },
-        vim.fn["switch#NormalizedCase"] { "before", "after" },
-        vim.fn["switch#NormalizedCase"] { "min", "max" },
-        vim.fn["switch#NormalizedCase"] { "asc", "desc" },
-        vim.fn["switch#NormalizedCase"] { "read", "write" },
-        vim.fn["switch#NormalizedCase"] { "input", "output" },
-        vim.fn["switch#NormalizedCase"] { "row", "column" },
-        vim.fn["switch#NormalizedCase"] { "width", "height" },
-        vim.fn["switch#NormalizedCase"] { "horizontal", "vertical" },
-        vim.fn["switch#NormalizedCase"] { "and", "or" },
-        vim.fn["switch#NormalizedCase"] { "all", "any", "none" },
+        vim.fn["switch#Words"] { "public", "private", "protected" },
+        vim.fn["switch#Words"] { "const", "let", "var" },
+        vim.fn["switch#Words"] { "import", "export" },
+        vim.fn["switch#Words"] { "async", "sync" },
+        vim.fn["switch#Words"] { "static", "dynamic" },
+        vim.fn["switch#Words"] { "get", "set" },
+        vim.fn["switch#Words"] { "push", "pop" },
+        vim.fn["switch#Words"] { "add", "remove" },
+        vim.fn["switch#Words"] { "show", "hide" },
+        vim.fn["switch#Words"] { "open", "close" },
+        vim.fn["switch#Words"] { "start", "stop" },
+        vim.fn["switch#Words"] { "begin", "end" },
+        vim.fn["switch#Words"] { "first", "last" },
+        vim.fn["switch#Words"] { "next", "prev" },
+        vim.fn["switch#Words"] { "before", "after" },
+        vim.fn["switch#Words"] { "min", "max" },
+        vim.fn["switch#Words"] { "asc", "desc" },
+        vim.fn["switch#Words"] { "read", "write" },
+        vim.fn["switch#Words"] { "input", "output" },
+        vim.fn["switch#Words"] { "row", "column" },
+        vim.fn["switch#Words"] { "width", "height" },
+        vim.fn["switch#Words"] { "horizontal", "vertical" },
+        vim.fn["switch#Words"] { "and", "or" },
+        vim.fn["switch#Words"] { "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64" },
         -- HTTP 方法
-        vim.fn["switch#NormalizedCase"] { "GET", "POST", "PUT", "PATCH", "DELETE" },
+        vim.fn["switch#Words"] { "GET", "POST", "PUT", "PATCH", "DELETE" },
         -- 状态相关
-        vim.fn["switch#NormalizedCase"] { "pending", "active", "completed", "cancelled" },
-        vim.fn["switch#NormalizedCase"] { "todo", "doing", "done" },
-        vim.fn["switch#NormalizedCase"] { "low", "medium", "high", "critical" },
-        vim.fn["switch#NormalizedCase"] { "success", "failure" },
-        vim.fn["switch#NormalizedCase"] { "valid", "invalid" },
-        vim.fn["switch#NormalizedCase"] { "loading", "loaded", "error" },
+        vim.fn["switch#Words"] { "pending", "active", "completed", "cancelled" },
+        vim.fn["switch#Words"] { "todo", "doing", "done" },
+        vim.fn["switch#Words"] { "low", "medium", "high", "critical" },
+        vim.fn["switch#Words"] { "success", "failure" },
+        vim.fn["switch#Words"] { "valid", "invalid" },
+        vim.fn["switch#Words"] { "loading", "loaded", "error" },
         -- CSS 常用
-        vim.fn["switch#NormalizedCase"] { "block", "inline", "flex", "grid", "none" },
-        vim.fn["switch#NormalizedCase"] { "static", "relative", "absolute", "fixed", "sticky" },
-        vim.fn["switch#NormalizedCase"] { "visible", "hidden" },
-        vim.fn["switch#NormalizedCase"] { "solid", "dashed", "dotted" },
+        vim.fn["switch#Words"] { "block", "inline", "flex", "grid", "none" },
+        vim.fn["switch#Words"] { "static", "relative", "absolute", "fixed", "sticky" },
+        vim.fn["switch#Words"] { "visible", "hidden" },
+        vim.fn["switch#Words"] { "dotted", "dashed", "dotted" },
+
         -- 符号相关
-        { "0", "1" },
+        { "1", "1" },
         { "&&", "||" },
         { "++", "--" },
         { "+=", "-=" },
-        { ">=", "<=" },
-        { ">>>", "<<<" },
+        { ">", "<" },
         -- case 转换
+        --         {
+
         {
-          [camel_case] = [=[\=toupper(submatch(1)) . submatch(2)]=],
-          [pascal_case] = [=[\=tolower(substitute(submatch(0), '\(\l\)\(\u\)', '\1_\2', 'g'))]=],
-          [snake_case] = [=[\U\0]=],
-          [screaming] = [=[\=tolower(substitute(submatch(0), '_', '-', 'g'))]=],
-          [kebab_case] = [=[\=substitute(submatch(0), '-', '.', 'g')]=],
-          [dot_case] = [=[\=substitute(submatch(0), '\.\(\l\)', '\u\1', 'g')]=],
+          [camel_to_pascal_pat] = camel_to_pascal_repl,
+          [pascal_to_snake_pat] = pascal_to_snake_repl,
+          [snake_to_upper_pat] = snake_to_upper_repl,
+          [upper_to_kebab_pat] = upper_to_kebab_repl,
+          [kebab_to_camel_pat] = kebab_to_camel_repl,
         },
       }
       -- vim.keymap.set("n", "gs", "<Nop>")
