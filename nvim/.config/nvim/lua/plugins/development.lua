@@ -113,4 +113,8 @@ return {
     -- version = "v1.*",
     event = "VeryLazy",
   },
+  {
+    "AndrewRadev/linediff.vim",
+    event = "VeryLazy",
+  },
 }
