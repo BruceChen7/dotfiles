@@ -36,14 +36,18 @@
                 }
             }
         },
-        "anyrouter": {
+        "WZW": {
             "npm": "@ai-sdk/openai-compatible",
-            "name": "anyrouter",
+            "name": "WZW",
             "options": {
-                "baseURL": "https://anyrouter.top",
-                "apiKey": "{env:KYX_KEY}"
+                "baseURL": "https://wzw.pp.ua/v1",
+                "apiKey": "{env:WZW_KEY}"
             },
-            "models": {}
+            "models": {
+                "kimi-k2-0905": {
+                    "name": "kimi-k2-0905"
+                },
+            }
         }
     }
 }

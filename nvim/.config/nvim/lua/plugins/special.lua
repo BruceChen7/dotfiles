@@ -100,8 +100,7 @@ return {
   {
     "Kurama622/llm.nvim",
     dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" },
-    -- cmd = { "LLMSesionToggle", "LLMSelectedTextHandler" },
-    event = "VeryLazy",
+    cmd = { "LLMSessionToggle", "LLMSelectedTextHandler", "LLMAppHandler" },
     config = function()
       require "config/llm"
     end,

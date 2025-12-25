@@ -115,6 +115,6 @@ return {
   },
   {
     "AndrewRadev/linediff.vim",
-    event = "VeryLazy",
+    cmd = { "Linediff", "LinediffReset", "LinediffAdd", "LinediffLast", "LinediffShow", "LinediffPick", "LinediffMerge" },
   },
 }

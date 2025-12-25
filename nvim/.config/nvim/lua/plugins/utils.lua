@@ -16,7 +16,15 @@ return {
     config = function()
       require "config/diff"
     end,
-    event = "VeryLazy",
+    cmd = {
+      "DiffviewOpen",
+      "DiffviewClose",
+      "DiffviewToggleFiles",
+      "DiffviewFocusFiles",
+      "DiffviewRefresh",
+      "DiffviewFileHistory",
+      "DiffviewLog",
+    },
   },
 
   {
@@ -114,3 +122,4 @@ return {
     },
   },
 }
+
