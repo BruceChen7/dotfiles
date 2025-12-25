@@ -59,6 +59,13 @@ require("lsp-setup").setup {
         "typescriptreact",
         "typescript.tsx",
       },
+      root_markers = {
+        "tsconfig.json",
+        "jsconfig.json",
+        "package.json",
+        ".git",
+        "tsconfig.base.json",
+      },
     },
     clangd = {
       cmd = {
@@ -93,39 +100,11 @@ require("lsp-setup").setup {
       },
     },
     -- pyright = {},
-    basedpyright = {
-
-      settings = {
-        basedpyright = {
-          typeCheckingMode = "standard",
-        },
-      },
+    ty = {
+      cmd = { "ty", "server" },
+      filetypes = { "python" },
+      root_dir = vim.fs.root(0, { ".git/", "pyproject.toml" }),
     },
-    -- pylsp = {
-    --   settings = {
-    --     pylsp = {
-    --       -- PylspInstall python-lsp-black
-    --       -- PylspInstall pyls-isort
-    --       configurationSources = { "flake8" },
-    --       plugins = {
-    --         pycodestyle = {
-    --           enabled = true,
-    --         },
-    --         mccabe = {
-    --           enabled = false,
-    --         },
-    --         pyflakes = {
-    --           enabled = true,
-    --         },
-    --         flake8 = {
-    --           enabled = true,
-    --         },
-    --         black = {
-    --           enabled = false,
-    --         },
-    --       },
-    --     },
-    --   },
     -- rust_analyzer = {
     --   settings = {
     --     ["rust-analyzer"] = {
