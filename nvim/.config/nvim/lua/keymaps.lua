@@ -227,38 +227,54 @@ vim.keymap.set("n", "<leader>to", ":tabonly<cr>", { desc = "Close other tabs" })
 -- Multi-mode mappings (n + t)
 -- ============================================================================
 local nt_mappings = {
-  { "<m-e>", function()
-    local current_buf = vim.api.nvim_get_current_buf()
-    local tabs = vim.api.nvim_list_tabpages()
-    local pos = vim.api.nvim_win_get_cursor(0)
+  {
+    "<m-e>",
+    function()
+      local current_buf = vim.api.nvim_get_current_buf()
+      local tabs = vim.api.nvim_list_tabpages()
+      local pos = vim.api.nvim_win_get_cursor(0)
 
-    if #tabs > 1 then
-      for _, tab in ipairs(tabs) do
-        local win = vim.api.nvim_tabpage_get_win(tab)
-        local buf = vim.api.nvim_win_get_buf(win)
+      if #tabs > 1 then
+        for _, tab in ipairs(tabs) do
+          local win = vim.api.nvim_tabpage_get_win(tab)
+          local buf = vim.api.nvim_win_get_buf(win)
 
-        if buf == current_buf and tab ~= vim.api.nvim_get_current_tabpage() then
-          vim.api.nvim_win_set_cursor(win, pos)
-          vim.cmd.tabclose()
-          return
+          if buf == current_buf and tab ~= vim.api.nvim_get_current_tabpage() then
+            vim.api.nvim_win_set_cursor(win, pos)
+            vim.cmd.tabclose()
+            return
+          end
         end
       end
-    end
 
-    local file_path = vim.api.nvim_buf_get_name(current_buf)
-    if file_path == "" then
-      vim.notify("Cannot edit buffer: no file name", vim.log.levels.WARN)
-      return
-    end
-    vim.cmd("tabedit " .. vim.fn.fnameescape(file_path))
+      local file_path = vim.api.nvim_buf_get_name(current_buf)
+      if file_path == "" then
+        vim.notify("Cannot edit buffer: no file name", vim.log.levels.WARN)
+        return
+      end
+      vim.cmd("tabedit " .. vim.fn.fnameescape(file_path))
 
-    local win = vim.api.nvim_get_current_win()
-    local line_count = vim.api.nvim_buf_line_count(current_buf)
-    local line = math.min(pos[1], line_count)
-    vim.api.nvim_win_set_cursor(win, { line, pos[2] })
-  end, { desc = "Toggle buffer full-screen" } },
-  { "\\bp", function() vim.cmd "bprevious" end, { desc = "Previous buffer" } },
-  { "\\bn", function() vim.cmd "bnext" end, { desc = "Next buffer" } },
+      local win = vim.api.nvim_get_current_win()
+      local line_count = vim.api.nvim_buf_line_count(current_buf)
+      local line = math.min(pos[1], line_count)
+      vim.api.nvim_win_set_cursor(win, { line, pos[2] })
+    end,
+    { desc = "Toggle buffer full-screen" },
+  },
+  {
+    "\\bp",
+    function()
+      vim.cmd "bprevious"
+    end,
+    { desc = "Previous buffer" },
+  },
+  {
+    "\\bn",
+    function()
+      vim.cmd "bnext"
+    end,
+    { desc = "Next buffer" },
+  },
 }
 
 for _, mapping in ipairs(nt_mappings) do
@@ -723,3 +739,29 @@ vim.keymap.set(
   { desc = "Go to definition with vertical split" }
 )
 vim.keymap.set("n", "\\gt", ":tab split | lua vim.lsp.buf.definition()<CR>", { desc = "Go to definition with new tab" })
+
+-- 读系统剪切板，如果是png等图片格式，保存到/tmp目录并上传到CDN
+local post_img_to_cdn = function()
+  local timestamp = os.date "%Y%m%d_%H%M%S"
+  local filename = string.format("/tmp/clipboard_%s.png", timestamp)
+
+  -- 使用 pngpaste 从剪贴板保存图片 (brew install pngpaste)
+  local result = vim.fn.system(string.format("pngpaste %s 2>&1", filename))
+
+  if vim.v.shell_error ~= 0 then
+    -- 检查是否是因为剪贴板没有图片
+    if result:match "no image data" or result:match "No image" then
+      vim.notify("剪贴板中没有图片", vim.log.levels.WARN)
+    else
+      vim.notify("保存图片失败: " .. result, vim.log.levels.ERROR)
+    end
+    return nil
+  end
+
+  vim.notify("图片已保存到: " .. filename, vim.log.levels.INFO)
+  -- 使用r2 或者更多
+  -- vim.fn.setreg("+", filename)
+  return filename
+end
+
+vim.keymap.set("n", "<leader>pi", post_img_to_cdn, { desc = "Paste image from clipboard to /tmp" })
