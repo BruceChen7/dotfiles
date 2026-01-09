@@ -1,10 +1,10 @@
 .aider*
 .DS_Store
 .crush/
-.claude/
 **/lazy-lock.json
 *.pid
 **/logs/
 **/logs/*
 
 .osgrep
+/.claude/
