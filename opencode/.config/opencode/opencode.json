@@ -50,6 +50,28 @@
                 "GLM-4.6": {
                     "name": "GLM-4.6"
                 },
+                "claude-opus-4-5-20251101": {
+                    "name": "claude-opus-4-5-20251101"
+                },
+                "claude-opus-4-5-20251101-thinking": {
+                    "name": "claude-opus-4-5-20251101-thinking"
+                },
+            }
+        },
+        "coding": {
+            "npm": "@ai-sdk/anthropic",
+            "name": "coding",
+            "options": {
+                "baseURL": "https://api.jonwinters.pw/v1",
+                "apiKey": "{env:CODING_KEY}"
+            },
+            "models": {
+                "gemini-claude-opus-4-5-thinking": {
+                    "name": "gemini-claude-opus-4-5-thinking"
+                },
+                "gemini-claude-sonnet-4-5-thinking": {
+                    "name": "gemini-claude-sonnet-4-5-thinking"
+                }
             }
         }
     }
