@@ -176,7 +176,7 @@ require("lsp-setup").setup {
         gopls = {
           gofumpt = true,
           usePlaceholders = false,
-          buildFlags = { "-tags=integration_test unit_test gasit" },
+          buildFlags = { "-tags=integration_test unit_test gasit perf_optimized" },
           codelenses = {
             gc_details = true,
             -- test = true,

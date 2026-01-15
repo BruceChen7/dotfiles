@@ -24,6 +24,7 @@ local lang = {
   "zig",
   "rust",
   "markdown",
+  "typescript",
 }
 require("nvim-treesitter").install(lang)
 

@@ -159,7 +159,7 @@ bindkey '^r' _atuin_search_widget
 
 [[ -f ~/.secrets ]] && source ~/.secrets
 
-[[ -f ~/.local/bin/z.lua/z.lua ]] && eval "$(lua ~/.local/bin/z.lua/z.lua --init zsh enhanced once echo fzf)"
+[[ -f ~/.local/bin/z.lua/z.lua ]] && eval "$(lua ~/.local/bin/z.lua/z.lua --init zsh enhanced once echo)"
 # Enable keybindings only for non-dumb terminals
 # Ghostty/Tmux may set TERM=dumb which disables escape sequences
 # 终端键绑定配置（仅在非 dumb 终端下生效）

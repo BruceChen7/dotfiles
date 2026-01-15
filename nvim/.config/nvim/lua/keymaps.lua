@@ -130,7 +130,7 @@ vim.keymap.set("n", "<space><space>", "<c-^>", { desc = "Last buffer" })
 vim.keymap.set("i", "<c-d>", "<del>", { desc = "Delete forward" })
 vim.keymap.set("i", "<c-_>", "<c-k>", { desc = "Digraph" })
 
-vim.keymap.set("n", "<space>p", 'viw"0p', { desc = "Paste and Store Register 0" })
+vim.keymap.set("n", "<space>pp", 'viw"0p', { desc = "Paste and Store Register 0" })
 vim.keymap.set("n", "<space>y", "yiw", { desc = "Yank inner word" })
 
 -- Paste over selected text without yanking it
