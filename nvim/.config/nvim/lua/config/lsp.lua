@@ -3,6 +3,7 @@ vim.diagnostic.config { float = rounded }
 vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, rounded)
 vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, rounded)
 -- https://www.reddit.com/r/neovim/comments/17yrtt5/seeking_guidance_for_improving_nvimcmp/
+-- stylize_markdown 增强：添加 treesitter 高亮支持
 vim.lsp.util.stylize_markdown = function(bufnr, contents, opts)
   contents = vim.lsp.util._normalize_markdown(contents, {
     width = vim.lsp.util._make_floating_popup_size(contents, opts),
@@ -10,11 +11,8 @@ vim.lsp.util.stylize_markdown = function(bufnr, contents, opts)
   vim.bo[bufnr].filetype = "markdown"
   vim.treesitter.start(bufnr)
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
-
   return contents
 end
-
-vim.keymap.set("n", "\\gr", "<cmd>lua vim.lsp.buf.rename()<CR>", { noremap = true, silent = true, desc = "Rename" })
 
 -- https://github.com/kevinhwang91/nvim-ufo
 local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -105,50 +103,11 @@ require("lsp-setup").setup {
         "--stdio",
       },
     },
-    -- pyright = {},
     ty = {
       cmd = { "ty", "server" },
       filetypes = { "python" },
-      root_dir = vim.fs.root(0, { ".git/", "pyproject.toml" }),
+      root_markers = { ".git", "pyproject.toml" },
     },
-    -- rust_analyzer = {
-    --   settings = {
-    --     ["rust-analyzer"] = {
-    --       inlayHints = {
-    --         bindingModeHints = {
-    --           enable = false,
-    --         },
-    --         chainingHints = {
-    --           enable = true,
-    --         },
-    --         closingBraceHints = {
-    --           enable = true,
-    --           minLines = 25,
-    --         },
-    --         closureReturnTypeHints = {
-    --           enable = "never",
-    --         },
-    --         lifetimeElisionHints = {
-    --           enable = "never",
-    --           useParameterNames = false,
-    --         },
-    --         maxLength = 25,
-    --         parameterHints = {
-    --           enable = true,
-    --         },
-    --         reborrowHints = {
-    --           enable = "never",
-    --         },
-    --         renderColons = true,
-    --         typeHints = {
-    --           enable = true,
-    --           hideClosureInitialization = false,
-    --           hideNamedConstructor = false,
-    --         },
-    --       },
-    --     },
-    --   },
-    -- },
     zls = {
       settings = {
         zls = {
