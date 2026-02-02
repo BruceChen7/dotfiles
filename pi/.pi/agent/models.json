@@ -3,7 +3,7 @@
         "nahcrof": {
             "baseUrl": "https://ai.nahcrof.com/v2",
             "api": "openai-completions",
-            "apiKey": "apiKey",
+            "apiKey": "FREE_DEEPSEEK_API_KEY",
             "models": [
                 {
                     "id": "kimi-k2.5",
