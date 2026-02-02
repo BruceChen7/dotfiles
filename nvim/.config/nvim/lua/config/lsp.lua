@@ -3,6 +3,7 @@ vim.diagnostic.config { float = rounded }
 vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, rounded)
 vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, rounded)
 -- https://www.reddit.com/r/neovim/comments/17yrtt5/seeking_guidance_for_improving_nvimcmp/
+-- stylize_markdown 增强：添加 treesitter 高亮支持
 vim.lsp.util.stylize_markdown = function(bufnr, contents, opts)
   contents = vim.lsp.util._normalize_markdown(contents, {
     width = vim.lsp.util._make_floating_popup_size(contents, opts),
@@ -10,11 +11,8 @@ vim.lsp.util.stylize_markdown = function(bufnr, contents, opts)
   vim.bo[bufnr].filetype = "markdown"
   vim.treesitter.start(bufnr)
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, contents)
-
   return contents
 end
-
-vim.keymap.set("n", "\\gr", "<cmd>lua vim.lsp.buf.rename()<CR>", { noremap = true, silent = true, desc = "Rename" })
 
 -- https://github.com/kevinhwang91/nvim-ufo
 local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -32,6 +30,12 @@ require("lsp-setup").setup {
   },
   on_attach = function(client, bufnr)
     -- require("lsp_signature").on_attach({}, bufnr)
+    vim.keymap.set("n", "<leader>lh", function()
+      vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = bufnr }, { bufnr = bufnr })
+    end, { buffer = bufnr, desc = "Toggle inlay hints" })
+
+    vim.keymap.set("n", "<leader>li", vim.lsp.buf.incoming_calls, { buffer = bufnr, desc = "Incoming calls" })
+    vim.keymap.set("n", "<leader>lo", vim.lsp.buf.outgoing_calls, { buffer = bufnr, desc = "Outgoing calls" })
   end,
   servers = {
     lua_ls = {
@@ -99,50 +103,11 @@ require("lsp-setup").setup {
         "--stdio",
       },
     },
-    -- pyright = {},
     ty = {
       cmd = { "ty", "server" },
       filetypes = { "python" },
-      root_dir = vim.fs.root(0, { ".git/", "pyproject.toml" }),
+      root_markers = { ".git", "pyproject.toml" },
     },
-    -- rust_analyzer = {
-    --   settings = {
-    --     ["rust-analyzer"] = {
-    --       inlayHints = {
-    --         bindingModeHints = {
-    --           enable = false,
-    --         },
-    --         chainingHints = {
-    --           enable = true,
-    --         },
-    --         closingBraceHints = {
-    --           enable = true,
-    --           minLines = 25,
-    --         },
-    --         closureReturnTypeHints = {
-    --           enable = "never",
-    --         },
-    --         lifetimeElisionHints = {
-    --           enable = "never",
-    --           useParameterNames = false,
-    --         },
-    --         maxLength = 25,
-    --         parameterHints = {
-    --           enable = true,
-    --         },
-    --         reborrowHints = {
-    --           enable = "never",
-    --         },
-    --         renderColons = true,
-    --         typeHints = {
-    --           enable = true,
-    --           hideClosureInitialization = false,
-    --           hideNamedConstructor = false,
-    --         },
-    --       },
-    --     },
-    --   },
-    -- },
     zls = {
       settings = {
         zls = {
@@ -163,6 +128,7 @@ require("lsp-setup").setup {
     },
     -- https://neovimcraft.com/plugin/ray-x/go.nvim/
     -- https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#completionClientCapabilities
+    -- https://github.com/golang/tools/blob/master/gopls/doc/settings.md
     gopls = {
       cmd = {
         "gopls",
@@ -177,6 +143,8 @@ require("lsp-setup").setup {
           gofumpt = true,
           usePlaceholders = false,
           buildFlags = { "-tags=integration_test unit_test gasit perf_optimized" },
+          autocompleteUnimportedPackages = true,
+          editorContextMenuCommands = {},
           codelenses = {
             gc_details = true,
             -- test = true,
@@ -191,7 +159,10 @@ require("lsp-setup").setup {
             fillreturns = true,
             nilness = true, -- check for redundant or impossible nil comparisons
             -- ST1003 = true,
+            atomic = true,
             modernize = true,
+            QF1005 = true,
+            QF1006 = true,
           },
           staticcheck = false,
           hints = {
@@ -232,14 +203,7 @@ require("lsp-setup").setup {
           },
         },
       },
+      filetypes = { "go", "gomod", "gowork", "gotmpl" },
     },
   },
 }
-
--- https://github.com/ofseed/nvim/blob/1abfedd821c313eae7e04558ecbd08a1953b055f/lua/lsp.lua#L61-L63
-vim.keymap.set("n", "<leader>lh", function()
-  vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = bufnr }, { bufnr = bufnr })
-end, { buffer = bufnr, desc = "Toggle inlay hints" })
-
-vim.keymap.set("n", "<leader>li", vim.lsp.buf.incoming_calls, { buffer = bufnr, desc = "Incoming calls" })
-vim.keymap.set("n", "<leader>lo", vim.lsp.buf.outgoing_calls, { buffer = bufnr, desc = "Outgoing calls" })
