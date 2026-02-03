@@ -143,8 +143,8 @@ require("lsp-setup").setup {
           gofumpt = true,
           usePlaceholders = false,
           buildFlags = { "-tags=integration_test unit_test gasit perf_optimized" },
-          autocompleteUnimportedPackages = true,
-          editorContextMenuCommands = {},
+          -- autocompleteUnimportedPackages = true,
+          -- editorContextMenuCommands = {},
           codelenses = {
             gc_details = true,
             -- test = true,

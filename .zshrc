@@ -26,8 +26,7 @@ source "${ZINIT_HOME}/zinit.zsh"
 # Add in zsh plugins with optimized loading
 # Delay syntax highlighting for better performance
 zinit wait lucid for \
-    zsh-users/zsh-syntax-highlighting \
-    zsh-users/zsh-autosuggestions
+    zsh-users/zsh-syntax-highlighting
 
 # Load completions immediately but with deferred initialization
 zinit ice blockf lucid
