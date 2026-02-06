@@ -9,14 +9,68 @@
                     "id": "kimi-k2.5",
                     "name": "kimi-k2.5",
                     "reasoning": false,
-                    "input": [
-                        "text"
-                    ],
-                    "contextWindow": 128000,
-                    "maxTokens": 32000,
+                    "input": ["text"],
+                    "contextWindow": 131072,
+                    "maxTokens": 131072,
                     "cost": {
-                        "input": 0,
-                        "output": 0,
+                        "input": 4.5e-07,
+                        "output": 2e-06,
+                        "cacheRead": 0,
+                        "cacheWrite": 0
+                    }
+                },
+                {
+                    "id": "kimi-k2.5-instant",
+                    "name": "kimi-k2.5-instant",
+                    "reasoning": false,
+                    "input": ["text"],
+                    "contextWindow": 131072,
+                    "maxTokens": 8192,
+                    "cost": {
+                        "input": 5e-07,
+                        "output": 2.4e-06,
+                        "cacheRead": 0,
+                        "cacheWrite": 0
+                    }
+                },
+                {
+                    "id": "kimi-k2.5-canopy",
+                    "name": "kimi-k2.5-canopy",
+                    "reasoning": false,
+                    "input": ["text"],
+                    "contextWindow": 256000,
+                    "maxTokens": 256000,
+                    "cost": {
+                        "input": 8e-07,
+                        "output": 3.5e-06,
+                        "cacheRead": 0,
+                        "cacheWrite": 0
+                    }
+                },
+                {
+                    "id": "kimi-k2-thinking",
+                    "name": "kimi-k2-thinking",
+                    "reasoning": true,
+                    "input": ["text"],
+                    "contextWindow": 262144,
+                    "maxTokens": 262144,
+                    "cost": {
+                        "input": 4e-07,
+                        "output": 1.5e-06,
+                        "cacheRead": 0,
+                        "cacheWrite": 0
+                    }
+                },
+                {
+                    "id": "kimi-k2-thinking-turbo",
+                    "name": "kimi-k2-thinking-turbo",
+                    "reasoning": true,
+                    "input": ["text"],
+                    "contextWindow": 262144,
+                    "maxTokens": 262144,
+                    "cost": {
+                        "input": 1e-06,
+                        "output": 3e-06,
                         "cacheRead": 0,
                         "cacheWrite": 0
                     }
