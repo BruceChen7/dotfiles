@@ -15,6 +15,9 @@ return {
           droid = {
             cmd = { "droid" },
           },
+          pi = {
+            cmd = { "pi" },
+          },
         },
       },
     },
