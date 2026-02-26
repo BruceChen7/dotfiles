@@ -185,7 +185,7 @@ vim.keymap.set("n", "K", function()
   end
 
   vim.lsp.buf.hover()
-end, { desc = "Peek Folded Lines / Timestamp / Hex" })
+end, { desc = "Peek Folded Lines / Convert Timestamp / Convert Hex / LSP Hover" })
 
 vim.keymap.set("n", "zgj", function()
   local ufo = require "ufo"
