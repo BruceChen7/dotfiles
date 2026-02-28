@@ -719,6 +719,32 @@ vim.keymap.set("n", "<leader>ya", function()
   vim.fn.setreg('"', path) -- Vim default register
 end, { desc = "Copy absolute path" })
 
+-- <leader>yl: Copy relative path with line number (e.g., "dir/file.go:L162")
+vim.keymap.set("n", "<leader>yl", function()
+  local path = vim.fn.expand "%:."
+  local line = vim.fn.line "."
+  local result = path .. ":" .. line
+  vim.fn.setreg("+", result)
+  vim.fn.setreg('"', result)
+  vim.notify("Copied: " .. result, vim.log.levels.INFO)
+end, { desc = "Copy relative path with line number" })
+
+-- <leader>yL: Copy relative path with line range (e.g., "dir/file.go:L162-L168")
+-- Use in visual mode to select lines first
+vim.keymap.set({ "n", "x" }, "<leader>yL", function()
+  local path = vim.fn.expand "%:."
+  local start_line = vim.fn.line "."
+  local end_line = vim.fn.line "v"
+  -- Ensure start <= end
+  if start_line > end_line then
+    start_line, end_line = end_line, start_line
+  end
+  local result = path .. ":" .. start_line .. "-" .. end_line
+  vim.fn.setreg("+", result)
+  vim.fn.setreg('"', result)
+  vim.notify("Copied: " .. result, vim.log.levels.INFO)
+end, { desc = "Copy relative path with line range" })
+
 vim.api.nvim_create_autocmd("TextYankPost", {
   desc = "Highlight when yanking text",
   callback = function()
