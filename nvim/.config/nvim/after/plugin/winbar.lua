@@ -1,3 +1,8 @@
+-- Check if we are in diff mode
+local function is_diff_mode()
+  return vim.opt.diff:get() == true
+end
+
 local function get_winbar_path()
   local full_path = vim.fn.expand "%:p"
   return full_path:gsub(vim.fn.expand "$HOME", "~")
@@ -14,8 +19,32 @@ local function get_buffer_count()
   end
   return count
 end
--- Function to update the winbar
-local function update_winbar()
+
+-- Get diff file path for a specific window
+local function get_diff_file_path_for_win(win_id)
+  -- Use vim.api.nvim_win_get_buf for compatibility
+  local bufnr = vim.api.nvim_win_get_buf(win_id)
+  if bufnr and bufnr > 0 then
+    local bufname = vim.fn.bufname(bufnr)
+    if bufname and bufname ~= "" then
+      return bufname:gsub(vim.fn.expand "$HOME", "~")
+    end
+  end
+  return "[No Name]"
+end
+
+-- Update winbar for all windows
+local function update_all_windows()
+  -- In diff mode, set winbar for each window
+  if is_diff_mode() then
+    for _, win_id in ipairs(vim.api.nvim_list_wins()) do
+      local diff_path = get_diff_file_path_for_win(win_id)
+      vim.wo[win_id].winbar = "%#WinBar1#diff %#WinBar2#" .. diff_path .. "%*"
+    end
+    return
+  end
+
+  -- Normal mode: use global winbar
   local home_replaced = get_winbar_path()
   local buffer_count = get_buffer_count()
   vim.opt.winbar = "%#WinBar1#%m "
@@ -25,12 +54,22 @@ local function update_winbar()
     .. "%#WinBar1#"
     .. home_replaced
     .. "%*%=%#WinBar2#"
-  -- I don't need the hostname as I have it in lualine
-  -- .. vim.fn.systemlist("hostname")[1]
 end
+
+-- Function to update the winbar
+local function update_winbar()
+  update_all_windows()
+end
+
 -- Autocmd to update the winbar on BufEnter and WinEnter events
+vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "OptionSet" }, {
+  pattern = "diff",
+  callback = update_all_windows,
+})
+
+-- Also trigger on BufEnter/WinEnter to check diff mode
 vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
-  callback = update_winbar,
+  callback = update_all_windows,
 })
 
 -- This code is in your nvim/.config/nvim/after/plugin/winbar.lua file and is doing a few things:

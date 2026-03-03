@@ -37,6 +37,24 @@ require("lsp-setup").setup {
     vim.keymap.set("n", "<leader>li", vim.lsp.buf.incoming_calls, { buffer = bufnr, desc = "Incoming calls" })
     vim.keymap.set("n", "<leader>lo", vim.lsp.buf.outgoing_calls, { buffer = bufnr, desc = "Outgoing calls" })
     vim.keymap.set("n", "<leader>lr", vim.lsp.buf.rename, { buffer = bufnr, desc = "Rename symbol" })
+
+    vim.keymap.set("n", "<leader>le", function()
+      local diagnostics = vim.diagnostic.get(bufnr, { lnum = vim.api.nvim_win_get_cursor(0)[1] - 1 })
+      if #diagnostics == 0 then
+        vim.notify("No diagnostics on current line", vim.log.levels.INFO)
+        return
+      end
+      local messages = {}
+      for _, d in ipairs(diagnostics) do
+        local severity = vim.diagnostic.severity[d.severity]
+        local source = d.source and ("[" .. d.source .. "] ") or ""
+        table.insert(messages, string.format("%s: %s%s", severity, source, d.message))
+      end
+      local text = table.concat(messages, "\n")
+      vim.fn.setreg("+", text)
+      vim.fn.setreg('"', text)
+      vim.notify(text, vim.log.levels.INFO)
+    end, { buffer = bufnr, desc = "Copy line diagnostics" })
   end,
   servers = {
     lua_ls = {
