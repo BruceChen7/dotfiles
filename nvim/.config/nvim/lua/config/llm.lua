@@ -31,10 +31,4 @@ require("llm").setup {
 }
 
 vim.keymap.set("n", "<leader>lc", ":LLMSessionToggle<cr>", { desc = "Toggle LLM session" })
-vim.keymap.set(
-  "v",
-  "<leader>le",
-  "<cmd>LLMSelectedTextHandler 请解释下面这段代码<cr>",
-  { desc = "Explain selected text" }
-)
 vim.keymap.set("x", "<leader>lt", "<cmd>LLMSelectedTextHandler 英译汉<cr>", { desc = "Translate selected text" })

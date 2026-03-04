@@ -53,8 +53,26 @@ require("lsp-setup").setup {
       local text = table.concat(messages, "\n")
       vim.fn.setreg("+", text)
       vim.fn.setreg('"', text)
-      vim.notify(text, vim.log.levels.INFO)
+      vim.notify("Copied " .. #diagnostics .. " diagnostics", vim.log.levels.INFO)
     end, { buffer = bufnr, desc = "Copy line diagnostics" })
+
+    vim.keymap.set("n", "<leader>la", function()
+      local diagnostics = vim.diagnostic.get(bufnr)
+      if #diagnostics == 0 then
+        vim.notify("No diagnostics in current buffer", vim.log.levels.INFO)
+        return
+      end
+      local messages = {}
+      for _, d in ipairs(diagnostics) do
+        local severity = vim.diagnostic.severity[d.severity]
+        local source = d.source and ("[" .. d.source .. "] ") or ""
+        table.insert(messages, string.format("%s: %s%s", severity, source, d.message))
+      end
+      local text = table.concat(messages, " ")
+      vim.fn.setreg("+", text)
+      vim.fn.setreg('"', text)
+      vim.notify("Copied " .. #diagnostics .. " diagnostics", vim.log.levels.INFO)
+    end, { buffer = bufnr, desc = "Copy current buffer all diagnostics" })
   end,
   servers = {
     lua_ls = {

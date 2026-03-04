@@ -96,13 +96,5 @@ return {
     config = true,
     dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
   },
-
-  {
-    "Kurama622/llm.nvim",
-    dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" },
-    cmd = { "LLMSessionToggle", "LLMSelectedTextHandler", "LLMAppHandler" },
-    config = function()
-      require "config/llm"
-    end,
-  },
 }
+
