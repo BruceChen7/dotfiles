@@ -29,10 +29,10 @@ miniclue.setup {
     -- Leader triggers
     { mode = "n", keys = "<leader>" },
     { mode = "n", keys = "\\" },
-    { mode = "v", keys = "\\" },
-    { mode = "v", keys = "<leader>" },
+    { mode = "x", keys = "\\" },
+    { mode = "x", keys = "<leader>" },
     { mode = "n", keys = "g" },
-    { mode = "v", keys = "g" },
+    { mode = "x", keys = "g" },
     { mode = "n", keys = "n" },
     { mode = "n", keys = "z" },
     { mode = "n", keys = "\\w" },
