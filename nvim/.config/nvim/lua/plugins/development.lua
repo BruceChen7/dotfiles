@@ -163,7 +163,9 @@ return {
           return {
             command = command,
             args = args,
-            cwd = root,
+            cwd = function()
+              return root
+            end,
             stdin = false,
           }
         end
