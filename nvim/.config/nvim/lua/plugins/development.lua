@@ -54,6 +54,8 @@ return {
           markdown = { "autocorrect", "trim_empty_lines" },
           typst = { "autocorrect" },
           python = { "ruff" },
+          typescript = { "ts_fmt_script" },
+          typescriptreact = { "ts_fmt_script" },
         },
         format_on_save = function(bufnr)
           return { timeout_ms = 1000, lsp_fallback = true }
@@ -80,6 +82,93 @@ return {
         },
       }
 
+      local function read_package_json(root)
+        local package_json = root .. "/package.json"
+        if vim.fn.filereadable(package_json) ~= 1 then
+          return nil
+        end
+        local ok_read, content = pcall(vim.fn.readfile, package_json)
+        if not ok_read then
+          return nil
+        end
+        local ok_decode, data = pcall(vim.fn.json_decode, table.concat(content, "\n"))
+        if not ok_decode then
+          return nil
+        end
+        return data
+      end
+
+      local function detect_package_manager(root, package_json)
+        if package_json and package_json.packageManager then
+          local name = package_json.packageManager:match("^(%w+)")
+          if name == "pnpm" or name == "yarn" or name == "npm" then
+            return name
+          end
+        end
+
+        if vim.fn.filereadable(root .. "/pnpm-lock.yaml") == 1 then
+          return "pnpm"
+        end
+        if vim.fn.filereadable(root .. "/yarn.lock") == 1 then
+          return "yarn"
+        end
+        if vim.fn.filereadable(root .. "/package-lock.json") == 1 then
+          return "npm"
+        end
+
+        return "npm"
+      end
+
+      local function make_ts_fmt_formatter()
+        return function(bufnr)
+          local filename = vim.api.nvim_buf_get_name(bufnr)
+          if filename == "" then
+            return { command = "" }
+          end
+
+          local root = require("lspconfig.util").root_pattern("package.json")(filename)
+          if not root then
+            return { command = "" }
+          end
+
+          local package_json = read_package_json(root)
+          local scripts = package_json and package_json.scripts or nil
+          local script_name
+          if scripts then
+            if scripts.fmt then
+              script_name = "fmt"
+            elseif scripts.format then
+              script_name = "format"
+            end
+          end
+
+          if not script_name then
+            return { command = "" }
+          end
+
+          local package_manager = detect_package_manager(root, package_json)
+          local command
+          local args
+          if package_manager == "pnpm" then
+            command = "pnpm"
+            args = { script_name }
+          elseif package_manager == "yarn" then
+            command = "yarn"
+            args = { script_name }
+          else
+            command = "npm"
+            args = { "run", script_name }
+          end
+
+          return {
+            command = command,
+            args = args,
+            cwd = root,
+            stdin = false,
+          }
+        end
+      end
+
       -- 创建Go格式化器工厂函数
       local function make_go_formatter(cmd_name)
         return function(bufnr)
@@ -93,6 +182,7 @@ return {
           return { command = cmd_name }
         end
       end
+      require("conform").formatters.ts_fmt_script = make_ts_fmt_formatter()
       require("conform").formatters.gofmt = make_go_formatter "gofmt"
       require("conform").formatters.goimports = make_go_formatter "goimports"
     end,
