@@ -3,6 +3,7 @@
 .crush/
 **/lazy-lock.json
 *.pid
+*.log
 **/logs/
 **/logs/*
 
