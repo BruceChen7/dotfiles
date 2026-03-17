@@ -1,0 +1,66 @@
+{
+    "lastChangelogVersion": "0.58.4",
+    "defaultProvider": "nahcrof",
+    "defaultModel": "kimi-k2.5",
+    "defaultThinkingLevel": "xhigh",
+    "theme": "dark",
+    "skills": [
+        "~/.agent/skills"
+    ],
+    "hideThinkingBlock": false,
+    "autoSkills": [
+        {
+            "tool": "edit",
+            "skill": "coding-style-line-length"
+        },
+        {
+            "tool": "write",
+            "skill": "coding-style-line-length"
+        }
+    ],
+    "packages": [
+        "npm:pi-mermaid",
+        "npm:pi-cursor-agent",
+        "../../work/pi-memory",
+        "../../work/pi-kit/copyx/",
+        "git:github.com/Michaelliv/pi-generative-ui"
+    ],
+    "enabledModels": [
+        "cursor-agent/gpt-5.2",
+        "cursor-agent/kimi-k2.5",
+        "cursor-agent/default",
+        "cursor-agent/gpt-5.3-codex",
+        "nahcrof/kimi-k2.5",
+        "nahcrof/kimi-k2-0905",
+        "anyrouter/claude-opus-4-6",
+        "cursor-agent/claude-opus-4-6",
+        "lianton/glm-5",
+        "lianton/MiniMax-M2.5",
+        "nahcrof/minimax-m2.5",
+        "ggboom/gpt-5.2-codex",
+        "github-copilot/gpt-5.2",
+        "ggboom/gpt-5.2"
+    ],
+    "piMemory": {
+        "provider": "ggboom",
+        "modelId": "gpt-5.2",
+        "timeout": 30000
+    },
+    "third_extensions": {
+        "log": {
+            "overrides": {
+                "skill-toggle": "error",
+                "notify": "error"
+            }
+        }
+    },
+    "skillToggle": {
+        "byCwd": {
+            "~/work/video/admin": {
+                "disabledSkills": [
+                    "visualise"
+                ]
+            }
+        }
+    }
+}
