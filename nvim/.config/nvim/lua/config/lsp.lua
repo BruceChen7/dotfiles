@@ -44,11 +44,14 @@ require("lsp-setup").setup {
         vim.notify("No diagnostics on current line", vim.log.levels.INFO)
         return
       end
+      local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ":~:.")
+      local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
       local messages = {}
       for _, d in ipairs(diagnostics) do
         local severity = vim.diagnostic.severity[d.severity]
         local source = d.source and ("[" .. d.source .. "] ") or ""
-        table.insert(messages, string.format("%s: %s%s", severity, source, d.message))
+        local line = (d.lnum and d.lnum + 1) or cursor_line
+        table.insert(messages, string.format("%s:%d: %s: %s%s", filename, line, severity, source, d.message))
       end
       local text = table.concat(messages, "\n")
       vim.fn.setreg("+", text)
@@ -62,11 +65,13 @@ require("lsp-setup").setup {
         vim.notify("No diagnostics in current buffer", vim.log.levels.INFO)
         return
       end
+      local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ":~:.")
       local messages = {}
       for _, d in ipairs(diagnostics) do
         local severity = vim.diagnostic.severity[d.severity]
         local source = d.source and ("[" .. d.source .. "] ") or ""
-        table.insert(messages, string.format("%s: %s%s", severity, source, d.message))
+        local line = (d.lnum and d.lnum + 1) or 1
+        table.insert(messages, string.format("%s:%d: %s: %s%s", filename, line, severity, source, d.message))
       end
       local text = table.concat(messages, " ")
       vim.fn.setreg("+", text)
