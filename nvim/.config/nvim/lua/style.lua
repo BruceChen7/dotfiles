@@ -39,6 +39,8 @@ augroup InitFileTypesGroup
 
   au FileType lua setlocal ts=2 sw=2 et
 
+  au FileType json,jsonc setlocal ts=2 sw=2 sts=2 et
+
   au FileType bito set wrap
 
   " scala 微调
