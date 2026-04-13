@@ -13,14 +13,6 @@ return {
   },
 
   {
-    "aznhe21/actions-preview.nvim",
-    config = function()
-      vim.keymap.set({ "v", "n" }, "\\gf", require("actions-preview").code_actions, { desc = "code actions" })
-    end,
-    event = "LspAttach",
-  },
-
-  {
     "linrongbin16/lsp-progress.nvim",
     -- dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
