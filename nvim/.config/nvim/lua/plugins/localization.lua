@@ -8,6 +8,7 @@ return {
         if not utils.is_mac() then
           return "keyboard-us"
         else
+          print "com.apple.keylayout.ABC"
           return "com.apple.keylayout.ABC"
         end
       end
@@ -31,11 +32,12 @@ return {
       require("im_select").setup {
         default_im_select = get_im_select(),
         default_command = get_default_command(),
-        set_default_events = { "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave", "TermOpen", "BufEnter" },
         -- Restore the previous used input method state when the following events
         -- are triggered, if you don't want to restore previous used im in Insert mode,
         -- e.g. deprecated `disable_auto_restore = 1`, just let it empty
         -- as `set_previous_events = {}`
+        set_default_events = { "InsertLeave", "CmdlineLeave" },
+
         set_previous_events = { "InsertEnter" },
         -- Show notification about how to install executable binary when binary missed
         keep_quiet_on_no_binary = false,
