@@ -1,0 +1,22 @@
+{
+  "rtkRewrite": {
+    "enabled": false,
+    "notify": true,
+    "exclude": [],
+    "buildOutputFiltering": true,
+    "testOutputAggregation": true,
+    "buildCommands": [],
+    "testCommands": []
+  },
+  "third_extensions": {
+    "log": {
+      "minLevel": "error",
+      "overrides": {
+        "plannotator-auto": "debug"
+      }
+    }
+  },
+  "dirtyGitStatus": {
+    "enabled": false
+  }
+}
