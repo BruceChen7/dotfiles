@@ -1,30 +1,20 @@
--- 语法高亮和代码导航相关插件
-return {
-  -- treesitter
-  {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    event = "VeryLazy",
-    config = function()
-      require "config/text_obj"
-    end,
-    branch = "main",
-  },
+local pack = require "core.pack"
+local gh = pack.github
 
-  -- https://github.com/ravsii/tree-sitter-d2
-  -- for d2 syntax highlight
-  {
-    "ravsii/tree-sitter-d2",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    build = "make nvim-install",
-    filetype = { "d2" },
+return {
+  name = "treesitter",
+  specs = {
+    { src = gh "nvim-treesitter/nvim-treesitter", version = "main" },
+    { src = gh "ravsii/tree-sitter-d2" },
+    { src = gh "sustech-data/wildfire.nvim" },
+    { src = gh "abecodes/tabout.nvim" },
+    { src = gh "meznaric/key-analyzer.nvim" },
   },
-  -- Smartly select the inner part of texts
-  {
-    "sustech-data/wildfire.nvim",
-    event = "VeryLazy",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    config = function()
+  setup = function()
+    pack.setup_config("nvim-treesitter", "config/text_obj")
+
+    pack.safe_call("wildfire", function()
+      pack.packadd "wildfire.nvim"
       require("wildfire").setup {
         keymaps = {
           init_selection = "<CR>",
@@ -32,56 +22,13 @@ return {
           node_decremental = "<BS>",
         },
       }
-    end,
-  },
+    end)
 
-  {
-    "abecodes/tabout.nvim",
-    config = function()
-      require "config/tabout"
-    end,
-    dependencies = {
-      -- "/nvim-cmp", -- Autocompletion plugin
-      "nvim-treesitter/nvim-treesitter",
-    },
-    event = "InsertEnter",
-  },
+    pack.setup_config("tabout.nvim", "config/tabout")
 
-  {
-    "meznaric/key-analyzer.nvim",
-    opts = {},
-  },
-
-  {
-    "nvim-pack/nvim-spectre",
-    config = function()
-      vim.keymap.set("n", "<leader>S", '<cmd>lua require("spectre").toggle()<CR>', {
-        desc = "Toggle Spectre",
-      })
-      vim.keymap.set("n", "<leader>sw", '<cmd>lua require("spectre").open_visual({select_word=true})<CR>', {
-        desc = "Search current word",
-      })
-      vim.keymap.set("v", "<leader>sw", '<esc><cmd>lua require("spectre").open_visual()<CR>', {
-        desc = "Search current word",
-      })
-      vim.keymap.set("n", "<leader>sp", '<cmd>lua require("spectre").open_file_search({select_word=true})<CR>', {
-        desc = "Search on current file",
-      })
-      require("spectre").setup {
-        mapping = {
-          ["run_current_replace"] = {
-            map = "<leader>rc",
-            cmd = "<cmd>lua require('spectre.actions').run_current_replace()<CR>",
-            desc = "replace current line",
-          },
-          ["run_replace"] = {
-            map = "<leader>rr",
-            cmd = "<cmd>lua require('spectre.actions').run_replace()<CR>",
-            desc = "replace all",
-          },
-        },
-      }
-    end,
-    event = "VeryLazy",
-  },
+    pack.safe_call("key-analyzer", function()
+      pack.packadd "key-analyzer.nvim"
+      require("key-analyzer").setup {}
+    end)
+  end,
 }

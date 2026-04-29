@@ -1,57 +1,27 @@
-local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system {
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "--single-branch",
-    "https://github.com/folke/lazy.nvim.git",
-    lazypath,
-  }
-end
-vim.opt.runtimepath:prepend(lazypath)
-
--- make sure to set `mapleader` before lazy so your mappings are correct
--- u.map("n", "<space>", "<Nop>")
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- 引入拆分的插件配置
-local plugins = {
-  -- 基础配置
-  concurrency = 2,
-  performance = {
-    rtp = {
-      disabled_plugins = {
-        "gzip",
-        "matchit",
-        "matchparen",
-        "netrwPlugin",
-        "tarPlugin",
-        "tohtml",
-        "tutor",
-        "zipPlugin",
-        "zip",
-        "man",
-        "rrhelper",
-      },
-    },
-  },
+vim.g.loaded_gzip = 1
+vim.g.loaded_matchit = 1
+vim.g.loaded_matchparen = 1
+vim.g.loaded_netrwPlugin = 1
+vim.g.loaded_tarPlugin = 1
+vim.g.loaded_2html_plugin = 1
+vim.g.loaded_tutor_mode_plugin = 1
+vim.g.loaded_zipPlugin = 1
+vim.g.loaded_man = 1
 
-  -- 从各个文件导入插件配置
-  require "plugins.basic",
+require("core.pack").setup {
+  require "plugins.ui",
+  require "plugins.editor",
+  require "plugins.navigation",
+  require "plugins.files",
   require "plugins.completion",
   require "plugins.lsp",
   require "plugins.treesitter",
-  require "plugins.themes",
-  require "plugins.editing",
-  require "plugins.navigation",
-  require "plugins.development",
-  require "plugins.utils",
-  require "plugins.localization",
-  require "plugins.filemanagers",
-  require "plugins.special",
+  require "plugins.git",
+  require "plugins.dev",
   require "plugins.ai",
+  require "plugins.notes",
+  require "plugins.tools",
 }
-
-require("lazy").setup(plugins)

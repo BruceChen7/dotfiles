@@ -1,87 +1,58 @@
--- LSP 和代码诊断相关插件
+local pack = require "core.pack"
+local gh = pack.github
+
 return {
-  {
-    "lewis6991/gitsigns.nvim",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-    },
-    config = function()
-      require "config/gitsigns"
-    end,
-    event = "VeryLazy",
-    version = "v1.*",
+  name = "lsp",
+  specs = {
+    { src = gh "neovim/nvim-lspconfig" },
+    { src = gh "junnplus/lsp-setup.nvim" },
+    { src = gh "williamboman/mason.nvim" },
+    { src = gh "williamboman/mason-lspconfig.nvim" },
+    { src = gh "linrongbin16/lsp-progress.nvim" },
+    { src = gh "VidocqH/lsp-lens.nvim" },
+    { src = gh "rachartier/tiny-inline-diagnostic.nvim" },
+    { src = gh "nvim-lua/lsp_extensions.nvim" },
   },
+  setup = function()
+    -- pack.safe_call("lsp-progress", function()
+    --   pack.packadd "lsp-progress.nvim"
+    --   require("lsp-progress").setup()
+    -- end)
 
-  {
-    "linrongbin16/lsp-progress.nvim",
-    -- dependencies = { "nvim-tree/nvim-web-devicons" },
-    config = function()
-      require("lsp-progress").setup()
-    end,
-    event = "LspAttach",
-  },
+    -- pack.safe_call("lsp-lens", function()
+    --   pack.packadd "lsp-lens.nvim"
+    --   require("lsp-lens").setup {
+    --     enable = true,
+    --     sections = {
+    --       definition = false,
+    --       references = true,
+    --       implementation = true,
+    --     },
+    --     ignore_filetype = {
+    --       "fern",
+    --       "NeogitStatus",
+    --       "DiffviewFiles",
+    --     },
+    --   }
+    -- end)
 
-  {
-    "VidocqH/lsp-lens.nvim",
-    config = function()
-      require("lsp-lens").setup {
-        enable = true,
-        sections = { -- Enable / Disable specific request
-          definition = false,
-          references = true,
-          implementation = true,
-        },
-        ignore_filetype = {
-          "fern",
-          "NeogitStatus",
-          "DiffviewFiles",
-        },
-      }
-    end,
-    -- commit = "13d25ad8bd55aa34cc0aa3082e78a4157c401346",
-    -- 手动打开，否则对大量pb生成的go文件进行reference，implementation的时候，很慢
-    cmd = "LspLensOn",
-  },
-
-  {
-    "rachartier/tiny-inline-diagnostic.nvim",
-    event = "VeryLazy",
-    config = function()
+    pack.safe_call("tiny-inline-diagnostic", function()
+      pack.packadd "tiny-inline-diagnostic.nvim"
       require("tiny-inline-diagnostic").setup {
         options = {
-          multilines = {
-            enabled = true,
-          },
-          show_source = {
-            enabled = false,
-          },
+          multilines = { enabled = true },
+          show_source = { enabled = false },
         },
       }
       require("tiny-inline-diagnostic").enable()
       vim.keymap.set("n", "\\td", function()
         require("tiny-inline-diagnostic").toggle()
       end, { desc = "Toggle Tiny Inline Diagnostic" })
-    end,
-  },
+    end)
 
-  {
-    "neovim/nvim-lspconfig",
-    version = "v2.*",
-  },
-
-  {
-    "junnplus/lsp-setup.nvim",
-    dependencies = {
-      "neovim/nvim-lspconfig",
-      "williamboman/mason.nvim", -- optional
-      -- :LspInstall command provided by mason-lspconfig
-      -- "williamboman/mason-lspconfig.nvim", -- optional
-    },
-    -- branch = "inlay-hints",
-    config = function()
-      require "config/lsp"
-    end,
-    event = "VeryLazy",
-    -- lazy = true,
-  },
+    pack.packadd "mason.nvim"
+    pack.packadd "mason-lspconfig.nvim"
+    pack.packadd "nvim-lspconfig"
+    pack.setup_config("lsp-setup.nvim", "config/lsp")
+  end,
 }

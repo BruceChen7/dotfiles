@@ -1,4 +1,16 @@
 {
+  "project_panel": {
+    "dock": "left"
+  },
+  "outline_panel": {
+    "dock": "left"
+  },
+  "collaboration_panel": {
+    "dock": "left"
+  },
+  "git_panel": {
+    "dock": "left"
+  },
   "agent_servers": {
     "OpenCode": {
       "command": "opencode",
@@ -22,6 +34,7 @@
     }
   },
   "agent": {
+    "dock": "right",
     "default_profile": "write",
     "always_allow_tool_actions": true,
     "default_model": {
