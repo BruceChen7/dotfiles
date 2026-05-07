@@ -670,7 +670,7 @@ vim.api.nvim_create_autocmd({ "BufRead" }, {
   group = augroup_id,
   pattern = { "*" },
   callback = function()
-    vim.api.nvim_create_autocmd({ "InsertEnter", "BufModifiedSet" }, {
+    vim.api.nvim_create_autocmd({ "InsertEnter", "TextChanged" }, {
       buffer = 0,
       once = true,
       callback = function()
