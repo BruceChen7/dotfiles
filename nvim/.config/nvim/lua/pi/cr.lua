@@ -14,7 +14,16 @@ local state = {
 }
 
 local function notify(message, level)
-  vim.notify(message, level or vim.log.levels.INFO, { title = "Pi CR" })
+  local resolved_level = level or vim.log.levels.INFO
+  local function do_notify()
+    vim.notify(message, resolved_level, { title = "Pi CR" })
+  end
+
+  if vim.in_fast_event() then
+    vim.schedule(do_notify)
+  else
+    do_notify()
+  end
 end
 
 local function env(name)
@@ -207,6 +216,26 @@ end
 
 local function annotation_comment(bufnr)
   return vim.trim(table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n"))
+end
+
+local function focus_rightmost_window()
+  -- Prefer the rightmost real file window so LSP-backed actions keep working after Diffview opens.
+  local rightmost_win = nil
+  local rightmost_col = -1
+
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_config(win).relative == "" then
+      local col = vim.api.nvim_win_get_position(win)[2]
+      if col > rightmost_col then
+        rightmost_col = col
+        rightmost_win = win
+      end
+    end
+  end
+
+  if rightmost_win then
+    vim.api.nvim_set_current_win(rightmost_win)
+  end
 end
 
 local function open_comment_buffer(context)
@@ -523,6 +552,7 @@ function M.start()
         vim.cmd "DiffviewOpen"
         notify "Opened CR diffview for unstaged changes"
       end
+      vim.defer_fn(focus_rightmost_window, 100)
     end)
   end)
 end
