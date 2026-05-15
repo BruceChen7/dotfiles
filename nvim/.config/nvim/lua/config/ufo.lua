@@ -176,6 +176,11 @@ vim.keymap.set("n", "K", function()
     return
   end
 
+  local ok, cr = pcall(require, "pi.cr")
+  if ok and cr.show_annotation_under_cursor and cr.show_annotation_under_cursor() then
+    return
+  end
+
   if handle_timestamp() then
     return
   end
@@ -185,7 +190,7 @@ vim.keymap.set("n", "K", function()
   end
 
   vim.lsp.buf.hover()
-end, { desc = "Peek Folded Lines / Convert Timestamp / Convert Hex / LSP Hover" })
+end, { desc = "Peek Folded Lines / CR Annotation / Convert Timestamp / Convert Hex / LSP Hover" })
 
 vim.keymap.set("n", "zgj", function()
   local ufo = require "ufo"

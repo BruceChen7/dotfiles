@@ -12,7 +12,7 @@ return {
   },
 
   {
-    "sindrets/diffview.nvim",
+    "dlyongemallo/diffview.nvim",
     config = function()
       require "config/diff"
     end,
@@ -122,4 +122,3 @@ return {
     },
   },
 }
-
