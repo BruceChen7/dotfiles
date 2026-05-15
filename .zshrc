@@ -43,17 +43,11 @@ zinit wait lucid for \
     OMZP::sudo \
     OMZP::command-not-found
 
+
 #
-# Optimized completions loading - only run compinit once per day
+# Optimized completions loading - run compinit after all completions plugins loaded
 autoload -Uz compinit
-if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
-    compinit
-else
-    compinit -C  # 跳过安全检查，直接用缓存
-fi
-
-
-zinit wait'0a' lucid atload'zinit cdreplay -q' for zdharma-continuum/null
+zinit wait'0a' lucid atload'if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then compinit; else compinit -C; fi; zinit cdreplay -q' for zdharma-continuum/null
 
 
 # Keybindings
