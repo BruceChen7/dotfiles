@@ -44,7 +44,6 @@ zinit wait lucid for \
     OMZP::command-not-found
 
 
-#
 # Optimized completions loading - run compinit after all completions plugins loaded
 autoload -Uz compinit
 zinit wait'0a' lucid atload'if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then compinit; else compinit -C; fi; zinit cdreplay -q' for zdharma-continuum/null
@@ -74,7 +73,6 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
-zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 # Disable fzf-tab for vf command
 zstyle ':fzf-tab:complete:vf:*' disabled-on any
 
@@ -108,7 +106,7 @@ alias taw="tmux attach -t working"
 alias tas="tmux new -s working"
 alias v=nvim
 alias cat=bat
-alias ll="exa -al"
+alias ll="eza -al"
 
 export FZF_COMPLETION_TRIGGER='~~'
 export FZF_DEFAULT_COMMAND="fd --type f --hidden --follow --exclude .git 2>/dev/null || find . -type f 2>/dev/null | grep -v '\.git' || echo ''"
@@ -175,10 +173,8 @@ if [[ "$TERM" != "dumb" ]]; then
     bindkey '\eH' backward-word
     # Alt+Shift+l: 光标右移一个单词
     bindkey '\eL' forward-word
-    # Alt+j: 跳转到行首（重复绑定）
-    bindkey '\ej' beginning-of-line
-    # Alt+Shift+k: 跳转到行尾
-    bindkey '\eK' end-of-line
+    # Alt+Shift+k: 删除光标到行尾
+    bindkey '\eK' kill-line
 
     # Alt+o: 返回上级目录
     bindkey -s '\eo' 'cd ..\n'
