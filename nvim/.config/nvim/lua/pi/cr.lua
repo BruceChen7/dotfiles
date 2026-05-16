@@ -2,6 +2,7 @@ local M = {}
 
 local SIGN_NAME = "PiCRAnnotation"
 local SIGN_GROUP = "pi-cr-annotations"
+local COMMENT_CURSOR_PADDING = "  "
 
 local state = {
   annotation_sign_ids = {},
@@ -116,7 +117,11 @@ local function location_label(context)
 end
 
 local function comment_template(context)
-  return { location_label(context) .. " ", "" }
+  return { location_label(context) .. COMMENT_CURSOR_PADDING, "" }
+end
+
+local function comment_start_column(template_line)
+  return #template_line - 1
 end
 
 local function serialized_annotation(annotation)
@@ -238,6 +243,32 @@ local function focus_rightmost_window()
   end
 end
 
+local function close_comment_editor(bufnr, return_win)
+  if vim.api.nvim_buf_is_valid(bufnr) then
+    vim.bo[bufnr].modified = false
+    vim.api.nvim_buf_delete(bufnr, { force = true })
+  end
+
+  if return_win and vim.api.nvim_win_is_valid(return_win) then
+    vim.api.nvim_set_current_win(return_win)
+  end
+end
+
+local function comment_editor_options()
+  return {
+    relative = "cursor",
+    width = math.min(math.max(60, math.floor(vim.o.columns * 0.75)), math.max(20, vim.o.columns - 4)),
+    height = math.min(math.max(8, math.floor(vim.o.lines * 0.35)), math.max(1, vim.o.lines - 6)),
+    row = 0,
+    col = 1,
+    style = "minimal",
+    border = "rounded",
+    zindex = 100,
+    title = " Pi CR annotation ",
+    title_pos = "center",
+  }
+end
+
 local function open_comment_buffer(context)
   local source_win = vim.api.nvim_get_current_win()
   local bufnr = vim.api.nvim_create_buf(false, true)
@@ -251,28 +282,28 @@ local function open_comment_buffer(context)
   vim.bo[bufnr].filetype = "markdown"
   vim.b[bufnr].pi_cr_context = context
 
-  vim.cmd "botright split"
-  vim.api.nvim_win_set_buf(0, bufnr)
-  vim.api.nvim_win_set_height(0, 8)
-  vim.api.nvim_win_set_cursor(0, { 1, #template[1] })
+  local win = vim.api.nvim_open_win(bufnr, true, comment_editor_options())
+  vim.api.nvim_win_set_option(win, "winhighlight", "Normal:Normal,FloatBorder:FloatBorder")
+  vim.api.nvim_win_set_cursor(win, { 1, comment_start_column(template[1]) })
 
-  vim.keymap.set("n", "<leader>rs", function()
-    M.save_annotation()
-  end, { buffer = bufnr, desc = "Save Pi CR annotation" })
+  local function save_current_annotation()
+    M.save_annotation(bufnr, source_win)
+  end
 
-  vim.keymap.set("n", "<leader>rq", function()
-    vim.bo[bufnr].modified = false
-    vim.api.nvim_buf_delete(bufnr, { force = true })
-    if vim.api.nvim_win_is_valid(source_win) then
-      vim.api.nvim_set_current_win(source_win)
-    end
-  end, { buffer = bufnr, desc = "Cancel Pi CR annotation" })
+  local function cancel_annotation()
+    close_comment_editor(bufnr, source_win)
+  end
+
+  vim.keymap.set("n", "<leader>rs", save_current_annotation, { buffer = bufnr, desc = "Save Pi CR annotation" })
+  vim.keymap.set("i", "<C-s>", save_current_annotation, { buffer = bufnr, desc = "Save Pi CR annotation" })
+
+  for _, key in ipairs { "<leader>rq", "q", "<Esc>" } do
+    vim.keymap.set("n", key, cancel_annotation, { buffer = bufnr, desc = "Cancel Pi CR annotation" })
+  end
 
   vim.api.nvim_create_autocmd("BufWriteCmd", {
     buffer = bufnr,
-    callback = function()
-      M.save_annotation(bufnr, source_win)
-    end,
+    callback = save_current_annotation,
   })
 
   vim.cmd "startinsert"
@@ -298,12 +329,7 @@ function M.save_annotation(bufnr, return_win)
 
   context.comment = comment
   add_annotation(context)
-  vim.bo[bufnr].modified = false
-  vim.api.nvim_buf_delete(bufnr, { force = true })
-
-  if return_win and vim.api.nvim_win_is_valid(return_win) then
-    vim.api.nvim_set_current_win(return_win)
-  end
+  close_comment_editor(bufnr, return_win)
 end
 
 function M.place_annotation_sign(annotation, bufnr)
