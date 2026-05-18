@@ -13,6 +13,7 @@ return {
         end
       end
 
+      -- 用来使用macism 来切换
       local get_default_command = function()
         if not utils.is_mac() then
           return "fcitx5-remote"
