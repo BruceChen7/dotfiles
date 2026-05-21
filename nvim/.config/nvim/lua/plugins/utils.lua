@@ -28,6 +28,14 @@ return {
   },
 
   {
+    "esmuellert/codediff.nvim",
+    config = function()
+      require "config/codediff"
+    end,
+    event = "VeryLazy",
+  },
+
+  {
     "TimUntersberger/neogit",
     dependencies = "nvim-lua/plenary.nvim",
     config = function()

@@ -3,7 +3,7 @@ require("snacks").setup {
   picker = { enabled = true },
   image = { enabled = true },
   terminal = { enabled = true },
-  explorer = { enabled = true },
+  explorer = { enabled = false },
   lazygit = { enabled = true },
 }
 
