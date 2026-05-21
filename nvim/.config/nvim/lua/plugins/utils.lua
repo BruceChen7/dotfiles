@@ -11,28 +11,28 @@ return {
     end,
   },
 
-  {
-    "dlyongemallo/diffview.nvim",
-    config = function()
-      require "config/diff"
-    end,
-    cmd = {
-      "DiffviewOpen",
-      "DiffviewClose",
-      "DiffviewToggleFiles",
-      "DiffviewFocusFiles",
-      "DiffviewRefresh",
-      "DiffviewFileHistory",
-      "DiffviewLog",
-    },
-  },
+  -- {
+  --   "dlyongemallo/diffview.nvim",
+  --   config = function()
+  --     require "config/diff"
+  --   end,
+  --   cmd = {
+  --     "DiffviewOpen",
+  --     "DiffviewClose",
+  --     "DiffviewToggleFiles",
+  --     "DiffviewFocusFiles",
+  --     "DiffviewRefresh",
+  --     "DiffviewFileHistory",
+  --     "DiffviewLog",
+  --   },
+  -- },
 
   {
     "esmuellert/codediff.nvim",
     config = function()
       require "config/codediff"
     end,
-    event = "VeryLazy",
+    -- event = "VeryLazy",
   },
 
   {

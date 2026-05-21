@@ -48,7 +48,34 @@ local function diff_args()
   if not config or not config.diffArgs then
     return nil
   end
-  return table.concat(config.diffArgs, " ")
+  return config.diffArgs
+end
+
+local function code_diff_visible_groups(staged, unstaged)
+  require("codediff.config").options.explorer.visible_groups = {
+    staged = staged,
+    unstaged = unstaged,
+    conflicts = true,
+  }
+end
+
+local function open_code_diff(args)
+  if vim.tbl_isempty(args or {}) then
+    code_diff_visible_groups(false, true)
+    vim.cmd { cmd = "CodeDiff", args = {} }
+    notify "Opened CR diffview for unstaged changes"
+    return
+  end
+
+  if args[1] == "--cached" then
+    code_diff_visible_groups(true, false)
+    vim.cmd { cmd = "CodeDiff", args = {} }
+    notify "Opened CR diffview for staged changes"
+    return
+  end
+
+  vim.cmd { cmd = "CodeDiff", args = args }
+  notify("Opened CR diffview for " .. table.concat(args, " "))
 end
 
 local function current_buffer_path()
@@ -549,9 +576,7 @@ function M.start()
   vim.keymap.set("n", "<leader>rf", M.finish, { desc = "Finish Pi CR review" })
   vim.keymap.set("n", "<leader>rx", M.abort, { desc = "Abort Pi CR review" })
 
-  local cr_diffview_keymaps = {
-    { "x", "<leader>ra", M.annotate_visual, { desc = "Pi CR annotate selection" } },
-  }
+  vim.keymap.set("x", "<leader>ra", M.annotate_visual, { desc = "Pi CR annotate selection" })
 
   request_config(function(ok)
     if not ok then
@@ -562,22 +587,7 @@ function M.start()
     local args = diff_args()
     vim.schedule(function()
       vim.cmd "silent! DiffviewClose"
-      require("diffview.config").setup {
-        keymaps = {
-          view = cr_diffview_keymaps,
-          diff1 = cr_diffview_keymaps,
-          diff2 = cr_diffview_keymaps,
-          diff3 = cr_diffview_keymaps,
-          diff4 = cr_diffview_keymaps,
-        },
-      }
-      if args and args ~= "" then
-        vim.cmd("DiffviewOpen " .. args)
-        notify("Opened CR diffview for " .. args)
-      else
-        vim.cmd "DiffviewOpen"
-        notify "Opened CR diffview for unstaged changes"
-      end
+      open_code_diff(args)
       vim.defer_fn(focus_rightmost_window, 100)
     end)
   end)
