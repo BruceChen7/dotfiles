@@ -56,6 +56,7 @@ return {
           python = { "ruff" },
           typescript = { "ts_fmt_script" },
           typescriptreact = { "ts_fmt_script" },
+          svelte = { "ts_fmt_script" },
         },
         format_on_save = function(bufnr)
           return { timeout_ms = 1000, lsp_fallback = true }
@@ -100,7 +101,7 @@ return {
 
       local function detect_package_manager(root, package_json)
         if package_json and package_json.packageManager then
-          local name = package_json.packageManager:match("^(%w+)")
+          local name = package_json.packageManager:match "^(%w+)"
           if name == "pnpm" or name == "yarn" or name == "npm" then
             return name
           end
@@ -126,7 +127,7 @@ return {
             return { command = "" }
           end
 
-          local root = require("lspconfig.util").root_pattern("package.json")(filename)
+          local root = require("lspconfig.util").root_pattern "package.json"(filename)
           if not root then
             return { command = "" }
           end
@@ -207,6 +208,14 @@ return {
   },
   {
     "AndrewRadev/linediff.vim",
-    cmd = { "Linediff", "LinediffReset", "LinediffAdd", "LinediffLast", "LinediffShow", "LinediffPick", "LinediffMerge" },
+    cmd = {
+      "Linediff",
+      "LinediffReset",
+      "LinediffAdd",
+      "LinediffLast",
+      "LinediffShow",
+      "LinediffPick",
+      "LinediffMerge",
+    },
   },
 }

@@ -144,6 +144,7 @@ require("lsp-setup").setup {
         "svelteserver",
         "--stdio",
       },
+      format = false,
     },
     ty = {
       cmd = { "ty", "server" },
