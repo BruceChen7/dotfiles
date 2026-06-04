@@ -3,6 +3,21 @@
 Yaak plugin that reads the SPACE platform token from `~/.space/token` and exposes it as
 the `${[me_token()]}` template function.
 
+## Build
+
+```bash
+yaak plugin build
+```
+
+Builds the plugin source into `build/index.js`. Yaak loads this bundle when using
+the plugin.
+
+Alternatively, use the npm script:
+
+```bash
+npm run build
+```
+
 ## Usage
 
 After installing this plugin, use `${[me_token()]}` in any Yaak template field

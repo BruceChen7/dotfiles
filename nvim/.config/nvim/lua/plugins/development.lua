@@ -57,6 +57,7 @@ return {
           typescript = { "ts_fmt_script" },
           typescriptreact = { "ts_fmt_script" },
           svelte = { "ts_fmt_script" },
+          javascript = { "ts_fmt_script" },
         },
         format_on_save = function(bufnr)
           return { timeout_ms = 1000, lsp_fallback = true }
