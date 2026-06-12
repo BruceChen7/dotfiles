@@ -543,6 +543,9 @@ function M.start()
   state.started = true
   _G.pi_cr = M
 
+  -- Initialize LSP proxy for codediff virtual buffers
+  require("pi.cr-lsp").setup()
+
   vim.fn.sign_define(SIGN_NAME, {
     text = "✎",
     texthl = "DiagnosticSignHint",
