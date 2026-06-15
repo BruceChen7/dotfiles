@@ -130,8 +130,17 @@ local function sync_content(codediff_bufnr)
   pcall(vim.api.nvim_buf_set_lines, entry.proxy_bufnr, 0, -1, false, lines)
 end
 
---- Create a proxy buffer for the MODIFIED (right) side of the diff.
---- If the real file is already open, the proxy uses an alternate buffer name.
+--- Create a proxy buffer for a codediff buffer.
+---
+--- Two codediff panels (original + modified) for the same real_path share
+--- a SINGLE proxy buffer — Neovim doesn't allow two buffers with the same
+--- name, and gopls refuses paths outside the module root.
+---
+--- Content is synced on-demand in `sync_content` just before each LSP
+--- request, overwriting the previous revision's content.  This keeps
+--- gopls's workspace view consistent while matching the cursor position
+--- to the correct revision.
+---
 --- @param codediff_bufnr number
 --- @return number|nil proxy bufnr
 local function create_proxy(codediff_bufnr)
@@ -147,27 +156,32 @@ local function create_proxy(codediff_bufnr)
     return codediff_to_proxy[codediff_bufnr].proxy_bufnr
   end
 
-  -- Create a new unlisted buffer (NOT scratch -- LSP skips buftype=nofile).
-  local proxy_bufnr = vim.api.nvim_create_buf(false, false)
-
-  -- Name it to the real project path â LSP root resolver finds the workspace.
-  -- If the real file is already open (name collision), use an alternative path
-  -- in the same directory so directory-based root resolution still works.
-  local ok = pcall(vim.api.nvim_buf_set_name, proxy_bufnr, real_path)
-  if not ok then
-    local alt_path = real_path .. ".__pi_cr_proxy__"
-    pcall(vim.api.nvim_buf_set_name, proxy_bufnr, alt_path)
-    log("Name collision on %s, using alt name %s", info.filepath, alt_path)
+  -- Check if another codediff buffer already created a proxy for this real_path.
+  for _, entry in pairs(codediff_to_proxy) do
+    if entry.real_path == real_path and vim.api.nvim_buf_is_valid(entry.proxy_bufnr) then
+      codediff_to_proxy[codediff_bufnr] = {
+        proxy_bufnr = entry.proxy_bufnr,
+        real_path = real_path,
+        reused_existing = true,
+      }
+      M.setup_keymaps(codediff_bufnr)
+      log("Shared proxy %d for %s", entry.proxy_bufnr, info.filepath)
+      return entry.proxy_bufnr
+    end
   end
 
-  -- Copy git-blob content into the proxy.
+  -- First codediff buffer for this real_path: create a new proxy.
+  local proxy_bufnr = vim.api.nvim_create_buf(false, false)
+  pcall(vim.api.nvim_buf_set_name, proxy_bufnr, real_path)
+
+  -- Copy content.
   local lines = vim.api.nvim_buf_get_lines(codediff_bufnr, 0, -1, false)
   pcall(vim.api.nvim_buf_set_lines, proxy_bufnr, 0, -1, false, lines)
 
   vim.bo[proxy_bufnr].bufhidden = "hide"
   vim.bo[proxy_bufnr].modified = false
 
-  -- Switch buftype to "nofile" AFTER LSP attaches (LspAttach guard).
+  -- Switch buftype to "nofile" AFTER LSP attaches.
   vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("PiCRLspBuf_" .. proxy_bufnr, { clear = true }),
     buffer = proxy_bufnr,
@@ -183,7 +197,7 @@ local function create_proxy(codediff_bufnr)
     end,
   })
 
-  -- Set filetype → FileType autocmd fires → LSP client attaches.
+  -- Set filetype → LSP attaches.
   local ft = vim.filetype.match { buf = proxy_bufnr, filename = info.filepath }
   if ft then
     vim.bo[proxy_bufnr].filetype = ft
@@ -193,6 +207,7 @@ local function create_proxy(codediff_bufnr)
   codediff_to_proxy[codediff_bufnr] = {
     proxy_bufnr = proxy_bufnr,
     real_path = real_path,
+    reused_existing = false,
   }
   log("Created proxy %d for %s (commit=%s)", proxy_bufnr, info.filepath, info.commit)
   return proxy_bufnr
@@ -225,23 +240,29 @@ local function get_lsp_client()
 end
 
 --- Build LSP position params using the proxy URI + current window cursor.
----
---- In Neovim 0.13, `make_position_params(win, position_encoding)` generates
---- textDocument.uri from the buffer visible in `win` and the cursor from the
---- same window.  We want:
----   textDocument.uri → proxy buffer (for correct module identity)
----   position         → codediff window cursor (same content, correct offset)
----
---- We call `make_position_params(0, encoding)` first to get the correctly-
---- encoded position from the current window, then overlay the proxy's URI.
+--- Unlike `vim.lsp.util.make_position_params(0, ...)` which reads the line
+--- from the CODEDIFF buffer (whose content may be from a different git
+--- revision), this reads the line from the PROXY buffer so the character
+--- offset matches what gopls received via textDocument/didOpen.
 --- @param client table
 --- @param proxy_bufnr number
 --- @return table
 local function make_position_params(client, proxy_bufnr)
+  local cursor = vim.api.nvim_win_get_cursor(0) -- { 1-indexed line, 0-indexed byte col }
   local offenc = client.offset_encoding or "utf-16"
-  local params = vim.lsp.util.make_position_params(0, offenc)
-  params.textDocument.uri = vim.uri_from_bufnr(proxy_bufnr)
-  return params
+  local row = cursor[1] - 1
+  local col = cursor[2]
+  -- Read the line from the PROXY buffer so the offset calculation matches the
+  -- content that gopls received.
+  local line = vim.api.nvim_buf_get_lines(proxy_bufnr, row, row + 1, false)[1] or ""
+  -- Convert byte column to the LSP position encoding (utf-16 by default).
+  if col > 0 then
+    col = vim.str_utfindex(line, offenc, col, false)
+  end
+  return {
+    textDocument = { uri = vim.uri_from_bufnr(proxy_bufnr) },
+    position = { line = row, character = col },
+  }
 end
 
 --- Attempt to open a single location (jump) or multiple (quickfix).
@@ -249,9 +270,9 @@ local function handle_locations(locations, offset_encoding)
   if not locations or #locations == 0 then
     return
   end
-  locations = vim.tbl_islist(locations) and locations or { locations }
+  locations = vim.islist(locations) and locations or { locations }
   if #locations == 1 then
-    vim.lsp.util.jump_to_location(locations[1], offset_encoding)
+    vim.lsp.util.show_document(locations[1], offset_encoding)
   else
     vim.fn.setqflist(vim.lsp.util.locations_to_items(locations, offset_encoding))
     vim.cmd "copen"
@@ -293,13 +314,24 @@ function M.hover()
 end
 
 function M.definition()
+  local bufnr = vim.api.nvim_get_current_buf()
   local client, proxy = get_lsp_client()
+  vim.notify(string.format(
+    "[Pi CR gd] bufnr=%d proxy=%s client=%s",
+    bufnr, tostring(proxy), client and client.name or "nil"
+  ), vim.log.levels.INFO)
   if not client then
     return
   end
   local params = make_position_params(client, proxy)
-  client.request("textDocument/definition", params, function(err, result)
-    if err or not result then
+  client:request("textDocument/definition", params, function(err, result)
+    if err then
+      local err_msg = type(err) == "table" and vim.inspect(err) or tostring(err)
+      vim.notify("[Pi CR gd] error: " .. err_msg, vim.log.levels.WARN)
+      return
+    end
+    if not result or (vim.islist(result) and #result == 0) then
+      vim.notify("[Pi CR gd] no results", vim.log.levels.INFO)
       return
     end
     handle_locations(result, client.offset_encoding or "utf-16")
@@ -313,7 +345,7 @@ function M.references()
   end
   local params = make_position_params(client, proxy)
   params.context = { includeDeclaration = true }
-  client.request("textDocument/references", params, function(err, result)
+  client:request("textDocument/references", params, function(err, result)
     if err or not result then
       return
     end
@@ -327,7 +359,7 @@ function M.declaration()
     return
   end
   local params = make_position_params(client, proxy)
-  client.request("textDocument/declaration", params, function(err, result)
+  client:request("textDocument/declaration", params, function(err, result)
     if err or not result then
       return
     end
@@ -341,7 +373,7 @@ function M.implementation()
     return
   end
   local params = make_position_params(client, proxy)
-  client.request("textDocument/implementation", params, function(err, result)
+  client:request("textDocument/implementation", params, function(err, result)
     if err or not result then
       return
     end
@@ -355,7 +387,7 @@ function M.type_definition()
     return
   end
   local params = make_position_params(client, proxy)
-  client.request("textDocument/typeDefinition", params, function(err, result)
+  client:request("textDocument/typeDefinition", params, function(err, result)
     if err or not result then
       return
     end
@@ -369,7 +401,7 @@ function M.incoming_calls()
     return
   end
   local params = make_position_params(client, proxy)
-  client.request("textDocument/incomingCalls", params, function(err, result)
+  client:request("textDocument/incomingCalls", params, function(err, result)
     if err or not result then
       return
     end
@@ -387,7 +419,7 @@ function M.outgoing_calls()
     return
   end
   local params = make_position_params(client, proxy)
-  client.request("textDocument/outgoingCalls", params, function(err, result)
+  client:request("textDocument/outgoingCalls", params, function(err, result)
     if err or not result then
       return
     end
@@ -409,7 +441,7 @@ function M.rename()
     end
     local params = make_position_params(client, proxy)
     params.newName = new_name
-    client.request("textDocument/rename", params, function(err, result)
+    client:request("textDocument/rename", params, function(err, result)
       if err or not result then
         return
       end
@@ -433,9 +465,9 @@ function M.code_action()
   local params = vim.lsp.util.make_range_params(0, offenc)
   params.textDocument.uri = vim.uri_from_bufnr(proxy)
   params.context = {
-    diagnostics = vim.lsp.diagnostic.get_line_diagnostics(proxy, vim.api.nvim_win_get_cursor(0)[1] - 1),
+    diagnostics = vim.diagnostic.get(proxy, { lnum = vim.api.nvim_win_get_cursor(0)[1] - 1 }),
   }
-  client.request("textDocument/codeAction", params, function(err, result)
+  client:request("textDocument/codeAction", params, function(err, result)
     if err or not result then
       return
     end
@@ -458,7 +490,7 @@ function M.code_action()
         pcall(vim.lsp.util.apply_workspace_edit, choice.edit, offenc)
       end
       if choice.command then
-        client.request("workspace/executeCommand", {
+        client:request("workspace/executeCommand", {
           command = choice.command.command,
           arguments = choice.command.arguments,
         }, function() end, proxy)
