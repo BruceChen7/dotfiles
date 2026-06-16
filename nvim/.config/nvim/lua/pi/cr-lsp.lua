@@ -272,13 +272,30 @@ local function handle_locations(locations, offset_encoding)
   end
   locations = vim.islist(locations) and locations or { locations }
   if #locations == 1 then
-    -- `vim.lsp.util.show_document` uses `nvim_win_set_buf` internally, which
-    -- does NOT add a jumplist entry — breaking Ctrl-O after gd.  Work around
-    -- it by moving within the buffer first (adds jumplist entries), then
-    -- calling show_document which will add another entry for the definition.
-    vim.cmd "normal! j"
-    vim.cmd "normal! k"
-    vim.lsp.util.show_document(locations[1], offset_encoding)
+    local loc = locations[1]
+    local uri = loc.uri or loc.targetUri
+    if uri then
+      local bufnr = vim.uri_to_bufnr(uri)
+      if bufnr ~= 0 then
+        -- `vim.lsp.util.show_document` uses `nvim_win_set_buf` internally,
+        -- which does NOT add a jumplist entry — breaking Ctrl-O after gd.
+        -- Use `:edit` instead (adds proper jumplist entry), but only when
+        -- the target file differs from the current buffer to avoid a
+        -- pointless reload.
+        local cur_buf = vim.api.nvim_get_current_buf()
+        if bufnr ~= cur_buf then
+          local fname = vim.api.nvim_buf_get_name(bufnr)
+          vim.cmd("edit " .. vim.fn.fnameescape(fname))
+        end
+        -- Position cursor at the definition
+        local range = loc.range or loc.targetSelectionRange
+        if range then
+          local pos = vim.pos.lsp(bufnr, range.start, offset_encoding)
+          vim.api.nvim_win_set_cursor(0, { pos.row + 1, pos.col })
+          vim.cmd "normal! zz"
+        end
+      end
+    end
   else
     vim.fn.setqflist(vim.lsp.util.locations_to_items(locations, offset_encoding))
     vim.cmd "copen"
