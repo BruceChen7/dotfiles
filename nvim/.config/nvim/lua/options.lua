@@ -20,7 +20,7 @@ o.termguicolors = true
 -- - `h`: Disable the 'hlsearch' option when starting up.
 vim.o.shada = "!,'1000,<50,s30,h"
 
-o.timeoutlen = 200
+o.timeoutlen = 800
 o.ttimeout = true
 o.ttimeoutlen = 50
 o.tags = [[ ./.tags;,.tags ]]
