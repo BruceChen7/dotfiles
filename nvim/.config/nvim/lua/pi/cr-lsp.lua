@@ -389,24 +389,17 @@ function M.references()
 end
 
 function M.declaration()
-  with_current_proxy(function(proxy)
-    if not vim.api.nvim_buf_is_valid(proxy) then return end
-    vim.api.nvim_buf_call(proxy, vim.lsp.buf.declaration)
-  end)
+  request_proxy_locations("textDocument/declaration")
 end
 
 function M.implementation()
-  with_current_proxy(function(proxy)
-    if not vim.api.nvim_buf_is_valid(proxy) then return end
-    vim.api.nvim_buf_call(proxy, vim.lsp.buf.implementation)
-  end)
+  request_proxy_locations("textDocument/implementation", {
+    always_list = true,
+  })
 end
 
 function M.type_definition()
-  with_current_proxy(function(proxy)
-    if not vim.api.nvim_buf_is_valid(proxy) then return end
-    vim.api.nvim_buf_call(proxy, vim.lsp.buf.type_definition)
-  end)
+  request_proxy_locations("textDocument/typeDefinition")
 end
 
 function M.incoming_calls()
