@@ -154,6 +154,7 @@ local function handle_locations(locations, offset_encoding)
   end
   locations = vim.islist(locations) and locations or { locations }
   if #locations == 1 then
+    local origin_buf = vim.api.nvim_get_current_buf()
     local loc = locations[1]
     local uri = loc.uri or loc.targetUri
     if not uri then
@@ -165,6 +166,25 @@ local function handle_locations(locations, offset_encoding)
     end
     local fname = vim.api.nvim_buf_get_name(bufnr)
     local range = loc.range or loc.targetSelectionRange
+
+    -- codediff virtual buffers use bufhidden=wipe. If we replace the window via
+    -- :edit, the source codediff buffer gets destroyed immediately, so Ctrl-O
+    -- has nowhere to return. Preserve it as hidden, then restore wipe when the
+    -- user lands back in that buffer.
+    if vim.api.nvim_buf_is_valid(origin_buf) and vim.bo[origin_buf].bufhidden == "wipe" then
+      vim.bo[origin_buf].bufhidden = "hide"
+      vim.api.nvim_create_autocmd("BufEnter", {
+        group = vim.api.nvim_create_augroup("PiCRRestoreBufhidden_" .. origin_buf, { clear = true }),
+        buffer = origin_buf,
+        once = true,
+        callback = function()
+          if vim.api.nvim_buf_is_valid(origin_buf) then
+            vim.bo[origin_buf].bufhidden = "wipe"
+          end
+        end,
+      })
+    end
+
     if range then
       local p = vim.pos.lsp(bufnr, range.start, offset_encoding)
       vim.cmd("edit +" .. (p.row + 1) .. " " .. vim.fn.fnameescape(fname))
