@@ -89,6 +89,78 @@ local function sync_content(codediff_bufnr)
   pcall(vim.api.nvim_buf_set_lines, entry.proxy_bufnr, 0, -1, false, lines)
 end
 
+--- Get first LSP client + proxy for the current codediff buffer.
+--- Syncs proxy content before returning so cursor/offset math matches.
+--- @return table|nil, number|nil
+local function get_lsp_client()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local proxy = M.get_proxy(bufnr)
+  if not proxy then
+    return nil, nil
+  end
+
+  sync_content(bufnr)
+
+  local clients = vim.lsp.get_clients({ bufnr = proxy })
+  if #clients == 0 then
+    return nil, proxy
+  end
+  return clients[1], proxy
+end
+
+--- Build textDocument/position using proxy URI + current window cursor.
+--- @param client table
+--- @param proxy_bufnr number
+--- @return table
+local function make_position_params(client, proxy_bufnr)
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local offenc = client.offset_encoding or "utf-16"
+  local row = cursor[1] - 1
+  local col = cursor[2]
+  local line = vim.api.nvim_buf_get_lines(proxy_bufnr, row, row + 1, false)[1] or ""
+  if col > 0 then
+    col = vim.str_utfindex(line, offenc, col, false)
+  end
+  return {
+    textDocument = { uri = vim.uri_from_bufnr(proxy_bufnr) },
+    position = { line = row, character = col },
+  }
+end
+
+--- Open a single definition target or quickfix for multiple.
+--- @param locations table|table[]
+--- @param offset_encoding string
+local function handle_locations(locations, offset_encoding)
+  if not locations or #locations == 0 then
+    return
+  end
+  locations = vim.islist(locations) and locations or { locations }
+  if #locations == 1 then
+    local loc = locations[1]
+    local uri = loc.uri or loc.targetUri
+    if not uri then
+      return
+    end
+    local bufnr = vim.uri_to_bufnr(uri)
+    if bufnr == 0 then
+      return
+    end
+    local fname = vim.api.nvim_buf_get_name(bufnr)
+    local range = loc.range or loc.targetSelectionRange
+    if range then
+      local p = vim.pos.lsp(bufnr, range.start, offset_encoding)
+      vim.cmd("edit +" .. (p.row + 1) .. " " .. vim.fn.fnameescape(fname))
+      vim.api.nvim_win_set_cursor(0, { p.row + 1, p.col })
+    else
+      vim.cmd("edit " .. vim.fn.fnameescape(fname))
+    end
+    vim.cmd("normal! zz")
+  else
+    vim.fn.setqflist(vim.lsp.util.locations_to_items(locations, offset_encoding))
+    vim.cmd("copen")
+  end
+end
+
 --- Create a proxy buffer for a codediff buffer.
 ---
 --- Two codediff panels for the same real_path share a SINGLE proxy buffer.
@@ -199,10 +271,17 @@ function M.hover()
 end
 
 function M.definition()
-  with_current_proxy(function(proxy)
-    if not vim.api.nvim_buf_is_valid(proxy) then return end
-    vim.api.nvim_buf_call(proxy, vim.lsp.buf.definition)
-  end)
+  local client, proxy = get_lsp_client()
+  if not client or not proxy then
+    return
+  end
+  local params = make_position_params(client, proxy)
+  client:request("textDocument/definition", params, function(err, result)
+    if err or not result then
+      return
+    end
+    handle_locations(result, client.offset_encoding or "utf-16")
+  end, proxy)
 end
 
 function M.references()
