@@ -285,13 +285,18 @@ local function handle_locations(locations, offset_encoding)
         local cur_buf = vim.api.nvim_get_current_buf()
         if bufnr ~= cur_buf then
           local fname = vim.api.nvim_buf_get_name(bufnr)
-          vim.cmd("edit " .. vim.fn.fnameescape(fname))
-        end
-        -- Position cursor at the definition
-        local range = loc.range or loc.targetSelectionRange
-        if range then
-          local pos = vim.pos.lsp(bufnr, range.start, offset_encoding)
-          vim.api.nvim_win_set_cursor(0, { pos.row + 1, pos.col })
+          -- `:edit +line file` opens at {line}, creating exactly ONE
+          -- jumplist entry (from the codediff position).  Without +line,
+          -- `:edit` would jump to line 1 first (adding a second jumplist
+          -- entry), doubling the Ctrl-O presses needed to return.
+          local range = loc.range or loc.targetSelectionRange
+          if range then
+            local p = vim.pos.lsp(bufnr, range.start, offset_encoding)
+            vim.cmd("edit +" .. (p.row + 1) .. " " .. vim.fn.fnameescape(fname))
+            vim.api.nvim_win_set_cursor(0, { p.row + 1, p.col })
+          else
+            vim.cmd("edit " .. vim.fn.fnameescape(fname))
+          end
           vim.cmd "normal! zz"
         end
       end
