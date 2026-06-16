@@ -188,14 +188,13 @@ end
 
 function M.hover()
   with_current_proxy(function(proxy)
-    -- vim.lsp.buf.hover() reads the window's buffer for the URI —
-    -- briefly swap the proxy into the window so the URI is correct.
     local orig_buf = vim.api.nvim_win_get_buf(0)
+    if not vim.api.nvim_buf_is_valid(proxy) then return end
     vim.api.nvim_win_set_buf(0, proxy)
-    vim.api.nvim_buf_call(proxy, function()
-      vim.lsp.buf.hover()
-    end)
-    vim.api.nvim_win_set_buf(0, orig_buf)
+    vim.api.nvim_buf_call(proxy, vim.lsp.buf.hover)
+    if vim.api.nvim_buf_is_valid(orig_buf) then
+      vim.api.nvim_win_set_buf(0, orig_buf)
+    end
   end)
 end
 
@@ -203,12 +202,15 @@ function M.definition()
   with_current_proxy(function(proxy)
     local fn = try_snacks("lsp_definitions")
     if fn then
-      -- Snacks picker needs a real window; briefly swap proxy in
       local orig_buf = vim.api.nvim_win_get_buf(0)
+      if not vim.api.nvim_buf_is_valid(proxy) then return end
       vim.api.nvim_win_set_buf(0, proxy)
       fn()
-      vim.api.nvim_win_set_buf(0, orig_buf)
+      if vim.api.nvim_buf_is_valid(orig_buf) then
+        vim.api.nvim_win_set_buf(0, orig_buf)
+      end
     else
+      if not vim.api.nvim_buf_is_valid(proxy) then return end
       vim.api.nvim_buf_call(proxy, vim.lsp.buf.definition)
     end
   end)
@@ -219,10 +221,14 @@ function M.references()
     local fn = try_snacks("lsp_references")
     if fn then
       local orig_buf = vim.api.nvim_win_get_buf(0)
+      if not vim.api.nvim_buf_is_valid(proxy) then return end
       vim.api.nvim_win_set_buf(0, proxy)
       fn()
-      vim.api.nvim_win_set_buf(0, orig_buf)
+      if vim.api.nvim_buf_is_valid(orig_buf) then
+        vim.api.nvim_win_set_buf(0, orig_buf)
+      end
     else
+      if not vim.api.nvim_buf_is_valid(proxy) then return end
       vim.api.nvim_buf_call(proxy, vim.lsp.buf.references)
     end
   end)
@@ -233,10 +239,14 @@ function M.declaration()
     local fn = try_snacks("lsp_declarations")
     if fn then
       local orig_buf = vim.api.nvim_win_get_buf(0)
+      if not vim.api.nvim_buf_is_valid(proxy) then return end
       vim.api.nvim_win_set_buf(0, proxy)
       fn()
-      vim.api.nvim_win_set_buf(0, orig_buf)
+      if vim.api.nvim_buf_is_valid(orig_buf) then
+        vim.api.nvim_win_set_buf(0, orig_buf)
+      end
     else
+      if not vim.api.nvim_buf_is_valid(proxy) then return end
       vim.api.nvim_buf_call(proxy, vim.lsp.buf.declaration)
     end
   end)
@@ -247,10 +257,14 @@ function M.implementation()
     local fn = try_snacks("lsp_implementations")
     if fn then
       local orig_buf = vim.api.nvim_win_get_buf(0)
+      if not vim.api.nvim_buf_is_valid(proxy) then return end
       vim.api.nvim_win_set_buf(0, proxy)
       fn()
-      vim.api.nvim_win_set_buf(0, orig_buf)
+      if vim.api.nvim_buf_is_valid(orig_buf) then
+        vim.api.nvim_win_set_buf(0, orig_buf)
+      end
     else
+      if not vim.api.nvim_buf_is_valid(proxy) then return end
       vim.api.nvim_buf_call(proxy, vim.lsp.buf.implementation)
     end
   end)
@@ -261,10 +275,14 @@ function M.type_definition()
     local fn = try_snacks("lsp_type_definitions")
     if fn then
       local orig_buf = vim.api.nvim_win_get_buf(0)
+      if not vim.api.nvim_buf_is_valid(proxy) then return end
       vim.api.nvim_win_set_buf(0, proxy)
       fn()
-      vim.api.nvim_win_set_buf(0, orig_buf)
+      if vim.api.nvim_buf_is_valid(orig_buf) then
+        vim.api.nvim_win_set_buf(0, orig_buf)
+      end
     else
+      if not vim.api.nvim_buf_is_valid(proxy) then return end
       vim.api.nvim_buf_call(proxy, vim.lsp.buf.type_definition)
     end
   end)
@@ -290,11 +308,13 @@ end
 
 function M.code_action()
   with_current_proxy(function(proxy)
-    -- Briefly swap the proxy into the window for correct URI
     local orig_buf = vim.api.nvim_win_get_buf(0)
+    if not vim.api.nvim_buf_is_valid(proxy) then return end
     vim.api.nvim_win_set_buf(0, proxy)
     vim.api.nvim_buf_call(proxy, vim.lsp.buf.code_action)
-    vim.api.nvim_win_set_buf(0, orig_buf)
+    if vim.api.nvim_buf_is_valid(orig_buf) then
+      vim.api.nvim_win_set_buf(0, orig_buf)
+    end
   end)
 end
 
