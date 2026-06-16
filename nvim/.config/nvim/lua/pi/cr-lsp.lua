@@ -145,17 +145,22 @@ local function make_position_params(client, proxy_bufnr)
   }
 end
 
---- Open a single definition target or quickfix for multiple.
---- @param locations table|table[]
---- @param offset_encoding string
-local function handle_locations(locations, offset_encoding)
-  if not locations or #locations == 0 then
+---@class PiCrLspLocationMatch
+---@field location table
+---@field offset_encoding string
+
+--- Open a single target or quickfix for multiple.
+---@param matches PiCrLspLocationMatch[]
+---@param opts? {always_list?: boolean}
+local function handle_location_matches(matches, opts)
+  opts = opts or {}
+  if not matches or #matches == 0 then
     return
   end
-  locations = vim.islist(locations) and locations or { locations }
-  if #locations == 1 then
+  if #matches == 1 and not opts.always_list then
     local origin_buf = vim.api.nvim_get_current_buf()
-    local loc = locations[1]
+    local match = matches[1]
+    local loc = match.location
     local uri = loc.uri or loc.targetUri
     if not uri then
       return
@@ -186,7 +191,7 @@ local function handle_locations(locations, offset_encoding)
     end
 
     if range then
-      local p = vim.pos.lsp(bufnr, range.start, offset_encoding)
+      local p = vim.pos.lsp(bufnr, range.start, match.offset_encoding)
       vim.cmd("edit +" .. (p.row + 1) .. " " .. vim.fn.fnameescape(fname))
       vim.api.nvim_win_set_cursor(0, { p.row + 1, p.col })
     else
@@ -194,7 +199,14 @@ local function handle_locations(locations, offset_encoding)
     end
     vim.cmd("normal! zz")
   else
-    vim.fn.setqflist(vim.lsp.util.locations_to_items(locations, offset_encoding))
+    local items = {}
+    for _, match in ipairs(matches) do
+      vim.list_extend(
+        items,
+        vim.lsp.util.locations_to_items({ match.location }, match.offset_encoding)
+      )
+    end
+    vim.fn.setqflist({}, " ", { title = "LSP Locations", items = items })
     vim.cmd("copen")
   end
 end
@@ -307,37 +319,73 @@ local function with_current_proxy(fn)
   return with_proxy(vim.api.nvim_get_current_buf(), fn)
 end
 
-function M.hover()
+local function with_proxy_window(fn)
   with_current_proxy(function(proxy)
-    local orig_buf = vim.api.nvim_win_get_buf(0)
-    if not vim.api.nvim_buf_is_valid(proxy) then return end
-    vim.api.nvim_win_set_buf(0, proxy)
-    vim.api.nvim_buf_call(proxy, vim.lsp.buf.hover)
-    if vim.api.nvim_buf_is_valid(orig_buf) then
-      vim.api.nvim_win_set_buf(0, orig_buf)
+    if not vim.api.nvim_buf_is_valid(proxy) then
+      return
     end
+    local win = vim.api.nvim_get_current_win()
+    local orig_buf = vim.api.nvim_win_get_buf(win)
+    vim.api.nvim_win_set_buf(win, proxy)
+    local ok, err = pcall(fn, proxy)
+    if vim.api.nvim_win_is_valid(win) and vim.api.nvim_buf_is_valid(orig_buf) then
+      vim.api.nvim_win_set_buf(win, orig_buf)
+    end
+    if not ok then
+      error(err)
+    end
+  end)
+end
+
+---@param method string
+---@param opts? {always_list?: boolean, extend_params?: fun(params: table)}
+local function request_proxy_locations(method, opts)
+  opts = opts or {}
+  local _, proxy = get_lsp_client()
+  if not proxy then
+    return
+  end
+  vim.lsp.buf_request_all(proxy, method, function(client)
+    local params = make_position_params(client, proxy)
+    if opts.extend_params then
+      opts.extend_params(params)
+    end
+    return params
+  end, function(results)
+    local matches = {}
+    for client_id, res in pairs(results) do
+      local client = vim.lsp.get_client_by_id(client_id)
+      if client and res and res.result then
+        local locations = vim.islist(res.result) and res.result or { res.result }
+        for _, location in ipairs(locations) do
+          matches[#matches + 1] = {
+            location = location,
+            offset_encoding = client.offset_encoding or "utf-16",
+          }
+        end
+      end
+    end
+    handle_location_matches(matches, { always_list = opts.always_list })
+  end)
+end
+
+function M.hover()
+  with_proxy_window(function(proxy)
+    vim.api.nvim_buf_call(proxy, vim.lsp.buf.hover)
   end)
 end
 
 function M.definition()
-  local client, proxy = get_lsp_client()
-  if not client or not proxy then
-    return
-  end
-  local params = make_position_params(client, proxy)
-  client:request("textDocument/definition", params, function(err, result)
-    if err or not result then
-      return
-    end
-    handle_locations(result, client.offset_encoding or "utf-16")
-  end, proxy)
+  request_proxy_locations("textDocument/definition")
 end
 
 function M.references()
-  with_current_proxy(function(proxy)
-    if not vim.api.nvim_buf_is_valid(proxy) then return end
-    vim.api.nvim_buf_call(proxy, vim.lsp.buf.references)
-  end)
+  request_proxy_locations("textDocument/references", {
+    always_list = true,
+    extend_params = function(params)
+      params.context = { includeDeclaration = true }
+    end,
+  })
 end
 
 function M.declaration()
@@ -380,14 +428,8 @@ function M.rename()
 end
 
 function M.code_action()
-  with_current_proxy(function(proxy)
-    local orig_buf = vim.api.nvim_win_get_buf(0)
-    if not vim.api.nvim_buf_is_valid(proxy) then return end
-    vim.api.nvim_win_set_buf(0, proxy)
+  with_proxy_window(function(proxy)
     vim.api.nvim_buf_call(proxy, vim.lsp.buf.code_action)
-    if vim.api.nvim_buf_is_valid(orig_buf) then
-      vim.api.nvim_win_set_buf(0, orig_buf)
-    end
   end)
 end
 
