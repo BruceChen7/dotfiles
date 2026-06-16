@@ -61,6 +61,24 @@ local function is_codediff_buf(bufnr)
     and vim.api.nvim_buf_get_name(bufnr):find("^codediff://") == 1
 end
 
+local function proxy_path_for_real_path(real_path)
+  if vim.uv.fs_stat(real_path) then
+    return real_path
+  end
+
+  local dir = vim.fs.dirname(real_path)
+  local base = vim.fs.basename(real_path)
+  local stem = base
+  local ext = ""
+  local idx = base:match("^.*()%.([^.]*)$")
+  if idx then
+    stem = base:sub(1, idx - 1)
+    ext = base:sub(idx)
+  end
+
+  return string.format("%s/.pi_cr_added__%s%s", dir, stem, ext)
+end
+
 --------------------------------------------------------------------------------
 --- Proxy buffer lifecycle
 --------------------------------------------------------------------------------
@@ -173,6 +191,7 @@ local function create_proxy(codediff_bufnr)
   end
 
   local real_path = info.git_root .. "/" .. info.filepath
+  local proxy_path = proxy_path_for_real_path(real_path)
 
   if codediff_to_proxy[codediff_bufnr] then
     return codediff_to_proxy[codediff_bufnr].proxy_bufnr
@@ -194,7 +213,7 @@ local function create_proxy(codediff_bufnr)
 
   -- First buffer for this real_path: create a new proxy.
   local proxy_bufnr = vim.api.nvim_create_buf(false, false)
-  pcall(vim.api.nvim_buf_set_name, proxy_bufnr, real_path)
+  pcall(vim.api.nvim_buf_set_name, proxy_bufnr, proxy_path)
 
   local lines = vim.api.nvim_buf_get_lines(codediff_bufnr, 0, -1, false)
   pcall(vim.api.nvim_buf_set_lines, proxy_bufnr, 0, -1, false, lines)
@@ -228,7 +247,17 @@ local function create_proxy(codediff_bufnr)
     real_path = real_path,
     reused_existing = false,
   }
-  log("Created proxy %d for %s (commit=%s)", proxy_bufnr, info.filepath, info.commit)
+  if proxy_path ~= real_path then
+    log(
+      "Created synthetic proxy %d for missing file %s as %s (commit=%s)",
+      proxy_bufnr,
+      info.filepath,
+      proxy_path,
+      info.commit
+    )
+  else
+    log("Created proxy %d for %s (commit=%s)", proxy_bufnr, info.filepath, info.commit)
+  end
   return proxy_bufnr
 end
 
