@@ -272,6 +272,12 @@ local function handle_locations(locations, offset_encoding)
   end
   locations = vim.islist(locations) and locations or { locations }
   if #locations == 1 then
+    -- `vim.lsp.util.show_document` uses `nvim_win_set_buf` internally, which
+    -- does NOT add a jumplist entry — breaking Ctrl-O after gd.  Work around
+    -- it by moving within the buffer first (adds jumplist entries), then
+    -- calling show_document which will add another entry for the definition.
+    vim.cmd "normal! j"
+    vim.cmd "normal! k"
     vim.lsp.util.show_document(locations[1], offset_encoding)
   else
     vim.fn.setqflist(vim.lsp.util.locations_to_items(locations, offset_encoding))
