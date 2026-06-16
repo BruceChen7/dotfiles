@@ -581,7 +581,12 @@ function M.cleanup(codediff_bufnr)
   if not entry then
     return
   end
-  if vim.api.nvim_buf_is_valid(entry.proxy_bufnr) then
+  -- Only delete the proxy if we created it AND it's not displayed in any
+  -- window (can happen when `:edit` shows the proxy after a gd jump).
+  if not entry.reused_existing
+    and vim.api.nvim_buf_is_valid(entry.proxy_bufnr)
+    and #vim.fn.win_findbuf(entry.proxy_bufnr) == 0
+  then
     pcall(vim.api.nvim_buf_delete, entry.proxy_bufnr, { force = true })
   end
   codediff_to_proxy[codediff_bufnr] = nil
