@@ -201,49 +201,72 @@ end
 
 function M.definition()
   with_current_proxy(function(proxy)
-    -- vim.lsp.buf.definition() uses vim.pos.cursor(0,...) which reads the
-    -- CURRENT buffer (proxy, inside nvim_buf_call) for the URI and LSP clients.
-    -- This means jumplist/tagstack are all handled natively → Ctrl-O works!
-    vim.api.nvim_buf_call(proxy, function()
-      local fn = try_snacks("lsp_definitions")
-      if fn then fn() else vim.lsp.buf.definition() end
-    end)
+    local fn = try_snacks("lsp_definitions")
+    if fn then
+      -- Snacks picker needs a real window; briefly swap proxy in
+      local orig_buf = vim.api.nvim_win_get_buf(0)
+      vim.api.nvim_win_set_buf(0, proxy)
+      fn()
+      vim.api.nvim_win_set_buf(0, orig_buf)
+    else
+      vim.api.nvim_buf_call(proxy, vim.lsp.buf.definition)
+    end
   end)
 end
 
 function M.references()
   with_current_proxy(function(proxy)
-    vim.api.nvim_buf_call(proxy, function()
-      local fn = try_snacks("lsp_references")
-      if fn then fn() else vim.lsp.buf.references() end
-    end)
+    local fn = try_snacks("lsp_references")
+    if fn then
+      local orig_buf = vim.api.nvim_win_get_buf(0)
+      vim.api.nvim_win_set_buf(0, proxy)
+      fn()
+      vim.api.nvim_win_set_buf(0, orig_buf)
+    else
+      vim.api.nvim_buf_call(proxy, vim.lsp.buf.references)
+    end
   end)
 end
 
 function M.declaration()
   with_current_proxy(function(proxy)
-    vim.api.nvim_buf_call(proxy, function()
-      local fn = try_snacks("lsp_declarations")
-      if fn then fn() else vim.lsp.buf.declaration() end
-    end)
+    local fn = try_snacks("lsp_declarations")
+    if fn then
+      local orig_buf = vim.api.nvim_win_get_buf(0)
+      vim.api.nvim_win_set_buf(0, proxy)
+      fn()
+      vim.api.nvim_win_set_buf(0, orig_buf)
+    else
+      vim.api.nvim_buf_call(proxy, vim.lsp.buf.declaration)
+    end
   end)
 end
 
 function M.implementation()
   with_current_proxy(function(proxy)
-    vim.api.nvim_buf_call(proxy, function()
-      local fn = try_snacks("lsp_implementations")
-      if fn then fn() else vim.lsp.buf.implementation() end
-    end)
+    local fn = try_snacks("lsp_implementations")
+    if fn then
+      local orig_buf = vim.api.nvim_win_get_buf(0)
+      vim.api.nvim_win_set_buf(0, proxy)
+      fn()
+      vim.api.nvim_win_set_buf(0, orig_buf)
+    else
+      vim.api.nvim_buf_call(proxy, vim.lsp.buf.implementation)
+    end
   end)
 end
 
 function M.type_definition()
   with_current_proxy(function(proxy)
-    vim.api.nvim_buf_call(proxy, function()
-      local fn = try_snacks("lsp_type_definitions")
-      if fn then fn() else vim.lsp.buf.type_definition() end
-    end)
+    local fn = try_snacks("lsp_type_definitions")
+    if fn then
+      local orig_buf = vim.api.nvim_win_get_buf(0)
+      vim.api.nvim_win_set_buf(0, proxy)
+      fn()
+      vim.api.nvim_win_set_buf(0, orig_buf)
+    else
+      vim.api.nvim_buf_call(proxy, vim.lsp.buf.type_definition)
+    end
   end)
 end
 
