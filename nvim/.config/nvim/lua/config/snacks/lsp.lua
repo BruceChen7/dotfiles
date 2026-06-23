@@ -42,6 +42,13 @@ M.setup = function()
       desc = "Goto T[y]pe Definition",
     },
     {
+      "\\gf",
+      function()
+        vim.lsp.buf.code_action()
+      end,
+      desc = "Code Action",
+    },
+    {
       "gs",
       function()
         Snacks.picker.lsp_symbols()
