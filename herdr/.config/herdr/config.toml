@@ -1,17 +1,46 @@
 onboarding = false
 
 [theme]
-name = "rose-pine"
+name = "gruvbox"
 
+auto_switch = false
 [keys]
 prefix = "`"
 settings = "prefix+,"
 split_horizontal = "prefix+s"
 
+# === Workspace management ===
+new_workspace = "prefix+o"         # o = open workspace
+new_worktree = "prefix+t"          # t = tree
+rename_workspace = "prefix+r"      # r = rename
+close_workspace = "prefix+d"       # d = delete
+
+# === Tab management ===
+rename_tab = "prefix+."            # . = period (free)
+close_tab = "prefix+/"             # / = slash (free)
+switch_tab = "alt+1..9"          # alt+1..9 switch tab (direct, no prefix)
+
+# === Pane management ===
+rename_pane = "prefix+alt+p"       # alt+p
+
+# === Pane swapping (alt instead of shift) ===
+swap_pane_left = "prefix+alt+h"
+swap_pane_down = "prefix+alt+j"
+swap_pane_up = "prefix+alt+k"
+swap_pane_right = "prefix+alt+l"
+
+# === Other ===
+cycle_pane_previous = "prefix+alt+tab"
+reload_config = "prefix+i"         # i = initialize
+
+# === Displaced defaults ===
+open_notification_target = ""      # prefix+o → new_workspace
+resize_mode = "prefix+alt+r"       # prefix+r → rename_workspace
+
 [ui]
 agent_panel_sort = "priority"
 
-show_agent_labels_on_pane_borders = true
+show_agent_labels_on_pane_borders = false
 [ui.toast]
 delivery = "system"
 
@@ -63,3 +92,6 @@ key = "prefix+k"
 type = "plugin_action"
 command = "herdr-nav.clear-screen"
 description = "clear screen (herdr)"
+
+[experimental]
+pane_history = false
