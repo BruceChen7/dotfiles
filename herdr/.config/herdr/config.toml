@@ -42,7 +42,7 @@ agent_panel_sort = "priority"
 
 show_agent_labels_on_pane_borders = false
 [ui.toast]
-delivery = "system"
+delivery = "terminal"
 
 # =============================================================================
 # herdr-nav-plugin — Ctrl+h/j/k/l pane & Vim split navigation

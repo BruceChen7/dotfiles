@@ -15,7 +15,7 @@ Personal configuration files for macOS/Linux development environment.
 
 ### AI Tools
 - `pi/` - AI coding assistant configuration
-- `claude/`, `claude-code/` - Claude CLI configurations
+- `claude/` - Claude CLI configurations
 
 ### Development
 - `atuin/` - Shell history sync

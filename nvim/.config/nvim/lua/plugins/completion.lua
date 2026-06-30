@@ -75,7 +75,10 @@ return {
         },
         per_filetype = {
           text = { "dictionary" },
-          markdown = { "thesaurus" },
+          markdown = {
+            sources = { "thesaurus" },
+            inherit_defaults = true,
+          },
           gitcommit = { "dictionary", "buffer", "path" },
         },
       },

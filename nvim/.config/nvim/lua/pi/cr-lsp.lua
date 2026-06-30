@@ -61,11 +61,7 @@ local function is_codediff_buf(bufnr)
     and vim.api.nvim_buf_get_name(bufnr):find("^codediff://") == 1
 end
 
-local function proxy_path_for_real_path(real_path)
-  if vim.uv.fs_stat(real_path) then
-    return real_path
-  end
-
+local function synthetic_proxy_path(real_path, codediff_bufnr)
   local dir = vim.fs.dirname(real_path)
   local base = vim.fs.basename(real_path)
   local stem = base
@@ -76,7 +72,17 @@ local function proxy_path_for_real_path(real_path)
     ext = base:sub(idx)
   end
 
-  return string.format("%s/.pi_cr_added__%s%s", dir, stem, ext)
+  return string.format("%s/.pi_cr_lsp__%d__%s%s", dir, codediff_bufnr, stem, ext)
+end
+
+local function proxy_path_for_real_path(real_path, codediff_bufnr)
+  -- Never name the proxy buffer as the real file. In a CodeDiff view the real
+  -- file is often already open on the modified side; `nvim_buf_set_name` then
+  -- fails, leaving an unnamed proxy. tsgo can attach to that unnamed buffer and
+  -- crash while resolving a relative "tsconfig.json". A synthetic absolute
+  -- path in the same directory keeps root discovery/import resolution working
+  -- without colliding with the real file buffer.
+  return synthetic_proxy_path(real_path, codediff_bufnr)
 end
 
 --------------------------------------------------------------------------------
@@ -223,7 +229,7 @@ local function create_proxy(codediff_bufnr)
   end
 
   local real_path = info.git_root .. "/" .. info.filepath
-  local proxy_path = proxy_path_for_real_path(real_path)
+  local proxy_path = proxy_path_for_real_path(real_path, codediff_bufnr)
 
   if codediff_to_proxy[codediff_bufnr] then
     return codediff_to_proxy[codediff_bufnr].proxy_bufnr
@@ -245,7 +251,16 @@ local function create_proxy(codediff_bufnr)
 
   -- First buffer for this real_path: create a new proxy.
   local proxy_bufnr = vim.api.nvim_create_buf(false, false)
-  pcall(vim.api.nvim_buf_set_name, proxy_bufnr, proxy_path)
+  local named, name_err = pcall(vim.api.nvim_buf_set_name, proxy_bufnr, proxy_path)
+  if not named then
+    pcall(vim.api.nvim_buf_delete, proxy_bufnr, { force = true })
+    vim.notify(
+      string.format("Failed to name CR LSP proxy %s: %s", proxy_path, name_err),
+      vim.log.levels.ERROR,
+      { title = "Pi CR LSP" }
+    )
+    return nil
+  end
 
   local lines = vim.api.nvim_buf_get_lines(codediff_bufnr, 0, -1, false)
   pcall(vim.api.nvim_buf_set_lines, proxy_bufnr, 0, -1, false, lines)
@@ -279,17 +294,13 @@ local function create_proxy(codediff_bufnr)
     real_path = real_path,
     reused_existing = false,
   }
-  if proxy_path ~= real_path then
-    log(
-      "Created synthetic proxy %d for missing file %s as %s (commit=%s)",
-      proxy_bufnr,
-      info.filepath,
-      proxy_path,
-      info.commit
-    )
-  else
-    log("Created proxy %d for %s (commit=%s)", proxy_bufnr, info.filepath, info.commit)
-  end
+  log(
+    "Created proxy %d for %s as %s (commit=%s)",
+    proxy_bufnr,
+    info.filepath,
+    proxy_path,
+    info.commit
+  )
   return proxy_bufnr
 end
 
