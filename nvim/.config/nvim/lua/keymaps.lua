@@ -7,7 +7,7 @@ local default_options = { noremap = true, silent = true }
 -- ============================================================================
 local config = {
   -- Paths
-  diary_base_path = "~/work/notes/Calendar/Daily Notes/",
+  diary_base_path = "~/work/notes/Calendar/DailyNotes/",
   nvim_config_path = "~/.config/nvim/",
 
   -- Window sizing
