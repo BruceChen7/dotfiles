@@ -791,3 +791,28 @@ local post_img_to_cdn = function()
 end
 
 vim.keymap.set("n", "<leader>pi", post_img_to_cdn, { desc = "Paste image from clipboard to /tmp" })
+
+-- ============================================================================
+-- Search Highlight Performance Optimizer
+-- 按 * 后有高亮，移动 j/k 时暂时清除高亮渲染，停稳 400ms 后恢复
+-- ============================================================================
+local search_hl_timer
+
+vim.api.nvim_create_autocmd("CursorMoved", {
+  group = vim.api.nvim_create_augroup("SearchHighlightPerformance", { clear = true }),
+  callback = function()
+    if vim.v.hlsearch == 0 then return end
+    -- 移动时立刻清除高亮渲染，保证 j/k 流畅
+    vim.cmd("nohlsearch")
+    -- 取消之前的定时器（防止多次触发）
+    if search_hl_timer then
+      pcall(search_hl_timer.close, search_hl_timer)
+    end
+    -- 停止移动 400ms 后恢复高亮
+    search_hl_timer = vim.defer_fn(function()
+      -- 重新设一次搜索寄存器，触发高亮恢复
+      vim.fn.setreg("/", vim.fn.getreg("/"))
+      vim.cmd("redraw")
+    end, 400)
+  end,
+})
