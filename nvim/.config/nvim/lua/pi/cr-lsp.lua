@@ -24,7 +24,11 @@ local M = {}
 local codediff_to_proxy = {}
 
 local function log(fmt, ...)
-  vim.notify(string.format(fmt, ...), vim.log.levels.DEBUG, { title = "Pi CR LSP" })
+  -- Only emit proxy LSP debug messages when PI_CR_LSP_DEBUG is set.
+  -- vim.notify() writes to the message area and causes stuttering in diff views.
+  if vim.env.PI_CR_LSP_DEBUG then
+    vim.notify(string.format(fmt, ...), vim.log.levels.DEBUG, { title = "Pi CR LSP" })
+  end
 end
 
 -- Detect Snacks picker availability (lazy-loaded)
@@ -57,8 +61,7 @@ local function parse_url(url)
 end
 
 local function is_codediff_buf(bufnr)
-  return vim.api.nvim_buf_is_valid(bufnr)
-    and vim.api.nvim_buf_get_name(bufnr):find("^codediff://") == 1
+  return vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_get_name(bufnr):find "^codediff://" == 1
 end
 
 local function synthetic_proxy_path(real_path, codediff_bufnr)
@@ -66,7 +69,7 @@ local function synthetic_proxy_path(real_path, codediff_bufnr)
   local base = vim.fs.basename(real_path)
   local stem = base
   local ext = ""
-  local idx = base:match("^.*()%.([^.]*)$")
+  local idx = base:match "^.*()%.([^.]*)$"
   if idx then
     stem = base:sub(1, idx - 1)
     ext = base:sub(idx)
@@ -125,7 +128,7 @@ local function get_lsp_client()
 
   sync_content(bufnr)
 
-  local clients = vim.lsp.get_clients({ bufnr = proxy })
+  local clients = vim.lsp.get_clients { bufnr = proxy }
   if #clients == 0 then
     return nil, proxy
   end
@@ -203,17 +206,14 @@ local function handle_location_matches(matches, opts)
     else
       vim.cmd("edit " .. vim.fn.fnameescape(fname))
     end
-    vim.cmd("normal! zz")
+    vim.cmd "normal! zz"
   else
     local items = {}
     for _, match in ipairs(matches) do
-      vim.list_extend(
-        items,
-        vim.lsp.util.locations_to_items({ match.location }, match.offset_encoding)
-      )
+      vim.list_extend(items, vim.lsp.util.locations_to_items({ match.location }, match.offset_encoding))
     end
     vim.fn.setqflist({}, " ", { title = "LSP Locations", items = items })
-    vim.cmd("copen")
+    vim.cmd "copen"
   end
 end
 
@@ -283,7 +283,7 @@ local function create_proxy(codediff_bufnr)
     end,
   })
 
-  local ft = vim.filetype.match({ buf = proxy_bufnr, filename = info.filepath })
+  local ft = vim.filetype.match { buf = proxy_bufnr, filename = info.filepath }
   if ft then
     vim.bo[proxy_bufnr].filetype = ft
     log("Filetype=%s set on proxy %d for %s", ft, proxy_bufnr, info.filepath)
@@ -294,13 +294,7 @@ local function create_proxy(codediff_bufnr)
     real_path = real_path,
     reused_existing = false,
   }
-  log(
-    "Created proxy %d for %s as %s (commit=%s)",
-    proxy_bufnr,
-    info.filepath,
-    proxy_path,
-    info.commit
-  )
+  log("Created proxy %d for %s as %s (commit=%s)", proxy_bufnr, info.filepath, proxy_path, info.commit)
   return proxy_bufnr
 end
 
@@ -317,7 +311,7 @@ local function with_proxy(codediff_bufnr, fn)
     return false
   end
   sync_content(codediff_bufnr)
-  local clients = vim.lsp.get_clients({ bufnr = proxy })
+  local clients = vim.lsp.get_clients { bufnr = proxy }
   if #clients == 0 then
     return false
   end
@@ -387,7 +381,7 @@ function M.hover()
 end
 
 function M.definition()
-  request_proxy_locations("textDocument/definition")
+  request_proxy_locations "textDocument/definition"
 end
 
 function M.references()
@@ -400,7 +394,7 @@ function M.references()
 end
 
 function M.declaration()
-  request_proxy_locations("textDocument/declaration")
+  request_proxy_locations "textDocument/declaration"
 end
 
 function M.implementation()
@@ -410,7 +404,7 @@ function M.implementation()
 end
 
 function M.type_definition()
-  request_proxy_locations("textDocument/typeDefinition")
+  request_proxy_locations "textDocument/typeDefinition"
 end
 
 function M.incoming_calls()
@@ -456,9 +450,13 @@ function M.setup_keymaps(bufnr)
 
   map("n", "K", function()
     local winid = require("ufo").peekFoldedLinesUnderCursor()
-    if winid then return end
+    if winid then
+      return
+    end
     local cr_ok, cr = pcall(require, "pi.cr")
-    if cr_ok and cr.show_annotation_under_cursor and cr.show_annotation_under_cursor() then return end
+    if cr_ok and cr.show_annotation_under_cursor and cr.show_annotation_under_cursor() then
+      return
+    end
     M.hover()
   end, "Peek Fold / CR Annotation / LSP Hover (via proxy)")
 
@@ -484,7 +482,8 @@ function M.cleanup(codediff_bufnr)
   if not entry then
     return
   end
-  if not entry.reused_existing
+  if
+    not entry.reused_existing
     and vim.api.nvim_buf_is_valid(entry.proxy_bufnr)
     and #vim.fn.win_findbuf(entry.proxy_bufnr) == 0
   then
