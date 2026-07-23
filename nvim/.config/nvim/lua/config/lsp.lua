@@ -80,6 +80,8 @@ require("lsp-setup").setup {
     end, { buffer = bufnr, desc = "Copy current buffer all diagnostics" })
   end,
   servers = {
+    -- Markdown: https://github.com/artempyanykh/marksman
+    marksman = {},
     lua_ls = {
       settings = {
         Lua = {

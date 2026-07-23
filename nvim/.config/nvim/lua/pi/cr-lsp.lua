@@ -3,29 +3,28 @@
 --- codediff deliberately prevents LSP on its virtual buffers (codediff:// URIs)
 --- because LSP servers can't handle custom URI schemes and crash or misbehave.
 ---
---- This module creates hidden "proxy" buffers with real file paths, attaches LSP
---- to them, and redirects LSP operations from the codediff view buffers through
---- the proxy buffers using `nvim_buf_call` + Neovim's built-in LSP functions.
+--- This module creates REAL temp files via `git show <commit>:<path>` and loads
+--- them into hidden buffers. LSP attaches natively (file:// URI) so ALL LSP
+--- features work without per-feature proxy code.
 ---
 --- Architecture:
 ---
----   codediff buffer (codediff://.../src/foo.go)    proxy buffer (/path/to/src/foo.go)
----     │  LSP: ✗                                        LSP: ✓
+---   codediff buffer (codediff://.../src/foo.go)    temp buffer (/repo/.git/cr-lsp-temp/<commit>/src/foo.go)
+---     │  LSP: ✗                                        LSP: ✓ (real file URI, auto-attached)
 ---     │                                                 │
----     └── nvim_buf_call(proxy, vim.lsp.buf.definition) ─┘
----         (built-in LSP handles jumplist, tagstack, everything)
----
---- Two codediff panels (original + modified) for the same file share a SINGLE
---- proxy buffer.  Content is synced on-demand before each LSP operation.
+---     └── nvim_buf_call(temp, vim.lsp.buf.definition) ──┘
+---                                                       All features work natively:
+---                                                       hover, definition, references,
+---                                                       rename, code_action, completion,
+---                                                       diagnostics, inlay hints,
+---                                                       signature help, code lenses
 
 local M = {}
 
---- @type table<codediff_bufnr, {proxy_bufnr: number, real_path: string, reused_existing: boolean}>
-local codediff_to_proxy = {}
+--- @type table<codediff_bufnr, {temp_bufnr: number, temp_path: string, real_path: string, commit: string}>
+local codediff_to_temp = {}
 
 local function log(fmt, ...)
-  -- Only emit proxy LSP debug messages when PI_CR_LSP_DEBUG is set.
-  -- vim.notify() writes to the message area and causes stuttering in diff views.
   if vim.env.PI_CR_LSP_DEBUG then
     vim.notify(string.format(fmt, ...), vim.log.levels.DEBUG, { title = "Pi CR LSP" })
   end
@@ -35,6 +34,9 @@ end
 --- URL parsing
 --------------------------------------------------------------------------------
 
+--- Parse a codediff:// URL into its components.
+--- @param url string
+--- @return {git_root: string, commit: string, filepath: string}|nil
 local function parse_url(url)
   local patterns = {
     "^codediff:///(.-)///([a-fA-F0-9]+)/(.+)$",
@@ -55,164 +57,68 @@ local function is_codediff_buf(bufnr)
   return vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_get_name(bufnr):find "^codediff://" == 1
 end
 
-local function synthetic_proxy_path(real_path, codediff_bufnr)
-  local dir = vim.fs.dirname(real_path)
-  local base = vim.fs.basename(real_path)
-  local stem = base
-  local ext = ""
-  local idx = base:match "^.*()%.([^.]*)$"
-  if idx then
-    stem = base:sub(1, idx - 1)
-    ext = base:sub(idx)
-  end
-
-  return string.format("%s/.pi_cr_lsp__%d__%s%s", dir, codediff_bufnr, stem, ext)
-end
-
-local function proxy_path_for_real_path(real_path, codediff_bufnr)
-  -- Never name the proxy buffer as the real file. In a CodeDiff view the real
-  -- file is often already open on the modified side; `nvim_buf_set_name` then
-  -- fails, leaving an unnamed proxy. tsgo can attach to that unnamed buffer and
-  -- crash while resolving a relative "tsconfig.json". A synthetic absolute
-  -- path in the same directory keeps root discovery/import resolution working
-  -- without colliding with the real file buffer.
-  return synthetic_proxy_path(real_path, codediff_bufnr)
-end
-
 --------------------------------------------------------------------------------
---- Proxy buffer lifecycle
+--- Temp file management
 --------------------------------------------------------------------------------
 
-function M.get_proxy(codediff_bufnr)
-  local entry = codediff_to_proxy[codediff_bufnr]
-  if not entry then
-    return nil
-  end
-  if not vim.api.nvim_buf_is_valid(entry.proxy_bufnr) then
-    codediff_to_proxy[codediff_bufnr] = nil
-    return nil
-  end
-  return entry.proxy_bufnr
-end
-
-local function sync_content(codediff_bufnr)
-  local entry = codediff_to_proxy[codediff_bufnr]
-  if not entry or not vim.api.nvim_buf_is_valid(entry.proxy_bufnr) then
-    return
-  end
-  if not vim.api.nvim_buf_is_valid(codediff_bufnr) then
-    return
-  end
-  local lines = vim.api.nvim_buf_get_lines(codediff_bufnr, 0, -1, false)
-  pcall(vim.api.nvim_buf_set_lines, entry.proxy_bufnr, 0, -1, false, lines)
-end
-
---- Get first LSP client + proxy for the current codediff buffer.
---- Syncs proxy content before returning so cursor/offset math matches.
---- @return table|nil, number|nil
-local function get_lsp_client()
-  local bufnr = vim.api.nvim_get_current_buf()
-  local proxy = M.get_proxy(bufnr)
-  if not proxy then
-    return nil, nil
-  end
-
-  sync_content(bufnr)
-
-  local clients = vim.lsp.get_clients { bufnr = proxy }
-  if #clients == 0 then
-    return nil, proxy
-  end
-  return clients[1], proxy
-end
-
---- Build textDocument/position using proxy URI + current window cursor.
---- @param client table
---- @param proxy_bufnr number
---- @return table
-local function make_position_params(client, proxy_bufnr)
-  local cursor = vim.api.nvim_win_get_cursor(0)
-  local offenc = client.offset_encoding or "utf-16"
-  local row = cursor[1] - 1
-  local col = cursor[2]
-  local line = vim.api.nvim_buf_get_lines(proxy_bufnr, row, row + 1, false)[1] or ""
-  if col > 0 then
-    col = vim.str_utfindex(line, offenc, col, false)
-  end
-  return {
-    textDocument = { uri = vim.uri_from_bufnr(proxy_bufnr) },
-    position = { line = row, character = col },
-  }
-end
-
----@class PiCrLspLocationMatch
----@field location table
----@field offset_encoding string
-
---- Open a single target or quickfix for multiple.
----@param matches PiCrLspLocationMatch[]
----@param opts? {always_list?: boolean}
-local function handle_location_matches(matches, opts)
-  opts = opts or {}
-  if not matches or #matches == 0 then
-    return
-  end
-  if #matches == 1 and not opts.always_list then
-    local origin_buf = vim.api.nvim_get_current_buf()
-    local match = matches[1]
-    local loc = match.location
-    local uri = loc.uri or loc.targetUri
-    if not uri then
-      return
-    end
-    local bufnr = vim.uri_to_bufnr(uri)
-    if bufnr == 0 then
-      return
-    end
-    local fname = vim.api.nvim_buf_get_name(bufnr)
-    local range = loc.range or loc.targetSelectionRange
-
-    -- codediff virtual buffers use bufhidden=wipe. If we replace the window via
-    -- :edit, the source codediff buffer gets destroyed immediately, so Ctrl-O
-    -- has nowhere to return. Preserve it as hidden, then restore wipe when the
-    -- user lands back in that buffer.
-    if vim.api.nvim_buf_is_valid(origin_buf) and vim.bo[origin_buf].bufhidden == "wipe" then
-      vim.bo[origin_buf].bufhidden = "hide"
-      vim.api.nvim_create_autocmd("BufEnter", {
-        group = vim.api.nvim_create_augroup("PiCRRestoreBufhidden_" .. origin_buf, { clear = true }),
-        buffer = origin_buf,
-        once = true,
-        callback = function()
-          if vim.api.nvim_buf_is_valid(origin_buf) then
-            vim.bo[origin_buf].bufhidden = "wipe"
-          end
-        end,
-      })
-    end
-
-    if range then
-      local p = vim.pos.lsp(bufnr, range.start, match.offset_encoding)
-      vim.cmd("edit +" .. (p.row + 1) .. " " .. vim.fn.fnameescape(fname))
-      vim.api.nvim_win_set_cursor(0, { p.row + 1, p.col })
-    else
-      vim.cmd("edit " .. vim.fn.fnameescape(fname))
-    end
-    vim.cmd "normal! zz"
-  else
-    local items = {}
-    for _, match in ipairs(matches) do
-      vim.list_extend(items, vim.lsp.util.locations_to_items({ match.location }, match.offset_encoding))
-    end
-    vim.fn.setqflist({}, " ", { title = "LSP Locations", items = items })
-    vim.cmd "copen"
-  end
-end
-
---- Create a proxy buffer for a codediff buffer.
+--- Ensure a temp file exists on disk for the given git revision.
 ---
---- Two codediff panels for the same real_path share a SINGLE proxy buffer.
---- Content is synced on-demand before each LSP request.
-local function create_proxy(codediff_bufnr)
+--- Creates `<git_root>/.git/cr-lsp-temp/<safe_commit>/<filepath>` via
+--- `git show <commit>:<filepath>`.  The file is reused if it already exists
+--- (immutable revisions are effectively cached on disk; for mutable revisions
+--- like `:0` the caller may request a refresh).
+---
+--- @param git_root string  absolute path to git repository root
+--- @param commit  string  commit hash, ref, or `:0`
+--- @param filepath string  repo-relative file path
+--- @param opts? {force?: boolean}  if true, re-checkout even if file exists
+--- @return string full_path
+local function ensure_temp_file(git_root, commit, filepath, opts)
+  opts = opts or {}
+  local safe_commit = commit:gsub("[^a-zA-Z0-9_:]", "_")
+  local dir = git_root .. "/.git/cr-lsp-temp/" .. safe_commit
+  local full_path = dir .. "/" .. filepath
+
+  if opts.force or vim.fn.filereadable(full_path) == 0 then
+    vim.fn.mkdir(vim.fn.fnamemodify(full_path, ":h"), "p")
+    local result = vim.fn.system {
+      "git",
+      "-C",
+      git_root,
+      "show",
+      commit .. ":" .. filepath,
+    }
+    if vim.v.shell_error == 0 then
+      local lines = vim.split(result, "\n", { plain = true })
+      -- git show appends a trailing newline; strip the empty last line
+      if #lines > 0 and lines[#lines] == "" then
+        lines[#lines] = nil
+      end
+      vim.fn.writefile(lines, full_path)
+    else
+      -- File doesn't exist in this revision (added or deleted in this commit)
+      vim.fn.writefile({ "" }, full_path)
+    end
+  end
+
+  return full_path
+end
+
+--- Get or create a temp buffer for a codediff buffer.
+---
+--- Each codediff buffer gets its own temp buffer (independent mapping).
+--- Two panels for the same file at different commits get two independent
+--- temp files.
+---
+--- @param codediff_bufnr number
+--- @return number|nil temp_bufnr
+local function get_or_create_temp_buf(codediff_bufnr)
+  -- Reuse existing mapping if still valid
+  local entry = codediff_to_temp[codediff_bufnr]
+  if entry and vim.api.nvim_buf_is_valid(entry.temp_bufnr) then
+    return entry.temp_bufnr
+  end
+
   local name = vim.api.nvim_buf_get_name(codediff_bufnr)
   local info = parse_url(name)
   if not info then
@@ -220,205 +126,188 @@ local function create_proxy(codediff_bufnr)
   end
 
   local real_path = info.git_root .. "/" .. info.filepath
-  local proxy_path = proxy_path_for_real_path(real_path, codediff_bufnr)
+  local temp_path = ensure_temp_file(info.git_root, info.commit, info.filepath)
 
-  if codediff_to_proxy[codediff_bufnr] then
-    return codediff_to_proxy[codediff_bufnr].proxy_bufnr
-  end
+  -- Create a hidden buffer for the temp file
+  local temp_bufnr = vim.api.nvim_create_buf(false, false)
 
-  -- Check if another codediff buffer already created a proxy for this real_path.
-  for _, entry in pairs(codediff_to_proxy) do
-    if entry.real_path == real_path and vim.api.nvim_buf_is_valid(entry.proxy_bufnr) then
-      codediff_to_proxy[codediff_bufnr] = {
-        proxy_bufnr = entry.proxy_bufnr,
-        real_path = real_path,
-        reused_existing = true,
-      }
-      M.setup_keymaps(codediff_bufnr)
-      log("Shared proxy %d for %s", entry.proxy_bufnr, info.filepath)
-      return entry.proxy_bufnr
-    end
-  end
+  -- Load the temp file content into the buffer
+  local lines = vim.fn.readfile(temp_path)
+  vim.api.nvim_buf_set_lines(temp_bufnr, 0, -1, false, lines)
 
-  -- First buffer for this real_path: create a new proxy.
-  local proxy_bufnr = vim.api.nvim_create_buf(false, false)
-  local named, name_err = pcall(vim.api.nvim_buf_set_name, proxy_bufnr, proxy_path)
-  if not named then
-    pcall(vim.api.nvim_buf_delete, proxy_bufnr, { force = true })
-    vim.notify(
-      string.format("Failed to name CR LSP proxy %s: %s", proxy_path, name_err),
-      vim.log.levels.ERROR,
-      { title = "Pi CR LSP" }
-    )
-    return nil
-  end
+  -- Name the buffer as the temp file path so LSP sees a real file:// URI.
+  -- This allows the LSP server to resolve the file relative to the workspace
+  -- root and apply the correct language server.
+  pcall(vim.api.nvim_buf_set_name, temp_bufnr, temp_path)
 
-  local lines = vim.api.nvim_buf_get_lines(codediff_bufnr, 0, -1, false)
-  pcall(vim.api.nvim_buf_set_lines, proxy_bufnr, 0, -1, false, lines)
+  vim.bo[temp_bufnr].bufhidden = "hide"
+  vim.bo[temp_bufnr].modified = false
 
-  vim.bo[proxy_bufnr].bufhidden = "hide"
-  vim.bo[proxy_bufnr].modified = false
-
-  vim.api.nvim_create_autocmd("LspAttach", {
-    group = vim.api.nvim_create_augroup("PiCRLspBuf_" .. proxy_bufnr, { clear = true }),
-    buffer = proxy_bufnr,
-    once = true,
-    callback = function()
-      vim.schedule(function()
-        if not vim.api.nvim_buf_is_valid(proxy_bufnr) then
-          return
-        end
-        vim.bo[proxy_bufnr].buftype = "nofile"
-        log("LSP attached to proxy %d, set buftype=nofile", proxy_bufnr)
-      end)
-    end,
-  })
-
-  local ft = vim.filetype.match { buf = proxy_bufnr, filename = info.filepath }
+  -- Set filetype via filename match so LSP can auto-attach.
+  -- LspAttach fires automatically for the real file:// URI.
+  local ft = vim.filetype.match { filename = info.filepath }
   if ft then
-    vim.bo[proxy_bufnr].filetype = ft
-    log("Filetype=%s set on proxy %d for %s", ft, proxy_bufnr, info.filepath)
+    vim.bo[temp_bufnr].filetype = ft
+    log("Filetype=%s set on temp buffer %d for %s", ft, temp_bufnr, info.filepath)
   end
 
-  codediff_to_proxy[codediff_bufnr] = {
-    proxy_bufnr = proxy_bufnr,
+  codediff_to_temp[codediff_bufnr] = {
+    temp_bufnr = temp_bufnr,
+    temp_path = temp_path,
     real_path = real_path,
-    reused_existing = false,
+    commit = info.commit,
   }
-  log("Created proxy %d for %s as %s (commit=%s)", proxy_bufnr, info.filepath, proxy_path, info.commit)
-  return proxy_bufnr
+
+  log("Created temp buffer %d for %s (commit=%s)", temp_bufnr, info.filepath, info.commit)
+  return temp_bufnr
+end
+
+--- Refresh the temp buffer content for a mutable revision (e.g., `:0`).
+--- Called when the staged index may have changed.
+--- @param codediff_bufnr number
+local function refresh_temp_buf(codediff_bufnr)
+  local entry = codediff_to_temp[codediff_bufnr]
+  if not entry then
+    return
+  end
+
+  local info = parse_url(vim.api.nvim_buf_get_name(codediff_bufnr))
+  if not info then
+    return
+  end
+
+  -- Re-checkout the temp file (force refresh)
+  local temp_path = ensure_temp_file(info.git_root, info.commit, info.filepath, { force = true })
+
+  -- Reload the buffer content
+  if vim.api.nvim_buf_is_valid(entry.temp_bufnr) then
+    local lines = vim.fn.readfile(temp_path)
+    vim.api.nvim_buf_set_lines(entry.temp_bufnr, 0, -1, false, lines)
+  end
 end
 
 --------------------------------------------------------------------------------
---- LSP operation wrappers (nvim_buf_call + Neovim built-in LSP)
+--- LSP operation redirection
 --------------------------------------------------------------------------------
 
----@param codediff_bufnr number
----@param fn fun()
----@return boolean true if proxy available and LSP is attached
-local function with_proxy(codediff_bufnr, fn)
-  local proxy = M.get_proxy(codediff_bufnr)
-  if not proxy then
-    return false
+--- Execute an LSP function in the context of the temp buffer.
+---
+--- Uses nvim_buf_call so that `vim.lsp.buf_request(0, ...)` targets the temp
+--- buffer's LSP clients.  The cursor position in the current window is used
+--- directly — content is identical between the codediff virtual buffer and the
+--- temp file, so the cursor offset maps correctly.
+---
+--- @param codediff_bufnr number
+--- @param fn fun()
+--- @return boolean success
+local function with_temp_buf(codediff_bufnr, fn)
+  local entry = codediff_to_temp[codediff_bufnr]
+  if not entry or not vim.api.nvim_buf_is_valid(entry.temp_bufnr) then
+    local temp_bufnr = get_or_create_temp_buf(codediff_bufnr)
+    if not temp_bufnr then
+      return false
+    end
+    entry = codediff_to_temp[codediff_bufnr]
   end
-  sync_content(codediff_bufnr)
-  local clients = vim.lsp.get_clients { bufnr = proxy }
+
+  local clients = vim.lsp.get_clients { bufnr = entry.temp_bufnr }
   if #clients == 0 then
     return false
   end
-  fn(proxy)
+
+  vim.api.nvim_buf_call(entry.temp_bufnr, fn)
   return true
 end
 
----@param fn fun(proxy: number)  receives proxy bufnr to use in nvim_buf_call
-local function with_current_proxy(fn)
-  return with_proxy(vim.api.nvim_get_current_buf(), fn)
+local function with_current_temp_buf(fn)
+  return with_temp_buf(vim.api.nvim_get_current_buf(), fn)
 end
 
-local function with_proxy_window(fn)
-  with_current_proxy(function(proxy)
-    if not vim.api.nvim_buf_is_valid(proxy) then
+--- Wrapper that temporarily shows the temp buffer in the current window,
+--- runs the function, then restores the original buffer.
+---
+--- Required for LSP functions that create floating windows or UI elements
+--- relative to the on-screen buffer (hover, code_action, signature help).
+---
+--- @param fn fun()
+local function with_temp_buf_window(fn)
+  local codediff_bufnr = vim.api.nvim_get_current_buf()
+  local entry = codediff_to_temp[codediff_bufnr]
+  if not entry or not vim.api.nvim_buf_is_valid(entry.temp_bufnr) then
+    local temp_bufnr = get_or_create_temp_buf(codediff_bufnr)
+    if not temp_bufnr then
       return
     end
-    local win = vim.api.nvim_get_current_win()
-    local orig_buf = vim.api.nvim_win_get_buf(win)
-    vim.api.nvim_win_set_buf(win, proxy)
-    local ok, err = pcall(fn, proxy)
-    if vim.api.nvim_win_is_valid(win) and vim.api.nvim_buf_is_valid(orig_buf) then
-      vim.api.nvim_win_set_buf(win, orig_buf)
-    end
-    if not ok then
-      error(err)
-    end
-  end)
+    entry = codediff_to_temp[codediff_bufnr]
+  end
+
+  local win = vim.api.nvim_get_current_win()
+  local orig_buf = vim.api.nvim_win_get_buf(win)
+  vim.api.nvim_win_set_buf(win, entry.temp_bufnr)
+  local ok, err = pcall(fn)
+  if vim.api.nvim_win_is_valid(win) and vim.api.nvim_buf_is_valid(orig_buf) then
+    vim.api.nvim_win_set_buf(win, orig_buf)
+  end
+  if not ok then
+    log("with_temp_buf_window error: %s", tostring(err))
+  end
 end
 
----@param method string
----@param opts? {always_list?: boolean, extend_params?: fun(params: table)}
-local function request_proxy_locations(method, opts)
-  opts = opts or {}
-  local _, proxy = get_lsp_client()
-  if not proxy then
-    return
-  end
-  vim.lsp.buf_request_all(proxy, method, function(client)
-    local params = make_position_params(client, proxy)
-    if opts.extend_params then
-      opts.extend_params(params)
-    end
-    return params
-  end, function(results)
-    local matches = {}
-    for client_id, res in pairs(results) do
-      local client = vim.lsp.get_client_by_id(client_id)
-      if client and res and res.result then
-        local locations = vim.islist(res.result) and res.result or { res.result }
-        for _, location in ipairs(locations) do
-          matches[#matches + 1] = {
-            location = location,
-            offset_encoding = client.offset_encoding or "utf-16",
-          }
-        end
-      end
-    end
-    handle_location_matches(matches, { always_list = opts.always_list })
-  end)
-end
+--------------------------------------------------------------------------------
+--- LSP public API (called from keymaps)
+--------------------------------------------------------------------------------
 
 function M.hover()
-  with_proxy_window(function(proxy)
-    vim.api.nvim_buf_call(proxy, vim.lsp.buf.hover)
+  with_temp_buf_window(function()
+    vim.lsp.buf.hover()
   end)
 end
 
 function M.definition()
-  request_proxy_locations "textDocument/definition"
+  with_current_temp_buf(vim.lsp.buf.definition)
 end
 
 function M.references()
-  request_proxy_locations("textDocument/references", {
-    always_list = true,
-    extend_params = function(params)
-      params.context = { includeDeclaration = true }
-    end,
-  })
+  with_current_temp_buf(function()
+    vim.lsp.buf.references()
+  end)
 end
 
 function M.declaration()
-  request_proxy_locations "textDocument/declaration"
+  with_current_temp_buf(vim.lsp.buf.declaration)
 end
 
 function M.implementation()
-  request_proxy_locations("textDocument/implementation", {
-    always_list = true,
-  })
+  with_current_temp_buf(vim.lsp.buf.implementation)
 end
 
 function M.type_definition()
-  request_proxy_locations "textDocument/typeDefinition"
+  with_current_temp_buf(vim.lsp.buf.type_definition)
 end
 
 function M.incoming_calls()
-  with_current_proxy(function(proxy)
-    vim.api.nvim_buf_call(proxy, vim.lsp.buf.incoming_calls)
-  end)
+  with_current_temp_buf(vim.lsp.buf.incoming_calls)
 end
 
 function M.outgoing_calls()
-  with_current_proxy(function(proxy)
-    vim.api.nvim_buf_call(proxy, vim.lsp.buf.outgoing_calls)
-  end)
+  with_current_temp_buf(vim.lsp.buf.outgoing_calls)
 end
 
 function M.rename()
-  with_current_proxy(function(proxy)
-    vim.api.nvim_buf_call(proxy, vim.lsp.buf.rename)
-  end)
+  with_current_temp_buf(vim.lsp.buf.rename)
 end
 
 function M.code_action()
-  with_proxy_window(function(proxy)
-    vim.api.nvim_buf_call(proxy, vim.lsp.buf.code_action)
+  with_temp_buf_window(function()
+    vim.lsp.buf.code_action()
+  end)
+end
+
+--- Trigger completion via the temp buffer's LSP.
+--- Typically bound to <C-Space> or <C-x><C-o> in insert mode.
+function M.completion()
+  with_current_temp_buf(function()
+    vim.lsp.buf.completion()
   end)
 end
 
@@ -449,17 +338,17 @@ function M.setup_keymaps(bufnr)
       return
     end
     M.hover()
-  end, "Peek Fold / CR Annotation / LSP Hover (via proxy)")
+  end, "Peek Fold / CR Annotation / LSP Hover (via temp proxy)")
 
-  map("n", "gd", M.definition, "LSP Definition (via proxy)")
-  map("n", "grr", M.references, "LSP References (via proxy)")
-  map("n", "gD", M.declaration, "LSP Declaration (via proxy)")
-  map("n", "\\gi", M.implementation, "LSP Implementation (via proxy)")
-  map("n", "\\gy", M.type_definition, "LSP Type Definition (via proxy)")
-  map("n", "<leader>li", M.incoming_calls, "LSP Incoming Calls (via proxy)")
-  map("n", "<leader>lo", M.outgoing_calls, "LSP Outgoing Calls (via proxy)")
-  map("n", "<leader>lr", M.rename, "LSP Rename (via proxy)")
-  map({ "n", "x" }, "<leader>ca", M.code_action, "LSP Code Action (via proxy)")
+  map("n", "gd", M.definition, "LSP Definition (via temp proxy)")
+  map("n", "grr", M.references, "LSP References (via temp proxy)")
+  map("n", "gD", M.declaration, "LSP Declaration (via temp proxy)")
+  map("n", "\\gi", M.implementation, "LSP Implementation (via temp proxy)")
+  map("n", "\\gy", M.type_definition, "LSP Type Definition (via temp proxy)")
+  map("n", "<leader>li", M.incoming_calls, "LSP Incoming Calls (via temp proxy)")
+  map("n", "<leader>lo", M.outgoing_calls, "LSP Outgoing Calls (via temp proxy)")
+  map("n", "<leader>lr", M.rename, "LSP Rename (via temp proxy)")
+  map({ "n", "x" }, "<leader>ca", M.code_action, "LSP Code Action (via temp proxy)")
 
   log("Keymaps installed on bufnr=%d", bufnr)
 end
@@ -468,24 +357,41 @@ end
 --- Cleanup
 --------------------------------------------------------------------------------
 
+--- Clean up the temp buffer for a single codediff buffer.
+--- Called on BufDelete codediff://*.
 function M.cleanup(codediff_bufnr)
-  local entry = codediff_to_proxy[codediff_bufnr]
+  local entry = codediff_to_temp[codediff_bufnr]
   if not entry then
     return
   end
-  if
-    not entry.reused_existing
-    and vim.api.nvim_buf_is_valid(entry.proxy_bufnr)
-    and #vim.fn.win_findbuf(entry.proxy_bufnr) == 0
-  then
-    pcall(vim.api.nvim_buf_delete, entry.proxy_bufnr, { force = true })
+
+  -- Only delete the temp buffer if no window is showing it.
+  if vim.api.nvim_buf_is_valid(entry.temp_bufnr) and #vim.fn.win_findbuf(entry.temp_bufnr) == 0 then
+    pcall(vim.api.nvim_buf_delete, entry.temp_bufnr, { force = true })
   end
-  codediff_to_proxy[codediff_bufnr] = nil
+  codediff_to_temp[codediff_bufnr] = nil
 end
 
 local function cleanup_all()
-  for bufnr, _ in pairs(codediff_to_proxy) do
+  for bufnr, _ in pairs(codediff_to_temp) do
     M.cleanup(bufnr)
+  end
+end
+
+--- Remove the entire cr-lsp-temp directory tree on VimLeavePre.
+--- This is a best-effort cleanup; leftover files are harmless and will be
+--- overwritten on the next session.
+local function cleanup_temp_dirs()
+  local seen = {}
+  for _, entry in pairs(codediff_to_temp) do
+    if not seen[entry.temp_path] then
+      -- Extract the .git/cr-lsp-temp directory from the temp path
+      local git_temp_dir = entry.temp_path:match "^(.+/.git/cr%-lsp%-temp)/"
+      if git_temp_dir and not seen[git_temp_dir] then
+        seen[git_temp_dir] = true
+        pcall(vim.fn.delete, git_temp_dir, "rf")
+      end
+    end
   end
 end
 
@@ -503,16 +409,18 @@ local function on_virtual_file_loaded(data)
   end
 
   vim.schedule(function()
-    local proxy = create_proxy(bufnr)
-    if proxy then
+    local temp_bufnr = get_or_create_temp_buf(bufnr)
+    if temp_bufnr then
       M.setup_keymaps(bufnr)
     end
   end)
 end
 
 function M.setup()
-  local group = vim.api.nvim_create_augroup("PiCRLspProxy", { clear = true })
+  local group = vim.api.nvim_create_augroup("PiCRLspTempProxy", { clear = true })
 
+  -- When codediff finishes loading a virtual file, create a temp buffer and
+  -- attach LSP keymaps to the codediff buffer.
   vim.api.nvim_create_autocmd("User", {
     group = group,
     pattern = "CodeDiffVirtualFileLoaded",
@@ -521,6 +429,7 @@ function M.setup()
     end,
   })
 
+  -- When codediff closes, clean up all temp buffers.
   vim.api.nvim_create_autocmd("User", {
     group = group,
     pattern = "CodeDiffClose",
@@ -529,12 +438,19 @@ function M.setup()
     end,
   })
 
+  -- When a codediff buffer is deleted (bufhidden=wipe), clean up its mapping.
   vim.api.nvim_create_autocmd("BufDelete", {
     group = group,
     pattern = "codediff://*",
     callback = function(args)
       M.cleanup(args.buf)
     end,
+  })
+
+  -- Clean up temp directories on exit.
+  vim.api.nvim_create_autocmd("VimLeavePre", {
+    group = group,
+    callback = cleanup_temp_dirs,
   })
 end
 
