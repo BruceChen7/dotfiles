@@ -77,6 +77,9 @@ return {
       }
     end,
     event = "VeryLazy",
+    keys = {
+      { "\\\\", "<cmd>Marko<cr>", desc = "marks viewer" },
+    },
   },
 
   {

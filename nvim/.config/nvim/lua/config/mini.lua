@@ -1,4 +1,4 @@
-require("mini.cursorword").setup { delay = 50 }
+-- require("mini.cursorword").setup { delay = 50 }
 -- https://github.com/khuedoan/dotfiles/blob/5f5035e899568718501d6c1688b816019ddc918d/.config/nvim/lua/plugins.lua#L250
 require("mini.surround").setup {
   mappings = {

@@ -22,9 +22,7 @@ return {
       require "config/fugtive"
     end,
     event = "VeryLazy",
-    keys = {
-      { "\\\\\\", "<cmd>Marko<cr>", desc = "vim marks" },
-    },
+    -- keys moved to marko.nvim in utils.lua
   },
 
   -- {
