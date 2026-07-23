@@ -11,6 +11,7 @@ local state = {
   floating_win = nil,
   next_sign_id = 1,
   started = false,
+  finished = false,
   config = nil,
 }
 
@@ -517,6 +518,7 @@ local function request_config(callback)
 end
 
 function M.finish()
+  state.finished = true
   submit_annotations(function(ok)
     if not ok then
       notify("CR callback failed; annotations remain in artifact file", vim.log.levels.WARN)
@@ -564,6 +566,43 @@ function M.start()
     end,
   })
 
+  vim.api.nvim_create_autocmd("VimLeavePre", {
+    group = vim.api.nvim_create_augroup("PiCRVimLeave", { clear = true }),
+    callback = function()
+      if state.finished then
+        return
+      end
+
+      local socket_path = cr_socket_path()
+      if not socket_path then
+        return
+      end
+
+      local pipe = vim.uv.new_pipe(false)
+      if not pipe then
+        return
+      end
+
+      pipe:connect(socket_path, function(err)
+        if err then
+          pipe:close()
+          return
+        end
+
+        local payload = vim.json.encode {
+          type = "finish",
+          annotations = serialized_annotations(),
+        } .. "\n"
+
+        pipe:write(payload, function()
+          pipe:shutdown(function()
+            pipe:close()
+          end)
+        end)
+      end)
+    end,
+  })
+
   vim.api.nvim_create_user_command("CRAnnotate", M.annotate, {})
   vim.api.nvim_create_user_command("CRSaveAnnotation", function()
     M.save_annotation()
@@ -589,7 +628,6 @@ function M.start()
 
     local args = diff_args()
     vim.schedule(function()
-      vim.cmd "silent! DiffviewClose"
       open_code_diff(args)
       vim.defer_fn(focus_rightmost_window, 100)
     end)

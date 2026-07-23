@@ -31,15 +31,6 @@ local function log(fmt, ...)
   end
 end
 
--- Detect Snacks picker availability (lazy-loaded)
-local function try_snacks(fn_name)
-  local ok, snacks = pcall(require, "snacks.picker")
-  if ok then
-    return snacks[fn_name]
-  end
-  return nil
-end
-
 --------------------------------------------------------------------------------
 --- URL parsing
 --------------------------------------------------------------------------------

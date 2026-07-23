@@ -113,8 +113,8 @@ local code_diff_keymaps = {
   { "n", "<leader>gD", "<cmd>CodeDiff --inline<CR>", "CodeDiff changed files inline" },
   { "n", "<leader>gf", "<cmd>CodeDiff file HEAD<CR>", "CodeDiff current file vs HEAD" },
   { "n", "<leader>gm", "<cmd>CodeDiff main...<CR>", "CodeDiff PR against main" },
-  { "n", "<leader>gh", "<cmd>CodeDiff history HEAD~50 --reverse<CR>", "CodeDiff recent history" },
-  { "n", "<leader>gH", "<cmd>CodeDiff history HEAD~50 % --reverse<CR>", "CodeDiff current file history" },
+  { "n", "<leader>gh", "<cmd>CodeDiff history --reverse<CR>", "CodeDiff recent history" },
+  { "n", "<leader>gH", "<cmd>CodeDiff history % --reverse<CR>", "CodeDiff current file history" },
   { "x", "<leader>gh", ":'<,'>CodeDiff history --reverse<CR>", "CodeDiff selected lines history" },
 }
 
