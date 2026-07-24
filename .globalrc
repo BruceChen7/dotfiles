@@ -1,0 +1,16 @@
+#
+# Personal gtags configuration (~/.globalrc)
+# Extends universal-ctags with TypeScript support.
+#
+# Set via nvim config: GTAGSLABEL=universal-ctags-ts
+#
+default:\
+	:tc=universal-ctags-ts:
+#
+# Inherit from system universal-ctags and add TypeScript / TSX.
+#
+universal-ctags-ts|universal-ctags with TypeScript:\
+	:tc=common@/opt/homebrew/share/gtags/gtags.conf:\
+	:tc=universal-ctags@/opt/homebrew/share/gtags/gtags.conf:\
+	:langmap=TypeScript\:.ts.tsx:\
+	:gtags_parser=TypeScript\:$ctagslib:
