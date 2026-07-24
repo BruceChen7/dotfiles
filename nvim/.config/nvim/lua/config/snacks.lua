@@ -1,7 +1,13 @@
 require("snacks").setup {
   bigfile = { enabled = false },
   picker = { enabled = true },
-  image = { enabled = true },
+  image = {
+    enabled = true,
+    doc = {
+      max_width = 140,
+      max_height = 60,
+    },
+  },
   terminal = { enabled = true },
   explorer = { enabled = false },
   lazygit = { enabled = true },

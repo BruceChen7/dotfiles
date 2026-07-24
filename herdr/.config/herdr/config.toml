@@ -94,4 +94,5 @@ command = "herdr-nav.clear-screen"
 description = "clear screen (herdr)"
 
 [experimental]
+kitty_graphics = true
 pane_history = false
