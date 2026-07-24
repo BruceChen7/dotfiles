@@ -377,23 +377,11 @@ end, { silent = true, desc = "Close unused buffers" })
 -- ============================================================================
 -- Preview Window Integration (vim-preview plugin)
 -- ============================================================================
--- <m-;>: Open/jump to preview window
+-- <m-;>: Ctags definition peek (floating window)
 -- <m-:>: Close preview window
-local first_init_window = {}
 vim.keymap.set("n", "<m-;>", function()
-  local winid = vim.api.nvim_get_current_win()
-  local tabid = vim.api.nvim_get_current_tabpage()
-  local winid_str = tostring(winid)
-  local tabid_str = tostring(tabid)
-  local preview_id = vim.fn["preview#preview_check"]()
-  local key = winid_str .. ":" .. tabid_str
-  vim.cmd "PreviewTag"
-  -- preview_id == 0 means no preview window
-  if not first_init_window[key] or preview_id == 0 then
-    vim.cmd "wincmd p"
-    first_init_window[key] = true
-  end
-end, { desc = "Open/jump to preview window" })
+  require("pi.cr-tags").definition_peek()
+end, { desc = "Ctags definition peek (floating window)" })
 
 vim.keymap.set("n", "<m-:", ":PreviewClose<CR>", { desc = "Close preview window" })
 

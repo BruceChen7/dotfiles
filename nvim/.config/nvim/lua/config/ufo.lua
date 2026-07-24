@@ -189,8 +189,8 @@ vim.keymap.set("n", "K", function()
     return
   end
 
-  vim.lsp.buf.hover()
-end, { desc = "Peek Folded Lines / CR Annotation / Convert Timestamp / Convert Hex / LSP Hover" })
+  require("pi.cr-tags").definition_peek()
+end, { desc = "Peek Folded Lines / CR Annotation / Convert Timestamp / Convert Hex / Ctags Definition" })
 
 vim.keymap.set("n", "zgj", function()
   local ufo = require "ufo"

@@ -73,7 +73,7 @@ vim.g.gutentags_auto_add_gtags_cscope = 0
 vim.g.gutentags_define_advanced_commands = 1
 -- ignore files in `.gitignore`
 -- Avoid having a large database
-vim.g.gutentags_file_list_command = "fd -e c -e h -e cpp -e cc -e go -e rs -e zig -e py -e lua -e ts -e tsx -e js -e jsx -e mjs"
+vim.g.gutentags_file_list_command = "fd -e c -e h -e cpp -e cc -e go -e rs -e zig -e py -e lua -e ts -e tsx -e js -e jsx -e mjs --hidden"
 -- for debug
 vim.g.gutentags_trace = 0
 
