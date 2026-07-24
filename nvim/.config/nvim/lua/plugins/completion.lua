@@ -43,6 +43,10 @@ return {
         -- Remove 'buffer' if you don't want text completions, by default it's only enabled when LSP returns no items
         default = { "lsp", "path", "snippets", "buffer" },
         providers = {
+          ["pi-edit"] = {
+            name = "pi-edit",
+            module = "pi.edit-bridge.source",
+          },
           thesaurus = {
             name = "blink-cmp-words",
             module = "blink-cmp-words.thesaurus",
@@ -80,6 +84,7 @@ return {
             inherit_defaults = true,
           },
           gitcommit = { "dictionary", "buffer", "path" },
+          ["pi-prompt"] = { "pi-edit" },
         },
       },
       cmdline = {
@@ -133,4 +138,3 @@ return {
     },
   },
 }
-
