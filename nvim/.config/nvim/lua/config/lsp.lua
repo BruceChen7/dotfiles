@@ -147,6 +147,16 @@ require("lsp-setup").setup {
         "--stdio",
       },
       format = false,
+      root_markers = {
+        "vite.config.ts",
+        "vite.config.js",
+        "vite.config.mts",
+        "vite.config.mjs",
+        "svelte.config.js",
+        "svelte.config.mjs",
+        "package.json",
+        ".git",
+      },
     },
     ty = {
       cmd = { "ty", "server" },
