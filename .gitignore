@@ -11,3 +11,17 @@
 /.claude/
 /.worktrees/
 /.pi/
+
+# local machine-specific scripts and tools (stow-managed)
+# dot-local/ is tracked, only its build artifacts are ignored (see patterns below)
+.local/
+
+# backup files
+*.old
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.egg-info/
+uv.lock
+.venv/

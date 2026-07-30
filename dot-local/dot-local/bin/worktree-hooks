@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec uv run --directory "${HOME}/.local/bin/worktree-hooks-pkg" worktree-hooks "$@"

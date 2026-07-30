@@ -1,0 +1,12 @@
+[project]
+name = "worktree-hooks"
+version = "0.1.0"
+description = "Project-level worktree lifecycle hook framework"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+worktree-hooks = "worktree_hooks.cli:main"
+
+[tool.uv]
+package = true
