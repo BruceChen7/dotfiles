@@ -99,7 +99,8 @@ local function sidebar_position_cursor()
       vim.api.nvim_win_set_cursor(ui.sidebar_win, { 1 + ui.files_cursor, 0 })
     end
   elseif ui.focus == "comments" then
-    if #ui.comments > 0 then
+    local comments = require "pi.cr.comments"
+    if #comments.comments > 0 then
       vim.api.nvim_win_set_cursor(ui.sidebar_win, { comments_header_line() + ui.comments_cursor, 0 })
     end
   end
@@ -504,7 +505,8 @@ end
 
 local function select_file(index)
   ui.app.selected = index
-  render_diff()
+  ui.files_cursor = index
+  M.render_all()
   focus "diff"
 end
 
@@ -542,7 +544,8 @@ local function jump_to_comment(comment)
   for index, file in ipairs(ui.app.files) do
     if file.path == comment.file then
       ui.app.selected = index
-      render_diff()
+      ui.files_cursor = index
+      M.render_all()
       for bufline, entry in pairs(ui.diff_map) do
         if entry.new_line == comment.line and entry.kind ~= "del" then
           vim.api.nvim_win_set_cursor(ui.diff_win, { bufline, 0 })
