@@ -328,6 +328,7 @@ local HELP_LINES = {
   "  dc             delete comment on line",
   "  ]c / [c        next / prev hunk",
   "  ]f / [f        next / prev file",
+  "  <Tab> / <S-Tab>  next / prev file (wraps)",
   "  { / }          more / less context",
   "  e              open real file at line",
   "Common",
@@ -335,7 +336,8 @@ local HELP_LINES = {
   "  ?              this help",
   "  <C-n>          toggle sidebar",
   "  <C-h> / <C-l>  focus files / diff",
-  "  <Tab> / h / l  cycle panels",
+  "  <Tab> / <S-Tab>  next / prev file (wraps)",
+  "  <C-Tab> / <C-S-Tab>  cycle panels",
 }
 
 local function show_help()
@@ -540,6 +542,16 @@ local function file_move(direction)
   end
 end
 
+-- Like file_move but wraps around at both ends of the file list.
+local function file_cycle(direction)
+  local count = #ui.app.files
+  if count == 0 then
+    return
+  end
+  local selected = ui.app.selected or 1
+  select_file(((selected - 1 + direction) % count) + 1)
+end
+
 local function jump_to_comment(comment)
   for index, file in ipairs(ui.app.files) do
     if file.path == comment.file then
@@ -711,12 +723,15 @@ local function set_keymaps()
   vim.keymap.set("n", "?", show_help, { buffer = ui.sidebar_buf })
 
   vim.keymap.set("n", "<Tab>", function()
+    file_cycle(1)
+  end, { buffer = ui.sidebar_buf })
+  vim.keymap.set("n", "<S-Tab>", function()
+    file_cycle(-1)
+  end, { buffer = ui.sidebar_buf })
+  vim.keymap.set("n", "<C-Tab>", function()
     cycle_focus(1)
   end, { buffer = ui.sidebar_buf })
-  vim.keymap.set("n", "l", function()
-    cycle_focus(1)
-  end, { buffer = ui.sidebar_buf })
-  vim.keymap.set("n", "h", function()
+  vim.keymap.set("n", "<C-S-Tab>", function()
     cycle_focus(-1)
   end, { buffer = ui.sidebar_buf })
   vim.keymap.set("n", "<C-h>", function()
@@ -771,16 +786,22 @@ local function set_keymaps()
     focus "files"
   end, { buffer = ui.diff_buf })
   vim.keymap.set("n", "<Tab>", function()
-    focus "files"
+    file_cycle(1)
   end, { buffer = ui.diff_buf })
-  vim.keymap.set("n", "h", function()
-    focus "files"
+  vim.keymap.set("n", "<S-Tab>", function()
+    file_cycle(-1)
   end, { buffer = ui.diff_buf })
-  vim.keymap.set("n", "l", function()
-    focus "files"
+  vim.keymap.set("n", "<C-Tab>", function()
+    cycle_focus(1)
+  end, { buffer = ui.diff_buf })
+  vim.keymap.set("n", "<C-S-Tab>", function()
+    cycle_focus(-1)
   end, { buffer = ui.diff_buf })
   vim.keymap.set("n", "<C-h>", function()
     focus "files"
+  end, { buffer = ui.diff_buf })
+  vim.keymap.set("n", "<C-l>", function()
+    focus "diff"
   end, { buffer = ui.diff_buf })
   vim.keymap.set("n", "<C-n>", toggle_sidebar, { buffer = ui.diff_buf })
 end
