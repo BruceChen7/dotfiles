@@ -123,22 +123,59 @@ function M.parse(output)
   return files
 end
 
+--- Untracked, non-ignored worktree files. `git diff` never shows these, so the
+--- default worktree scope synthesizes their diffs via `git diff --no-index`.
+--- Note: no `-z` flag — vim.fn.system mangles NUL bytes; newline-split output
+--- matches the same boundary the diff parser already assumes.
+---@return string[]
+local function untracked_files()
+  local output = vim.fn.system { "git", "ls-files", "--others", "--exclude-standard" }
+  local files = {}
+  for path in output:gmatch "[^\n]+" do
+    files[#files + 1] = path
+  end
+  return files
+end
+
 --- Run `git diff --no-color --no-ext-diff -U<context> <diffArgs>` and return raw output.
 --- --no-ext-diff defends against user-level `diff.external` / GIT_EXTERNAL_DIFF / attributes
 --- drivers (e.g. a side-by-side difft tool): the review UI always needs plain unified text.
+--- In the default worktree scope, untracked files are appended as synthesized
+--- `git diff --no-index /dev/null <file>` diffs so new files show up for review.
 ---@param diff_args string[] scope args from the CR session (e.g. {"--cached"}, {"main...HEAD"})
 ---@param context_lines number|nil hunk context lines (default 3)
 ---@return string
 function M.run(diff_args, context_lines)
+  local context = tostring(context_lines or DEFAULT_CONTEXT_LINES)
   local args = {
     "git",
     "diff",
     "--no-color",
     "--no-ext-diff",
-    "-U" .. tostring(context_lines or DEFAULT_CONTEXT_LINES),
+    "-U" .. context,
   }
   vim.list_extend(args, diff_args or {})
-  return vim.fn.system(args)
+  local output = vim.fn.system(args)
+
+  if #(diff_args or {}) == 0 then
+    for _, path in ipairs(untracked_files()) do
+      local file_diff = vim.fn.system {
+        "git",
+        "diff",
+        "--no-index",
+        "--no-color",
+        "--no-ext-diff",
+        "-U" .. context,
+        "--",
+        "/dev/null",
+        path,
+      }
+      if file_diff ~= "" then
+        output = output .. file_diff
+      end
+    end
+  end
+  return output
 end
 
 --- Collect the hunk containing a new-side line (or the hunk whose new range starts at it).

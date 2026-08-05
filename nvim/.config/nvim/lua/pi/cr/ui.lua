@@ -20,7 +20,7 @@ local ui = {
   file_rows = {}, -- sidebar bufline -> file index
   comment_rows = {}, -- sidebar bufline -> comment index
   diff_map = {}, -- diff bufline -> {kind, new_line, old_line, hunk}
-  hunk_rows = {}, -- diff bufline of each hunk header
+  hunk_rows = {}, -- diff bufline of each hunk's first +/- line (header row as fallback)
 }
 
 local EXIT_MENU = {
@@ -198,7 +198,9 @@ local function render_diff()
     for _, hunk in ipairs(file.hunks) do
       lines[#lines + 1] =
         string.format("@@ -%d,%d +%d,%d @@", hunk.old_start, hunk.old_count, hunk.new_start, hunk.new_count)
-      ui.hunk_rows[#ui.hunk_rows + 1] = #lines
+      local hunk_header_row = #lines
+      -- Land on the first changed (+/-) line of the hunk, falling back to the header.
+      local first_change_row = hunk_header_row
       for _, entry in ipairs(hunk.lines) do
         local prefix = entry.kind == "add" and "+" or (entry.kind == "del" and "-" or " ")
         lines[#lines + 1] = prefix .. entry.text
@@ -208,7 +210,11 @@ local function render_diff()
           old_line = entry.old_line,
           hunk = hunk,
         }
+        if first_change_row == hunk_header_row and (entry.kind == "add" or entry.kind == "del") then
+          first_change_row = #lines
+        end
       end
+      ui.hunk_rows[#ui.hunk_rows + 1] = first_change_row
     end
   end
   set_lines(ui.diff_buf, lines)
