@@ -55,30 +55,46 @@ warn() {
 
 agents_json=""
 ws_json=""
+tabs_json=""
 cur_ws=""
+cur_tab=""
 
 fetch_data() {
   agents_json="$("$herdr" agent list 2>/dev/null)" || fail "herdr agent list 失败(herdr 在运行吗?)"
   ws_json="$("$herdr" workspace list 2>/dev/null)" || fail "herdr workspace list 失败"
+  tabs_json="$("$herdr" tab list 2>/dev/null)" || fail "herdr tab list 失败"
 
   printf '%s' "$agents_json" | jq -e '.result.agents' >/dev/null 2>&1 \
     || fail "agent list 返回了无法解析的数据"
   printf '%s' "$ws_json" | jq -e '.result.workspaces' >/dev/null 2>&1 \
     || fail "workspace list 返回了无法解析的数据"
+  printf '%s' "$tabs_json" | jq -e '.result.tabs' >/dev/null 2>&1 \
+    || fail "tab list 返回了无法解析的数据"
 
   cur_ws="$(printf '%s' "$ws_json" | jq -r '.result.workspaces[] | select(.focused == true) | .label' | head -1)"
   cur_ws="${cur_ws:-?}"
+  cur_tab="$(printf '%s' "$tabs_json" | jq -r '
+    .result.tabs[] | select(.focused == true)
+    | if (.label | test("^[0-9]+$")) then "t\(.label)" else .label end
+  ' | head -1)"
+  cur_tab="${cur_tab:-?}"
 }
 
 build_lines() {
-  local wsmap agents_map
+  local wsmap agents_map tabmap
   wsmap="$(printf '%s' "$ws_json" \
     | jq -c '[.result.workspaces[] | {key: .workspace_id, value: {label: .label, pane_count: .pane_count}}] | from_entries')"
   agents_map="$(printf '%s' "$agents_json" \
     | jq -c '[.result.agents[] | {ws: .workspace_id, status: .agent_status}]')"
+  tabmap="$(printf '%s' "$tabs_json" | jq -c '
+    [.result.tabs[] | {key: .tab_id,
+                       value: (if (.label | test("^[0-9]+$")) then "t\(.label)" else .label end)}]
+    | from_entries
+  ')"
 
-  # Agent rows: focused first, then original order.
-  printf '%s' "$agents_json" | jq -r --argjson ws "$wsmap" '
+  # Agent rows: focused first, then original order. Tab label (t<N> for
+  # unnamed tabs, custom name otherwise) shown after the workspace label.
+  printf '%s' "$agents_json" | jq -r --argjson ws "$wsmap" --argjson tabs "$tabmap" '
     .result.agents | sort_by(.focused | not) | .[] |
     [
       ((.agent_status) as $s |
@@ -87,6 +103,7 @@ build_lines() {
          elif $s == "done" then "\u001b[34m●\u001b[0m"
          else "\u001b[90m●\u001b[0m" end))
         + " agent  " + (.name // .agent) + " @ " + ($ws[.workspace_id].label // .workspace_id)
+        + " · " + ($tabs[.tab_id] // "")
         + "  " + (.cwd
             | sub("^/Users/ming.chen/work/"; "~/work/")
             | sub("^/Users/ming.chen/"; "~/"))
@@ -188,7 +205,7 @@ while true; do
     --ansi \
     --delimiter=$'\t' \
     --with-nth=1 \
-    --header "当前 space: $cur_ws    enter=focus · alt+enter=attach · ctrl+x=close · esc=退出" \
+    --header "当前 space: $cur_ws · 当前 tab: $cur_tab    enter=focus · alt+enter=attach · ctrl+x=close · esc=退出" \
     --preview "bash '$here/preview.sh' {}" \
     --preview-window=right:40% \
     --bind 'alt-enter:accept' \

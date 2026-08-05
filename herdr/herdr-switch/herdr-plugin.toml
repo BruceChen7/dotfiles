@@ -9,7 +9,7 @@
 
 id = "herdr-switch"
 name = "Herdr Switch"
-version = "0.2.1"
+version = "0.3.0"
 min_herdr_version = "0.7.4"
 description = "Search spaces and agents with fzf; focus or attach"
 platforms = ["linux", "macos"]
