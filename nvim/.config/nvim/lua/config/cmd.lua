@@ -37,6 +37,7 @@ end
 -- Project name resolution configurations
 local project_mappings = {
   ecommerce = { project = "core", module = nil },
+  ["growthapi"] = { project = "usergrowth", module = "growthapi" },
   ["knowledge-platform"] = { project = nil, module = "knowledgeplatform" },
   ["adminasynctask"] = { project = "chatbotcommon", module = "adminasynctask" },
   ["crm-proactive-push "] = { project = "crm", module = "proactivepush" },
