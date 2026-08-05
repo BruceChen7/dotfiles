@@ -41,6 +41,12 @@ resize_mode = "prefix+alt+r"       # prefix+r → rename_workspace
 agent_panel_sort = "priority"
 
 show_agent_labels_on_pane_borders = false
+
+# Start with the sidebar collapsed (spaces + agents list hidden).
+# Takes effect on the next launch.
+sidebar_start_collapsed = true
+# "hidden" = zero width when collapsed; "compact" keeps a narrow status rail.
+sidebar_collapsed_mode = "hidden"
 [ui.toast]
 delivery = "terminal"
 
