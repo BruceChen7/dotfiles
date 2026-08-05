@@ -1,0 +1,31 @@
+# herdr-switch — herdr plugin definition
+# ======================================
+# Search-and-jump switcher for spaces (workspaces) and agents.
+# prefix+f → herdr-switch.switch → opens a popup pane running picker.sh (fzf).
+#   enter      → agent.focus / workspace.focus (jump to the pane / space)
+#   alt+enter  → agent attach --takeover (take over the agent's terminal)
+#
+# Install: herdr plugin link ~/work/dotfiles/herdr/herdr-switch
+
+id = "herdr-switch"
+name = "Herdr Switch"
+version = "0.2.1"
+min_herdr_version = "0.7.4"
+description = "Search spaces and agents with fzf; focus or attach"
+platforms = ["linux", "macos"]
+
+# The keybinding entry point: opens the picker popup pane.
+[[actions]]
+id = "switch"
+title = "Search space / agent and jump"
+contexts = ["global"]
+command = ["bash", "open.sh"]
+
+# The popup that hosts the fzf picker. Closes automatically when picker.sh exits.
+[[panes]]
+id = "picker"
+title = "herdr-switch"
+placement = "popup"
+width = "85%"
+height = "65%"
+command = ["bash", "picker.sh"]

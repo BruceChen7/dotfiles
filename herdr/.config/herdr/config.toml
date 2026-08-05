@@ -93,6 +93,21 @@ type = "plugin_action"
 command = "herdr-nav.clear-screen"
 description = "clear screen (herdr)"
 
+# =============================================================================
+# herdr-switch — prefix+f space/agent search & jump (popup + fzf)
+# =============================================================================
+# Opens a popup picker listing agents + workspaces from the current session.
+#   enter      → agent.focus / workspace.focus (jump)
+#   alt+enter  → agent attach --takeover (take over the agent's terminal)
+# Plugin source: ~/work/dotfiles/herdr/herdr-switch/ (link: herdr plugin link)
+# =============================================================================
+
+[[keys.command]]
+key = "prefix+f"
+type = "plugin_action"
+command = "herdr-switch.switch"
+description = "search space / agent and jump (herdr-switch)"
+
 [experimental]
 kitty_graphics = true
 pane_history = false
