@@ -9,7 +9,7 @@
 
 id = "herdr-switch"
 name = "Herdr Switch"
-version = "0.5.1"
+version = "0.5.3"
 min_herdr_version = "0.7.4"
 description = "Search spaces and agents with fzf; focus or attach"
 platforms = ["linux", "macos"]
@@ -46,14 +46,3 @@ placement = "popup"
 width = "85%"
 height = "65%"
 command = ["bash", "picker.sh"]
-
-# Big-text banner shown briefly after prefix+0 toggles. toggle.sh opens it
-# with a dynamic width; it renders the focused space name and exits after a
-# short delay, so the popup closes itself. The pane underneath is untouched.
-[[panes]]
-id = "bigtext"
-title = "herdr-switch"
-placement = "popup"
-width = "50%"
-height = 12
-command = ["bash", "bigtext.sh"]

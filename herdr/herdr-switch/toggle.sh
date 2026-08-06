@@ -32,15 +32,15 @@ out="$("$herdr" workspace focus "$target" 2>&1)" || {
   exit 0
 }
 
-# Popup banner: show which space we just landed on (label + path), then the
-# popup closes itself after ~1.2s. Opened with --no-focus so the popup never
-# steals the cursor — typing during the banner goes to the target pane.
-"$herdr" plugin pane open \
-  --plugin "${HERDR_PLUGIN_ID:-herdr-switch}" \
-  --entrypoint bigtext \
-  --width 64 \
-  --height 8 \
-  --no-focus >/dev/null 2>&1 || true
+# Toast banner: show which space we just landed on. Uses the TUI toast
+# (delivery = "herdr"), the same surface as the built-in "reloaded config"
+# notification. Non-modal — typing is never interrupted. Display duration
+# is hardcoded per kind in herdr (UpdateInstalled → 3s), not configurable.
+# If a toast is already visible the new one is rejected (single slot); that
+# is fine for the toggle flow.
+label="$("$herdr" workspace get "$target" 2>/dev/null | jq -r '.result.workspace.label // empty' || true)"
+[ -n "$label" ] || label="$target"
+"$herdr" notification show "→ $label" --body "workspace $target" --sound none >/dev/null 2>&1 || true
 
 # Swap: the jumped-to space becomes current, the old current becomes
 # previous (idempotent with what the workspace.focused event hook writes).

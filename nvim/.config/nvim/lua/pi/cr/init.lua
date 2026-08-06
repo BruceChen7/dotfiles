@@ -20,7 +20,8 @@ local app = {
   config = nil,
   files = {},
   selected = 1,
-  context_lines = 3,
+  context_lines = 20,
+  git_status = nil, -- {staged, unstaged} for the sidebar sections
   finish = nil, -- wired below
 }
 
@@ -148,7 +149,8 @@ end
 -- Finish / abort
 -- ---------------------------------------------------------------------------
 
----@param quit boolean quit nvim after submitting (true for the q flow, false for the e flow)
+---@param quit boolean quit nvim after submitting (true for the q / menu flows;
+--- the e flow no longer submits — opening a real file keeps the session alive)
 function app.finish(quit)
   state.finished = true
   submit_annotations(function(ok)
@@ -193,10 +195,20 @@ function M.start()
   vim.api.nvim_create_user_command("CRFinish", M.finish, {})
   vim.api.nvim_create_user_command("CRAbort", M.abort, {})
 
+  -- Typed :qa! / :qall! discard comments instead of submitting (VimLeavePre
+  -- would otherwise submit them). cmap verified headless; v:exiting cannot
+  -- distinguish qa from qa! (both 0), so a command-line map is the hook.
+  vim.cmd "cmap qa! CRAbort"
+  vim.cmd "cmap qall! CRAbort"
+
   vim.api.nvim_create_autocmd("VimLeavePre", {
     group = vim.api.nvim_create_augroup("PiCRVimLeave", { clear = true }),
     callback = function()
       if state.finished then
+        return
+      end
+      -- :cq / non-zero exits are abort paths: never submit.
+      if vim.v.exiting ~= 0 then
         return
       end
       local socket_path = cr_socket_path()
@@ -233,6 +245,8 @@ function M.start()
     vim.schedule(function()
       app.config = state.config
       comments.set_config(state.config)
+      local git = require "pi.cr.git"
+      app.git_status = git.status()
       app.files = diff.parse(diff.run(state.config.diffArgs, app.context_lines))
       if #app.files == 0 then
         notify "No changes to review"

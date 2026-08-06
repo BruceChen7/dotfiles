@@ -48,7 +48,8 @@ sidebar_start_collapsed = true
 # "hidden" = zero width when collapsed; "compact" keeps a narrow status rail.
 sidebar_collapsed_mode = "hidden"
 [ui.toast]
-delivery = "terminal"
+delivery = "herdr"
+delay_seconds = 1
 
 # =============================================================================
 # herdr-nav-plugin — Ctrl+h/j/k/l pane & Vim split navigation

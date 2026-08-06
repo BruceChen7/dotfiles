@@ -17,17 +17,48 @@ local ui = {
   focus = "files", -- "files" | "comments" | "diff"
   files_cursor = 1,
   comments_cursor = 1,
-  file_rows = {}, -- sidebar bufline -> file index
+  file_rows = {}, -- sidebar bufline -> {section, path, diff_index}
+  file_row_lines = {}, -- sidebar row index -> bufline (all file rows across sections)
   comment_rows = {}, -- sidebar bufline -> comment index
+  comments_header = 1, -- sidebar bufline of the "Comments" header
+  current_diff_path = nil, -- path of the diff currently rendered in the pane
   diff_map = {}, -- diff bufline -> {kind, new_line, old_line, hunk}
   hunk_rows = {}, -- diff bufline of each hunk's first +/- line (header row as fallback)
 }
 
 local EXIT_MENU = {
   "1. 回传 Pi（发送注释并结束 review）",
-  "2. 仅退出（保留注释，不发送）",
+  "2. 仅退出（不发送注释）",
   "3. 取消",
 }
+
+local CONTEXT_STEPS = { 20, 50, 100, 99999 }
+
+--- Next context step in the expansion ladder (clamped at both ends).
+---@param current number
+---@param direction number 1 expand, -1 collapse
+---@return number
+function M.next_context_step(current, direction)
+  local index = 1
+  for i, step in ipairs(CONTEXT_STEPS) do
+    if current <= step then
+      index = i
+      break
+    end
+  end
+  local next_index = math.max(1, math.min(index + direction, #CONTEXT_STEPS))
+  return CONTEXT_STEPS[next_index]
+end
+
+local function is_worktree_scope()
+  local diff_args = ui.app.config and ui.app.config.diffArgs or {}
+  return #diff_args == 0 or diff_args[1] == "--cached"
+end
+
+local function is_staged_scope()
+  local diff_args = ui.app.config and ui.app.config.diffArgs or {}
+  return diff_args[1] == "--cached"
+end
 
 local function notify(message, level)
   local resolved_level = level or vim.log.levels.INFO
@@ -89,19 +120,16 @@ end
 -- Sidebar
 -- ---------------------------------------------------------------------------
 
-local function comments_header_line()
-  return 2 + #ui.app.files + 1
-end
-
 local function sidebar_position_cursor()
   if ui.focus == "files" then
-    if #ui.app.files > 0 then
-      vim.api.nvim_win_set_cursor(ui.sidebar_win, { 1 + ui.files_cursor, 0 })
+    local bufline = ui.file_row_lines[ui.files_cursor]
+    if bufline then
+      vim.api.nvim_win_set_cursor(ui.sidebar_win, { bufline, 0 })
     end
   elseif ui.focus == "comments" then
     local comments = require "pi.cr.comments"
     if #comments.comments > 0 then
-      vim.api.nvim_win_set_cursor(ui.sidebar_win, { comments_header_line() + ui.comments_cursor, 0 })
+      vim.api.nvim_win_set_cursor(ui.sidebar_win, { ui.comments_header + ui.comments_cursor, 0 })
     end
   end
 end
@@ -119,14 +147,57 @@ local function render_sidebar()
   local comments = require "pi.cr.comments"
   local lines = { "Files" }
   ui.file_rows = {}
-  for index, file in ipairs(ui.app.files) do
-    local mark = index == ui.app.selected and "▸" or " "
-    local counts = file.binary and "binary" or string.format("+%d -%d", file.additions, file.deletions)
-    lines[#lines + 1] = string.format("%s %s  %s", mark, file.path, counts)
-    ui.file_rows[#lines] = index
+  ui.file_row_lines = {}
+  ui.comments_header = 1
+
+  local function add_file_row(section, path, label, diff_index)
+    lines[#lines + 1] = label
+    ui.file_rows[#lines] = { section = section, path = path, diff_index = diff_index }
+    ui.file_row_lines[#ui.file_row_lines + 1] = #lines
   end
+
+  local function add_diff_block(section, header)
+    if #ui.app.files == 0 then
+      return
+    end
+    lines[#lines + 1] = "  " .. header
+    for index, file in ipairs(ui.app.files) do
+      local mark = index == ui.app.selected and "▸" or " "
+      local counts = file.binary and "binary" or string.format("+%d -%d", file.additions, file.deletions)
+      add_file_row(section, file.path, string.format("%s %s  %s", mark, file.path, counts), index)
+    end
+  end
+
+  local function add_status_block(section, header, entries)
+    if not entries or #entries == 0 then
+      return
+    end
+    lines[#lines + 1] = "  " .. header
+    for _, entry in ipairs(entries) do
+      add_file_row(section, entry.path, string.format(" %s  %s", entry.code, entry.path), nil)
+    end
+  end
+
+  if is_worktree_scope() then
+    local status = ui.app.git_status or {}
+    if is_staged_scope() then
+      add_status_block("unstaged", "Unstaged", status.unstaged)
+      add_diff_block("staged", "Staged")
+    else
+      add_diff_block("unstaged", "Unstaged")
+      add_status_block("staged", "Staged", status.staged)
+    end
+  else
+    for index, file in ipairs(ui.app.files) do
+      local mark = index == ui.app.selected and "▸" or " "
+      local counts = file.binary and "binary" or string.format("+%d -%d", file.additions, file.deletions)
+      add_file_row("unstaged", file.path, string.format("%s %s  %s", mark, file.path, counts), index)
+    end
+  end
+
   lines[#lines + 1] = ""
   lines[#lines + 1] = "Comments"
+  ui.comments_header = #lines - 1
   ui.comment_rows = {}
   for index, comment in ipairs(comments.comments) do
     local label = comments.type_labels[comment.type] or "NOTE"
@@ -137,7 +208,7 @@ local function render_sidebar()
   set_lines(ui.sidebar_buf, lines)
   vim.api.nvim_buf_clear_namespace(ui.sidebar_buf, NS, 0, -1)
   vim.api.nvim_buf_set_extmark(ui.sidebar_buf, NS, 0, 0, { hl_group = "Title" })
-  vim.api.nvim_buf_set_extmark(ui.sidebar_buf, NS, comments_header_line() - 1, 0, { hl_group = "Title" })
+  vim.api.nvim_buf_set_extmark(ui.sidebar_buf, NS, ui.comments_header - 1, 0, { hl_group = "Title" })
   sidebar_position_cursor()
 end
 
@@ -184,12 +255,24 @@ end
 
 local function render_diff()
   local file = ui.app.files[ui.app.selected]
+  local same_file = file ~= nil and ui.current_diff_path == file.path
+  -- Capture the cursor anchor before rewriting the buffer so a refresh of the
+  -- same file (context ladder, stage toggle) does not jump to the top.
+  local anchor = nil
+  if same_file and ui.diff_win and vim.api.nvim_win_is_valid(ui.diff_win) then
+    local entry = ui.diff_map[vim.api.nvim_win_get_cursor(ui.diff_win)[1]]
+    if entry then
+      anchor = entry.new_line or (entry.hunk and entry.hunk.new_start)
+    end
+  end
   ui.diff_map = {}
   ui.hunk_rows = {}
   if not file then
+    ui.current_diff_path = nil
     set_lines(ui.diff_buf, { "No changes" })
     return
   end
+  ui.current_diff_path = file.path
 
   local lines = { string.format("── %s (%s) ──", file.path, file_counts(file)) }
   if file.binary then
@@ -219,6 +302,14 @@ local function render_diff()
   end
   set_lines(ui.diff_buf, lines)
   render_diff_comments()
+  if same_file and anchor then
+    for bufline, entry in pairs(ui.diff_map) do
+      if entry.new_line == anchor then
+        vim.api.nvim_win_set_cursor(ui.diff_win, { bufline, 0 })
+        break
+      end
+    end
+  end
 end
 
 function M.render_all()
@@ -335,14 +426,15 @@ local HELP_LINES = {
   "  ]c / [c        next / prev hunk",
   "  ]f / [f        next / prev file",
   "  <Tab> / <S-Tab>  next / prev file (wraps)",
-  "  { / }          more / less context",
-  "  e              open real file at line",
+  "  { / }          more / less context (20/50/100/full)",
+  "  e              open real file at line (q to return)",
   "Common",
   "  q              close (exit menu when comments exist)",
+  "  :qa            submit comments and quit",
+  "  :qa!           discard comments and quit",
   "  ?              this help",
   "  <C-n>          toggle sidebar",
   "  <C-h> / <C-l>  focus files / diff",
-  "  <Tab> / <S-Tab>  next / prev file (wraps)",
   "  <C-Tab> / <C-S-Tab>  cycle panels",
 }
 
@@ -460,19 +552,6 @@ local function exit_menu(on_submit)
   end)
 end
 
-local function close_ui()
-  for _, win in ipairs { ui.help_win, ui.menu_win, ui.sidebar_win, ui.diff_win } do
-    if win and vim.api.nvim_win_is_valid(win) then
-      vim.api.nvim_win_close(win, false)
-    end
-  end
-  ui.help_win = nil
-  ui.menu_win = nil
-  ui.sidebar_win = nil
-  ui.diff_win = nil
-  pcall(vim.cmd, "tabclose")
-end
-
 --- q / quit flow: exit menu when comments exist, else quit directly.
 function M.close(app)
   local comments = require "pi.cr.comments"
@@ -485,26 +564,19 @@ function M.close(app)
   end
 end
 
---- Open a real file, closing the review UI. Raises the exit menu when comments exist.
+--- Open a real file in a new tab; buffer-local `q` returns to the review tab.
+--- The review UI stays open and comments stay in the session.
 ---@param path string
 ---@param line number|nil
 function M.open_real_file(app, path, line)
-  local comments = require "pi.cr.comments"
-  local function do_open()
-    close_ui()
-    vim.cmd("edit " .. vim.fn.fnameescape(path))
-    if line and line > 0 then
-      pcall(vim.api.nvim_win_set_cursor, 0, { line, 0 })
-    end
+  vim.cmd("tabnew " .. vim.fn.fnameescape(path))
+  vim.b.pi_cr_review_file = true
+  if line and line > 0 then
+    pcall(vim.api.nvim_win_set_cursor, 0, { line, 0 })
   end
-  if #comments.comments > 0 then
-    exit_menu(function()
-      app.finish(false)
-      do_open()
-    end)
-  else
-    do_open()
-  end
+  vim.keymap.set("n", "q", function()
+    vim.cmd "tabclose"
+  end, { buffer = 0, nowait = true })
 end
 
 -- ---------------------------------------------------------------------------
@@ -513,7 +585,14 @@ end
 
 local function select_file(index)
   ui.app.selected = index
-  ui.files_cursor = index
+  -- Sync the sidebar cursor to the row of this diff file (rows span both sections).
+  for row_index, bufline in ipairs(ui.file_row_lines) do
+    local row = ui.file_rows[bufline]
+    if row and row.diff_index == index then
+      ui.files_cursor = row_index
+      break
+    end
+  end
   M.render_all()
   focus "diff"
 end
@@ -562,7 +641,13 @@ local function jump_to_comment(comment)
   for index, file in ipairs(ui.app.files) do
     if file.path == comment.file then
       ui.app.selected = index
-      ui.files_cursor = index
+      for row_index, bufline in ipairs(ui.file_row_lines) do
+        local row = ui.file_rows[bufline]
+        if row and row.diff_index == index then
+          ui.files_cursor = row_index
+          break
+        end
+      end
       M.render_all()
       for bufline, entry in pairs(ui.diff_map) do
         if entry.new_line == comment.line and entry.kind ~= "del" then
@@ -603,7 +688,7 @@ end
 
 local function sidebar_move(direction)
   if ui.focus == "files" then
-    ui.files_cursor = math.max(1, math.min(ui.files_cursor + direction, #ui.app.files))
+    ui.files_cursor = math.max(1, math.min(ui.files_cursor + direction, #ui.file_row_lines))
     sidebar_position_cursor()
   elseif ui.focus == "comments" then
     local comments = require "pi.cr.comments"
@@ -614,9 +699,18 @@ end
 
 local function sidebar_enter()
   if ui.focus == "files" then
-    local index = ui.file_rows[vim.fn.line "."]
-    if index then
-      select_file(index)
+    local row = ui.file_rows[vim.fn.line "."]
+    if not row then
+      return
+    end
+    if row.diff_index then
+      select_file(row.diff_index)
+      return
+    end
+    if is_staged_scope() then
+      notify "该文件尚未 stage（当前 scope 为 staged）；Space 可暂存"
+    else
+      notify "该文件已 stage，当前 scope 不展示其 diff；Space 可撤销"
     end
   elseif ui.focus == "comments" then
     local comments = require "pi.cr.comments"
@@ -642,23 +736,27 @@ local function sidebar_space()
   if ui.focus ~= "files" then
     return
   end
-  local index = ui.file_rows[vim.fn.line "."]
-  if not index then
+  local row = ui.file_rows[vim.fn.line "."]
+  if not row then
     return
   end
   local git = require "pi.cr.git"
-  git.toggle(ui.app, ui.app.files[index].path)
+  git.toggle(ui.app, row.section, row.path)
 end
 
 local function sidebar_open_file()
   if ui.focus ~= "files" then
     return
   end
-  local index = ui.file_rows[vim.fn.line "."]
-  if index then
-    local file = ui.app.files[index]
-    M.open_real_file(ui.app, file.path, first_change_line(file.path))
+  local row = ui.file_rows[vim.fn.line "."]
+  if not row then
+    return
   end
+  local line = 1
+  if row.diff_index then
+    line = first_change_line(row.path)
+  end
+  M.open_real_file(ui.app, row.path, line)
 end
 
 local function toggle_sidebar()
@@ -769,12 +867,12 @@ local function set_keymaps()
   end, { buffer = ui.diff_buf })
   vim.keymap.set("n", "dc", diff_delete, { buffer = ui.diff_buf })
   vim.keymap.set("n", "{", function()
-    ui.app.context_lines = math.min(10, (ui.app.context_lines or 3) + 1)
+    ui.app.context_lines = M.next_context_step(ui.app.context_lines, 1)
     local git = require "pi.cr.git"
     git.refresh(ui.app)
   end, { buffer = ui.diff_buf })
   vim.keymap.set("n", "}", function()
-    ui.app.context_lines = math.max(1, (ui.app.context_lines or 3) - 1)
+    ui.app.context_lines = M.next_context_step(ui.app.context_lines, -1)
     local git = require "pi.cr.git"
     git.refresh(ui.app)
   end, { buffer = ui.diff_buf })
@@ -852,5 +950,7 @@ function M.open(app)
   M.render_all()
   focus "files"
 end
+
+M._ui = ui -- smoke-test hook
 
 return M

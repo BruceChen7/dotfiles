@@ -4,6 +4,9 @@
 local M = {}
 
 local DEFAULT_CONTEXT_LINES = 3
+--- Upper bound for comment snippet length (in diff lines): prevents full-file
+--- snippets when the diff pane is expanded to 50/100/full context.
+local SNIPPET_MAX_LINES = 10
 
 ---@class CrHunkLine
 ---@field kind "context"|"add"|"del"
@@ -192,16 +195,17 @@ function M.hunk_for_new_line(file, new_line)
 end
 
 --- Build a snippet of diff lines (with +/-/space prefixes) around a new-side line.
+--- Total length is capped at SNIPPET_MAX_LINES (anchored roughly centered on
+--- the target line) so expanded pane context never blows up the follow-up message.
 ---@param file CrFileDiff
 ---@param new_line number
----@param context number|nil lines of context before/after (default 3)
+---@param context number|nil lines of context before/after (ignored above the cap)
 ---@return string
 function M.snippet_for_new_line(file, new_line, context)
   local hunk = M.hunk_for_new_line(file, new_line)
   if not hunk then
     return ""
   end
-  local context_n = context or DEFAULT_CONTEXT_LINES
 
   -- Anchor: index of the first line whose new_line >= target (adds/context only).
   local anchor = nil
@@ -214,8 +218,8 @@ function M.snippet_for_new_line(file, new_line, context)
   -- Deleted-only hunks (or target before any add/context): anchor at hunk start.
   anchor = anchor or 1
 
-  local first = math.max(1, anchor - context_n)
-  local last = math.min(#hunk.lines, anchor + context_n)
+  local first = math.max(1, anchor - math.floor(SNIPPET_MAX_LINES / 2))
+  local last = math.min(#hunk.lines, first + SNIPPET_MAX_LINES - 1)
   local out = {}
   for index = first, last do
     local entry = hunk.lines[index]
