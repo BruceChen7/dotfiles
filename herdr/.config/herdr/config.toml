@@ -48,7 +48,7 @@ sidebar_start_collapsed = true
 # "hidden" = zero width when collapsed; "compact" keeps a narrow status rail.
 sidebar_collapsed_mode = "hidden"
 [ui.toast]
-delivery = "herdr"
+delivery = "terminal"
 delay_seconds = 1
 
 # =============================================================================
