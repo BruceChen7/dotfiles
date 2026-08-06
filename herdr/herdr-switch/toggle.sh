@@ -32,6 +32,16 @@ out="$("$herdr" workspace focus "$target" 2>&1)" || {
   exit 0
 }
 
+# Popup banner: show which space we just landed on (label + path), then the
+# popup closes itself after ~1.2s. Opened with --no-focus so the popup never
+# steals the cursor — typing during the banner goes to the target pane.
+"$herdr" plugin pane open \
+  --plugin "${HERDR_PLUGIN_ID:-herdr-switch}" \
+  --entrypoint bigtext \
+  --width 64 \
+  --height 8 \
+  --no-focus >/dev/null 2>&1 || true
+
 # Swap: the jumped-to space becomes current, the old current becomes
 # previous (idempotent with what the workspace.focused event hook writes).
 mkdir -p "$state_dir"

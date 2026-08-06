@@ -143,8 +143,10 @@ build_lines() {
   ' >> "$lines_file"
 }
 
-# close flow for ctrl+x. Returns 0 when the action finished (success or
-# cancelled) so the loop refreshes; non-fatal errors warn and return 0 too.
+# close flow for ctrl+x. Return codes tell the loop where to park the cursor:
+#   0 = closed (list shrank by one)
+#   1 = cancelled by the user (list unchanged)
+#   2 = failed after warn (list unchanged)
 do_close() {
   local kind="$1" target="$2" name="$3" raw="$4" running="$5"
   local need_confirm=0 msg="" ans out
@@ -172,18 +174,18 @@ do_close() {
       y|Y) ;;
       *)
         printf '\033[90m已取消\033[0m\n'
-        return 0
+        return 1
         ;;
     esac
   fi
 
   if [ "$kind" = "agent" ]; then
     out="$("$herdr" pane close "$target" 2>&1)" \
-      || { warn "pane close 失败: $name\n$(printf '%s' "$out" | head -5)"; return 0; }
+      || { warn "pane close 失败: $name\n$(printf '%s' "$out" | head -5)"; return 2; }
     printf '\033[90mclosed agent %s\033[0m\n' "$name"
   else
     out="$("$herdr" workspace close "$target" 2>&1)" \
-      || { warn "workspace close 失败: $name\n$(printf '%s' "$out" | head -5)"; return 0; }
+      || { warn "workspace close 失败: $name\n$(printf '%s' "$out" | head -5)"; return 2; }
     printf '\033[90mclosed space %s\033[0m\n' "$name"
   fi
   return 0
@@ -194,11 +196,21 @@ lines_file="$(mktemp)"
 trap 'rm -f "$lines_file"' EXIT
 
 query=""
+next_index=""   # 1-based row to park the cursor on after a close refresh
 
 while true; do
   # Re-pull data every iteration so closes are reflected in the list.
   fetch_data
   build_lines
+
+  # Park the cursor after a close: fzf starts on the first row, so use the
+  # load event to jump straight to the row above the deleted one.
+  # (start:down+... does not work — cursor movement in the start event is
+  # reset; load:pos(N) is the working form.)
+  binds="alt-enter:accept"
+  if [ -n "$next_index" ] && [ "$next_index" -gt 1 ]; then
+    binds="$binds,load:pos($next_index)"
+  fi
 
   set +e
   out="$(cat "$lines_file" | fzf \
@@ -208,7 +220,7 @@ while true; do
     --header "当前 space: $cur_ws · 当前 tab: $cur_tab    enter=focus · alt+enter=attach · ctrl+x=close · esc=退出" \
     --preview "bash '$here/preview.sh' {}" \
     --preview-window=right:40% \
-    --bind 'alt-enter:accept' \
+    --bind "$binds" \
     --print-query \
     --expect=alt-enter,ctrl-x \
     --query "$query" \
@@ -218,6 +230,7 @@ while true; do
   )"
   rc=$?
   set -e
+  next_index=""
 
   # c. Cancelled / no match → silent exit.
   if [ "$rc" -ne 0 ]; then
@@ -238,7 +251,23 @@ while true; do
 
   case "$key" in
     ctrl-x)
-      do_close "$kind" "$target" "$name" "$raw" "$running"
+      # 1-based index of the selected row in the filtered list, using fzf's
+      # own --filter so ordering matches the interactive view exactly.
+      # (|| true: grep no-match must not kill the script under pipefail.)
+      idx="$(cat "$lines_file" \
+        | fzf --filter "$query" --with-nth=1 --delimiter=$'\t' --no-sort --ansi 2>/dev/null \
+        | grep -n -F -x -- "$line" | head -1 | cut -d: -f1 || true)"
+      idx="${idx:-1}"
+      do_close "$kind" "$target" "$name" "$raw" "$running" || true
+      rc2=$?
+      if [ "$rc2" = 0 ]; then
+        # Closed: the row above the deleted one (which shrank the list by one).
+        next_index=$((idx - 1))
+        [ "$next_index" -lt 1 ] && next_index=1
+      else
+        # Cancelled or failed: list unchanged, keep the cursor on the same row.
+        next_index=$idx
+      fi
       continue
       ;;
     alt-enter)
