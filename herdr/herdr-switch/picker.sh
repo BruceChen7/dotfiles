@@ -20,8 +20,8 @@
 #   3  target    — pane_id (agent) | workspace_id (space)
 #   4  status    — display status: agent_status / "当前" / "-"
 #   5  ws        — workspace label
-#   6  cwd       — full cwd ("" for space rows)
-#   7  title     — terminal title / "<n> panes"
+#   6  cwd       — cwd with $HOME redacted to ~ ("" for space rows)
+#   7  title     — terminal title (also redacted) / "<n> panes"
 #   8  name      — agent label / workspace label
 #   9  raw       — raw status for logic: agent_status / "current" / "-"
 #   10 running   — count of running (working|blocked) agents: agent 1|0, space N
@@ -92,32 +92,42 @@ build_lines() {
     | from_entries
   ')"
 
+  # Redact the home directory (derived from $HOME, not a hardcoded user) so
+  # the username never appears in the list or the preview pane.
+  home_re="$(printf '%s' "$HOME" | sed 's/[][(){}.*+?^$|\\]/\\&/g')"
+
   # Agent rows: focused first, then original order. Tab label (t<N> for
   # unnamed tabs, custom name otherwise) shown after the workspace label.
-  printf '%s' "$agents_json" | jq -r --argjson ws "$wsmap" --argjson tabs "$tabmap" '
+  printf '%s' "$agents_json" | jq -r --argjson ws "$wsmap" --argjson tabs "$tabmap" --arg home "$HOME" --arg home_re "$home_re" '
+    def redact:
+      if . == $home then "~"
+      elif startswith($home + "/") then "~/" + .[($home | length) + 1:]
+      else . end;
+    def redact_anywhere: gsub($home_re + "(?=/|$)"; "~");
     .result.agents | sort_by(.focused | not) | .[] |
-    [
-      ((.agent_status) as $s |
-        (if $s == "working" then "\u001b[33m●\u001b[0m"
-         elif $s == "blocked" then "\u001b[31m●\u001b[0m"
-         elif $s == "done" then "\u001b[34m●\u001b[0m"
-         else "\u001b[90m●\u001b[0m" end))
-        + " agent  " + (.name // .agent) + " @ " + ($ws[.workspace_id].label // .workspace_id)
-        + " · " + ($tabs[.tab_id] // "")
-        + "  " + (.cwd
-            | sub("^/Users/ming.chen/work/"; "~/work/")
-            | sub("^/Users/ming.chen/"; "~/"))
-        + (if .focused then "  ◀ 聚焦" else "" end),
-      "agent",
-      .pane_id,
-      .agent_status + (if .focused then " (聚焦)" else "" end),
-      ($ws[.workspace_id].label // .workspace_id),
-      .cwd,
-      (.terminal_title_stripped // ""),
-      (.name // .agent),
-      .agent_status,
-      (if .agent_status == "working" or .agent_status == "blocked" then "1" else "0" end)
-    ] | @tsv
+    ((.cwd | redact) as $cwd_disp |
+     ((.terminal_title_stripped // "" | redact_anywhere) as $title_disp |
+      [
+        ((.agent_status) as $s |
+          (if $s == "working" then "\u001b[33m●\u001b[0m"
+           elif $s == "blocked" then "\u001b[31m●\u001b[0m"
+           elif $s == "done" then "\u001b[34m●\u001b[0m"
+           else "\u001b[90m●\u001b[0m" end))
+          + " agent  " + (.name // .agent) + " @ " + ($ws[.workspace_id].label // .workspace_id)
+          + " · " + ($tabs[.tab_id] // "")
+          + "  " + $cwd_disp
+          + (if .focused then "  ◀ 聚焦" else "" end),
+        "agent",
+        .pane_id,
+        .agent_status + (if .focused then " (聚焦)" else "" end),
+        ($ws[.workspace_id].label // .workspace_id),
+        $cwd_disp,
+        $title_disp,
+        (.name // .agent),
+        .agent_status,
+        (if .agent_status == "working" or .agent_status == "blocked" then "1" else "0" end)
+      ] | @tsv
+     ))
   ' > "$lines_file"
 
   # Workspace rows: focused first, then original order. Spaces with running
