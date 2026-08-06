@@ -114,6 +114,21 @@ type = "plugin_action"
 command = "herdr-switch.switch"
 description = "search space / agent and jump (herdr-switch)"
 
+# =============================================================================
+# herdr-switch — prefix+0 toggle between the last two spaces
+# =============================================================================
+# Jumps to the previously focused space and back (tmux last-window style).
+# Implemented by the herdr-switch plugin: a workspace.focused event hook
+# (record.sh) tracks the two most recent spaces, toggle.sh jumps between them.
+# (Was prefix+^; ^ needed shift+6 so it was hard to reach.)
+# =============================================================================
+
+[[keys.command]]
+key = "prefix+0"
+type = "plugin_action"
+command = "herdr-switch.toggle"
+description = "toggle between the last two spaces (herdr-switch)"
+
 [experimental]
 kitty_graphics = true
 pane_history = false

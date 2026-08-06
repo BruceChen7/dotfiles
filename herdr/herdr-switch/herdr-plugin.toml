@@ -9,7 +9,7 @@
 
 id = "herdr-switch"
 name = "Herdr Switch"
-version = "0.3.0"
+version = "0.4.1"
 min_herdr_version = "0.7.4"
 description = "Search spaces and agents with fzf; focus or attach"
 platforms = ["linux", "macos"]
@@ -20,6 +20,23 @@ id = "switch"
 title = "Search space / agent and jump"
 contexts = ["global"]
 command = ["bash", "open.sh"]
+
+# prefix+^ — toggle between the two most recently focused spaces.
+# Reads the previous-space record maintained by the workspace.focused
+# event hook (record.sh) and jumps back, then swaps current/previous so
+# the next press returns. Mirrors tmux's last-window.
+[[actions]]
+id = "toggle"
+title = "Toggle between the last two spaces"
+contexts = ["global"]
+command = ["bash", "toggle.sh"]
+
+# Track the two most recent spaces. Fires on every focus change (including
+# same-space pane switches, which record.sh ignores because the workspace
+# id is unchanged). Updates the state file atomically.
+[[events]]
+on = "workspace.focused"
+command = ["bash", "record.sh"]
 
 # The popup that hosts the fzf picker. Closes automatically when picker.sh exits.
 [[panes]]
