@@ -14,6 +14,13 @@
 # After a close the popup stays open and the list refreshes (keeping the
 # query) so several workspaces can be cleaned up in a row; esc exits.
 #
+# Ordering: rows are sorted by workspace recency (tracked by record.sh's
+# workspace.focused hook) — least recently used at the top, MOST RECENTLY
+# USED AT THE BOTTOM. On open the cursor is parked on the bottom row
+# (fzf load:last), so the last-used space is one Enter away; ↑ walks back
+# through history. After a close the cursor parks above the deleted row
+# (load:pos) instead.
+#
 # Line format (tab-separated):
 #   1  display   — ANSI-colored text shown in the list (fzf searches only this)
 #   2  kind      — agent | space
@@ -59,6 +66,16 @@ tabs_json=""
 cur_ws=""
 cur_tab=""
 
+# Recency list (most recent first) maintained by record.sh via the
+# workspace.focused event hook. Rows are sorted so that the most recently
+# used workspace sits at the BOTTOM of the list (and fzf's load:last parks
+# the cursor there on open). Missing/corrupt state → empty list; rows for
+# workspaces that were never recorded fall back to the original order at
+# the top of the list.
+state_dir="${HERDR_PLUGIN_STATE_DIR:-$HOME/.config/herdr/plugins/state/herdr-switch}"
+recent="$(jq -c '(.recent // []) as $r | if ($r | type) == "array" then $r else [] end' "$state_dir/prev-space.json" 2>/dev/null || true)"
+recent="${recent:-[]}"
+
 fetch_data() {
   agents_json="$("$herdr" agent list 2>/dev/null)" || fail "herdr agent list 失败(herdr 在运行吗?)"
   ws_json="$("$herdr" workspace list 2>/dev/null)" || fail "herdr workspace list 失败"
@@ -96,15 +113,18 @@ build_lines() {
   # the username never appears in the list or the preview pane.
   home_re="$(printf '%s' "$HOME" | sed 's/[][(){}.*+?^$|\\]/\\&/g')"
 
-  # Agent rows: focused first, then original order. Tab label (t<N> for
+  # Agent rows: sorted by recency — most recently used workspace (and the
+  # focused one) at the BOTTOM, least recent / never-recorded at the top
+  # (original order preserved by jq's stable sort). Tab label (t<N> for
   # unnamed tabs, custom name otherwise) shown after the workspace label.
-  printf '%s' "$agents_json" | jq -r --argjson ws "$wsmap" --argjson tabs "$tabmap" --arg home "$HOME" --arg home_re "$home_re" '
+  printf '%s' "$agents_json" | jq -r --argjson ws "$wsmap" --argjson tabs "$tabmap" --argjson recent "$recent" --arg home "$HOME" --arg home_re "$home_re" '
     def redact:
       if . == $home then "~"
       elif startswith($home + "/") then "~/" + .[($home | length) + 1:]
       else . end;
     def redact_anywhere: gsub($home_re + "(?=/|$)"; "~");
-    .result.agents | sort_by(.focused | not) | .[] |
+    def recency_rank: (.workspace_id) as $wid | if .focused then 1 else -((($recent | index($wid)) // 999999)) end;
+    .result.agents | sort_by(recency_rank) | .[] |
     ((.cwd | redact) as $cwd_disp |
      ((.terminal_title_stripped // "" | redact_anywhere) as $title_disp |
       [
@@ -130,10 +150,12 @@ build_lines() {
      ))
   ' > "$lines_file"
 
-  # Workspace rows: focused first, then original order. Spaces with running
-  # agents are marked with a yellow icon; the running count goes to field 10.
-  printf '%s' "$ws_json" | jq -r --argjson agents "$agents_map" '
-    .result.workspaces | sort_by(.focused | not) | .[] |
+  # Workspace rows: sorted by recency like the agents — most recently used
+  # (and the current space) at the BOTTOM. Spaces with running agents are
+  # marked with a yellow icon; the running count goes to field 10.
+  printf '%s' "$ws_json" | jq -r --argjson agents "$agents_map" --argjson recent "$recent" '
+    def recency_rank: (.workspace_id) as $wid | if .focused then 1 else -((($recent | index($wid)) // 999999)) end;
+    .result.workspaces | sort_by(recency_rank) | .[] |
     (.workspace_id as $wid |
       ([ $agents[] | select(.ws == $wid and (.status == "working" or .status == "blocked")) ] | length) as $running |
       [
@@ -214,20 +236,36 @@ while true; do
   build_lines
 
   # Park the cursor after a close: fzf starts on the first row, so use the
-  # load event to jump straight to the row above the deleted one.
+  # start/load events to jump straight to the row above the deleted one.
+  # On a fresh open, start:last + load:last park the cursor on the most
+  # recently used workspace at the bottom of the list (shell-history style:
+  # newest last). --sync makes start fire after the input is complete, so
+  # start:last is reliable; load:last is kept as a second shot.
   # (start:down+... does not work — cursor movement in the start event is
-  # reset; load:pos(N) is the working form.)
+  # reset; pos(N)/last are the working forms.)
   binds="alt-enter:accept"
-  if [ -n "$next_index" ] && [ "$next_index" -gt 1 ]; then
-    binds="$binds,load:pos($next_index)"
+  if [ -n "$next_index" ]; then
+    binds="$binds,start:pos($next_index),load:pos($next_index)"
+  else
+    binds="$binds,start:last,load:last"
   fi
+
+  # Debug aid (always-on, tiny): dump the exact list + recency this popup
+  # built (with timestamp, pid and binds) so ordering/cursor problems can
+  # be diagnosed from /tmp without guessing.
+  # `reverse-list` keeps the prompt at the bottom while displaying input
+  # rows top-to-bottom, so the last/current row remains at the bottom.
+  cp "$lines_file" /tmp/herdr-switch-lines.txt 2>/dev/null || true
+  printf '{"ts":"%s","pid":%s,"recent":%s,"binds":"%s"}\n' "$(date +%H:%M:%S)" "$$" "$recent" "$binds" > /tmp/herdr-switch-recent.txt
 
   set +e
   out="$(cat "$lines_file" | fzf \
     --ansi \
+    --layout=reverse-list \
+    --sync \
     --delimiter=$'\t' \
     --with-nth=1 \
-    --header "当前 space: $cur_ws · 当前 tab: $cur_tab    enter=focus · alt+enter=attach · ctrl+x=close · esc=退出" \
+    --header "当前 space: $cur_ws · 当前 tab: $cur_tab    enter=focus · alt+enter=attach · ctrl+x=close · esc=退出 · 最近使用在底部" \
     --preview "bash '$here/preview.sh' {}" \
     --preview-window=right:40% \
     --bind "$binds" \
