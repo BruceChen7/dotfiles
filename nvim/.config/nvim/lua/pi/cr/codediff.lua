@@ -570,9 +570,13 @@ local function reinstall_keymaps()
   local lifecycle = require "codediff.ui.lifecycle"
   local explorer = lifecycle.get_explorer(state.tabpage)
   if explorer and explorer.split and explorer.split.bufnr and vim.api.nvim_buf_is_valid(explorer.split.bufnr) then
+    local buf = explorer.split.bufnr
     vim.keymap.set("n", "c", function()
       notify "注释需在右侧 diff 窗格定位行后按 c"
-    end, { buffer = explorer.split.bufnr, desc = "Pi CR comment (hint)" })
+    end, { buffer = buf, desc = "Pi CR comment (hint)" })
+    -- q must end the review from every pane, not just the diff windows.
+    vim.keymap.set("n", "q", M.exit_flow, { buffer = buf, desc = "Pi CR exit review" })
+    vim.keymap.set("n", "?", M.show_help, { buffer = buf, desc = "Pi CR help" })
   end
 end
 
