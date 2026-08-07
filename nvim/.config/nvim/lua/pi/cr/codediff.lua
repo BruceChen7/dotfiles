@@ -505,48 +505,54 @@ end
 -- Focus navigation (C-h/j/k/l across explorer / diff panes / comments dock)
 -- ---------------------------------------------------------------------------
 
---- Ordered CR areas: explorer, original, modified, comments dock.
----@return number[] valid window ids
+--- Ordered CR areas: explorer, diff (both panes), comments dock.
+---@return { explorer: number, diff: number, dock: number } valid window ids (0 = missing)
 local function area_windows()
   local lifecycle = require "codediff.ui.lifecycle"
-  local wins = {}
   local explorer = lifecycle.get_explorer(state.tabpage)
   local ew = explorer and explorer.split and explorer.split.winid
-  if ew and vim.api.nvim_win_is_valid(ew) then
-    wins[#wins + 1] = ew
+  if ew and not vim.api.nvim_win_is_valid(ew) then
+    ew = nil
   end
   local orig_win, mod_win = lifecycle.get_windows(state.tabpage)
-  if orig_win and vim.api.nvim_win_is_valid(orig_win) then
-    wins[#wins + 1] = orig_win
-  end
-  if mod_win and vim.api.nvim_win_is_valid(mod_win) then
-    wins[#wins + 1] = mod_win
-  end
   local dw = panel._state and panel._state.win
-  if dw and vim.api.nvim_win_is_valid(dw) then
-    wins[#wins + 1] = dw
+  if dw and not vim.api.nvim_win_is_valid(dw) then
+    dw = nil
   end
-  return wins
+  return {
+    explorer = ew or 0,
+    diff = (mod_win and vim.api.nvim_win_is_valid(mod_win) and mod_win) or (orig_win and vim.api.nvim_win_is_valid(
+      orig_win
+    ) and orig_win) or 0,
+    dock = dw or 0,
+  }
 end
 
---- Move focus between CR areas. delta 1 = right/next, -1 = left/prev (wraps).
---- Overrides the global TmuxNavigate keys inside the CR tab so C-h/j/k/l stay
---- within the review UI instead of hopping to another tmux pane.
+--- Move focus between CR areas (explorer / diff / dock). delta 1 = next,
+--- -1 = prev (wraps). Inside the diff area both panes count as one area, so
+--- C-h from the modified pane goes to the explorer, not the original pane.
+--- Overrides the global TmuxNavigate keys inside the CR tab.
 function M.focus_area(delta)
-  local wins = area_windows()
-  if #wins == 0 then
-    return
-  end
+  local areas = area_windows()
+  local order = { "explorer", "diff", "dock" }
   local current = vim.api.nvim_get_current_win()
   local index = 1
-  for i, win in ipairs(wins) do
-    if win == current then
+  for i, name in ipairs(order) do
+    if areas[name] == current then
       index = i
       break
     end
   end
-  local next_index = ((index - 1 + delta) % #wins) + 1
-  vim.api.nvim_set_current_win(wins[next_index])
+  -- The original pane belongs to the diff area even though areas.diff prefers
+  -- the modified window as its focus target.
+  if current ~= areas.explorer and current ~= areas.dock then
+    index = 2
+  end
+  local next_index = ((index - 1 + delta) % #order) + 1
+  local target = areas[order[next_index]]
+  if target ~= 0 and vim.api.nvim_win_is_valid(target) then
+    vim.api.nvim_set_current_win(target)
+  end
 end
 
 -- ---------------------------------------------------------------------------
