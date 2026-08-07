@@ -74,6 +74,16 @@ local function modified_buf()
   return nil
 end
 
+---@return number|nil
+local function original_buf()
+  local lifecycle = require "codediff.ui.lifecycle"
+  local orig_win = lifecycle.get_windows(state.tabpage)
+  if orig_win and vim.api.nvim_win_is_valid(orig_win) then
+    return vim.api.nvim_win_get_buf(orig_win)
+  end
+  return nil
+end
+
 -- ---------------------------------------------------------------------------
 -- Anchor resolution: cursor position in a codediff buffer -> (file, line)
 -- ---------------------------------------------------------------------------
@@ -126,7 +136,7 @@ function M.anchor_at(first, last)
   local inline = session.layout == "inline"
   local is_modified = buf == modified_buf() or (inline and buf == session.result_bufnr)
   if not is_modified then
-    if buf == session.original_bufnr then
+    if buf == original_buf() then
       notify "注释仅可添加在右侧（新版本）窗格"
     end
     return nil
@@ -170,7 +180,7 @@ function M.delete_at_cursor()
     return
   end
   local buf = vim.api.nvim_get_current_buf()
-  if buf ~= session.modified_bufnr and buf ~= session.result_bufnr then
+  if buf ~= modified_buf() and buf ~= session.result_bufnr then
     notify "注释删除仅可在右侧（新版本）窗格操作"
     return
   end
@@ -191,8 +201,7 @@ function M.new_comment()
     notify "先在 diff 窗格定位要注释的行（c）"
     return
   end
-  local session = session_of()
-  local buf = session and session.modified_bufnr
+  local buf = modified_buf()
   local snippet = buf and snippet_at(buf, anchor.line) or ""
   comments.add {
     file = anchor.file,
@@ -231,10 +240,10 @@ end
 
 function M.render_cards()
   local session = session_of()
-  if not session or not session.modified_bufnr then
+  local buf = modified_buf()
+  if not session or not buf then
     return
   end
-  local buf = session.modified_bufnr
   vim.api.nvim_buf_clear_namespace(buf, NS_CARDS, 0, -1)
   local file = current_file()
   if not file or file == "" then
@@ -661,6 +670,11 @@ local function install_view_keymaps(original_buf, modified_buf)
       vim.keymap.set("n", "<leader>cd", function()
         panel.toggle()
       end, { buffer = buf, desc = "Pi CR toggle comments dock" })
+      for _, k in ipairs { { "<C-h>", -1 }, { "<C-k>", -1 }, { "<C-l>", 1 }, { "<C-j>", 1 } } do
+        vim.keymap.set("n", k[1], function()
+          M.focus_area(k[2])
+        end, { buffer = buf, desc = "Pi CR focus " .. (k[2] < 0 and "prev area" or "next area") })
+      end
     end
   end
 end
@@ -674,7 +688,7 @@ local function reinstall_keymaps()
   if not session then
     return
   end
-  install_view_keymaps(session.original_bufnr, session.modified_bufnr)
+  install_view_keymaps(original_buf(), modified_buf())
   local lifecycle = require "codediff.ui.lifecycle"
   local explorer = lifecycle.get_explorer(state.tabpage)
   if explorer and explorer.split and explorer.split.bufnr and vim.api.nvim_buf_is_valid(explorer.split.bufnr) then
