@@ -4,8 +4,8 @@ require("snacks").setup {
   image = {
     enabled = true,
     doc = {
-      max_width = 140,
-      max_height = 60,
+      max_width = 1400,
+      max_height = 600,
     },
   },
   terminal = { enabled = true },
