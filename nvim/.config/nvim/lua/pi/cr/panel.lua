@@ -130,6 +130,7 @@ function M.build_tree_rows(comments, folds)
             id = comment.id,
             type = comment.type,
             line = comment.line,
+            end_line = comment.end_line,
             text = comment.comment:gsub("\n", " / "),
             hidden = file_row.hidden,
           }
@@ -192,7 +193,9 @@ local function render()
         local caret = state.folds[row.key] and "▸" or "▾"
         lines[#lines + 1] = string.format("%s%s %s (%d)", indent, caret, row.label, row.count or 0)
       else
-        local prefix = string.format("[%s] :%d  ", TYPE_LABELS[row.type] or "NOTE", row.line or 0)
+        local range = row.end_line and row.end_line > row.line and string.format("%d-%d", row.line, row.end_line)
+          or tostring(row.line or 0)
+        local prefix = string.format("[%s] :%s  ", TYPE_LABELS[row.type] or "NOTE", range)
         local text_width = math.max(8, width - #prefix)
         lines[#lines + 1] = indent .. prefix .. truncate(row.text or "", text_width)
         if row.id == state.sel_id then
@@ -340,6 +343,13 @@ function M.open()
   map("<leader>cd", function()
     M.close()
   end)
+  if state.actions.focus then
+    for _, k in ipairs { { "<C-h>", -1 }, { "<C-k>", -1 }, { "<C-l>", 1 }, { "<C-j>", 1 } } do
+      map(k[1], function()
+        state.actions.focus(k[2])
+      end)
+    end
+  end
 
   -- select the first comment, if any
   if not state.sel_id then

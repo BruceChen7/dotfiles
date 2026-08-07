@@ -387,6 +387,7 @@ local PI_VIEW_HELP = {
   { "dc", "delete comment on line" },
   { "e", "open real file at line (q to return)" },
   { "<leader>cd", "toggle comments dock" },
+  { "<C-h> / <C-l>", "focus prev / next area (explorer · diff · dock)" },
   { "q", "exit review (menu when comments exist)" },
 }
 
@@ -498,6 +499,54 @@ function M.show_help()
   vim.keymap.set("n", "q", close, { buffer = buf, nowait = true })
   vim.keymap.set("n", "<Esc>", close, { buffer = buf, nowait = true })
   vim.keymap.set("n", "<CR>", close, { buffer = buf, nowait = true })
+end
+
+-- ---------------------------------------------------------------------------
+-- Focus navigation (C-h/j/k/l across explorer / diff panes / comments dock)
+-- ---------------------------------------------------------------------------
+
+--- Ordered CR areas: explorer, original, modified, comments dock.
+---@return number[] valid window ids
+local function area_windows()
+  local lifecycle = require "codediff.ui.lifecycle"
+  local wins = {}
+  local explorer = lifecycle.get_explorer(state.tabpage)
+  local ew = explorer and explorer.split and explorer.split.winid
+  if ew and vim.api.nvim_win_is_valid(ew) then
+    wins[#wins + 1] = ew
+  end
+  local orig_win, mod_win = lifecycle.get_windows(state.tabpage)
+  if orig_win and vim.api.nvim_win_is_valid(orig_win) then
+    wins[#wins + 1] = orig_win
+  end
+  if mod_win and vim.api.nvim_win_is_valid(mod_win) then
+    wins[#wins + 1] = mod_win
+  end
+  local dw = panel._state and panel._state.win
+  if dw and vim.api.nvim_win_is_valid(dw) then
+    wins[#wins + 1] = dw
+  end
+  return wins
+end
+
+--- Move focus between CR areas. delta 1 = right/next, -1 = left/prev (wraps).
+--- Overrides the global TmuxNavigate keys inside the CR tab so C-h/j/k/l stay
+--- within the review UI instead of hopping to another tmux pane.
+function M.focus_area(delta)
+  local wins = area_windows()
+  if #wins == 0 then
+    return
+  end
+  local current = vim.api.nvim_get_current_win()
+  local index = 1
+  for i, win in ipairs(wins) do
+    if win == current then
+      index = i
+      break
+    end
+  end
+  local next_index = ((index - 1 + delta) % #wins) + 1
+  vim.api.nvim_set_current_win(wins[next_index])
 end
 
 -- ---------------------------------------------------------------------------
@@ -633,6 +682,11 @@ local function reinstall_keymaps()
     vim.keymap.set("n", "<leader>cd", function()
       panel.toggle()
     end, { buffer = buf, desc = "Pi CR toggle comments dock" })
+    for _, k in ipairs { { "<C-h>", -1 }, { "<C-k>", -1 }, { "<C-l>", 1 }, { "<C-j>", 1 } } do
+      vim.keymap.set("n", k[1], function()
+        M.focus_area(k[2])
+      end, { buffer = buf, desc = "Pi CR focus " .. (k[2] < 0 and "prev area" or "next area") })
+    end
   end
 end
 
