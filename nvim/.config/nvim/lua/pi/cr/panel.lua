@@ -301,6 +301,11 @@ function M.open(actions)
   map("q", function()
     state.actions.exit()
   end)
+  map("?", function()
+    if state.actions.help then
+      state.actions.help()
+    end
+  end)
 
   -- select the first comment, if any
   for _, row in ipairs(M.visible_rows(state.rows)) do

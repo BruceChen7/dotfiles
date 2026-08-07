@@ -325,6 +325,132 @@ function M.redraw_all()
 end
 
 -- ---------------------------------------------------------------------------
+-- Help overlay (replaces codediff's own ? which cannot list our keymaps)
+-- ---------------------------------------------------------------------------
+
+--- codediff view keys, read live from its config so reconfigurations show up.
+---@type {names: string[], desc: string}[]
+local CODEDIFF_HELP = {
+  { names = { "next_hunk", "prev_hunk" }, desc = "next / prev hunk" },
+  { names = { "next_file", "prev_file" }, desc = "next / prev file" },
+  { names = { "toggle_layout" }, desc = "toggle inline / side-by-side" },
+  { names = { "toggle_stage" }, desc = "stage / unstage current file" },
+  { names = { "stage_hunk", "unstage_hunk" }, desc = "stage / unstage hunk" },
+  { names = { "diff_get", "diff_put" }, desc = "get / put change" },
+  { names = { "open_in_prev_tab" }, desc = "open real file in previous tab" },
+}
+
+local PI_VIEW_HELP = {
+  { "c", "comment on line (visual: range)" },
+  { "dc", "delete comment on line" },
+  { "e", "open real file at line (q to return)" },
+  { "q", "exit review (menu when comments exist)" },
+}
+
+local PI_PANEL_HELP = {
+  { "j / k", "move selection" },
+  { "<CR>", "jump to comment (syncs explorer + card)" },
+  { "d", "delete selected comment" },
+  { "za", "fold / unfold group" },
+  { "c", "new comment (anchored at diff cursor line)" },
+  { "q", "exit review" },
+}
+
+--- Build the combined help lines.
+---@return string[]
+function M.help_lines()
+  local keymaps = {}
+  local ok = pcall(function()
+    keymaps = require("codediff.config").options.keymaps or {}
+  end)
+  local km = ok and keymaps.view or {}
+
+  local lines = { "Pi CR review keymaps" }
+  local function key(name)
+    local v = km[name]
+    if type(v) == "string" then
+      return v
+    end
+    if type(v) == "table" then
+      local flat = {}
+      for _, k in ipairs(v) do
+        if type(k) == "string" then
+          flat[#flat + 1] = k
+        end
+      end
+      return #flat > 0 and table.concat(flat, " / ") or nil
+    end
+    return nil
+  end
+
+  local function add_section(title, rows)
+    lines[#lines + 1] = ""
+    lines[#lines + 1] = title
+    for _, row in ipairs(rows) do
+      local keys, desc = row[1], row[2]
+      if keys then
+        lines[#lines + 1] = string.format("  %-16s %s", keys, desc)
+      end
+    end
+  end
+
+  local codediff_rows = {}
+  for _, entry in ipairs(CODEDIFF_HELP) do
+    local keys = {}
+    for _, name in ipairs(entry.names) do
+      local k = key(name)
+      if k then
+        keys[#keys + 1] = k
+      end
+    end
+    if #keys > 0 then
+      codediff_rows[#codediff_rows + 1] = { table.concat(keys, " / "), entry.desc }
+    end
+  end
+  add_section("Diff view (codediff)", codediff_rows)
+  add_section("Comments (Pi CR)", PI_VIEW_HELP)
+  add_section("Comments panel (right dock)", PI_PANEL_HELP)
+  lines[#lines + 1] = ""
+  lines[#lines + 1] = "Common: :qa submit + quit · :qa! discard + quit"
+  return lines
+end
+
+--- Floating help window.
+function M.show_help()
+  local lines = M.help_lines()
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.bo[buf].bufhidden = "wipe"
+  vim.bo[buf].modifiable = true
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  vim.bo[buf].modifiable = false
+  local width = 56
+  local height = math.min(#lines + 1, vim.o.lines - 4)
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    row = math.max(1, math.floor(vim.o.lines * 0.15)),
+    col = math.max(1, math.floor((vim.o.columns - width) / 2)),
+    width = width,
+    height = height,
+    style = "minimal",
+    border = "rounded",
+    zindex = 120,
+    title = " Pi CR help ",
+    title_pos = "center",
+  })
+  local function close()
+    if vim.api.nvim_win_is_valid(win) then
+      vim.api.nvim_win_close(win, false)
+    end
+    if vim.api.nvim_buf_is_valid(buf) then
+      vim.api.nvim_buf_delete(buf, { force = true })
+    end
+  end
+  vim.keymap.set("n", "q", close, { buffer = buf, nowait = true })
+  vim.keymap.set("n", "<Esc>", close, { buffer = buf, nowait = true })
+  vim.keymap.set("n", "<CR>", close, { buffer = buf, nowait = true })
+end
+
+-- ---------------------------------------------------------------------------
 -- Exit flow (q keeps "end the review" semantics)
 -- ---------------------------------------------------------------------------
 
@@ -426,6 +552,7 @@ local function install_view_keymaps(original_buf, modified_buf)
       vim.keymap.set("n", "dc", M.delete_at_cursor, { buffer = buf, desc = "Pi CR delete comment" })
       vim.keymap.set("n", "e", M.open_real_file_at_cursor, { buffer = buf, desc = "Pi CR open real file" })
       vim.keymap.set("n", "q", M.exit_flow, { buffer = buf, desc = "Pi CR exit review" })
+      vim.keymap.set("n", "?", M.show_help, { buffer = buf, desc = "Pi CR help" })
     end
   end
 end
@@ -628,6 +755,7 @@ function M.open(app)
       delete = M.delete_comment_by_id,
       new_comment = M.new_comment,
       exit = M.exit_flow,
+      help = M.show_help,
     }
     M.render_cards()
     notify("Opened CR review for " .. tostring(app.config.label or ""))
