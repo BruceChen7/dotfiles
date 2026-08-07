@@ -276,7 +276,11 @@ function M.add(context)
   vim.bo[bufnr].filetype = "markdown"
   vim.b[bufnr].pi_cr_context = context
 
-  local title_line = string.format("%s:%d", relative_file(context.file), context.line)
+  local range = context.end_line
+      and context.end_line > context.line
+      and string.format("%d-%d", context.line, context.end_line)
+    or tostring(context.line)
+  local title_line = string.format("%s:%s", relative_file(context.file), range)
   local win = vim.api.nvim_open_win(bufnr, true, comment_editor_options(input_type, title_line))
   vim.api.nvim_win_set_cursor(win, { 1, 0 })
 
