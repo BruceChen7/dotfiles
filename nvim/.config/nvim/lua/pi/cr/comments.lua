@@ -132,6 +132,13 @@ function M.clear_all()
   end
   state.sign_ids = {}
   M.comments = {}
+  -- Discard semantics: wipe the artifact file too. Comments are appended to
+  -- the JSONL as they are saved, and the extension falls back to that file
+  -- when the finish handshake does not land (async race / crash). Clearing
+  -- only memory would leak the comments to Pi on the fallback path.
+  if state.config and state.config.annotationsPath then
+    pcall(vim.fn.writefile, {}, state.config.annotationsPath)
+  end
 end
 
 ---@param id number
