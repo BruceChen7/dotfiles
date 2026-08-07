@@ -430,6 +430,51 @@ local function install_view_keymaps(original_buf, modified_buf)
   end
 end
 
+--- Re-apply keymaps to the session's current buffers. The view buffers are
+--- REPLACED when a file is selected/loaded (explorer placeholders swap in real
+--- or virtual buffers), so keymaps bound once at open() are lost; re-binding
+--- keeps c/dc/e/q alive across file switches and layout toggles.
+local function reinstall_keymaps()
+  local session = session_of()
+  if not session then
+    return
+  end
+  install_view_keymaps(session.original_bufnr, session.modified_bufnr)
+  local lifecycle = require "codediff.ui.lifecycle"
+  local explorer = lifecycle.get_explorer(state.tabpage)
+  if explorer and explorer.split and explorer.split.bufnr and vim.api.nvim_buf_is_valid(explorer.split.bufnr) then
+    vim.keymap.set("n", "c", function()
+      notify "注释需在右侧 diff 窗格定位行后按 c"
+    end, { buffer = explorer.split.bufnr, desc = "Pi CR comment (hint)" })
+  end
+end
+
+--- Wait (with retries) until the session's modified file matches the target
+--- the user selected, then (re)install the keymaps. codediff's view.update is
+--- async and swaps the placeholder panes for real/virtual buffers; installing
+--- before the swap lands would bind buffers that are about to be wiped, and a
+--- "c already present" check on the previous file's buffer would stop the
+--- retry prematurely. The file-identity check is the reliable completion
+--- signal: after the swap, session.modified.relative == target.
+local function reinstall_keymaps_until_file(target, tries)
+  tries = tries or 60
+  vim.schedule(function()
+    local session = session_of()
+    local current = session and session.modified and session.modified.relative
+    if current == target then
+      reinstall_keymaps()
+      return
+    end
+    if tries <= 0 then
+      return
+    end
+    vim.wait(50, function()
+      return false
+    end)
+    reinstall_keymaps_until_file(target, tries - 1)
+  end)
+end
+
 local function setup_hooks()
   if state.installed then
     return
@@ -439,15 +484,31 @@ local function setup_hooks()
   vim.api.nvim_create_autocmd("User", {
     group = augroup,
     pattern = "CodeDiffFileSelect",
-    callback = function()
-      vim.schedule(M.render_cards)
+    callback = function(args)
+      local target = args.data and args.data.path
+      vim.schedule(function()
+        -- pcall: during the placeholder->real buffer swap render_cards can hit
+        -- a freshly wiped buffer; the keymap reinstall must still run.
+        pcall(M.render_cards)
+        pcall(reinstall_keymaps_until_file, target)
+      end)
     end,
   })
   vim.api.nvim_create_autocmd("User", {
     group = augroup,
     pattern = "CodeDiffVirtualFileLoaded",
     callback = function()
-      vim.schedule(M.render_cards)
+      vim.schedule(function()
+        pcall(M.render_cards)
+        -- Session may still be settling when this fires; wait for the file
+        -- identity to match, then install.
+        local target = nil
+        local s = session_of()
+        if s and s.modified then
+          target = s.modified.relative
+        end
+        pcall(reinstall_keymaps_until_file, target)
+      end)
     end,
   })
   vim.api.nvim_create_autocmd("User", {
@@ -455,6 +516,16 @@ local function setup_hooks()
     pattern = "CodeDiffClose",
     callback = function()
       vim.schedule(panel.close)
+    end,
+  })
+  -- BufEnter does NOT fire for codediff's nvim_win_set_buf swaps, but it does
+  -- fire on real user navigation (e.g. <C-w>w into the diff pane); keep it as
+  -- an interaction-level fallback. The reliable re-install path is the two
+  -- User events above.
+  vim.api.nvim_create_autocmd("BufEnter", {
+    group = augroup,
+    callback = function()
+      reinstall_keymaps()
     end,
   })
 end
@@ -624,5 +695,6 @@ function M.open(app)
 end
 
 M._state = state -- smoke hook
+M._reinstall = reinstall_keymaps -- smoke hook
 
 return M
