@@ -61,6 +61,19 @@ local function session_of()
   return require("codediff.ui.lifecycle").get_session(state.tabpage)
 end
 
+--- Buffer shown in the modified (right) window RIGHT NOW. Do NOT trust
+--- session.modified_bufnr here: codediff's async view.update may replace or
+--- reuse panes, leaving session buffers stale relative to the window.
+---@return number|nil
+local function modified_buf()
+  local lifecycle = require "codediff.ui.lifecycle"
+  local _, mod_win = lifecycle.get_windows(state.tabpage)
+  if mod_win and vim.api.nvim_win_is_valid(mod_win) then
+    return vim.api.nvim_win_get_buf(mod_win)
+  end
+  return nil
+end
+
 -- ---------------------------------------------------------------------------
 -- Anchor resolution: cursor position in a codediff buffer -> (file, line)
 -- ---------------------------------------------------------------------------
@@ -111,7 +124,7 @@ function M.anchor_at(first, last)
   end
   local buf = vim.api.nvim_get_current_buf()
   local inline = session.layout == "inline"
-  local is_modified = buf == session.modified_bufnr or (inline and buf == session.result_bufnr)
+  local is_modified = buf == modified_buf() or (inline and buf == session.result_bufnr)
   if not is_modified then
     if buf == session.original_bufnr then
       notify "注释仅可添加在右侧（新版本）窗格"
@@ -373,7 +386,7 @@ local PI_VIEW_HELP = {
   { "c", "comment on line (visual: range)" },
   { "dc", "delete comment on line" },
   { "e", "open real file at line (q to return)" },
-  { "gc", "toggle comments dock" },
+  { "<leader>cd", "toggle comments dock" },
   { "q", "exit review (menu when comments exist)" },
 }
 
@@ -590,6 +603,9 @@ local function install_view_keymaps(original_buf, modified_buf)
       vim.keymap.set("n", "e", M.open_real_file_at_cursor, { buffer = buf, desc = "Pi CR open real file" })
       vim.keymap.set("n", "q", M.exit_flow, { buffer = buf, desc = "Pi CR exit review" })
       vim.keymap.set("n", "?", M.show_help, { buffer = buf, desc = "Pi CR help" })
+      vim.keymap.set("n", "<leader>cd", function()
+        panel.toggle()
+      end, { buffer = buf, desc = "Pi CR toggle comments dock" })
     end
   end
 end
@@ -614,7 +630,7 @@ local function reinstall_keymaps()
     -- q must end the review from every pane, not just the diff windows.
     vim.keymap.set("n", "q", M.exit_flow, { buffer = buf, desc = "Pi CR exit review" })
     vim.keymap.set("n", "?", M.show_help, { buffer = buf, desc = "Pi CR help" })
-    vim.keymap.set("n", "gc", function()
+    vim.keymap.set("n", "<leader>cd", function()
       panel.toggle()
     end, { buffer = buf, desc = "Pi CR toggle comments dock" })
   end

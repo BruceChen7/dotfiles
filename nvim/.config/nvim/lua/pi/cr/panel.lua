@@ -337,7 +337,7 @@ function M.open()
       state.actions.help()
     end
   end)
-  map("gc", function()
+  map("<leader>cd", function()
     M.close()
   end)
 
@@ -368,7 +368,7 @@ function M.sync()
   end
 end
 
---- Manual toggle (gc).
+--- Manual toggle (<leader>cd).
 function M.toggle()
   if is_open() then
     M.close()
