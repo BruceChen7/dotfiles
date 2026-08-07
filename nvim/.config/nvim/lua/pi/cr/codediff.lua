@@ -373,6 +373,7 @@ local PI_VIEW_HELP = {
   { "c", "comment on line (visual: range)" },
   { "dc", "delete comment on line" },
   { "e", "open real file at line (q to return)" },
+  { "gc", "toggle comments dock" },
   { "q", "exit review (menu when comments exist)" },
 }
 
@@ -613,6 +614,9 @@ local function reinstall_keymaps()
     -- q must end the review from every pane, not just the diff windows.
     vim.keymap.set("n", "q", M.exit_flow, { buffer = buf, desc = "Pi CR exit review" })
     vim.keymap.set("n", "?", M.show_help, { buffer = buf, desc = "Pi CR help" })
+    vim.keymap.set("n", "gc", function()
+      panel.toggle()
+    end, { buffer = buf, desc = "Pi CR toggle comments dock" })
   end
 end
 
@@ -791,13 +795,14 @@ function M.open(app)
     state.tabpage = vim.api.nvim_get_current_tabpage()
     setup_hooks()
     install_view_keymaps(result.original_buf, result.modified_buf)
-    panel.open {
+    panel.register {
       jump = M.jump_to_comment,
       delete = M.delete_comment_by_id,
       new_comment = M.new_comment,
       exit = M.exit_flow,
       help = M.show_help,
     }
+    panel.sync()
     M.render_cards()
     notify("Opened CR review for " .. tostring(app.config.label or ""))
   end

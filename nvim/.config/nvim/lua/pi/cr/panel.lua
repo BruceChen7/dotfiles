@@ -267,12 +267,24 @@ local function selected_row()
   return nil
 end
 
----@param actions {jump: fun(id: number), delete: fun(id: number), new_comment: fun(), exit: fun()}
-function M.open(actions)
+---@param actions {jump: fun(id: number), delete: fun(id: number), new_comment: fun(), exit: fun(), help: fun()}
+function M.register(actions)
   state.actions = actions
   state.folds = {}
   state.sel_id = nil
   state.rows = M.build_tree_rows(require("pi.cr.comments").comments, state.folds)
+end
+
+---@return boolean
+local function is_open()
+  return state.win ~= nil and vim.api.nvim_win_is_valid(state.win)
+end
+
+--- Open the dock window (no-op when already open).
+function M.open()
+  if is_open() or not state.actions then
+    return
+  end
 
   state.buf = vim.api.nvim_create_buf(false, true)
   vim.bo[state.buf].bufhidden = "wipe"
@@ -288,6 +300,9 @@ function M.open(actions)
     border = "none",
     zindex = 90,
   })
+  -- Match the main background: a float would otherwise inherit NormalFloat,
+  -- which gruvbox-material renders noticeably lighter than Normal.
+  vim.wo[state.win].winhighlight = "Normal:Normal"
 
   local map = function(lhs, rhs)
     vim.keymap.set("n", lhs, rhs, { buffer = state.buf, nowait = true })
@@ -322,21 +337,49 @@ function M.open(actions)
       state.actions.help()
     end
   end)
+  map("gc", function()
+    M.close()
+  end)
 
   -- select the first comment, if any
-  for _, row in ipairs(M.visible_rows(state.rows)) do
-    if row.kind == "comment" then
-      state.sel_id = row.id
-      break
+  if not state.sel_id then
+    for _, row in ipairs(M.visible_rows(state.rows)) do
+      if row.kind == "comment" then
+        state.sel_id = row.id
+        break
+      end
     end
   end
   render()
 end
 
+--- Sync the dock with the comment count: open when the first comment arrives,
+--- close when the last one is deleted. Called from refresh paths.
+function M.sync()
+  local count = #require("pi.cr.comments").comments
+  if count > 0 and not is_open() then
+    M.open()
+  elseif count == 0 and is_open() then
+    M.close()
+  end
+  if is_open() then
+    state.rows = M.build_tree_rows(require("pi.cr.comments").comments, state.folds)
+    render()
+  end
+end
+
+--- Manual toggle (gc).
+function M.toggle()
+  if is_open() then
+    M.close()
+  else
+    M.open()
+  end
+end
+
 --- Re-render after comment add/delete (fold state and selection preserved).
 function M.refresh()
-  state.rows = M.build_tree_rows(require("pi.cr.comments").comments, state.folds)
-  render()
+  M.sync()
 end
 
 function M.close()
@@ -347,7 +390,7 @@ function M.close()
     vim.api.nvim_buf_delete(state.buf, { force = true })
   end
   state.win, state.buf = nil, nil
-  state.actions = nil
+  -- state.actions intentionally kept: the dock can be re-opened via toggle/sync.
 end
 
 M._state = state -- test/smoke hook
