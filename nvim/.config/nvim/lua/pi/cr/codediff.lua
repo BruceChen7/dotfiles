@@ -376,6 +376,12 @@ local PI_VIEW_HELP = {
   { "q", "exit review (menu when comments exist)" },
 }
 
+local PI_POPUP_HELP = {
+  { "<Tab> / <S-Tab>", "cycle comment type (NOTE / FIX / QUESTION)" },
+  { "<C-t>", "insert template text" },
+  { "<CR> / <Esc>", "save / cancel" },
+}
+
 local PI_PANEL_HELP = {
   { "j / k", "move selection" },
   { "<CR>", "jump to comment (syncs explorer + card)" },
@@ -438,6 +444,7 @@ function M.help_lines()
   end
   add_section("Diff view (codediff)", codediff_rows)
   add_section("Comments (Pi CR)", PI_VIEW_HELP)
+  add_section("Comment popup (after c)", PI_POPUP_HELP)
   add_section("Comments panel (right dock)", PI_PANEL_HELP)
   lines[#lines + 1] = ""
   lines[#lines + 1] = "Common: :qa submit + quit · :qa! discard + quit"
