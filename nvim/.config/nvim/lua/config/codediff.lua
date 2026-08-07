@@ -39,7 +39,7 @@ require("codediff").setup {
   },
   keymaps = {
     view = {
-      quit = "q",
+      quit = false, -- q 由 pi.cr 适配层接管（结束 review 的 exit flow）
       toggle_explorer = "<leader>b",
       focus_explorer = "<leader>e",
       next_hunk = "]c",

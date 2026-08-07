@@ -107,8 +107,9 @@ local function place_sign(comment)
 end
 
 local function refresh()
-  local ui = require "pi.cr.ui"
-  ui.render_all()
+  pcall(function()
+    require("pi.cr.codediff").redraw_all()
+  end)
 end
 
 ---@param comment CrComment

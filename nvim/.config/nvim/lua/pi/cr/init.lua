@@ -5,7 +5,6 @@
 -- Protocol (unchanged): hello -> config -> finish over the CR unix socket.
 -- Annotations are also appended to an artifact JSONL file as they are saved.
 
-local diff = require "pi.cr.diff"
 local comments = require "pi.cr.comments"
 
 local M = {}
@@ -18,10 +17,6 @@ local state = {
 
 local app = {
   config = nil,
-  files = {},
-  selected = 1,
-  context_lines = 20,
-  git_status = nil, -- {staged, unstaged} for the sidebar sections
   finish = nil, -- wired below
 }
 
@@ -245,17 +240,8 @@ function M.start()
     vim.schedule(function()
       app.config = state.config
       comments.set_config(state.config)
-      local git = require "pi.cr.git"
-      app.git_status = git.status()
-      app.files = diff.parse(diff.run(state.config.diffArgs, app.context_lines))
-      if #app.files == 0 then
-        notify "No changes to review"
-        vim.cmd "qa"
-        return
-      end
-      local ui = require "pi.cr.ui"
-      ui.open(app)
-      notify("Opened CR diffview for " .. tostring(state.config.label or ""))
+      local codediff = require "pi.cr.codediff"
+      codediff.open(app)
     end)
   end)
 end
