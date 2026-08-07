@@ -185,6 +185,14 @@ function M.start()
   state.started = true
   _G.pi_cr = M
 
+  -- CR review always uses the gruvbox-material theme (matching style.lua's
+  -- soft background) so the dock/cards look consistent; pcall because a
+  -- minimal env (tests) may not have the theme installed.
+  pcall(function()
+    vim.g.gruvbox_material_background = "soft"
+    vim.cmd "colorscheme gruvbox-material"
+  end)
+
   comments.setup_signs()
 
   vim.api.nvim_create_user_command("CRFinish", M.finish, {})

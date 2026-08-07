@@ -17,6 +17,8 @@ local state = {
 
 local TYPE_ORDER = { fix = 1, question = 2, note = 3 }
 local TYPE_LABELS = { fix = "FIX", question = "QUESTION", note = "NOTE" }
+-- Highlight groups defined by pi.cr.codediff.setup_highlights (theme-aware).
+local TYPE_HL = { fix = "PiCRCommentFix", question = "PiCRCommentQuestion", note = "PiCRCommentNote" }
 
 ---@class CrPanelRow
 ---@field depth number
@@ -182,6 +184,7 @@ local function render()
 
   local lines = { "Comments (" .. total .. ")" }
   local sel_line = nil
+  local type_marks = {} ---@type {line: number, col: number, len: number, hl: string}[]
   for _, row in ipairs(state.rows) do
     if not row.hidden then
       local indent = string.rep("  ", row.depth)
@@ -194,6 +197,13 @@ local function render()
         lines[#lines + 1] = indent .. prefix .. truncate(row.text or "", text_width)
         if row.id == state.sel_id then
           sel_line = #lines
+        else
+          type_marks[#type_marks + 1] = {
+            line = #lines,
+            col = #indent,
+            len = #("[" .. (TYPE_LABELS[row.type] or "NOTE") .. "]"),
+            hl = TYPE_HL[row.type] or "PiCRCommentNote",
+          }
         end
       end
     end
@@ -204,6 +214,12 @@ local function render()
   vim.bo[state.buf].modifiable = false
   vim.api.nvim_buf_clear_namespace(state.buf, NS, 0, -1)
   vim.api.nvim_buf_set_extmark(state.buf, NS, 0, 0, { hl_group = "Title" })
+  for _, mark in ipairs(type_marks) do
+    vim.api.nvim_buf_set_extmark(state.buf, NS, mark.line - 1, mark.col, {
+      end_col = mark.col + mark.len,
+      hl_group = mark.hl,
+    })
+  end
   if sel_line then
     vim.api.nvim_buf_set_extmark(state.buf, NS, sel_line - 1, 0, { hl_group = "Visual" })
     pcall(vim.api.nvim_win_set_cursor, state.win, { sel_line, 0 })

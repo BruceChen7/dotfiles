@@ -14,6 +14,34 @@ local comments = require "pi.cr.comments"
 
 local NS_CARDS = vim.api.nvim_create_namespace "pi-cr-cards"
 
+--- Card highlight groups, linked to gruvbox-material's semantic palette when
+--- available (the CR review forces that theme); fallback to its hex values.
+---@type table<string, {theme: string, fallback: string}>
+local TYPE_HL_SPEC = {
+  PiCRCommentFix = { theme = "Red", fallback = "#ea6962" },
+  PiCRCommentQuestion = { theme = "Yellow", fallback = "#d8a657" },
+  PiCRCommentNote = { theme = "Green", fallback = "#a9b665" },
+}
+
+---@type table<string, string>
+local TYPE_HL = {
+  fix = "PiCRCommentFix",
+  question = "PiCRCommentQuestion",
+  note = "PiCRCommentNote",
+}
+
+--- Define the card highlight groups. Call after the colorscheme is active so
+--- the theme groups exist to link to.
+function M.setup_highlights()
+  for name, spec in pairs(TYPE_HL_SPEC) do
+    if vim.fn.hlexists(spec.theme) == 1 then
+      vim.api.nvim_set_hl(0, name, { link = spec.theme })
+    else
+      vim.api.nvim_set_hl(0, name, { fg = spec.fallback })
+    end
+  end
+end
+
 local state = {
   app = nil,
   git_root = nil,
@@ -204,9 +232,10 @@ function M.render_cards()
     if comment.file == file and comment.line >= 1 and comment.line <= line_count then
       local label = comments.type_labels[comment.type] or "NOTE"
       local body = comment.comment:gsub("\n", " / ")
+      local hl = TYPE_HL[comment.type] or "PiCRCommentNote"
       vim.api.nvim_buf_set_extmark(buf, NS_CARDS, comment.line - 1, 0, {
         virt_lines = {
-          { { string.format("▍[%s] %s", label, body), "PiCRComment" } },
+          { { string.format("▍[%s] %s", label, body), hl } },
           { { "  ⏎ 面板跳转 · d 删除", "Comment" } },
         },
       })
@@ -751,6 +780,7 @@ function M.open(app)
         pathspec = nil,
       },
     }, "")
+    M.setup_highlights()
     state.tabpage = vim.api.nvim_get_current_tabpage()
     setup_hooks()
     install_view_keymaps(result.original_buf, result.modified_buf)
