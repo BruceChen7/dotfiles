@@ -7,9 +7,10 @@
 herdr-tabname: Auto-name tabs after the foreground process.
 
 Environment (set by herdr plugin hook):
-    HERDR_PLUGIN_EVENT  — "startup" | "tab.focused" | "tab.created"
+    HERDR_PLUGIN_EVENT  — "startup" | "tab.focused" | "tab.created" | "pane.updated"
     HERDR_TAB_ID        — tab_id (only for tab.focused / tab.created)
     HERDR_PANE_ID       — focused pane_id of the tab (only for tab.focused / tab.created)
+    HERDR_PLUGIN_EVENT_JSON — event payload (only for pane.updated)
     HERDR_BIN_PATH      — path to herdr binary
     HERDR_PLUGIN_STATE_DIR — plugin state directory
 """
@@ -26,6 +27,12 @@ from pathlib import Path
 
 SHELL_NAMES = frozenset({"bash", "zsh", "fish", "sh", "dash", "ksh", "tcsh", "csh"})
 MAX_LABEL_LENGTH = 20
+
+# Skip re-evaluating a tab for this long after its last check.  pane.updated
+# fires on every stripped terminal-title change (shell prompt hooks set the
+# title on each command), so without a debounce every prompt would cost
+# several herdr CLI calls.
+DEBOUNCE_SECONDS = 2.0
 
 # ---- helpers -------------------------------------------------------------
 
@@ -131,6 +138,17 @@ def _locked_load_and_save(update_fn):
         os.close(fd)
 
 
+def _is_debounced(state: dict, tab_id: str) -> bool:
+    """Return True if *tab_id* was checked within DEBOUNCE_SECONDS."""
+    entry = state.get("tabs", {}).get(tab_id)
+    if not entry:
+        return False
+    last = entry.get("last_checked")
+    if not last:
+        return False
+    return time.time() - last < DEBOUNCE_SECONDS
+
+
 def _is_numeric(label: str) -> bool:
     """Return True if the label is a pure decimal number (herdr auto-name)."""
     return label.isdigit()
@@ -203,6 +221,7 @@ def _protected_rename_tab(
     *,
     current_label: str | None = None,
     retry: bool = False,
+    mark_checked: bool = False,
 ) -> None:
     """Conditionally rename *tab_id* to the computed label of *pane_id*.
 
@@ -217,6 +236,10 @@ def _protected_rename_tab(
     When *retry* is True (tab.focused / tab.created hooks), a single retry
     with a short delay is attempted if the foreground process is not yet
     detectable (shell startup race).
+
+    When *mark_checked* is True (pane.updated hook), the tab's last_checked
+    timestamp is recorded so the debounce can skip high-frequency title
+    updates.
 
     Concurrent hooks (tab.created + tab.focused for the same new tab) are
     serialized via *flock* on the state directory.
@@ -255,7 +278,10 @@ def _protected_rename_tab(
         if computed != current:
             if _herdr("tab", "rename", tab_id, computed) is None:
                 return  # rename failed
-        tabs_state[tab_id] = {"plugin_label": computed}
+        entry = {"plugin_label": computed}
+        if mark_checked:
+            entry["last_checked"] = time.time()
+        tabs_state[tab_id] = entry
 
     _locked_load_and_save(_update)
 
@@ -332,6 +358,60 @@ def _handle_focus_or_created() -> None:
     _protected_rename_tab(tab_id, pane_id, retry=True)
 
 
+def _handle_pane_updated() -> None:
+    """Handle pane.updated: a terminal-title change in a pane.
+
+    Re-derives the label of the tab owning that pane, so the tab catches
+    process transitions that never fire a focus event — e.g. nvim exiting
+    resets the title and the shell becomes the foreground process again.
+
+    Only the tab's *focused* pane decides the label: a title change in a
+    background pane is ignored, and when the focused pane itself changed we
+    evaluate that pane.
+
+    Debounced per-tab (DEBOUNCE_SECONDS) so shell prompt hooks that set the
+    title on every command do not trigger repeated evaluations.
+    """
+    pane_id = os.environ.get("HERDR_PANE_ID", "")
+    if not pane_id:
+        payload = os.environ.get("HERDR_PLUGIN_EVENT_JSON", "")
+        if payload:
+            try:
+                pane_id = str(
+                    json.loads(payload)
+                    .get("data", {})
+                    .get("pane", {})
+                    .get("pane_id", "")
+                )
+            except (json.JSONDecodeError, AttributeError):
+                pane_id = ""
+    if not pane_id:
+        return
+
+    tab_id = os.environ.get("HERDR_TAB_ID", "")
+    if not tab_id:
+        data = _herdr("pane", "get", pane_id)
+        if data is None:
+            return
+        tab_id = data.get("result", {}).get("pane", {}).get("tab_id", "")
+    if not tab_id:
+        return
+
+    if _is_debounced(_load_state(), tab_id):
+        return
+
+    # Only the tab's focused pane drives the label.  A background pane
+    # changing its title must not rename the tab.
+    layout = _herdr("pane", "layout", "--pane", pane_id)
+    if layout is None:
+        return
+    focused = layout.get("result", {}).get("layout", {}).get("focused_pane_id", "")
+    if focused != pane_id:
+        return
+
+    _protected_rename_tab(tab_id, focused, retry=True, mark_checked=True)
+
+
 # ---- entry point ---------------------------------------------------------
 
 
@@ -342,6 +422,8 @@ def main() -> None:
             _handle_sweep()
         elif event in ("tab.focused", "tab.created"):
             _handle_focus_or_created()
+        elif event == "pane.updated":
+            _handle_pane_updated()
         # Unknown event → silently ignore (future-proofing)
     except Exception:
         # Never throw from a background hook; log/discard.

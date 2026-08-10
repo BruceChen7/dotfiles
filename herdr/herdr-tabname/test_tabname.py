@@ -5,6 +5,9 @@ Tests for tabname.py — pure naming algorithm with fixture JSON.
 Usage: uv run python test_tabname.py
 """
 
+import json
+import tempfile
+import time
 import unittest
 from unittest.mock import patch
 from pathlib import Path
@@ -289,6 +292,219 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(tabname._truncate("hello", 5), "hello")
         self.assertEqual(tabname._truncate("hello world", 5), "hello")
         self.assertEqual(tabname._truncate("", 5), "")
+
+
+# ---- pane.updated handler tests -------------------------------------------
+
+
+class TestHandlePaneUpdated(unittest.TestCase):
+    """_handle_pane_updated(): title changes re-derive the tab label."""
+
+    def setUp(self):
+        self.state_dir = tempfile.mkdtemp(prefix="herdr-tabname-test-")
+        self.env = {
+            "HERDR_PLUGIN_STATE_DIR": self.state_dir,
+            "HERDR_PLUGIN_EVENT": "pane.updated",
+            "HERDR_PANE_ID": "",
+            "HERDR_TAB_ID": "",
+            "HERDR_PLUGIN_EVENT_JSON": "",
+        }
+
+    def _state_path(self):
+        return Path(self.state_dir) / "tabs.json"
+
+    def _write_state(self, tabs: dict):
+        self._state_path().write_text(json.dumps({"tabs": tabs}))
+
+    def _fake_herdr(self, renames: list):
+        def fake(*args, **kwargs):
+            cmd = tuple(args)
+            if cmd == ("tab", "list"):
+                return {
+                    "result": {
+                        "tabs": [{"tab_id": "w1:t1", "label": "nvim", "pane_count": 1}]
+                    }
+                }
+            if cmd == ("pane", "get", "w1:p1"):
+                return {"result": {"pane": {"pane_id": "w1:p1", "tab_id": "w1:t1"}}}
+            if cmd == ("pane", "layout", "--pane", "w1:p1"):
+                return {"result": {"layout": {"focused_pane_id": "w1:p1"}}}
+            if cmd == ("pane", "process-info", "--pane", "w1:p1"):
+                return {
+                    "result": {
+                        "process_info": {
+                            "foreground_processes": [
+                                {"name": "zsh", "cwd": "/Users/x/work/dotfiles"}
+                            ]
+                        }
+                    }
+                }
+            if cmd[:2] == ("tab", "rename"):
+                renames.append(cmd)
+                return {"result": {"ok": True}}
+            raise AssertionError(f"unexpected herdr call: {cmd}")
+
+        return fake
+
+    def test_env_pane_and_tab_renames_and_marks_checked(self):
+        """HERDR_PANE_ID + HERDR_TAB_ID set → rename + last_checked recorded."""
+        renames = []
+        # Plugin previously named this tab "nvim" (nvim was the foreground
+        # process); the state record is what makes the rename allowed.
+        self._write_state({"w1:t1": {"plugin_label": "nvim"}})
+        env = dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1")
+        with patch.dict("os.environ", env, clear=False):
+            with patch("tabname._herdr", side_effect=self._fake_herdr(renames)):
+                tabname._handle_pane_updated()
+
+        self.assertEqual(renames, [("tab", "rename", "w1:t1", "dotfiles")])
+        entry = json.loads(self._state_path().read_text())["tabs"]["w1:t1"]
+        self.assertEqual(entry["plugin_label"], "dotfiles")
+        self.assertIn("last_checked", entry)
+
+    def test_event_json_fallback_resolves_pane_and_tab(self):
+        """No env pane/tab → pane_id from event JSON, tab_id via pane get."""
+        renames = []
+        self._write_state({"w1:t1": {"plugin_label": "nvim"}})
+        payload = json.dumps(
+            {"event": "pane.updated", "data": {"pane": {"pane_id": "w1:p1"}}}
+        )
+        env = dict(self.env, HERDR_PLUGIN_EVENT_JSON=payload)
+        with patch.dict("os.environ", env, clear=False):
+            with patch("tabname._herdr", side_effect=self._fake_herdr(renames)):
+                tabname._handle_pane_updated()
+
+        self.assertEqual(renames, [("tab", "rename", "w1:t1", "dotfiles")])
+
+    def test_recently_checked_tab_is_debounced(self):
+        """last_checked within DEBOUNCE_SECONDS → no CLI calls at all."""
+        self._write_state(
+            {"w1:t1": {"plugin_label": "nvim", "last_checked": time.time()}}
+        )
+
+        def bomb(*args, **kwargs):
+            raise AssertionError("debounced event must not call herdr")
+
+        with patch.dict(
+            "os.environ",
+            dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1"),
+            clear=False,
+        ):
+            with patch("tabname._herdr", side_effect=bomb):
+                tabname._handle_pane_updated()
+
+    def test_stale_checked_tab_is_not_debounced(self):
+        """last_checked older than DEBOUNCE_SECONDS → renamed again."""
+        renames = []
+        self._write_state(
+            {
+                "w1:t1": {
+                    "plugin_label": "nvim",
+                    "last_checked": time.time() - tabname.DEBOUNCE_SECONDS - 5,
+                }
+            }
+        )
+        with patch.dict(
+            "os.environ",
+            dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1"),
+            clear=False,
+        ):
+            with patch("tabname._herdr", side_effect=self._fake_herdr(renames)):
+                tabname._handle_pane_updated()
+
+        self.assertEqual(renames, [("tab", "rename", "w1:t1", "dotfiles")])
+
+    def test_background_pane_title_change_ignored(self):
+        """Updated pane is not the tab's focused pane → no rename."""
+        renames = []
+        self._write_state({"w1:t1": {"plugin_label": "nvim"}})
+
+        def fake(*args, **kwargs):
+            cmd = tuple(args)
+            if cmd == ("pane", "layout", "--pane", "w1:p1"):
+                return {"result": {"layout": {"focused_pane_id": "w1:p2"}}}
+            raise AssertionError(f"background title change must stop at layout: {cmd}")
+
+        with patch.dict(
+            "os.environ",
+            dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1"),
+            clear=False,
+        ):
+            with patch("tabname._herdr", side_effect=fake):
+                tabname._handle_pane_updated()
+
+        self.assertEqual(renames, [])
+
+    def test_user_renamed_tab_not_touched(self):
+        """User-named tab (label not numeric, not ours) → no rename, state popped."""
+        renames = []
+        self._write_state({"w1:t1": {"plugin_label": "old-auto-name"}})
+
+        def fake(*args, **kwargs):
+            cmd = tuple(args)
+            if cmd == ("tab", "list"):
+                return {
+                    "result": {
+                        "tabs": [
+                            {"tab_id": "w1:t1", "label": "my-name", "pane_count": 1}
+                        ]
+                    }
+                }
+            if cmd == ("pane", "get", "w1:p1"):
+                return {"result": {"pane": {"pane_id": "w1:p1", "tab_id": "w1:t1"}}}
+            if cmd == ("pane", "layout", "--pane", "w1:p1"):
+                return {"result": {"layout": {"focused_pane_id": "w1:p1"}}}
+            if cmd == ("pane", "process-info", "--pane", "w1:p1"):
+                return {
+                    "result": {
+                        "process_info": {
+                            "foreground_processes": [
+                                {"name": "zsh", "cwd": "/Users/x/work/dotfiles"}
+                            ]
+                        }
+                    }
+                }
+            raise AssertionError(f"unexpected herdr call: {cmd}")
+
+        with patch.dict(
+            "os.environ",
+            dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1"),
+            clear=False,
+        ):
+            with patch("tabname._herdr", side_effect=fake):
+                tabname._handle_pane_updated()
+
+        self.assertEqual(renames, [])
+        self.assertEqual(json.loads(self._state_path().read_text())["tabs"], {})
+
+    def test_missing_pane_id_returns_silently(self):
+        """No pane_id anywhere → no herdr calls."""
+
+        def bomb(*args, **kwargs):
+            raise AssertionError("must not call herdr without a pane_id")
+
+        with patch.dict("os.environ", self.env, clear=False):
+            with patch("tabname._herdr", side_effect=bomb):
+                tabname._handle_pane_updated()
+
+
+class TestDebounce(unittest.TestCase):
+    """_is_debounced() pure helper."""
+
+    def test_no_entry_not_debounced(self):
+        self.assertFalse(tabname._is_debounced({"tabs": {}}, "t1"))
+
+    def test_no_last_checked_not_debounced(self):
+        state = {"tabs": {"t1": {"plugin_label": "vim"}}}
+        self.assertFalse(tabname._is_debounced(state, "t1"))
+
+    def test_recent_last_checked_debounced(self):
+        state = {"tabs": {"t1": {"last_checked": time.time()}}}
+        self.assertTrue(tabname._is_debounced(state, "t1"))
+
+    def test_old_last_checked_not_debounced(self):
+        state = {"tabs": {"t1": {"last_checked": time.time() - 60}}}
+        self.assertFalse(tabname._is_debounced(state, "t1"))
 
 
 if __name__ == "__main__":

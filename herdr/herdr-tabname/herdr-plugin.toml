@@ -27,3 +27,10 @@ command = ["uv", "run", "tabname.py"]
 [[events]]
 on = "tab.created"
 command = ["uv", "run", "tabname.py"]
+
+# Pane updated: terminal-title changes (e.g. nvim exit resets the title) →
+# re-derive the tab label from the foreground process. Debounced in tabname.py
+# to skip high-frequency title updates (shell prompt hooks, etc.).
+[[events]]
+on = "pane.updated"
+command = ["uv", "run", "tabname.py"]
