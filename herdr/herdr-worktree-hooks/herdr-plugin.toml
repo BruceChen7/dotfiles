@@ -1,0 +1,26 @@
+# herdr-worktree-hooks — run worktree-hooks presetup/clean on worktree lifecycle events
+# ====================================================
+# worktree.created / worktree.opened → worktree-hooks presetup <checkout>
+# worktree.removed                  → worktree-hooks clean <repo_root> <checkout>
+#
+# Install: herdr plugin link ~/work/dotfiles/herdr/herdr-worktree-hooks
+# Backed by: ~/.local/bin/worktree-hooks (dotfiles dot-local, uv package)
+
+id = "herdr-worktree-hooks"
+name = "Herdr Worktree Hooks"
+version = "0.1.0"
+min_herdr_version = "0.8.0"
+description = "Run worktree-hooks presetup/clean on worktree lifecycle events"
+platforms = ["linux", "macos"]
+
+[[events]]
+on = "worktree.created"
+command = ["uv", "run", "hook.py"]
+
+[[events]]
+on = "worktree.opened"
+command = ["uv", "run", "hook.py"]
+
+[[events]]
+on = "worktree.removed"
+command = ["uv", "run", "hook.py"]
