@@ -159,6 +159,46 @@ function M.anchor_at(first, last)
 end
 
 -- ---------------------------------------------------------------------------
+-- Hunk navigation (]c/[c) with a repair for codediff's silent EOF failure
+-- ---------------------------------------------------------------------------
+
+--- Run codediff's hunk navigation, then repair its silent failure mode:
+--- when the target hunk's start line lies one past the buffer's end (EOF
+--- deletions on the modified side, EOF additions on the original side),
+--- codediff swallows the set_cursor error and reports success with the
+--- cursor unmoved. Detect that (same window, cursor unchanged) and land on
+--- the buffer's last line.
+---@param nav fun(): boolean codediff navigation.next_hunk / prev_hunk
+local function clamped_hunk_nav(nav)
+  local navigation = require "codediff.ui.view.navigation"
+  local session = session_of()
+  local win = vim.api.nvim_get_current_win()
+  local before = vim.api.nvim_win_get_cursor(win)[1]
+  local ok = nav()
+  if not ok or not session then
+    return
+  end
+  local cur = vim.api.nvim_get_current_win()
+  if cur ~= win or not vim.api.nvim_win_is_valid(cur) then
+    return -- nav hopped to another window (not a diff pane); leave it
+  end
+  local line = vim.api.nvim_win_get_cursor(cur)[1]
+  if line ~= before then
+    return
+  end
+  local side = "modified"
+  if session.layout ~= "inline" and vim.api.nvim_get_current_buf() == original_buf() then
+    side = "original"
+  end
+  local changes = session.stored_diff_result and session.stored_diff_result.changes or {}
+  local target = map.hunk_repair_target(changes, side, vim.api.nvim_buf_line_count(vim.api.nvim_win_get_buf(cur)))
+  if target then
+    pcall(vim.api.nvim_win_set_cursor, cur, { target, 0 })
+    vim.cmd "normal! zz"
+  end
+end
+
+-- ---------------------------------------------------------------------------
 -- Comment actions (view keymaps)
 -- ---------------------------------------------------------------------------
 
@@ -653,6 +693,14 @@ local function install_view_keymaps(original_buf, modified_buf)
       end, { buffer = buf, desc = "Pi CR comment (range)" })
       vim.keymap.set("n", "dc", M.delete_at_cursor, { buffer = buf, desc = "Pi CR delete comment" })
       vim.keymap.set("n", "e", M.open_real_file_at_cursor, { buffer = buf, desc = "Pi CR open real file" })
+      -- ]c/[c: codediff's own hunk navigation silently fails for hunks at
+      -- the end of the file (start line one past the buffer); wrap + repair.
+      vim.keymap.set("n", "]c", function()
+        clamped_hunk_nav(require("codediff.ui.view.navigation").next_hunk)
+      end, { buffer = buf, nowait = true, desc = "Pi CR next hunk" })
+      vim.keymap.set("n", "[c", function()
+        clamped_hunk_nav(require("codediff.ui.view.navigation").prev_hunk)
+      end, { buffer = buf, nowait = true, desc = "Pi CR prev hunk" })
       vim.keymap.set("n", "q", M.exit_flow, { buffer = buf, desc = "Pi CR exit review" })
       vim.keymap.set("n", "?", M.show_help, { buffer = buf, desc = "Pi CR help" })
       vim.keymap.set("n", "<leader>cd", function()

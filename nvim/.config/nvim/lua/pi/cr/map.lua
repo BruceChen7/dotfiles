@@ -70,11 +70,36 @@ function M.parse_codediff_url(bufname)
   return { git_root = root, commit = commit, filepath = filepath }
 end
 
---- Build a snippet window from buffer lines around an anchor line (1-based).
---- Cap is a maximum, not a target: near the buffer edges the window simply
---- shrinks. Used for comment payload snippets (replaces the old diff-prefixed
---- lines; output is plain file lines, no +/+/space prefixes).
----@param lines string[] full buffer lines
+--- Repair target for codediff's silent hunk-navigation failure.
+---
+--- codediff's next_hunk/prev_hunk jump to a hunk's start_line and swallow the
+--- set_cursor error, so when the start line lies one past the buffer's end
+--- (an end-of-file deletion on the modified side, an end-of-file addition on
+--- the original side) the keys appear dead: the nav reports success, the
+--- cursor never moves. The caller detects the no-move condition in the same
+--- window; given that, a past-end hunk on the shown side is exactly the
+--- failure signature, and the repair lands on the buffer's last line — where
+--- the deleted/added tail sits.
+---
+--- Pure decision: return the line to land on, or nil when no hunk lies past
+--- the buffer (the nav genuinely had nowhere to go).
+---@param changes table[] codediff hunk mappings ({original, modified} ranges)
+---@param side "original"|"modified" which side of the diff this pane shows
+---@param line_count number lines in the pane's buffer
+---@return number|nil
+function M.hunk_repair_target(changes, side, line_count)
+  if line_count < 1 then
+    return nil
+  end
+  for _, mapping in ipairs(changes) do
+    local range = side == "original" and mapping.original or mapping.modified
+    if range and range.start_line > line_count then
+      return line_count -- EOF hunk beyond the buffer: land on the tail
+    end
+  end
+  return nil
+end
+
 --- Build a snippet window from buffer lines around an anchor line (1-based).
 --- The window always fills the cap when the buffer is large enough, shifting
 --- toward the edges as the anchor approaches them. Used for comment payload

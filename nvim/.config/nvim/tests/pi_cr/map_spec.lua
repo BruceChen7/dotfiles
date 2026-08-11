@@ -83,6 +83,47 @@ describe("pi.cr.map.parse_codediff_url", function()
   end)
 end)
 
+describe("pi.cr.map.hunk_repair_target", function()
+  local map = require "pi.cr.map"
+
+  -- codediff hunk shape: { original = {start_line, end_line}, modified = {...} }
+  local function hunk(orig_start, orig_end, mod_start, mod_end)
+    return {
+      original = { start_line = orig_start, end_line = orig_end },
+      modified = { start_line = mod_start, end_line = mod_end },
+    }
+  end
+
+  it("returns nil when no hunk lies past the buffer", function()
+    local changes = { hunk(3, 4, 3, 4), hunk(8, 9, 9, 10) }
+    assert.is_nil(map.hunk_repair_target(changes, "modified", 10))
+    assert.is_nil(map.hunk_repair_target(changes, "original", 10))
+  end)
+
+  it("repairs an EOF deletion on the modified side to the last line", function()
+    -- 8-line file reduced to 5: the deletion hunk starts one past the buffer
+    local changes = { hunk(6, 9, 6, 6) }
+    assert.equal(5, map.hunk_repair_target(changes, "modified", 5))
+  end)
+
+  it("repairs an EOF addition on the original side to the last line", function()
+    -- 5-line HEAD file with appended lines: orig side hunk starts past the end
+    local changes = { hunk(3, 4, 3, 4), hunk(6, 6, 6, 7) }
+    assert.equal(5, map.hunk_repair_target(changes, "original", 5))
+    -- the modified side (6 lines) has no past-end hunk
+    assert.is_nil(map.hunk_repair_target(changes, "modified", 6))
+  end)
+
+  it("repairs when a later hunk lies past the end and the cursor could not advance", function()
+    local changes = { hunk(3, 4, 3, 4), hunk(8, 9, 8, 8) }
+    assert.equal(7, map.hunk_repair_target(changes, "modified", 7))
+  end)
+
+  it("returns nil for empty buffers", function()
+    assert.is_nil(map.hunk_repair_target({ hunk(1, 2, 1, 2) }, "modified", 0))
+  end)
+end)
+
 describe("pi.cr.map.build_snippet", function()
   local map = require "pi.cr.map"
 
