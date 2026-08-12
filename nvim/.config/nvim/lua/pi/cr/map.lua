@@ -120,4 +120,42 @@ function M.build_snippet(lines, anchor, cap)
   return table.concat(lines, "\n", first, last)
 end
 
+--- Ticks (at the caller's 50ms poll) a side's line count must stay unchanged
+--- before a too-short side is treated as settled. Virtual buffers start empty
+--- and fill asynchronously, so a short count alone is not final; 10 ticks (~500ms)
+--- is well past the async load, so a count still below the target then is
+--- permanent for that view.
+local HOPELESS_STABLE_TICKS = 10
+
+--- Decide where a comment jump can land, from a view snapshot.
+---
+--- The modified side normally carries the target file; deleted files render
+--- as a single original-side pane (single_side == "original") whose modified
+--- side is a scratch buffer that never grows, so the original side is the
+--- only meaningful landing target. Without this the caller waits for the
+--- target line on the empty modified side and burns its full retry budget.
+---
+--- Returns:
+---   {status="ready", side}     -> land the cursor on that side now
+---   {status="wait", side}      -> the side is still loading; keep waiting
+---   {status="hopeless", side}  -> the side has settled with fewer lines than
+---                                 the target; the jump can never land
+---
+---@param view {single_side: string|nil, modified_lines: number, original_lines: number}
+---@param target_line number
+---@param stable_ticks number consecutive ticks the checked side's line count
+---                        has been unchanged (0 = first observation)
+---@return {status: "ready"|"wait"|"hopeless", side: "modified"|"original"}
+function M.jump_landing(view, target_line, stable_ticks)
+  local side = view.single_side == "original" and "original" or "modified"
+  local lines = side == "original" and view.original_lines or view.modified_lines
+  if lines >= target_line then
+    return { status = "ready", side = side }
+  end
+  if stable_ticks >= HOPELESS_STABLE_TICKS then
+    return { status = "hopeless", side = side }
+  end
+  return { status = "wait", side = side }
+end
+
 return M

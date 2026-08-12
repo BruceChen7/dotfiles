@@ -162,3 +162,62 @@ describe("pi.cr.map.build_snippet", function()
     assert.equal("", map.build_snippet(lines, 1, -1))
   end)
 end)
+
+-- Regression: comment jumps on deleted files. Deleted files render as a
+-- single original-side pane (single_side == "original"); the modified side is
+-- a scratch buffer that never grows, so the jump must target the original
+-- side, and must give up ("hopeless") once that side has settled shorter than
+-- the comment line instead of burning the retry budget.
+describe("pi.cr.map.jump_landing", function()
+  local map = require "pi.cr.map"
+
+  local function view(single_side, modified_lines, original_lines)
+    return {
+      single_side = single_side,
+      modified_lines = modified_lines,
+      original_lines = original_lines,
+    }
+  end
+
+  it("lands on the modified side for normal views", function()
+    local r = map.jump_landing(view(nil, 100, 100), 50, 0)
+    assert.equal("ready", r.status)
+    assert.equal("modified", r.side)
+  end)
+
+  it("lands on the original side for deleted-file views", function()
+    local r = map.jump_landing(view("original", 1, 100), 50, 0)
+    assert.equal("ready", r.status)
+    assert.equal("original", r.side)
+  end)
+
+  it("accepts a target line equal to the last line", function()
+    local r = map.jump_landing(view(nil, 50, 50), 50, 0)
+    assert.equal("ready", r.status)
+  end)
+
+  it("waits while the side is still loading", function()
+    local r = map.jump_landing(view(nil, 1, 100), 50, 3)
+    assert.equal("wait", r.status)
+    local r2 = map.jump_landing(view("original", 1, 1), 50, 3)
+    assert.equal("wait", r2.status)
+    assert.equal("original", r2.side)
+  end)
+
+  it("gives up once the deleted-file side settled shorter than the line", function()
+    local r = map.jump_landing(view("original", 1, 20), 50, 10)
+    assert.equal("hopeless", r.status)
+    assert.equal("original", r.side)
+  end)
+
+  it("gives up once a normal view settled shorter than the line", function()
+    local r = map.jump_landing(view(nil, 20, 20), 50, 10)
+    assert.equal("hopeless", r.status)
+    assert.equal("modified", r.side)
+  end)
+
+  it("keeps waiting below the hopeless stability threshold", function()
+    local r = map.jump_landing(view("original", 1, 20), 50, 9)
+    assert.equal("wait", r.status)
+  end)
+end)

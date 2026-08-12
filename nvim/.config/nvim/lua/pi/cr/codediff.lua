@@ -110,6 +110,38 @@ local function file_for_buf(buf)
   return nil
 end
 
+--- The file the session's view currently displays, "" when nothing is shown
+--- yet. Deleted files render as a single original-side pane with an empty
+--- modified ref, so the shown file is the original side in that case.
+---@param session table|nil
+---@return string
+local function shown_file(session)
+  if not session then
+    return ""
+  end
+  local modified = session.modified and session.modified.relative or ""
+  if modified ~= "" then
+    return modified
+  end
+  return session.original and session.original.relative or ""
+end
+
+--- Whether the session's view shows the selected file on either side.
+--- The modified side carries the selection for normal/added/untracked files;
+--- deleted files show only the original side (their modified ref is empty),
+--- and the VirtualFileLoaded hook passes that empty ref as its target.
+---@param session table|nil
+---@param target string
+---@return boolean
+local function view_matches(session, target)
+  if not session then
+    return false
+  end
+  local modified = session.modified and session.modified.relative
+  local original = session.original and session.original.relative
+  return modified == target or original == target
+end
+
 --- Snippet window read from the modified buffer around the anchor (plain file
 --- lines, no diff prefixes; cap 10).
 ---@param buf number modified buffer
@@ -383,28 +415,53 @@ function M.jump_to_comment(id)
 
   -- After the file loads, move the diff cursor to the comment line. The load
   -- is async (event loop must spin), so wait with a retry budget instead of
-  -- a single schedule tick.
+  -- a single schedule tick. Deleted files render as a single original-side
+  -- pane (their modified side is a scratch that never grows), so the landing
+  -- side comes from map.jump_landing; without that the wait burned its full
+  -- budget on the empty modified side and the cursor never moved.
   vim.schedule(function()
-    local lifecycle = require "codediff.ui.lifecycle"
     local attempts = 0
+    local checked_buf, checked_lines, stable_ticks
     while attempts < 60 do
       local s = session_of()
-      local buf = s and s.modified_bufnr
-      if buf and vim.api.nvim_buf_line_count(buf) >= target.line then
-        break
+      -- Only judge once the view actually shows the target file: the
+      -- selection is async, and judging earlier could land the cursor on the
+      -- previous file's buffer.
+      if s and view_matches(s, target.file) then
+        local view = {
+          single_side = s.single_side,
+          modified_lines = s.modified_bufnr and vim.api.nvim_buf_line_count(s.modified_bufnr) or 0,
+          original_lines = s.original_bufnr and vim.api.nvim_buf_line_count(s.original_bufnr) or 0,
+        }
+        local landing = map.jump_landing(view, target.line, stable_ticks or 0)
+        if landing.status == "ready" then
+          local orig_win, mod_win = lifecycle.get_windows(state.tabpage)
+          local win = landing.side == "original" and orig_win or mod_win
+          if win and vim.api.nvim_win_is_valid(win) then
+            vim.api.nvim_set_current_win(win)
+            vim.api.nvim_win_set_cursor(win, { target.line, 0 })
+            vim.cmd "normal! zz"
+          end
+          break
+        end
+        if landing.status == "hopeless" then
+          break -- the shown side settled shorter than the comment line
+        end
+        -- Still loading: track how long the checked side's line count has
+        -- stayed unchanged so a settled-too-short side can bail early.
+        local buf = landing.side == "original" and s.original_bufnr or s.modified_bufnr
+        local lines = buf and vim.api.nvim_buf_line_count(buf) or 0
+        if buf == checked_buf and lines == checked_lines then
+          stable_ticks = (stable_ticks or 0) + 1
+        else
+          stable_ticks = 0
+          checked_buf, checked_lines = buf, lines
+        end
       end
       attempts = attempts + 1
       vim.wait(50, function()
         return false
       end)
-    end
-    local s = session_of()
-    local buf = s and s.modified_bufnr
-    local _, mod_win = lifecycle.get_windows(state.tabpage)
-    if buf and mod_win and vim.api.nvim_win_is_valid(mod_win) and vim.api.nvim_buf_line_count(buf) >= target.line then
-      vim.api.nvim_set_current_win(mod_win)
-      vim.api.nvim_win_set_cursor(mod_win, { target.line, 0 })
-      vim.cmd "normal! zz"
     end
     M.render_cards()
   end)
@@ -746,29 +803,51 @@ local function reinstall_keymaps()
   end
 end
 
---- Wait (with retries) until the session's modified file matches the target
---- the user selected, then (re)install the keymaps. codediff's view.update is
---- async and swaps the placeholder panes for real/virtual buffers; installing
---- before the swap lands would bind buffers that are about to be wiped, and a
---- "c already present" check on the previous file's buffer would stop the
---- retry prematurely. The file-identity check is the reliable completion
---- signal: after the swap, session.modified.relative == target.
+--- Wait (with retries) until the session's view shows the target file, then
+--- (re)install the keymaps. codediff's view.update is async and swaps the
+--- placeholder panes for real/virtual buffers; installing before the swap
+--- lands would bind buffers that are about to be wiped, and a "c already
+--- present" check on the previous file's buffer would stop the retry
+--- prematurely. The file-identity check is the reliable completion signal:
+--- after the swap, session.modified.relative == target — except for deleted
+--- files, whose modified side is an empty ref (single original-side pane), so
+--- the original side must be checked too.
+---
+--- Chains are self-cancelling: each selection bumps the sequence, so a chain
+--- superseded by a newer selection stops once the view moves to a file that
+--- is not its target (that keymap install is the newer chain's job). Without
+--- this, chains for deleted files could never complete early and would burn
+--- their full retry budget (60 x 50ms of vim.wait) per selection, and rapid
+--- Tab navigation would pile up concurrent chains, saturating the main loop.
+local reinstall_seq = 0
 local function reinstall_keymaps_until_file(target, tries)
   tries = tries or 60
-  vim.schedule(function()
+  reinstall_seq = reinstall_seq + 1
+  local seq = reinstall_seq
+  local start_shown
+  local function tick(remaining)
+    if remaining <= 0 or seq ~= reinstall_seq then
+      return
+    end
     local session = session_of()
-    local current = session and session.modified and session.modified.relative
-    if current == target then
+    if view_matches(session, target) then
       reinstall_keymaps()
       return
     end
-    if tries <= 0 then
-      return
+    local shown = shown_file(session)
+    if start_shown == nil then
+      start_shown = shown -- view still on the previous file: keep waiting
+    end
+    if shown ~= start_shown then
+      return -- view moved to a file that is not our target: superseded
     end
     vim.wait(50, function()
       return false
     end)
-    reinstall_keymaps_until_file(target, tries - 1)
+    tick(remaining - 1)
+  end
+  vim.schedule(function()
+    tick(tries)
   end)
 end
 
@@ -996,5 +1075,7 @@ end
 
 M._state = state -- smoke hook
 M._reinstall = reinstall_keymaps -- smoke hook
+M._shown_file = shown_file -- smoke hook
+M._view_matches = view_matches -- smoke hook
 
 return M
