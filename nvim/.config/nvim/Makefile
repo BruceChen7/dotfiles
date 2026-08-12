@@ -9,6 +9,7 @@
 
 test:
 	./scripts/test-pi-cr.sh
+	./scripts/test-netrw-e117.sh
 
 test-file:
 	@test -n "$(FILE)" || (echo "usage: make test-file FILE=tests/pi_cr/xxx_spec.lua" && exit 1)

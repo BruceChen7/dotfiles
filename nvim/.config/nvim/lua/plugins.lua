@@ -18,7 +18,25 @@ vim.g.maplocalleader = " "
 
 -- 引入拆分的插件配置
 local plugins = {
-  -- 基础配置
+  -- 从各个文件导入插件配置
+  require "plugins.basic",
+  require "plugins.completion",
+  require "plugins.lsp",
+  require "plugins.treesitter",
+  require "plugins.themes",
+  require "plugins.editing",
+  require "plugins.navigation",
+  require "plugins.development",
+  require "plugins.utils",
+  require "plugins.localization",
+  require "plugins.filemanagers",
+  require "plugins.special",
+  require "plugins.ai",
+}
+
+-- NOTE: lazy.setup(spec, opts) — 配置项(concurrency/performance)必须放在第二个参数,
+-- 否则整个表会被当作插件 spec,disabled_plugins 等配置永远不会生效。
+require("lazy").setup(plugins, {
   concurrency = 2,
   performance = {
     rtp = {
@@ -37,21 +55,4 @@ local plugins = {
       },
     },
   },
-
-  -- 从各个文件导入插件配置
-  require "plugins.basic",
-  require "plugins.completion",
-  require "plugins.lsp",
-  require "plugins.treesitter",
-  require "plugins.themes",
-  require "plugins.editing",
-  require "plugins.navigation",
-  require "plugins.development",
-  require "plugins.utils",
-  require "plugins.localization",
-  require "plugins.filemanagers",
-  require "plugins.special",
-  require "plugins.ai",
-}
-
-require("lazy").setup(plugins)
+})

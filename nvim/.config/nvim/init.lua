@@ -1,9 +1,13 @@
 -- for speed up nvim load
 --
 require "util"
+-- Disable builtin plugins (netrw etc.) BEFORE lazy.nvim scans runtimepath and
+-- sources $VIMRUNTIME/plugin/*. If this runs after `require "plugins"`,
+-- netrwPlugin.vim registers its VimEnter autocmd before the g:loaded_netrw
+-- guard exists, and `nvim .` later fails with E117 (netrw#LocalBrowseCheck).
+require "buildin"
 require "plugins"
 require "style"
-require "buildin"
 require "options"
 require "keymaps"
 
