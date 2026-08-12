@@ -1,8 +1,8 @@
-# herdr-tabname — Auto-name tabs after the foreground process of the focused pane.
+# herdr-tabname — Auto-name tabs after the foreground process's working directory.
 # ====================================================
 # prefix+shift+t (manual rename) → tab exits plugin management forever.
-# Agent name (display_agent) takes priority over process name.
-# Idle shell → cwd basename (tmux style).
+# Agent → `<agent> - <cwd>` (display_agent takes priority; herdr's `π - dir` style).
+# Label → full cwd path (home collapsed to ~, head-truncated at 50 chars).
 # Startup sweep renames all managed tabs after restart.
 #
 # Install: herdr plugin link ~/work/dotfiles/herdr/herdr-tabname
@@ -11,7 +11,7 @@ id = "herdr-tabname"
 name = "Herdr Tabname"
 version = "0.1.0"
 min_herdr_version = "0.8.0"
-description = "Auto-name tabs after the foreground process"
+description = "Auto-name tabs after the foreground process's working directory"
 platforms = ["linux", "macos"]
 
 # Startup: sweep all tabs and re-derive names.

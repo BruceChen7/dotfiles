@@ -4,7 +4,7 @@
 # dependencies = []
 # ///
 """
-herdr-tabname: Auto-name tabs after the foreground process.
+herdr-tabname: Auto-name tabs after the foreground process's working directory.
 
 Environment (set by herdr plugin hook):
     HERDR_PLUGIN_EVENT  — "startup" | "tab.focused" | "tab.created" | "pane.updated"
@@ -25,8 +25,9 @@ from pathlib import Path
 
 # ---- constants -----------------------------------------------------------
 
-SHELL_NAMES = frozenset({"bash", "zsh", "fish", "sh", "dash", "ksh", "tcsh", "csh"})
-MAX_LABEL_LENGTH = 20
+# Tabs are narrow, so long paths are head-truncated (the tail — the project
+# name — stays visible).
+MAX_LABEL_LENGTH = 50
 
 # Skip re-evaluating a tab for this long after its last check.  pane.updated
 # fires on every stripped terminal-title change (shell prompt hooks set the
@@ -164,6 +165,32 @@ def _truncate(s: str, n: int) -> str:
     return s[:n] if len(s) > n else s
 
 
+def _display_path(cwd: str) -> str:
+    """Collapse the home directory prefix to `~` for display.
+
+    ``/Users/me/work/dotfiles`` → ``~/work/dotfiles``.  Paths outside the
+    home directory are returned unchanged.
+    """
+    home = str(Path.home())
+    if cwd == home:
+        return "~"
+    if cwd.startswith(home + os.sep):
+        return "~" + cwd[len(home) :]
+    return cwd
+
+
+def _truncate_path(s: str, n: int) -> str:
+    """Truncate a path to at most *n* characters, keeping the tail.
+
+    Paths are read left-to-right from the filesystem root, so the last
+    components are the most useful; truncation drops the head and marks it
+    with ``…`` instead of cutting the project name off.
+    """
+    if len(s) <= n:
+        return s
+    return "…" + s[-(n - 1) :]
+
+
 # ---- naming algorithm (pure) ---------------------------------------------
 
 
@@ -171,22 +198,30 @@ def compute_label(pane_id: str) -> str | None:
     """Compute the desired tab label for *pane_id*.
 
     Priority:
-      1. display_agent / agent (from pane get)
-      2. foreground process name (from pane process-info)
-         - shell → cwd basename (or shell name if cwd missing)
+      1. display_agent / agent (from pane get) → ``<agent> - <cwd>``
+         (herdr's own convention, e.g. ``π - pi-kit``; cwd missing → name only)
+      2. foreground process working directory (from pane process-info)
+         - full path, home collapsed to ``~``, head-truncated (tail kept)
+         - cwd missing → process name
       3. undetectable → None (keep current name)
 
-    Returned label is already basename'd and truncated to MAX_LABEL_LENGTH.
+    Returned label is already path/name-normalised and truncated to
+    MAX_LABEL_LENGTH.
     """
-    # 1. Agent priority
+    # 1. Agent priority: agent name + working directory
     data = _herdr("pane", "get", pane_id)
     if data is not None:
         pane = data.get("result", {}).get("pane", {})
         agent = pane.get("display_agent") or pane.get("agent")
         if agent:
+            cwd = pane.get("cwd") or pane.get("foreground_cwd") or ""
+            if cwd:
+                return _truncate_path(
+                    f"{agent} - {_display_path(cwd)}", MAX_LABEL_LENGTH
+                )
             return _truncate(agent, MAX_LABEL_LENGTH)
 
-    # 2. Foreground process
+    # 2. Foreground process working directory
     data = _herdr("pane", "process-info", "--pane", pane_id)
     if data is None:
         return None
@@ -196,19 +231,16 @@ def compute_label(pane_id: str) -> str | None:
     if not procs:
         return None
     proc = procs[0]
+
+    # 2a. The working directory drives the label
+    cwd = proc.get("cwd") or ""
+    if cwd:
+        return _truncate_path(_display_path(cwd), MAX_LABEL_LENGTH)
+
+    # 2b. No cwd available → fall back to the process name
     name = proc.get("name", "")
     if not name:
         return None
-
-    # 2a. Idle shell → cwd basename
-    if name in SHELL_NAMES:
-        cwd = proc.get("cwd") or ""
-        if cwd:
-            return _truncate(_basename(cwd), MAX_LABEL_LENGTH)
-        # No cwd available → fall back to the shell name itself
-        return _truncate(name, MAX_LABEL_LENGTH)
-
-    # 2b. Regular process
     return _truncate(_basename(name), MAX_LABEL_LENGTH)
 
 

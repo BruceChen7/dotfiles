@@ -24,7 +24,10 @@ import tabname
 
 
 def _pane_get_response(
-    *, display_agent: str | None = None, agent: str | None = None
+    *,
+    display_agent: str | None = None,
+    agent: str | None = None,
+    cwd: str | None = None,
 ) -> dict:
     """Build a fake herdr pane get response."""
     pane = {}
@@ -32,6 +35,8 @@ def _pane_get_response(
         pane["display_agent"] = display_agent
     if agent is not None:
         pane["agent"] = agent
+    if cwd is not None:
+        pane["cwd"] = cwd
     return {"result": {"pane": pane}}
 
 
@@ -75,18 +80,53 @@ class TestComputeLabel(unittest.TestCase):
     # -- Agent priority ----------------------------------------------------
 
     def test_agent_display_agent_priority(self):
-        """display_agent takes priority over agent."""
+        """display_agent takes priority over agent; combined with cwd."""
 
         def fake_herdr(*args, **kwargs):
             if args[0] == "pane" and args[1] == "get":
-                return _pane_get_response(display_agent="pi-coding", agent="codex")
+                return _pane_get_response(
+                    display_agent="pi-coding",
+                    agent="codex",
+                    cwd=str(Path.home() / "work" / "dotfiles"),
+                )
             return None
 
         with patch("tabname._herdr", side_effect=fake_herdr):
-            self.assertEqual(tabname.compute_label("p1"), "pi-coding")
+            self.assertEqual(tabname.compute_label("p1"), "pi-coding - ~/work/dotfiles")
+
+    def test_agent_combined_with_cwd(self):
+        """Agent + working directory → `agent - ~/path` (herdr's `π - dir` style)."""
+
+        def fake_herdr(*args, **kwargs):
+            if args[0] == "pane" and args[1] == "get":
+                return _pane_get_response(
+                    agent="pi", cwd=str(Path.home() / "work" / "dotfiles")
+                )
+            return None
+
+        with patch("tabname._herdr", side_effect=fake_herdr):
+            self.assertEqual(tabname.compute_label("p1"), "pi - ~/work/dotfiles")
+
+    def test_agent_uses_foreground_cwd_fallback(self):
+        """Agent without `cwd` but with `foreground_cwd` → still combined."""
+
+        def fake_herdr(*args, **kwargs):
+            if args[0] == "pane" and args[1] == "get":
+                return {
+                    "result": {
+                        "pane": {
+                            "agent": "codex",
+                            "foreground_cwd": "/opt/app",
+                        }
+                    }
+                }
+            return None
+
+        with patch("tabname._herdr", side_effect=fake_herdr):
+            self.assertEqual(tabname.compute_label("p1"), "codex - /opt/app")
 
     def test_agent_fallback(self):
-        """agent is used when display_agent is absent."""
+        """Agent without cwd → name only."""
 
         def fake_herdr(*args, **kwargs):
             if args[0] == "pane" and args[1] == "get":
@@ -101,16 +141,68 @@ class TestComputeLabel(unittest.TestCase):
 
         def fake_herdr(*args, **kwargs):
             if args[0] == "pane" and args[1] == "get":
-                return _pane_get_response(display_agent="my-agent", agent="inner-agent")
+                return _pane_get_response(
+                    display_agent="my-agent",
+                    agent="inner-agent",
+                    cwd=str(Path.home() / "work" / "dotfiles"),
+                )
             return None
 
         with patch("tabname._herdr", side_effect=fake_herdr):
-            self.assertEqual(tabname.compute_label("p1"), "my-agent")
+            self.assertEqual(tabname.compute_label("p1"), "my-agent - ~/work/dotfiles")
 
-    # -- Process name ------------------------------------------------------
+    # -- Process working directory ------------------------------------------
 
-    def test_process_name_simple(self):
-        """Simple process name (vim)."""
+    def test_process_uses_cwd_full_path(self):
+        """Foreground process → full cwd path (home collapsed to ~)."""
+
+        def fake_herdr(*args, **kwargs):
+            cmd = tuple(args)
+            if cmd == ("pane", "get", "p1"):
+                return _pane_get_response()  # no agent
+            if cmd == ("pane", "process-info", "--pane", "p1"):
+                return _process_info_response(
+                    processes=[
+                        {"name": "nvim", "cwd": str(Path.home() / "work" / "dotfiles")}
+                    ]
+                )
+            return None
+
+        with patch("tabname._herdr", side_effect=fake_herdr):
+            self.assertEqual(tabname.compute_label("p1"), "~/work/dotfiles")
+
+    def test_process_cwd_outside_home_shown_absolute(self):
+        """cwd outside home → absolute path unchanged."""
+
+        def fake_herdr(*args, **kwargs):
+            if args[0] == "pane" and args[1] == "get":
+                return _pane_get_response()
+            if args[0] == "pane" and args[1] == "process-info":
+                return _process_info_response(
+                    processes=[{"name": "node", "cwd": "/opt/app/server"}]
+                )
+            return None
+
+        with patch("tabname._herdr", side_effect=fake_herdr):
+            self.assertEqual(tabname.compute_label("p1"), "/opt/app/server")
+
+    def test_process_cwd_is_home(self):
+        """cwd == home → `~`."""
+
+        def fake_herdr(*args, **kwargs):
+            if args[0] == "pane" and args[1] == "get":
+                return _pane_get_response()
+            if args[0] == "pane" and args[1] == "process-info":
+                return _process_info_response(
+                    processes=[{"name": "bash", "cwd": str(Path.home())}]
+                )
+            return None
+
+        with patch("tabname._herdr", side_effect=fake_herdr):
+            self.assertEqual(tabname.compute_label("p1"), "~")
+
+    def test_process_name_fallback_without_cwd(self):
+        """Process without cwd → process name (vim)."""
 
         def fake_herdr(*args, **kwargs):
             cmd = tuple(args)
@@ -124,7 +216,7 @@ class TestComputeLabel(unittest.TestCase):
             self.assertEqual(tabname.compute_label("p1"), "vim")
 
     def test_process_name_normalized_agent(self):
-        """Already-normalized agent name (codex)."""
+        """Already-normalized agent name (codex) without cwd → name."""
 
         def fake_herdr(*args, **kwargs):
             if args[0] == "pane" and args[1] == "get":
@@ -136,22 +228,24 @@ class TestComputeLabel(unittest.TestCase):
         with patch("tabname._herdr", side_effect=fake_herdr):
             self.assertEqual(tabname.compute_label("p1"), "codex")
 
-    # -- Shell → cwd basename ----------------------------------------------
+    # -- Shell → cwd full path ----------------------------------------------
 
-    def test_shell_uses_cwd_basename(self):
-        """Idle shell → cwd basename."""
+    def test_shell_uses_cwd_full_path(self):
+        """Idle shell → full cwd path (home collapsed to ~)."""
 
         def fake_herdr(*args, **kwargs):
             if args[0] == "pane" and args[1] == "get":
                 return _pane_get_response()
             if args[0] == "pane" and args[1] == "process-info":
                 return _process_info_response(
-                    processes=[{"name": "zsh", "cwd": "/Users/x/work/dotfiles"}]
+                    processes=[
+                        {"name": "zsh", "cwd": str(Path.home() / "work" / "dotfiles")}
+                    ]
                 )
             return None
 
         with patch("tabname._herdr", side_effect=fake_herdr):
-            self.assertEqual(tabname.compute_label("p1"), "dotfiles")
+            self.assertEqual(tabname.compute_label("p1"), "~/work/dotfiles")
 
     def test_shell_no_cwd_falls_back_to_shell_name(self):
         """Shell without cwd → shell name."""
@@ -180,28 +274,6 @@ class TestComputeLabel(unittest.TestCase):
 
         with patch("tabname._herdr", side_effect=fake_herdr):
             self.assertEqual(tabname.compute_label("p1"), "fish")
-
-    # -- All shells in SHELL_NAMES -----------------------------------------
-
-    def test_all_shells_use_cwd(self):
-        """Every shell in SHELL_NAMES → cwd basename."""
-
-        def make_fake(shell_name):
-            def fake_herdr(*args, **kwargs):
-                if args[0] == "pane" and args[1] == "get":
-                    return _pane_get_response()
-                if args[0] == "pane" and args[1] == "process-info":
-                    return _process_info_response(
-                        processes=[{"name": shell_name, "cwd": "/tmp/workspace"}]
-                    )
-                return None
-
-            return fake_herdr
-
-        for shell in sorted(tabname.SHELL_NAMES):
-            with self.subTest(shell=shell):
-                with patch("tabname._herdr", side_effect=make_fake(shell)):
-                    self.assertEqual(tabname.compute_label("p1"), "workspace")
 
     # -- Empty / undetectable ----------------------------------------------
 
@@ -255,6 +327,23 @@ class TestComputeLabel(unittest.TestCase):
         with patch("tabname._herdr", side_effect=fake_herdr):
             self.assertEqual(tabname.compute_label("p1"), expected)
 
+    def test_long_path_head_truncated(self):
+        """Long cwd path → head dropped, tail (project name) kept."""
+        long_path = "/" + "x" * (tabname.MAX_LABEL_LENGTH + 30)
+        expected = "…" + long_path[-(tabname.MAX_LABEL_LENGTH - 1) :]
+
+        def fake_herdr(*args, **kwargs):
+            if args[0] == "pane" and args[1] == "get":
+                return _pane_get_response()
+            if args[0] == "pane" and args[1] == "process-info":
+                return _process_info_response(
+                    processes=[{"name": "zsh", "cwd": long_path}]
+                )
+            return None
+
+        with patch("tabname._herdr", side_effect=fake_herdr):
+            self.assertEqual(tabname.compute_label("p1"), expected)
+
     def test_short_name_not_truncated(self):
         """Name ≤ MAX_LABEL_LENGTH → unchanged."""
 
@@ -292,6 +381,26 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(tabname._truncate("hello", 5), "hello")
         self.assertEqual(tabname._truncate("hello world", 5), "hello")
         self.assertEqual(tabname._truncate("", 5), "")
+
+    def test_display_path_collapses_home(self):
+        """Paths under home → `~` prefix."""
+        with patch.object(Path, "home", return_value=Path("/Users/x")):
+            self.assertEqual(
+                tabname._display_path("/Users/x/work/dotfiles"), "~/work/dotfiles"
+            )
+            self.assertEqual(tabname._display_path("/Users/x"), "~")
+            self.assertEqual(tabname._display_path("/Users/xy/work"), "/Users/xy/work")
+
+    def test_display_path_outside_home_unchanged(self):
+        self.assertEqual(tabname._display_path("/opt/app"), "/opt/app")
+
+    def test_truncate_path_keeps_tail(self):
+        self.assertEqual(
+            tabname._truncate_path("~/work/dotfiles", 50), "~/work/dotfiles"
+        )
+        long = "/" + "a" * 60
+        self.assertEqual(tabname._truncate_path(long, 50), "…" + "a" * 49)
+        self.assertEqual(len(tabname._truncate_path(long, 50)), 50)
 
 
 # ---- pane.updated handler tests -------------------------------------------
@@ -334,7 +443,10 @@ class TestHandlePaneUpdated(unittest.TestCase):
                     "result": {
                         "process_info": {
                             "foreground_processes": [
-                                {"name": "zsh", "cwd": "/Users/x/work/dotfiles"}
+                                {
+                                    "name": "zsh",
+                                    "cwd": str(Path.home() / "work" / "dotfiles"),
+                                }
                             ]
                         }
                     }
@@ -357,9 +469,9 @@ class TestHandlePaneUpdated(unittest.TestCase):
             with patch("tabname._herdr", side_effect=self._fake_herdr(renames)):
                 tabname._handle_pane_updated()
 
-        self.assertEqual(renames, [("tab", "rename", "w1:t1", "dotfiles")])
+        self.assertEqual(renames, [("tab", "rename", "w1:t1", "~/work/dotfiles")])
         entry = json.loads(self._state_path().read_text())["tabs"]["w1:t1"]
-        self.assertEqual(entry["plugin_label"], "dotfiles")
+        self.assertEqual(entry["plugin_label"], "~/work/dotfiles")
         self.assertIn("last_checked", entry)
 
     def test_event_json_fallback_resolves_pane_and_tab(self):
@@ -374,7 +486,7 @@ class TestHandlePaneUpdated(unittest.TestCase):
             with patch("tabname._herdr", side_effect=self._fake_herdr(renames)):
                 tabname._handle_pane_updated()
 
-        self.assertEqual(renames, [("tab", "rename", "w1:t1", "dotfiles")])
+        self.assertEqual(renames, [("tab", "rename", "w1:t1", "~/work/dotfiles")])
 
     def test_recently_checked_tab_is_debounced(self):
         """last_checked within DEBOUNCE_SECONDS → no CLI calls at all."""
@@ -412,7 +524,7 @@ class TestHandlePaneUpdated(unittest.TestCase):
             with patch("tabname._herdr", side_effect=self._fake_herdr(renames)):
                 tabname._handle_pane_updated()
 
-        self.assertEqual(renames, [("tab", "rename", "w1:t1", "dotfiles")])
+        self.assertEqual(renames, [("tab", "rename", "w1:t1", "~/work/dotfiles")])
 
     def test_background_pane_title_change_ignored(self):
         """Updated pane is not the tab's focused pane → no rename."""
@@ -459,7 +571,10 @@ class TestHandlePaneUpdated(unittest.TestCase):
                     "result": {
                         "process_info": {
                             "foreground_processes": [
-                                {"name": "zsh", "cwd": "/Users/x/work/dotfiles"}
+                                {
+                                    "name": "zsh",
+                                    "cwd": str(Path.home() / "work" / "dotfiles"),
+                                }
                             ]
                         }
                     }
