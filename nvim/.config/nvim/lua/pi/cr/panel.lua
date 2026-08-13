@@ -170,6 +170,25 @@ local function truncate(text, width)
   return shown
 end
 
+--- Render the dock buffer from the current tree rows.
+---
+--- 工作原理：全量重写式渲染（不做增量 diff）。输入是 state.rows
+--- （build_tree_rows 生成的目录/文件/评论树）与 state.sel_id（选中评论），
+--- 输出是 buffer 文本 + 高亮 extmark：
+---
+---   1. 宽度 = 窗口宽 − 2（两侧留白），下限 24；评论正文按此截断（truncate）。
+---   2. 先统计可见评论总数，生成 "Comments (N)" 标题行。
+---   3. 逐行展开 rows：dir/file 行显示折叠箭头（▸/▾）+ 计数；
+---      评论行显示 "[TYPE] :行号  正文"，并记录两件事——
+---      选中行（sel_line，整行 Visual 高亮）或非选中行的类型前缀
+---      （type_marks，按 FIX/QUESTION/NOTE 着色）。
+---   4. 一次性 set_lines 写入 buffer（modifiable 临时打开再关闭），
+---      清空并重放本命名空间的全部高亮 extmark（标题、类型前缀、选中行）。
+---   5. 选中行通过 nvim_win_set_cursor 落位：窗口会自动滚动跟随光标，
+---      因此在矮分屏（8-14 行）下长列表滚动时选中行始终可见。
+---
+--- 调用方：refresh/toggle/close 等任何状态变化后都会触发一次全量重绘，
+--- 列表规模小（评论数），全量重写成本可忽略，换取逻辑简单。
 local function render()
   if not state.buf or not vim.api.nvim_buf_is_valid(state.buf) then
     return
@@ -284,6 +303,18 @@ local function is_open()
 end
 
 --- Open the dock window (no-op when already open).
+---
+--- Bottom real split, NOT a float. The old float overlaid the editor's right
+--- side (relative=editor, col=columns-45, zindex=90), so a cursor moving
+--- right in the modified diff pane passed underneath it and became invisible:
+--- floats always draw above normal windows, and the diff pane extends to the
+--- editor's right edge (headless repro: cursor screen col 119 sat inside the
+--- dock's 76-119 overlay). A split never overlaps — diff panes keep their
+--- full width and the cursor stays visible at any column; the cost is a few
+--- rows of diff height (clamped 6-14, like codediff's own bottom history
+--- panel). codediff's layout.arrange only resizes its own known windows and
+--- its cleanup only tracks windows marked vim.w.codediff_restore, so the dock
+--- split survives file switches and layout toggles untouched.
 function M.open()
   if is_open() or not state.actions then
     return
@@ -292,20 +323,12 @@ function M.open()
   state.buf = vim.api.nvim_create_buf(false, true)
   vim.bo[state.buf].bufhidden = "wipe"
   vim.bo[state.buf].modifiable = false
-  local width = 44
   state.win = vim.api.nvim_open_win(state.buf, false, {
-    relative = "editor",
-    row = 1,
-    col = math.max(1, vim.o.columns - width - 1),
-    width = width,
-    height = math.max(1, vim.o.lines - 2),
-    style = "minimal",
-    border = "none",
-    zindex = 90,
+    split = "below",
   })
-  -- Match the main background: a float would otherwise inherit NormalFloat,
-  -- which gruvbox-material renders noticeably lighter than Normal.
-  vim.wo[state.win].winhighlight = "Normal:Normal"
+  vim.wo[state.win].winfixheight = true
+  local height = math.min(14, math.max(6, math.floor(vim.o.lines * 0.22)))
+  vim.api.nvim_win_set_height(state.win, height)
 
   local map = function(lhs, rhs)
     vim.keymap.set("n", lhs, rhs, { buffer = state.buf, nowait = true })
