@@ -38,6 +38,20 @@ describe("pi.cr.map.scope_to_session", function()
   end)
 end)
 
+describe("pi.cr.map.keymap_buffers", function()
+  local map = require "pi.cr.map"
+
+  it("keeps the modified buffer for an untracked single-pane view", function()
+    assert.same({ 9 }, map.keymap_buffers(nil, 9))
+  end)
+
+  it("keeps whichever side exists and does not install the same buffer twice", function()
+    assert.same({ 3 }, map.keymap_buffers(3, nil))
+    assert.same({ 3, 4 }, map.keymap_buffers(3, 4))
+    assert.same({ 4 }, map.keymap_buffers(4, 4))
+  end)
+end)
+
 describe("pi.cr.map.parse_codediff_url", function()
   local map = require "pi.cr.map"
 

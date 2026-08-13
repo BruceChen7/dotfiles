@@ -47,6 +47,26 @@ function M.scope_to_session(diff_args)
   return { ok = false, reason = "unsupported diffArgs: [" .. table.concat(diff_args, ", ") .. "]" }
 end
 
+--- Return the concrete view buffers that need Pi CR mappings. A single-pane
+--- view leaves the absent side nil (untracked: original; deleted: modified),
+--- so this must not use ipairs on { original, modified }: ipairs stops at the
+--- first nil and would silently omit the remaining, visible pane.
+---@param original_buf number|nil
+---@param modified_buf number|nil
+---@return number[]
+function M.keymap_buffers(original_buf, modified_buf)
+  local buffers, seen = {}, {}
+  local candidates = { original_buf, modified_buf }
+  for index = 1, 2 do
+    local buf = candidates[index]
+    if buf ~= nil and not seen[buf] then
+      seen[buf] = true
+      buffers[#buffers + 1] = buf
+    end
+  end
+  return buffers
+end
+
 --- Parse a codediff:// virtual buffer name into repo identity.
 --- Format (mirrors codediff.core.virtual_file.create_url):
 ---   codediff:///<git-root>///<commit>/<filepath>

@@ -740,7 +740,7 @@ end
 -- ---------------------------------------------------------------------------
 
 local function install_view_keymaps(original_buf, modified_buf)
-  for _, buf in ipairs { original_buf, modified_buf } do
+  for _, buf in ipairs(map.keymap_buffers(original_buf, modified_buf)) do
     if buf and vim.api.nvim_buf_is_valid(buf) then
       vim.keymap.set("n", "c", function()
         M.comment_at_cursor(false)
