@@ -206,6 +206,25 @@ WSMAP = {"w1": {"label": "pi-kit", "pane_count": 2}}
 TABMAP = {"w1:t1": "t1"}
 
 
+class TestBranchSuffix(unittest.TestCase):
+    def test_branch_suffix_formats(self):
+        self.assertEqual(switch.branch_suffix("feat/x"), "  (feat/x)")
+
+    def test_branch_suffix_empty(self):
+        self.assertEqual(switch.branch_suffix(None), "")
+        self.assertEqual(switch.branch_suffix(""), "")
+
+    def test_with_branch_appends_only_when_present(self):
+        self.assertEqual(
+            switch.with_branch("● agent  pi @ pi-kit · t1  ~/work/pi-kit", "main"),
+            "● agent  pi @ pi-kit · t1  ~/work/pi-kit  (main)",
+        )
+        self.assertEqual(
+            switch.with_branch("● agent  pi @ pi-kit · t1  ~/work/pi-kit", None),
+            "● agent  pi @ pi-kit · t1  ~/work/pi-kit",
+        )
+
+
 class TestAgentRow(unittest.TestCase):
     def test_working_focused_agent_full_fields(self):
         row = switch.agent_row(
@@ -346,6 +365,138 @@ class TestBuildLines(unittest.TestCase):
 
     def test_empty_inputs_yield_empty_string(self):
         self.assertEqual(switch.build_lines([], [], [], [], HOME), "")
+
+    def test_branch_by_row_applies_to_every_row(self):
+        agents = [_agent_fixture(), _agent_fixture(agent="codex", cwd=f"{HOME}/other")]
+        workspaces = [_space_fixture()]
+        tabs = [{"tab_id": "w1:t1", "label": "1"}]
+        out = switch.build_lines(
+            agents,
+            workspaces,
+            tabs,
+            [],
+            HOME,
+            {1: "main", 2: "feat/x", 3: "master"},
+        )
+        lines = out.splitlines()
+        self.assertIn("  (main)", lines[0])
+        self.assertIn("  (feat/x)", lines[1])
+        self.assertIn("  (master)", lines[2])
+
+    def test_branch_by_row_missing_index_gets_no_suffix(self):
+        agents = [_agent_fixture(), _agent_fixture(agent="codex", cwd=f"{HOME}/other")]
+        workspaces = []
+        tabs = []
+        out = switch.build_lines(agents, workspaces, tabs, [], HOME, {1: "main"})
+        lines = out.splitlines()
+        self.assertIn("  (main)", lines[0])
+        self.assertNotIn("(", lines[1].split("\t")[0])
+
+    def test_branch_by_row_none_is_byte_identical(self):
+        agents = [_agent_fixture(), _agent_fixture(agent="codex", cwd=f"{HOME}/other")]
+        workspaces = [
+            _space_fixture(),
+            _space_fixture(workspace_id="w2", label="other"),
+        ]
+        tabs = [{"tab_id": "w1:t1", "label": "1"}]
+        with_suffix = switch.build_lines(agents, workspaces, tabs, [], HOME, {})
+        without = switch.build_lines(agents, workspaces, tabs, [], HOME)
+        self.assertEqual(with_suffix, without)
+
+
+class TestWorktreeBranchMap(unittest.TestCase):
+    def test_maps_open_workspace_to_branch(self):
+        payload = {
+            "result": {
+                "worktrees": [
+                    {"branch": "master", "open_workspace_id": "w4C", "path": "/r"},
+                    {
+                        "branch": "chore/x",
+                        "open_workspace_id": "w9Z",
+                        "path": "/r/.worktrees/x",
+                    },
+                ]
+            }
+        }
+        with patch.object(switch, "herdr", return_value=payload):
+            self.assertEqual(
+                switch.worktree_branch_map(), {"w4C": "master", "w9Z": "chore/x"}
+            )
+
+    def test_skips_entries_without_open_workspace_or_branch(self):
+        payload = {
+            "result": {
+                "worktrees": [
+                    {"branch": "", "open_workspace_id": "w1"},
+                    {"branch": "x", "open_workspace_id": None},
+                    {"branch": "master", "open_workspace_id": "w2"},
+                ]
+            }
+        }
+        with patch.object(switch, "herdr", return_value=payload):
+            self.assertEqual(switch.worktree_branch_map(), {"w2": "master"})
+
+    def test_herdr_failure_yields_empty_map(self):
+        with patch.object(switch, "herdr", return_value=None):
+            self.assertEqual(switch.worktree_branch_map(), {})
+
+
+class TestCollectUniqueCwds(unittest.TestCase):
+    def test_dedupes_preserving_order_and_skips_empty(self):
+        agents = [
+            _agent_fixture(cwd=f"{HOME}/a"),
+            _agent_fixture(agent="codex", cwd=f"{HOME}/a"),
+            _agent_fixture(agent="other", cwd=f"{HOME}/b"),
+            _agent_fixture(agent="nocwd", cwd=""),
+        ]
+        self.assertEqual(switch.collect_unique_cwds(agents), [f"{HOME}/a", f"{HOME}/b"])
+
+    def test_empty_agents(self):
+        self.assertEqual(switch.collect_unique_cwds([]), [])
+
+
+class TestResolveBranchByRow(unittest.TestCase):
+    def test_agents_by_cwd_spaces_by_worktree(self):
+        agents = [
+            _agent_fixture(cwd=f"{HOME}/a"),
+            _agent_fixture(agent="codex", cwd=f"{HOME}/b"),
+        ]
+        workspaces = [
+            _space_fixture(),
+            _space_fixture(workspace_id="w2", label="other"),
+        ]
+        branch_by_cwd = {f"{HOME}/a": "main", f"{HOME}/b": "feat/x"}
+        worktree_branches = {"w2": "chore/y"}
+        self.assertEqual(
+            switch.resolve_branch_by_row(
+                agents, workspaces, branch_by_cwd, worktree_branches
+            ),
+            # w1 space 无 worktree 映射 → 从第一个 agent (cwd=~/a) 推断 main
+            {1: "main", 2: "feat/x", 3: "main", 4: "chore/y"},
+        )
+
+    def test_space_falls_back_to_first_agent_cwd_branch(self):
+        # w1 space 无 worktree 映射 → 用 space 下第一个 agent 的 cwd 分支
+        agents = [_agent_fixture(cwd=f"{HOME}/a")]
+        workspaces = [_space_fixture()]  # w1
+        branch_by_cwd = {f"{HOME}/a": "main"}
+        self.assertEqual(
+            switch.resolve_branch_by_row(agents, workspaces, branch_by_cwd, {}),
+            {1: "main", 2: "main"},
+        )
+
+    def test_space_without_agents_or_mapping_gets_nothing(self):
+        agents = []
+        workspaces = [
+            _space_fixture(),
+            _space_fixture(workspace_id="w2", label="other"),
+        ]
+        self.assertEqual(switch.resolve_branch_by_row(agents, workspaces, {}, {}), {})
+
+    def test_missing_keys_are_omitted(self):
+        agents = [_agent_fixture(cwd=f"{HOME}/a")]
+        workspaces = [_space_fixture()]
+        self.assertEqual(switch.resolve_branch_by_row(agents, workspaces, {}, {}), {})
 
 
 # ---- Slice 7-9: close_plan / cursor / fzf output --------------------------

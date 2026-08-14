@@ -145,6 +145,18 @@ def _is_running(status: str) -> bool:
     return status == "working" or status == "blocked"
 
 
+def branch_suffix(branch: str | None) -> str:
+    """分支名 → '  (feat/x)'；空/None → ''。"""
+    if not branch:
+        return ""
+    return f"  ({branch})"
+
+
+def with_branch(display: str, branch: str | None) -> str:
+    """display 末尾追加 branch_suffix(branch)。"""
+    return display + branch_suffix(branch)
+
+
 def agent_row(agent: dict, wsmap: dict, tabmap: dict, home: str) -> list[str]:
     """Build the 10 TSV fields for one agent row (old jq byte-equivalent)."""
     ws_label = wsmap.get(agent.get("workspace_id", ""), {}).get("label") or agent.get(
@@ -205,15 +217,26 @@ def build_lines(
     tabs: list[dict],
     recent: list,
     home: str,
+    branch_by_row: dict[int, str] | None = None,
 ) -> str:
     """Merge agents + workspaces into the tab-separated list (old picker.sh
-    byte-equivalent: agents block first, then spaces, one row per line)."""
+    byte-equivalent: agents block first, then spaces, one row per line).
+
+    *branch_by_row* maps a 1-based row index to a git branch name that is
+    appended to that row's display as ``(branch)``.  ``None`` keeps the
+    legacy output byte-identical.
+    """
     wsmap = {w.get("workspace_id", ""): w for w in workspaces}
     tabmap = {t.get("tab_id", ""): tab_display_label(t.get("label", "")) for t in tabs}
 
     rows = []
+    index = 1
     for agent in sorted_agents(agents, recent):
-        rows.append("\t".join(agent_row(agent, wsmap, tabmap, home)))
+        row = agent_row(agent, wsmap, tabmap, home)
+        if branch_by_row is not None and index in branch_by_row:
+            row[F_DISPLAY] = with_branch(row[F_DISPLAY], branch_by_row[index])
+        rows.append("\t".join(row))
+        index += 1
     for space in sorted_workspaces(workspaces, recent):
         wid = space.get("workspace_id", "")
         running = sum(
@@ -221,7 +244,11 @@ def build_lines(
             for a in agents
             if a.get("workspace_id") == wid and _is_running(a.get("agent_status", ""))
         )
-        rows.append("\t".join(space_row(space, running)))
+        row = space_row(space, running)
+        if branch_by_row is not None and index in branch_by_row:
+            row[F_DISPLAY] = with_branch(row[F_DISPLAY], branch_by_row[index])
+        rows.append("\t".join(row))
+        index += 1
     if not rows:
         return ""
     return "\n".join(rows) + "\n"
@@ -395,6 +422,86 @@ def herdr(*args: str, timeout: int = 10) -> dict | None:
         return json.loads(p.stdout)
     except json.JSONDecodeError:
         return None
+
+
+def current_branch(cwd: str, timeout: int = 2) -> str | None:
+    """git -C <cwd> branch --show-current；任何失败/空输出 → None。"""
+    if not cwd:
+        return None
+    try:
+        p = subprocess.run(
+            ["git", "-C", cwd, "branch", "--show-current"],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if p.returncode != 0:
+        return None
+    out = p.stdout.strip()
+    return out or None
+
+
+def collect_unique_cwds(agents: list[dict]) -> list[str]:
+    """按出现顺序收集非空且去重的 agent cwd。"""
+    seen = set()
+    out = []
+    for agent in agents:
+        cwd = agent.get("cwd") or ""
+        if cwd and cwd not in seen:
+            seen.add(cwd)
+            out.append(cwd)
+    return out
+
+
+def resolve_branch_by_row(
+    agents: list[dict],
+    workspaces: list[dict],
+    branch_by_cwd: dict[str, str],
+    worktree_branches: dict[str, str],
+) -> dict[int, str]:
+    """构建 1-based 行号 → 分支名 的映射。
+
+    agent 行按自己的 cwd；space 行优先用 worktree 映射，否则用该 space
+    下第一个 agent 的 cwd 分支（space 本身没有 cwd）。
+
+    纯函数：分支查询已由调用方完成，这里只做行号对齐。
+    """
+    result = {}
+    index = 1
+    for agent in agents:
+        cwd = agent.get("cwd") or ""
+        if cwd in branch_by_cwd:
+            result[index] = branch_by_cwd[cwd]
+        index += 1
+    for space in workspaces:
+        wid = space.get("workspace_id", "")
+        branch = worktree_branches.get(wid)
+        if not branch:
+            for agent in agents:
+                if agent.get("workspace_id") == wid:
+                    cwd = agent.get("cwd") or ""
+                    branch = branch_by_cwd.get(cwd)
+                    if branch:
+                        break
+        if branch:
+            result[index] = branch
+        index += 1
+    return result
+
+
+def worktree_branch_map() -> dict[str, str]:
+    """herdr worktree list → {open_workspace_id: branch}；失败 → {}。"""
+    data = herdr("worktree", "list")
+    if data is None:
+        return {}
+    worktrees = data.get("result", {}).get("worktrees", [])
+    return {
+        t.get("open_workspace_id"): t.get("branch")
+        for t in worktrees
+        if t.get("open_workspace_id") and t.get("branch")
+    }
 
 
 def _err_tail() -> str:
@@ -640,6 +747,33 @@ def sub_picker() -> None:
         except FetchError as e:
             fail(str(e))
         lines = build_lines(agents, workspaces, tabs, recent, str(Path.home()))
+
+        # Inline git branch on every row: resolve once per unique cwd (agents
+        # in the same repo share a cwd) plus herdr's native worktree branches
+        # for spaces. Resolved at build time — no focus:reload, so fzf
+        # navigation stays untouched.
+        try:
+            branch_by_cwd = {
+                cwd: current_branch(cwd) for cwd in collect_unique_cwds(agents)
+            }
+            worktree_branches = worktree_branch_map()
+            branch_by_row = resolve_branch_by_row(
+                agents, workspaces, branch_by_cwd, worktree_branches
+            )
+            lines = build_lines(
+                agents, workspaces, tabs, recent, str(Path.home()), branch_by_row
+            )
+        except Exception as e:  # [DEBUG-herdr-switch] 分支装饰失败时留痕
+            import traceback
+
+            with open("/tmp/herdr-switch-branch-err.log", "a") as f:
+                f.write(f"{time.strftime('%H:%M:%S')} {type(e).__name__}: {e}\n")
+                f.write(traceback.format_exc())
+        else:
+            with open("/tmp/herdr-switch-branch-err.log", "a") as f:
+                f.write(
+                    f"{time.strftime('%H:%M:%S')} OK cwds={len(branch_by_cwd)} rows={len(branch_by_row)}\n"
+                )
 
         binds = "alt-enter:accept"
         if next_index is not None:
