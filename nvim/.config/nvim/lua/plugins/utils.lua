@@ -52,7 +52,7 @@ return {
 
   {
     "mrcjkb/rustaceanvim",
-    version = "^4",
+    version = "^9",
     -- plug is already lazy
     lazy = false,
   },

@@ -40,21 +40,19 @@ describe("pi.cr.panel.build_tree_rows", function()
       end
     end
     assert.equal(0, comments_rows)
-    -- dir row + file row stay visible so the fold can be reopened
     assert.equal(2, #panel.visible_rows(rows))
   end)
 
   it("hides everything under a folded dir", function()
     local comments = { comment(1, "src/a.ts", 1, "note", "x"), comment(2, "src/b.ts", 1, "note", "y") }
     local rows = panel.build_tree_rows(comments, { ["d:src"] = true })
-    -- only the dir row itself is visible
     assert.equal(1, #panel.visible_rows(rows))
     assert.equal("dir", rows[1].kind)
   end)
 
-  it("flattens newlines in comment text", function()
+  it("preserves newlines in comment text for multiline rendering", function()
     local rows = panel.build_tree_rows({ comment(1, "a.ts", 1, "note", "line1\nline2") }, {})
-    assert.matches("line1 / line2", rows[#rows].text)
+    assert.equal("line1\nline2", rows[#rows].text)
   end)
 
   it("sorts files alphabetically within a dir", function()
@@ -62,5 +60,16 @@ describe("pi.cr.panel.build_tree_rows", function()
     local rows = panel.build_tree_rows(comments, {})
     assert.equal("a.ts", rows[2].label)
     assert.equal("z.ts", rows[4].label)
+  end)
+
+  it("builds multiline display rows and maps continuation lines to the comment", function()
+    local rows = panel.build_tree_rows({ comment(1, "a.ts", 3, "note", "line1\nline2") }, {})
+    local model = panel.build_render_model(rows, {}, 1, 60, function(text)
+      return text
+    end)
+    assert.same({ "Comments (1)", "▾ a.ts (1)", "  [NOTE] :3  line1", "             line2" }, model.lines)
+    assert.equal(rows[2], model.display_rows[3])
+    assert.equal(rows[2], model.display_rows[4])
+    assert.equal(3, model.selected_line)
   end)
 end)

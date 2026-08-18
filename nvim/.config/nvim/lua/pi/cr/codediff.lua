@@ -142,23 +142,26 @@ local function view_matches(session, target)
   return modified == target or original == target
 end
 
---- Snippet window read from the modified buffer around the anchor (plain file
---- lines, no diff prefixes; cap 10).
+--- Context window read from the modified buffer around the anchor.
 ---@param buf number modified buffer
 ---@param line number 1-based
----@return string
-local function snippet_at(buf, line)
+---@return CrCommentContext
+local function context_at(buf, line)
   local window = 6
   local start = math.max(1, line - window)
   local lines = vim.api.nvim_buf_get_lines(buf, start - 1, line + window, false)
-  return map.build_snippet(lines, line - start + 1, 10)
+  local context = map.build_context(lines, line - start + 1, 10)
+  context.start_line = start + context.start_line - 1
+  context.end_line = start + context.end_line - 1
+  context.anchor_line = line
+  return context
 end
 
 --- Resolve the comment context at the current cursor in the modified pane.
 --- Visual range optional (first/last buffer lines).
 ---@param first number|nil
 ---@param last number|nil
----@return {file: string, line: number, end_line: number, snippet: string}|nil
+---@return {file: string, line: number, end_line: number, snippet: string, context: CrCommentContext}|nil
 function M.anchor_at(first, last)
   local session = session_of()
   if not session then
@@ -187,7 +190,14 @@ function M.anchor_at(first, last)
     end_line = last or first
   end
   state.last_anchor = { file = file, line = end_line }
-  return { file = file, line = line, end_line = end_line, snippet = snippet_at(buf, line) }
+  local context = context_at(buf, line)
+  return {
+    file = file,
+    line = line,
+    end_line = end_line,
+    snippet = table.concat(context.lines, "\n"),
+    context = context,
+  }
 end
 
 -- ---------------------------------------------------------------------------
@@ -202,7 +212,6 @@ end
 --- the buffer's last line.
 ---@param nav fun(): boolean codediff navigation.next_hunk / prev_hunk
 local function clamped_hunk_nav(nav)
-  local navigation = require "codediff.ui.view.navigation"
   local session = session_of()
   local win = vim.api.nvim_get_current_win()
   local before = vim.api.nvim_win_get_cursor(win)[1]
@@ -274,12 +283,14 @@ function M.new_comment()
     return
   end
   local buf = modified_buf()
-  local snippet = buf and snippet_at(buf, anchor.line) or ""
+  local context = buf and context_at(buf, anchor.line)
+    or { lines = {}, start_line = anchor.line, anchor_line = anchor.line }
   comments.add {
     file = anchor.file,
     line = anchor.line,
     end_line = anchor.line,
-    snippet = snippet,
+    snippet = table.concat(context.lines, "\n"),
+    context = context,
   }
 end
 
@@ -891,7 +902,10 @@ local function setup_hooks()
     group = augroup,
     pattern = "CodeDiffClose",
     callback = function()
-      vim.schedule(panel.close)
+      vim.schedule(function()
+        comments.close_ui "codediff-close"
+        panel.close()
+      end)
     end,
   })
   -- BufEnter does NOT fire for codediff's nvim_win_set_buf swaps, but it does
@@ -1006,6 +1020,7 @@ function M.open(app)
       new_comment = M.new_comment,
       exit = M.exit_flow,
       help = M.show_help,
+      parent_win = select(2, require("codediff.ui.lifecycle").get_windows(state.tabpage)),
     }
     panel.sync()
     M.render_cards()

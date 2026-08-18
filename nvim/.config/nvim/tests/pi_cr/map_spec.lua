@@ -177,6 +177,50 @@ describe("pi.cr.map.build_snippet", function()
   end)
 end)
 
+describe("pi.cr.map.build_context", function()
+  local map = require "pi.cr.map"
+
+  it("returns line numbers and anchor metadata for the comment popup", function()
+    local context = map.build_context({ "one", "two", "three", "four", "five" }, 3, 3)
+    assert.same({ "two", "three", "four" }, context.lines)
+    assert.equal(2, context.start_line)
+    assert.equal(4, context.end_line)
+    assert.equal(3, context.anchor_line)
+  end)
+
+  it("normalizes a legacy snippet into the context DTO", function()
+    assert.same({
+      lines = { "a", "b" },
+      start_line = 9,
+      end_line = 10,
+      anchor_line = 10,
+    }, map.normalize_context({ snippet = "a\nb", context_start = 9, context_anchor = 10 }, 10))
+  end)
+end)
+
+describe("pi.cr.map.popup_geometry", function()
+  local map = require "pi.cr.map"
+
+  it("places the popup near the source cursor and clamps it to the screen", function()
+    assert.same(
+      { row = 4, col = 13 },
+      map.popup_geometry(
+        { row = 2, col = 5, cursor_row = 3, cursor_col = 5 },
+        { lines = 30, columns = 100 },
+        { width = 40, height = 10 }
+      )
+    )
+    assert.same(
+      { row = 17, col = 58 },
+      map.popup_geometry(
+        { row = 25, col = 90, cursor_row = 10, cursor_col = 20 },
+        { lines = 30, columns = 100 },
+        { width = 40, height = 10 }
+      )
+    )
+  end)
+end)
+
 -- Regression: comment jumps on deleted files. Deleted files render as a
 -- single original-side pane (single_side == "original"); the modified side is
 -- a scratch buffer that never grows, so the jump must target the original

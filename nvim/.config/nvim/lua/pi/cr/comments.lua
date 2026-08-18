@@ -3,6 +3,8 @@
 
 local M = {}
 
+local map = require "pi.cr.map"
+
 local SIGN_NAME = "PiCRAnnotation"
 local SIGN_GROUP = "pi-cr-annotations"
 
@@ -33,6 +35,7 @@ M.templates = {
 ---@field type "fix"|"note"|"question"
 ---@field snippet string
 ---@field comment string
+---@field context CrCommentContext|nil
 
 ---@type CrComment[]
 M.comments = {}
@@ -41,6 +44,18 @@ local state = {
   next_id = 1,
   config = nil,
   sign_ids = {}, -- comment id -> sign id
+  ui = {
+    editor_win = nil,
+    editor_buf = nil,
+    context_win = nil,
+    context_buf = nil,
+    picker_win = nil,
+    picker_buf = nil,
+    source_win = nil,
+    tabpage = nil,
+    closing = false,
+    autocmds_ready = false,
+  },
 }
 
 local function notify(message, level)
@@ -197,13 +212,46 @@ end
 -- Comment input popup
 -- ---------------------------------------------------------------------------
 
-local function comment_editor_options(input_type, title_line)
+local function valid_win(win)
+  return win and vim.api.nvim_win_is_valid(win)
+end
+
+local function valid_buf(buf)
+  return buf and vim.api.nvim_buf_is_valid(buf)
+end
+
+local function close_window(win, buf)
+  if valid_win(win) then
+    pcall(vim.api.nvim_win_close, win, true)
+  end
+  if valid_buf(buf) then
+    pcall(vim.api.nvim_buf_delete, buf, { force = true })
+  end
+end
+
+local function popup_position(source_win, width, height)
+  local source = { row = 1, col = 1, cursor_row = 1, cursor_col = 0 }
+  if valid_win(source_win) then
+    local ok_pos, pos = pcall(vim.api.nvim_win_get_position, source_win)
+    local ok_cursor, cursor = pcall(vim.api.nvim_win_get_cursor, source_win)
+    if ok_pos and ok_cursor then
+      source = { row = pos[1], col = pos[2], cursor_row = cursor[1], cursor_col = cursor[2] }
+    end
+  end
+  local geometry = map.popup_geometry(source, { lines = vim.o.lines, columns = vim.o.columns }, {
+    width = width,
+    height = height,
+  })
+  return geometry.row, geometry.col
+end
+
+local function editor_options(input_type, title_line, row, col, width, height)
   return {
     relative = "editor",
-    width = math.min(math.max(60, math.floor(vim.o.columns * 0.75)), math.max(20, vim.o.columns - 4)),
-    height = math.min(math.max(6, math.floor(vim.o.lines * 0.3)), math.max(1, vim.o.lines - 6)),
-    row = math.max(2, math.floor(vim.o.lines * 0.3)),
-    col = 1,
+    width = width,
+    height = height,
+    row = row,
+    col = col,
     style = "minimal",
     border = "rounded",
     zindex = 100,
@@ -212,55 +260,119 @@ local function comment_editor_options(input_type, title_line)
   }
 end
 
-local function close_float(win, buf, return_win)
+local function context_options(row, col, width, height, title)
+  return {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+    style = "minimal",
+    border = "rounded",
+    zindex = 99,
+    title = " " .. title .. " ",
+    title_pos = "left",
+  }
+end
+
+function M.close_ui(reason)
+  local ui = state.ui
+  if ui.closing then
+    return
+  end
+  ui.closing = true
   if vim.fn.mode():sub(1, 1) == "i" then
     pcall(vim.cmd, "stopinsert")
   end
-  if win and vim.api.nvim_win_is_valid(win) then
-    vim.api.nvim_win_close(win, false)
-  end
-  if buf and vim.api.nvim_buf_is_valid(buf) then
-    vim.bo[buf].modified = false
-    vim.api.nvim_buf_delete(buf, { force = true })
-  end
-  if return_win and vim.api.nvim_win_is_valid(return_win) then
-    vim.api.nvim_set_current_win(return_win)
+  close_window(ui.picker_win, ui.picker_buf)
+  close_window(ui.context_win, ui.context_buf)
+  close_window(ui.editor_win, ui.editor_buf)
+  local source_win = ui.source_win
+  ui.editor_win, ui.editor_buf = nil, nil
+  ui.context_win, ui.context_buf = nil, nil
+  ui.picker_win, ui.picker_buf = nil, nil
+  ui.source_win, ui.tabpage = nil, nil
+  ui.closing = false
+  local owner_tab = state.ui.tabpage
+  if
+    reason ~= "codediff-close"
+    and valid_win(source_win)
+    and owner_tab
+    and vim.api.nvim_tabpage_is_valid(owner_tab)
+    and vim.api.nvim_get_current_tabpage() == owner_tab
+  then
+    pcall(vim.api.nvim_set_current_win, source_win)
   end
 end
 
-local function open_template_picker(comment_buf, comment_win, apply)
+local function ensure_ui_autocmds()
+  if state.ui.autocmds_ready then
+    return
+  end
+  state.ui.autocmds_ready = true
+  local group = vim.api.nvim_create_augroup("PiCRCommentUI", { clear = true })
+  vim.api.nvim_create_autocmd("WinClosed", {
+    group = group,
+    callback = function(args)
+      local id = tonumber(args.match)
+      local ui = state.ui
+      if ui.closing then
+        return
+      end
+      if id == ui.editor_win or id == ui.context_win or id == ui.picker_win then
+        M.close_ui "window-closed"
+      end
+    end,
+  })
+  vim.api.nvim_create_autocmd("TabClosed", {
+    group = group,
+    callback = function()
+      local owner = state.ui.tabpage
+      if owner and not vim.api.nvim_tabpage_is_valid(owner) then
+        M.close_ui "owner-tab-closed"
+      end
+    end,
+  })
+end
+
+local function open_template_picker(comment_win, apply)
+  local ui = state.ui
   local picker_buf = vim.api.nvim_create_buf(false, true)
   local lines = {}
   for _, template in ipairs(M.templates) do
-    table.insert(lines, string.format(" %s  %s", template.key, template.label))
+    lines[#lines + 1] = string.format(" %s  %s", template.key, template.label)
   end
   vim.api.nvim_buf_set_lines(picker_buf, 0, -1, false, lines)
   vim.bo[picker_buf].bufhidden = "wipe"
   vim.bo[picker_buf].modifiable = false
 
-  local width = 34
-  local height = #lines + 1
-  local win = vim.api.nvim_open_win(picker_buf, true, {
+  local width, height = 34, #lines + 1
+  local row, col = popup_position(comment_win, width, height)
+  local picker_win = vim.api.nvim_open_win(picker_buf, true, {
     relative = "editor",
     width = width,
     height = height,
-    row = math.max(1, math.floor(vim.o.lines * 0.3) + 3),
-    col = math.max(1, math.floor(vim.o.columns * 0.3)),
+    row = row,
+    col = col,
     style = "minimal",
     border = "rounded",
     zindex = 110,
     title = " Pi CR template ",
     title_pos = "center",
   })
+  ui.picker_buf, ui.picker_win = picker_buf, picker_win
 
   local function close_picker()
-    if vim.api.nvim_win_is_valid(win) then
-      vim.api.nvim_win_close(win, false)
+    if valid_win(picker_win) then
+      pcall(vim.api.nvim_win_close, picker_win, true)
     end
-    if vim.api.nvim_buf_is_valid(picker_buf) then
-      vim.api.nvim_buf_delete(picker_buf, { force = true })
+    if valid_buf(picker_buf) then
+      pcall(vim.api.nvim_buf_delete, picker_buf, { force = true })
     end
-    vim.api.nvim_set_current_win(comment_win)
+    ui.picker_win, ui.picker_buf = nil, nil
+    if valid_win(comment_win) then
+      vim.api.nvim_set_current_win(comment_win)
+    end
   end
 
   for _, template in ipairs(M.templates) do
@@ -273,89 +385,152 @@ local function open_template_picker(comment_buf, comment_win, apply)
   vim.keymap.set("n", "<Esc>", close_picker, { buffer = picker_buf, nowait = true })
 end
 
----@param context {file: string, line: number, end_line: number|nil, snippet: string}
+---@param context {file: string, line: number, end_line: number|nil, snippet: string, context: CrCommentContext|nil}
 function M.add(context)
+  ensure_ui_autocmds()
+  M.close_ui "replace"
   local source_win = vim.api.nvim_get_current_win()
+  local ui = state.ui
+  ui.source_win = source_win
+  ui.tabpage = vim.api.nvim_get_current_tabpage()
   local input_type = "note"
-  local bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "" })
-  vim.bo[bufnr].bufhidden = "wipe"
-  vim.bo[bufnr].filetype = "markdown"
-  vim.b[bufnr].pi_cr_context = context
+  local editor_buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(editor_buf, 0, -1, false, { "" })
+  vim.bo[editor_buf].bufhidden = "wipe"
+  vim.bo[editor_buf].filetype = "markdown"
+  vim.b[editor_buf].pi_cr_context = context
 
-  local range = context.end_line
-      and context.end_line > context.line
-      and string.format("%d-%d", context.line, context.end_line)
-    or tostring(context.line)
-  local title_line = string.format("%s:%s", relative_file(context.file), range)
-  local win = vim.api.nvim_open_win(bufnr, true, comment_editor_options(input_type, title_line))
-  vim.api.nvim_win_set_cursor(win, { 1, 0 })
+  local comment_context = map.normalize_context(context.context or {
+    lines = nil,
+    start_line = nil,
+    anchor_line = nil,
+    snippet = context.snippet,
+  }, context.line)
+  local context_lines = comment_context.lines
+  local context_start = comment_context.start_line
+  local context_anchor = comment_context.anchor_line
+  if #context_lines == 0 then
+    context_lines = { "(no source context)" }
+    context_start = context.line
+    comment_context = {
+      lines = context_lines,
+      start_line = context_start,
+      end_line = context_start,
+      anchor_line = context_anchor,
+    }
+  end
+  local context_buf = vim.api.nvim_create_buf(false, true)
+  local rendered_context = {}
+  for index, text in ipairs(context_lines) do
+    rendered_context[#rendered_context + 1] = string.format("%5d  %s", context_start + index - 1, text)
+  end
+  vim.api.nvim_buf_set_lines(context_buf, 0, -1, false, rendered_context)
+  vim.bo[context_buf].bufhidden = "wipe"
+  vim.bo[context_buf].modifiable = false
+  vim.bo[context_buf].filetype = "diff"
 
-  local function set_title()
-    vim.api.nvim_win_set_config(win, comment_editor_options(input_type, title_line))
+  local width = math.min(math.max(60, math.floor(vim.o.columns * 0.62)), math.max(30, vim.o.columns - 4))
+  local editor_height = math.min(8, math.max(6, vim.o.lines - 8))
+  local context_height = math.min(math.max(3, #rendered_context), 8)
+  local total_height = context_height + editor_height + 2
+  local row, col = popup_position(source_win, width, total_height)
+  local context_win = vim.api.nvim_open_win(
+    context_buf,
+    false,
+    context_options(row, col, width, context_height, " context · read-only ")
+  )
+  local editor_win = vim.api.nvim_open_win(
+    editor_buf,
+    true,
+    editor_options(
+      input_type,
+      string.format("%s:%d", relative_file(context.file), context.line),
+      row + context_height + 1,
+      col,
+      width,
+      editor_height
+    )
+  )
+  ui.editor_win, ui.editor_buf = editor_win, editor_buf
+  ui.context_win, ui.context_buf = context_win, context_buf
+  vim.api.nvim_win_set_cursor(editor_win, { 1, 0 })
+
+  local ns = vim.api.nvim_create_namespace "pi-cr-comment-context"
+  local anchor_index = context_anchor - context_start + 1
+  if anchor_index >= 1 and anchor_index <= #rendered_context then
+    vim.api.nvim_buf_set_extmark(context_buf, ns, anchor_index - 1, 0, { line_hl_group = "CursorLine" })
   end
 
+  local function set_title()
+    vim.api.nvim_win_set_config(
+      editor_win,
+      editor_options(
+        input_type,
+        string.format("%s:%d", relative_file(context.file), context.line),
+        row + context_height + 1,
+        col,
+        width,
+        editor_height
+      )
+    )
+  end
   local function cycle_type(offset)
     local index = 1
-    for i, t in ipairs(M.types) do
-      if t == input_type then
+    for i, type in ipairs(M.types) do
+      if type == input_type then
         index = i
         break
       end
     end
-    local next_index = ((index - 1 + offset) % #M.types) + 1
-    input_type = M.types[next_index]
+    input_type = M.types[((index - 1 + offset) % #M.types) + 1]
     set_title()
   end
-
   local function apply_template(text)
-    vim.api.nvim_set_current_win(win)
-    vim.api.nvim_put({ text }, "c", false, true)
-    vim.cmd "startinsert"
+    if valid_win(editor_win) then
+      vim.api.nvim_set_current_win(editor_win)
+      vim.api.nvim_put({ text }, "c", false, true)
+      vim.cmd "startinsert"
+    end
   end
-
   local function submit()
-    local comment = vim.trim(table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n"))
+    local comment = vim.trim(table.concat(vim.api.nvim_buf_get_lines(editor_buf, 0, -1, false), "\n"))
     if comment == "" then
       notify("CR annotation comment is empty", vim.log.levels.WARN)
       return
     end
-    close_float(win, bufnr, source_win)
+    M.close_ui "submit"
     M.add_comment {
       file = context.file,
       line = context.line,
       end_line = context.end_line or context.line,
       type = input_type,
-      snippet = context.snippet or "",
+      snippet = context.snippet or comment,
+      context = comment_context,
       comment = comment,
     }
   end
-
   local function cancel()
-    close_float(win, bufnr, source_win)
+    M.close_ui "cancel"
   end
-
   local function insert_newline()
     vim.api.nvim_put({ "" }, "c", false, true)
   end
-
   for _, mode in ipairs { "i", "n" } do
-    vim.keymap.set(mode, "<CR>", submit, { buffer = bufnr, desc = "Submit Pi CR annotation" })
+    vim.keymap.set(mode, "<CR>", submit, { buffer = editor_buf, desc = "Submit Pi CR annotation" })
     vim.keymap.set(mode, "<Tab>", function()
       cycle_type(1)
-    end, { buffer = bufnr, desc = "Cycle comment type" })
+    end, { buffer = editor_buf, desc = "Cycle comment type" })
     vim.keymap.set(mode, "<S-Tab>", function()
       cycle_type(-1)
-    end, { buffer = bufnr, desc = "Cycle comment type" })
+    end, { buffer = editor_buf, desc = "Cycle comment type" })
     vim.keymap.set(mode, "<C-t>", function()
-      open_template_picker(bufnr, win, apply_template)
-    end, { buffer = bufnr, desc = "Pi CR comment template" })
-    vim.keymap.set(mode, "<Esc>", cancel, { buffer = bufnr, desc = "Cancel Pi CR annotation" })
+      open_template_picker(editor_win, apply_template)
+    end, { buffer = editor_buf, desc = "Pi CR comment template" })
+    vim.keymap.set(mode, "<Esc>", cancel, { buffer = editor_buf, desc = "Cancel Pi CR annotation" })
   end
-  vim.keymap.set("i", "<C-c>", cancel, { buffer = bufnr, desc = "Cancel Pi CR annotation" })
-  vim.keymap.set("i", "<S-CR>", insert_newline, { buffer = bufnr, desc = "Newline" })
-  vim.keymap.set("i", "<C-CR>", insert_newline, { buffer = bufnr, desc = "Newline" })
-
+  vim.keymap.set("i", "<C-c>", cancel, { buffer = editor_buf, desc = "Cancel Pi CR annotation" })
+  vim.keymap.set("i", "<S-CR>", insert_newline, { buffer = editor_buf, desc = "Newline" })
+  vim.keymap.set("i", "<C-CR>", insert_newline, { buffer = editor_buf, desc = "Newline" })
   vim.cmd "startinsert"
 end
 

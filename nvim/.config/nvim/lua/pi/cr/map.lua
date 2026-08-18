@@ -130,17 +130,82 @@ end
 ---@param cap number|nil max snippet lines (default 10)
 ---@return string
 function M.build_snippet(lines, anchor, cap)
+  local context = M.build_context(lines, anchor, cap)
+  return table.concat(context.lines, "\n")
+end
+
+--- Build structured context for a comment editor.
+---@param lines string[] full buffer lines
+---@param anchor number 1-based new-side line
+---@param cap number|nil max context lines (default 10)
+---@return {start_line: number, end_line: number, anchor_line: number, lines: string[]}
+function M.build_context(lines, anchor, cap)
   cap = cap or 10
   if cap <= 0 or #lines == 0 then
-    return ""
+    return { start_line = 1, end_line = 0, anchor_line = 1, lines = {} }
   end
   anchor = math.max(1, math.min(anchor, #lines))
   local first = math.max(1, math.min(anchor - math.floor(cap / 2), #lines - cap + 1))
   local last = math.min(#lines, first + cap - 1)
-  return table.concat(lines, "\n", first, last)
+  local context_lines = {}
+  for index = first, last do
+    context_lines[#context_lines + 1] = lines[index]
+  end
+  return {
+    start_line = first,
+    end_line = last,
+    anchor_line = anchor,
+    lines = context_lines,
+  }
 end
 
---- Ticks (at the caller's 50ms poll) a side's line count must stay unchanged
+---@class CrCommentContext
+---@field lines string[]
+---@field start_line number
+---@field end_line number
+---@field anchor_line number
+
+--- Normalize the context DTO at the comment seam. The legacy flat fields are
+--- accepted so artifact/session callers can migrate without changing payloads.
+---@param input table|nil
+---@param fallback_line number
+---@return CrCommentContext
+function M.normalize_context(input, fallback_line)
+  input = input or {}
+  local lines = input.lines or input.context_lines or {}
+  if #lines == 0 and input.snippet then
+    lines = {}
+    for line in (input.snippet .. "\n"):gmatch "(.-)\n" do
+      lines[#lines + 1] = line
+    end
+  end
+  if #lines == 0 then
+    return { lines = {}, start_line = fallback_line, end_line = fallback_line - 1, anchor_line = fallback_line }
+  end
+  local start_line = input.start_line or input.context_start or math.max(1, fallback_line - math.floor(#lines / 2))
+  local anchor_line = input.anchor_line or input.context_anchor or fallback_line
+  return {
+    lines = lines,
+    start_line = start_line,
+    end_line = start_line + #lines - 1,
+    anchor_line = anchor_line,
+  }
+end
+
+--- Compute a floating comment window position from plain screen snapshots.
+---@param source {row: number, col: number, cursor_row: number, cursor_col: number}
+---@param screen {lines: number, columns: number}
+---@param size {width: number, height: number}
+---@return {row: number, col: number}
+function M.popup_geometry(source, screen, size)
+  local row = source.row + source.cursor_row - 1
+  local col = source.col + source.cursor_col + 3
+  return {
+    row = math.max(1, math.min(row, math.max(1, screen.lines - size.height - 3))),
+    col = math.max(1, math.min(col, math.max(1, screen.columns - size.width - 2))),
+  }
+end
+
 --- before a too-short side is treated as settled. Virtual buffers start empty
 --- and fill asynchronously, so a short count alone is not final; 10 ticks (~500ms)
 --- is well past the async load, so a count still below the target then is

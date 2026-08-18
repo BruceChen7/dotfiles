@@ -9,10 +9,11 @@ local NS = vim.api.nvim_create_namespace "pi-cr-panel"
 local state = {
   buf = nil,
   win = nil,
-  actions = nil, -- { jump(id), delete(id), new_comment(), exit() }
+  actions = nil, -- {jump(id), delete(id), new_comment(), exit(), parent_win}
   sel_id = nil, -- selected comment id
   folds = {}, -- "d:<dir>" | "f:<file>" -> true (folded)
   rows = {}, -- rendered rows (from build_tree_rows)
+  display_rows = {}, -- one entry per visible buffer line; title is nil
 }
 
 local TYPE_ORDER = { fix = 1, question = 2, note = 3 }
@@ -23,8 +24,8 @@ local TYPE_HL = { fix = "PiCRCommentFix", question = "PiCRCommentQuestion", note
 ---@class CrPanelRow
 ---@field depth number
 ---@field kind "dir"|"file"|"comment"
----@field key string "d:<dir>" or "f:<file>" (dir/file rows)
----@field label string
+---@field key string|nil "d:<dir>" or "f:<file>" (dir/file rows)
+---@field label string|nil display label (dir/file rows)
 ---@field count number|nil dir/file row comment count
 ---@field id number|nil comment id (comment rows)
 ---@field type string|nil "fix"|"question"|"note" (comment rows)
@@ -131,7 +132,7 @@ function M.build_tree_rows(comments, folds)
             type = comment.type,
             line = comment.line,
             end_line = comment.end_line,
-            text = comment.comment:gsub("\n", " / "),
+            text = comment.comment or "",
             hidden = file_row.hidden,
           }
         end
@@ -189,62 +190,93 @@ end
 ---
 --- 调用方：refresh/toggle/close 等任何状态变化后都会触发一次全量重绘，
 --- 列表规模小（评论数），全量重写成本可忽略，换取逻辑简单。
-local function render()
-  if not state.buf or not vim.api.nvim_buf_is_valid(state.buf) then
-    return
+local function split_lines(text)
+  local lines = {}
+  for line in (text .. "\n"):gmatch "(.-)\n" do
+    lines[#lines + 1] = line
   end
-  local width = math.max(24, vim.api.nvim_win_get_width(state.win) - 2)
+  return #lines > 0 and lines or { "" }
+end
 
+---@param rows CrPanelRow[]
+---@param folds table<string, boolean>
+---@param selected_id number|nil
+---@param width number
+---@param truncate_fn fun(text: string, width: number): string
+---@return {lines: string[], display_rows: CrPanelRow[], selected_line: number|nil, type_marks: table[]}
+function M.build_render_model(rows, folds, selected_id, width, truncate_fn)
+  truncate_fn = truncate_fn or function(text)
+    return text
+  end
   local total = 0
-  for _, row in ipairs(state.rows) do
+  for _, row in ipairs(rows) do
     if not row.hidden and row.kind == "comment" then
       total = total + 1
     end
   end
 
   local lines = { "Comments (" .. total .. ")" }
-  local sel_line = nil
-  local type_marks = {} ---@type {line: number, col: number, len: number, hl: string}[]
-  for _, row in ipairs(state.rows) do
+  local display_rows = { [1] = nil }
+  local selected_line = nil
+  local type_marks = {}
+  for _, row in ipairs(rows) do
     if not row.hidden then
       local indent = string.rep("  ", row.depth)
       if row.kind == "dir" or row.kind == "file" then
-        local caret = state.folds[row.key] and "▸" or "▾"
+        local caret = folds[row.key] and "▸" or "▾"
         lines[#lines + 1] = string.format("%s%s %s (%d)", indent, caret, row.label, row.count or 0)
+        display_rows[#lines] = row
       else
         local range = row.end_line and row.end_line > row.line and string.format("%d-%d", row.line, row.end_line)
           or tostring(row.line or 0)
         local prefix = string.format("[%s] :%s  ", TYPE_LABELS[row.type] or "NOTE", range)
-        local text_width = math.max(8, width - #prefix)
-        lines[#lines + 1] = indent .. prefix .. truncate(row.text or "", text_width)
-        if row.id == state.sel_id then
-          sel_line = #lines
-        else
-          type_marks[#type_marks + 1] = {
-            line = #lines,
-            col = #indent,
-            len = #("[" .. (TYPE_LABELS[row.type] or "NOTE") .. "]"),
-            hl = TYPE_HL[row.type] or "PiCRCommentNote",
-          }
+        local text_width = math.max(8, width - #prefix - #indent)
+        local text_lines = split_lines(row.text or "")
+        for text_index, text in ipairs(text_lines) do
+          local line_prefix = text_index == 1 and prefix or string.rep(" ", #prefix)
+          lines[#lines + 1] = indent .. line_prefix .. truncate_fn(text, text_width)
+          display_rows[#lines] = row
+          if text_index == 1 then
+            if row.id == selected_id then
+              selected_line = #lines
+            else
+              type_marks[#type_marks + 1] = {
+                line = #lines,
+                col = #indent,
+                len = #("[" .. (TYPE_LABELS[row.type] or "NOTE") .. "]"),
+                hl = TYPE_HL[row.type] or "PiCRCommentNote",
+              }
+            end
+          end
         end
       end
     end
   end
+  return { lines = lines, display_rows = display_rows, selected_line = selected_line, type_marks = type_marks }
+end
+
+local function render()
+  if not state.buf or not vim.api.nvim_buf_is_valid(state.buf) then
+    return
+  end
+  local width = math.max(24, vim.api.nvim_win_get_width(state.win) - 2)
+  local model = M.build_render_model(state.rows, state.folds, state.sel_id, width, truncate)
+  state.display_rows = model.display_rows
 
   vim.bo[state.buf].modifiable = true
-  vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
+  vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, model.lines)
   vim.bo[state.buf].modifiable = false
   vim.api.nvim_buf_clear_namespace(state.buf, NS, 0, -1)
   vim.api.nvim_buf_set_extmark(state.buf, NS, 0, 0, { hl_group = "Title" })
-  for _, mark in ipairs(type_marks) do
+  for _, mark in ipairs(model.type_marks) do
     vim.api.nvim_buf_set_extmark(state.buf, NS, mark.line - 1, mark.col, {
       end_col = mark.col + mark.len,
       hl_group = mark.hl,
     })
   end
-  if sel_line then
-    vim.api.nvim_buf_set_extmark(state.buf, NS, sel_line - 1, 0, { hl_group = "Visual" })
-    pcall(vim.api.nvim_win_set_cursor, state.win, { sel_line, 0 })
+  if model.selected_line then
+    vim.api.nvim_buf_set_extmark(state.buf, NS, model.selected_line - 1, 0, { hl_group = "Visual" })
+    pcall(vim.api.nvim_win_set_cursor, state.win, { model.selected_line, 0 })
   end
 end
 
@@ -272,7 +304,7 @@ end
 
 local function toggle_fold_at_cursor()
   local line = vim.api.nvim_win_get_cursor(state.win)[1]
-  local row = M.visible_rows(state.rows)[line]
+  local row = state.display_rows[line]
   if not row or (row.kind ~= "dir" and row.kind ~= "file") then
     return
   end
@@ -289,7 +321,7 @@ local function selected_row()
   return nil
 end
 
----@param actions {jump: fun(id: number), delete: fun(id: number), new_comment: fun(), exit: fun(), help: fun()}
+---@param actions {jump: fun(id: number), delete: fun(id: number), new_comment: fun(), exit: fun(), help: fun(), parent_win: number|nil}
 function M.register(actions)
   state.actions = actions
   state.folds = {}
@@ -323,9 +355,17 @@ function M.open()
   state.buf = vim.api.nvim_create_buf(false, true)
   vim.bo[state.buf].bufhidden = "wipe"
   vim.bo[state.buf].modifiable = false
+  local previous_win = vim.api.nvim_get_current_win()
+  local parent_win = state.actions.parent_win
+  if parent_win and vim.api.nvim_win_is_valid(parent_win) then
+    vim.api.nvim_set_current_win(parent_win)
+  end
   state.win = vim.api.nvim_open_win(state.buf, false, {
     split = "below",
   })
+  if vim.api.nvim_win_is_valid(previous_win) then
+    vim.api.nvim_set_current_win(previous_win)
+  end
   vim.wo[state.win].winfixheight = true
   local height = math.min(14, math.max(6, math.floor(vim.o.lines * 0.22)))
   vim.api.nvim_win_set_height(state.win, height)

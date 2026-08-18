@@ -8,7 +8,6 @@ return {
         if not utils.is_mac() then
           return "keyboard-us"
         else
-          print "com.apple.keylayout.ABC"
           return "com.apple.keylayout.ABC"
         end
       end
