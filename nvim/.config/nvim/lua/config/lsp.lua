@@ -21,244 +21,256 @@ capabilities.textDocument.foldingRange = {
   lineFoldingOnly = true,
 }
 -- capabilities.offsetEncoding = "utf-8"
-require("lsp-setup").setup {
-  default_mappings = false,
-  capabilities = capabilities,
-  --  manually set the inlay hints
-  inlay_hints = {
-    enabled = false,
+local on_attach = function(_, bufnr)
+  -- require("lsp_signature").on_attach({}, bufnr)
+  vim.keymap.set("n", "<leader>lh", function()
+    vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = bufnr }, { bufnr = bufnr })
+  end, { buffer = bufnr, desc = "Toggle inlay hints" })
+
+  vim.keymap.set("n", "<leader>li", vim.lsp.buf.incoming_calls, { buffer = bufnr, desc = "Incoming calls" })
+  vim.keymap.set("n", "<leader>lo", vim.lsp.buf.outgoing_calls, { buffer = bufnr, desc = "Outgoing calls" })
+  vim.keymap.set("n", "<leader>lr", vim.lsp.buf.rename, { buffer = bufnr, desc = "Rename symbol" })
+
+  vim.keymap.set("n", "<leader>le", function()
+    local diagnostics = vim.diagnostic.get(bufnr, { lnum = vim.api.nvim_win_get_cursor(0)[1] - 1 })
+    if #diagnostics == 0 then
+      vim.notify("No diagnostics on current line", vim.log.levels.INFO)
+      return
+    end
+    local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ":~:.")
+    local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
+    local messages = {}
+    for _, d in ipairs(diagnostics) do
+      local severity = vim.diagnostic.severity[d.severity]
+      local source = d.source and ("[" .. d.source .. "] ") or ""
+      local line = (d.lnum and d.lnum + 1) or cursor_line
+      table.insert(messages, string.format("%s:%d: %s: %s%s", filename, line, severity, source, d.message))
+    end
+    local text = table.concat(messages, "\n")
+    vim.fn.setreg("+", text)
+    vim.fn.setreg('"', text)
+    vim.notify("Copied " .. #diagnostics .. " diagnostics", vim.log.levels.INFO)
+  end, { buffer = bufnr, desc = "Copy line diagnostics" })
+
+  vim.keymap.set("n", "<leader>la", function()
+    local diagnostics = vim.diagnostic.get(bufnr)
+    if #diagnostics == 0 then
+      vim.notify("No diagnostics in current buffer", vim.log.levels.INFO)
+      return
+    end
+    local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ":~:.")
+    local messages = {}
+    for _, d in ipairs(diagnostics) do
+      local severity = vim.diagnostic.severity[d.severity]
+      local source = d.source and ("[" .. d.source .. "] ") or ""
+      local line = (d.lnum and d.lnum + 1) or 1
+      table.insert(messages, string.format("%s:%d: %s: %s%s", filename, line, severity, source, d.message))
+    end
+    local text = table.concat(messages, " ")
+    vim.fn.setreg("+", text)
+    vim.fn.setreg('"', text)
+    vim.notify("Copied " .. #diagnostics .. " diagnostics", vim.log.levels.INFO)
+  end, { buffer = bufnr, desc = "Copy current buffer all diagnostics" })
+end
+
+local servers = {
+  -- Markdown: https://github.com/artempyanykh/marksman
+  marksman = {},
+  lua_ls = {
+    settings = {
+      Lua = {
+        workspace = {
+          checkThirdParty = false,
+        },
+        hint = {
+          enable = false,
+        },
+        format = {
+          enable = false,
+        },
+      },
+    },
   },
-  on_attach = function(client, bufnr)
-    -- require("lsp_signature").on_attach({}, bufnr)
-    vim.keymap.set("n", "<leader>lh", function()
-      vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = bufnr }, { bufnr = bufnr })
-    end, { buffer = bufnr, desc = "Toggle inlay hints" })
-
-    vim.keymap.set("n", "<leader>li", vim.lsp.buf.incoming_calls, { buffer = bufnr, desc = "Incoming calls" })
-    vim.keymap.set("n", "<leader>lo", vim.lsp.buf.outgoing_calls, { buffer = bufnr, desc = "Outgoing calls" })
-    vim.keymap.set("n", "<leader>lr", vim.lsp.buf.rename, { buffer = bufnr, desc = "Rename symbol" })
-
-    vim.keymap.set("n", "<leader>le", function()
-      local diagnostics = vim.diagnostic.get(bufnr, { lnum = vim.api.nvim_win_get_cursor(0)[1] - 1 })
-      if #diagnostics == 0 then
-        vim.notify("No diagnostics on current line", vim.log.levels.INFO)
-        return
-      end
-      local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ":~:.")
-      local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
-      local messages = {}
-      for _, d in ipairs(diagnostics) do
-        local severity = vim.diagnostic.severity[d.severity]
-        local source = d.source and ("[" .. d.source .. "] ") or ""
-        local line = (d.lnum and d.lnum + 1) or cursor_line
-        table.insert(messages, string.format("%s:%d: %s: %s%s", filename, line, severity, source, d.message))
-      end
-      local text = table.concat(messages, "\n")
-      vim.fn.setreg("+", text)
-      vim.fn.setreg('"', text)
-      vim.notify("Copied " .. #diagnostics .. " diagnostics", vim.log.levels.INFO)
-    end, { buffer = bufnr, desc = "Copy line diagnostics" })
-
-    vim.keymap.set("n", "<leader>la", function()
-      local diagnostics = vim.diagnostic.get(bufnr)
-      if #diagnostics == 0 then
-        vim.notify("No diagnostics in current buffer", vim.log.levels.INFO)
-        return
-      end
-      local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ":~:.")
-      local messages = {}
-      for _, d in ipairs(diagnostics) do
-        local severity = vim.diagnostic.severity[d.severity]
-        local source = d.source and ("[" .. d.source .. "] ") or ""
-        local line = (d.lnum and d.lnum + 1) or 1
-        table.insert(messages, string.format("%s:%d: %s: %s%s", filename, line, severity, source, d.message))
-      end
-      local text = table.concat(messages, " ")
-      vim.fn.setreg("+", text)
-      vim.fn.setreg('"', text)
-      vim.notify("Copied " .. #diagnostics .. " diagnostics", vim.log.levels.INFO)
-    end, { buffer = bufnr, desc = "Copy current buffer all diagnostics" })
-  end,
-  servers = {
-    -- Markdown: https://github.com/artempyanykh/marksman
-    marksman = {},
-    lua_ls = {
-      settings = {
-        Lua = {
-          workspace = {
-            checkThirdParty = false,
-          },
-          hint = {
-            enable = false,
-          },
-          format = {
-            enable = false,
-          },
+  -- TypeScript 7 ships the native LSP in the regular `tsc` package.
+  tsc = {
+    cmd = { "tsc", "--lsp", "--stdio" },
+    filetypes = {
+      "javascript",
+      "javascriptreact",
+      "javascript.jsx",
+      "typescript",
+      "typescriptreact",
+      "typescript.tsx",
+    },
+    root_markers = {
+      "tsconfig.json",
+      "jsconfig.json",
+      "package.json",
+      ".git",
+      "tsconfig.base.json",
+    },
+  },
+  clangd = {
+    cmd = {
+      "clangd",
+      "--background-index",
+      "--completion-style=detailed",
+      "-j=8",
+      "--clang-tidy",
+      "--function-arg-placeholders=false",
+    },
+    filetypes = { "c", "cpp", "objc", "objcpp" },
+  },
+  tailwindcss = {
+    cmd = {
+      "tailwindcss-language-server",
+      "--stdio",
+    },
+  },
+  jsonls = {
+    filetypes = { "json", "jsonc" },
+    cmd = { "vscode-json-language-server", "--stdio" },
+    init_options = {
+      provideFormatter = true,
+    },
+    root_markers = { ".git" },
+  },
+  -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#svelte
+  svelte = {
+    cmd = {
+      "svelteserver",
+      "--stdio",
+    },
+    format = false,
+    root_markers = {
+      "vite.config.ts",
+      "vite.config.js",
+      "vite.config.mts",
+      "vite.config.mjs",
+      "svelte.config.js",
+      "svelte.config.mjs",
+      "package.json",
+      ".git",
+    },
+  },
+  ty = {
+    cmd = { "ty", "server" },
+    filetypes = { "python" },
+    root_markers = { ".git", "pyproject.toml" },
+  },
+  zls = {
+    settings = {
+      zls = {
+        enable_inlay_hints = true,
+        inlay_hints_show_builtin = true,
+        inlay_hints_exclude_single_argument = true,
+        inlay_hints_hide_redundant_param_names = true,
+        inlay_hints_hide_redundant_param_names_last_token = true,
+      },
+    },
+  },
+  yamlls = {
+    settings = {
+      yaml = {
+        keyOrdering = false,
+      },
+    },
+  },
+  -- https://neovimcraft.com/plugin/ray-x/go.nvim/
+  -- https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#completionClientCapabilities
+  -- https://github.com/golang/tools/blob/master/gopls/doc/settings.md
+  gopls = {
+    cmd = {
+      "gopls",
+      -- "--debug=localhost:6060",
+      -- "-profile.cpu=/Users/ming.chen/gopls.out",
+      -- "-mode=stdi",
+      -- "-logfile=/Users/ming.chen/gopls.log",
+      -- "-rpc.trace",
+    },
+    settings = {
+      gopls = {
+        gofumpt = true,
+        usePlaceholders = false,
+        buildFlags = { "-tags=integration_test unit_test gasit perf_optimized" },
+        -- autocompleteUnimportedPackages = true,
+        -- editorContextMenuCommands = {},
+        codelenses = {
+          gc_details = true,
+          -- test = true,
+          tidy = true,
         },
-      },
-    },
-    tsgo = {
-      cmd = { "tsgo", "--lsp", "--stdio" },
-      filetypes = {
-        "javascript",
-        "javascriptreact",
-        "javascript.jsx",
-        "typescript",
-        "typescriptreact",
-        "typescript.tsx",
-      },
-      root_markers = {
-        "tsconfig.json",
-        "jsconfig.json",
-        "package.json",
-        ".git",
-        "tsconfig.base.json",
-      },
-    },
-    clangd = {
-      cmd = {
-        "clangd",
-        "--background-index",
-        "--completion-style=detailed",
-        "-j=8",
-        "--clang-tidy",
-        "--function-arg-placeholders=false",
-      },
-      filetypes = { "c", "cpp", "objc", "objcpp" },
-    },
-    tailwindcss = {
-      cmd = {
-        "tailwindcss-language-server",
-        "--stdio",
-      },
-    },
-    jsonls = {
-      filetypes = { "json", "jsonc" },
-      cmd = { "vscode-json-language-server", "--stdio" },
-      init_options = {
-        provideFormatter = true,
-      },
-      root_markers = { ".git" },
-    },
-    -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#svelte
-    svelte = {
-      cmd = {
-        "svelteserver",
-        "--stdio",
-      },
-      format = false,
-      root_markers = {
-        "vite.config.ts",
-        "vite.config.js",
-        "vite.config.mts",
-        "vite.config.mjs",
-        "svelte.config.js",
-        "svelte.config.mjs",
-        "package.json",
-        ".git",
-      },
-    },
-    ty = {
-      cmd = { "ty", "server" },
-      filetypes = { "python" },
-      root_markers = { ".git", "pyproject.toml" },
-    },
-    zls = {
-      settings = {
-        zls = {
-          enable_inlay_hints = true,
-          inlay_hints_show_builtin = true,
-          inlay_hints_exclude_single_argument = true,
-          inlay_hints_hide_redundant_param_names = true,
-          inlay_hints_hide_redundant_param_names_last_token = true,
+        analyses = {
+          -- find structs that would use less memory if their fields were sorted
+          unusedparams = true,
+          shadow = true,
+          unusedwrite = true, -- checks for unused writes, an instances of writes to struct fields and arrays that are never read
+          nonewvars = true,
+          fillreturns = true,
+          nilness = true, -- check for redundant or impossible nil comparisons
+          -- ST1003 = true,
+          atomic = true,
+          modernize = true,
+          QF1005 = true,
+          QF1006 = true,
         },
+        staticcheck = false,
+        hints = {
+          rangeVariableTypes = true,
+          parameterNames = true,
+          constantValues = true,
+          assignVariableTypes = true,
+          compositeLiteralFields = true,
+          compositeLiteralTypes = true,
+          functionTypeParameters = true,
+        },
+        semanticTokens = true,
       },
     },
-    yamlls = {
-      settings = {
-        yaml = {
-          keyOrdering = false,
-        },
-      },
-    },
-    -- https://neovimcraft.com/plugin/ray-x/go.nvim/
-    -- https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/#completionClientCapabilities
-    -- https://github.com/golang/tools/blob/master/gopls/doc/settings.md
-    gopls = {
-      cmd = {
-        "gopls",
-        -- "--debug=localhost:6060",
-        -- "-profile.cpu=/Users/ming.chen/gopls.out",
-        -- "-mode=stdi",
-        -- "-logfile=/Users/ming.chen/gopls.log",
-        -- "-rpc.trace",
-      },
-      settings = {
-        gopls = {
-          gofumpt = true,
-          usePlaceholders = false,
-          buildFlags = { "-tags=integration_test unit_test gasit perf_optimized" },
-          -- autocompleteUnimportedPackages = true,
-          -- editorContextMenuCommands = {},
-          codelenses = {
-            gc_details = true,
-            -- test = true,
-            tidy = true,
-          },
-          analyses = {
-            -- find structs that would use less memory if their fields were sorted
-            unusedparams = true,
-            shadow = true,
-            unusedwrite = true, -- checks for unused writes, an instances of writes to struct fields and arrays that are never read
-            nonewvars = true,
-            fillreturns = true,
-            nilness = true, -- check for redundant or impossible nil comparisons
-            -- ST1003 = true,
-            atomic = true,
-            modernize = true,
-            QF1005 = true,
-            QF1006 = true,
-          },
-          staticcheck = false,
-          hints = {
-            rangeVariableTypes = true,
-            parameterNames = true,
-            constantValues = true,
-            assignVariableTypes = true,
-            compositeLiteralFields = true,
-            compositeLiteralTypes = true,
-            functionTypeParameters = true,
-          },
-          semanticTokens = true,
-        },
-      },
-      capabilities = {
-        textDocument = {
-          completion = {
-            completionItem = {
-              commitCharactersSupport = true,
-              deprecatedSupport = true,
-              documentationFormat = { "markdown", "plaintext" },
-              preselectSupport = true,
-              -- https://github.com/Saghen/blink.cmp/issues/21
-              insertReplaceSupport = true,
-              labelDetailsSupport = true,
-              -- not working with mini-completion
-              snippetSupport = true,
-              resolveSupport = {
-                properties = {
-                  "documentation",
-                  "details",
-                  "additionalTextEdits",
-                },
+    capabilities = {
+      textDocument = {
+        completion = {
+          completionItem = {
+            commitCharactersSupport = true,
+            deprecatedSupport = true,
+            documentationFormat = { "markdown", "plaintext" },
+            preselectSupport = true,
+            -- https://github.com/Saghen/blink.cmp/issues/21
+            insertReplaceSupport = true,
+            labelDetailsSupport = true,
+            -- not working with mini-completion
+            snippetSupport = true,
+            resolveSupport = {
+              properties = {
+                "documentation",
+                "details",
+                "additionalTextEdits",
               },
             },
-            contextSupport = true,
-            dynamicRegistration = true,
           },
+          contextSupport = true,
+          dynamicRegistration = true,
         },
       },
-      filetypes = { "go", "gomod", "gowork", "gotmpl" },
     },
+    filetypes = { "go", "gomod", "gowork", "gotmpl" },
   },
 }
+
+vim.lsp.config("*", {
+  capabilities = capabilities,
+  on_attach = on_attach,
+})
+
+local mason = require "mason"
+local mason_lspconfig = require "mason-lspconfig"
+mason.setup()
+mason_lspconfig.setup {
+  ensure_installed = vim.tbl_keys(servers),
+  automatic_enable = false,
+}
+
+for server, config in pairs(servers) do
+  vim.lsp.config(server, config)
+  vim.lsp.enable(server)
+end

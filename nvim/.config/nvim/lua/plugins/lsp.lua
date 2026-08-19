@@ -67,21 +67,12 @@ return {
   {
     "neovim/nvim-lspconfig",
     version = "v2.*",
-  },
-
-  {
-    "junnplus/lsp-setup.nvim",
     dependencies = {
-      "neovim/nvim-lspconfig",
-      "williamboman/mason.nvim", -- optional
-      -- :LspInstall command provided by mason-lspconfig
-      -- "williamboman/mason-lspconfig.nvim", -- optional
+      "williamboman/mason.nvim",
+      "williamboman/mason-lspconfig.nvim",
     },
-    -- branch = "inlay-hints",
     config = function()
       require "config/lsp"
     end,
-    event = "VeryLazy",
-    -- lazy = true,
   },
 }
