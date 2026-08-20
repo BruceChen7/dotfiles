@@ -102,75 +102,105 @@ class TestTabDisplayLabel(unittest.TestCase):
         self.assertEqual(switch.tab_display_label("t1"), "t1")
 
 
-# ---- Slice 3: recency sorting -------------------------------------------
+# ---- Slice 3: merged ordering / recency sort -----------------------------
 
 
-def _agent(id):
-    return {"workspace_id": id, "focused": False}
+class TestMergedSort(unittest.TestCase):
+    """最近使用在底部（贴近输入框）；时间相同时 agent 先于 space；聚焦钉底；从未记录沉顶。"""
 
+    def _agent(self, wid, **over):
+        return {"workspace_id": wid, "focused": False, **over}
 
-class TestRecencySort(unittest.TestCase):
-    """Most recently used at the bottom, focused strictly last."""
+    def _space(self, wid, **over):
+        return {"workspace_id": wid, "focused": False, **over}
+
+    def _kinds(self, agents, workspaces, recent):
+        return [
+            (kind, obj["workspace_id"])
+            for _, kind, obj in switch.merged_entries(agents, workspaces, recent)
+        ]
 
     def test_unrecorded_rows_keep_original_order(self):
-        """No recency record → original order (stable sort, rank -999999)."""
-        agents = [_agent("wA"), _agent("wB"), _agent("wC")]
+        """全部从未记录 → 沉顶：agent 组原序在前、space 组原序在后。"""
+        agents = [self._agent("wA"), self._agent("wB"), self._agent("wC")]
+        workspaces = [self._space("wA"), self._space("wB"), self._space("wC")]
         self.assertEqual(
-            [a["workspace_id"] for a in switch.sorted_agents(agents, [])],
-            ["wA", "wB", "wC"],
+            self._kinds(agents, workspaces, []),
+            [
+                ("agent", "wA"),
+                ("agent", "wB"),
+                ("agent", "wC"),
+                ("space", "wA"),
+                ("space", "wB"),
+                ("space", "wC"),
+            ],
         )
 
-    def test_recent_rows_at_bottom_reversed(self):
-        """recent [wB, wA] → wB (most recent) is the last row, wA above it."""
-        agents = [_agent("wA"), _agent("wB"), _agent("wC")]
+    def test_recent_rows_at_bottom_in_recency_order(self):
+        """recent [wB, wA] → wB（最近）在底部（贴近输入框），agent 先于其 space。"""
+        agents = [self._agent("wA"), self._agent("wB")]
+        workspaces = [self._space("wA"), self._space("wB")]
         self.assertEqual(
-            [a["workspace_id"] for a in switch.sorted_agents(agents, ["wB", "wA"])],
-            ["wC", "wA", "wB"],
+            self._kinds(agents, workspaces, ["wB", "wA"]),
+            [
+                ("agent", "wA"),
+                ("space", "wA"),
+                ("agent", "wB"),
+                ("space", "wB"),
+            ],
         )
 
     def test_focused_strictly_last(self):
-        """Focused row ranks 1 → always the very bottom, even when in recent."""
-        agents = [
-            {"workspace_id": "wA", "focused": False},
-            {"workspace_id": "wB", "focused": True},
-            {"workspace_id": "wC", "focused": False},
-        ]
-        self.assertEqual(
-            [a["workspace_id"] for a in switch.sorted_agents(agents, ["wB", "wA"])],
-            ["wC", "wA", "wB"],
-        )
+        """聚焦行 rank 999999 → 永远最底（离输入框最近）。"""
+        agents = [self._agent("wA"), self._agent("wB", focused=True)]
+        workspaces = [self._space("wA"), self._space("wB")]
+        out = switch.merged_entries(agents, workspaces, ["wA"])
+        self.assertEqual(out[-1][1], "agent")
+        self.assertEqual(out[-1][2]["workspace_id"], "wB")  # 聚焦 agent 最底
 
     def test_focused_last_even_when_state_diverges(self):
-        """recent[0] ≠ focused → the focused one still parks at the bottom."""
-        agents = [
-            {"workspace_id": "wA", "focused": False},
-            {"workspace_id": "wB", "focused": True},
-        ]
+        """recent[0] ≠ focused → 聚焦行仍钉在底部。"""
+        agents = [self._agent("wA"), self._agent("wB", focused=True)]
+        workspaces = []
         self.assertEqual(
-            [a["workspace_id"] for a in switch.sorted_agents(agents, ["wA"])],
+            [
+                o["workspace_id"]
+                for _, _, o in switch.merged_entries(agents, workspaces, ["wA"])
+            ],
             ["wA", "wB"],
         )
 
     def test_same_workspace_agents_keep_original_order(self):
-        """Two agents in one workspace share the rank → stable order kept."""
-        a1 = {**{"workspace_id": "wA"}, "agent": "first"}
-        a2 = {**{"workspace_id": "wA"}, "agent": "second"}
-        agents = [a1, a2]
+        """同 workspace 的多 agent 共享 rank → 稳定排序保留原始顺序。"""
+        a1 = self._agent("wA", agent="first")
+        a2 = self._agent("wA", agent="second")
         self.assertEqual(
-            [a["agent"] for a in switch.sorted_agents(agents, ["wA"])],
+            [o["agent"] for _, _, o in switch.merged_entries([a1, a2], [], ["wA"])],
             ["first", "second"],
         )
 
-    def test_spaces_sorted_same_way(self):
-        workspaces = [
-            {"workspace_id": "wA", "focused": False},
-            {"workspace_id": "wB", "focused": False},
-            {"workspace_id": "wC", "focused": True},
-        ]
+    def test_agent_before_space_on_recency_tie(self):
+        """时间相同（同一 workspace）时 agent 行先于 space 行。"""
+        agents = [self._agent("wA")]
+        workspaces = [self._space("wA")]
         self.assertEqual(
-            [w["workspace_id"] for w in switch.sorted_workspaces(workspaces, ["wB"])],
-            ["wA", "wB", "wC"],
+            self._kinds(agents, workspaces, ["wA"]),
+            [("agent", "wA"), ("space", "wA")],
         )
+
+    def test_recency_rank_values(self):
+        self.assertEqual(switch.recency_rank("wA", [], True), 999999)  # 聚焦 → 最底
+        self.assertEqual(
+            switch.recency_rank("wA", ["wA", "wB"], False), 0
+        )  # 最近 → 底部
+        self.assertEqual(switch.recency_rank("wB", ["wA", "wB"], False), -1)
+        self.assertEqual(
+            switch.recency_rank("wZ", ["wA", "wB"], False), -999999
+        )  # 从未 → 顶部
+
+    def test_row_sort_key_kind_priority(self):
+        self.assertEqual(switch.row_sort_key("wA", ["wA"], False, "agent"), (0, 0))
+        self.assertEqual(switch.row_sort_key("wA", ["wA"], False, "space"), (0, 1))
 
 
 # ---- Slice 4-6: row builders + build_lines -------------------------------
@@ -339,7 +369,7 @@ class TestSpaceRow(unittest.TestCase):
 
 
 class TestBuildLines(unittest.TestCase):
-    def test_agents_then_spaces_with_trailing_newline(self):
+    def test_merged_order_recent_at_bottom_with_trailing_newline(self):
         agents = [
             _agent_fixture(workspace_id="w2", agent="codex", cwd=f"{HOME}/other"),
             _agent_fixture(),
@@ -357,11 +387,14 @@ class TestBuildLines(unittest.TestCase):
         self.assertEqual(len(agent_lines), 2)
         self.assertEqual(len(space_lines), 2)
         self.assertTrue(out.endswith("\n"))
-        # Agents block comes first, spaces after.
-        self.assertLess(out.index("\tagent\t"), out.index("\tspace\t"))
-        # Recency: w2 (recent[0]) parks at the bottom of the agent block.
-        self.assertIn("codex", agent_lines[1])
-        self.assertIn("pi @ pi-kit", agent_lines[0])
+        lines = out.splitlines()
+        # 合并单列表：w1(从未记录) 沉顶 → 最近 w2 的 agent/space 沉底（贴近输入框）
+        self.assertIn("pi @ pi-kit", agent_lines[0])  # 从未记录 agent 在顶部
+        self.assertIn("codex", agent_lines[1])  # 最近使用 agent 在底部
+        self.assertIn("pi-kit", space_lines[0])  # w1 space 在 w2 space 前
+        self.assertIn("other", space_lines[1])  # w2（最近）space 最底
+        self.assertIn("\tagent\t", lines[2])
+        self.assertIn("\tspace\t", lines[3])
 
     def test_empty_inputs_yield_empty_string(self):
         self.assertEqual(switch.build_lines([], [], [], [], HOME), "")
@@ -469,10 +502,30 @@ class TestResolveBranchByRow(unittest.TestCase):
         worktree_branches = {"w2": "chore/y"}
         self.assertEqual(
             switch.resolve_branch_by_row(
-                agents, workspaces, branch_by_cwd, worktree_branches
+                agents, workspaces, [], branch_by_cwd, worktree_branches
             ),
-            # w1 space 无 worktree 映射 → 从第一个 agent (cwd=~/a) 推断 main
+            # 无 recent（全部沉底）：w1 space 无 worktree 映射 → 从第一个 agent (cwd=~/a) 推断 main
             {1: "main", 2: "feat/x", 3: "main", 4: "chore/y"},
+        )
+
+    def test_row_numbers_follow_merged_order(self):
+        """行号对齐 merged 顺序：recent 改变行序时，分支映射跟随。"""
+        agents = [
+            _agent_fixture(cwd=f"{HOME}/a"),  # w1
+            _agent_fixture(agent="codex", workspace_id="w2", cwd=f"{HOME}/b"),
+        ]
+        workspaces = [
+            _space_fixture(),
+            _space_fixture(workspace_id="w2", label="other"),
+        ]
+        branch_by_cwd = {f"{HOME}/a": "main", f"{HOME}/b": "feat/x"}
+        worktree_branches = {"w2": "chore/y"}
+        self.assertEqual(
+            switch.resolve_branch_by_row(
+                agents, workspaces, ["w2"], branch_by_cwd, worktree_branches
+            ),
+            # merged 序: w1 agent(1=main) → w1 space(2=首 agent 推断 main) → w2 agent(3=feat/x) → w2 space(4=worktree 映射)
+            {1: "main", 2: "main", 3: "feat/x", 4: "chore/y"},
         )
 
     def test_space_falls_back_to_first_agent_cwd_branch(self):
@@ -481,7 +534,7 @@ class TestResolveBranchByRow(unittest.TestCase):
         workspaces = [_space_fixture()]  # w1
         branch_by_cwd = {f"{HOME}/a": "main"}
         self.assertEqual(
-            switch.resolve_branch_by_row(agents, workspaces, branch_by_cwd, {}),
+            switch.resolve_branch_by_row(agents, workspaces, [], branch_by_cwd, {}),
             {1: "main", 2: "main"},
         )
 
@@ -491,12 +544,16 @@ class TestResolveBranchByRow(unittest.TestCase):
             _space_fixture(),
             _space_fixture(workspace_id="w2", label="other"),
         ]
-        self.assertEqual(switch.resolve_branch_by_row(agents, workspaces, {}, {}), {})
+        self.assertEqual(
+            switch.resolve_branch_by_row(agents, workspaces, [], {}, {}), {}
+        )
 
     def test_missing_keys_are_omitted(self):
         agents = [_agent_fixture(cwd=f"{HOME}/a")]
         workspaces = [_space_fixture()]
-        self.assertEqual(switch.resolve_branch_by_row(agents, workspaces, {}, {}), {})
+        self.assertEqual(
+            switch.resolve_branch_by_row(agents, workspaces, [], {}, {}), {}
+        )
 
 
 # ---- Slice 7-9: close_plan / cursor / fzf output --------------------------

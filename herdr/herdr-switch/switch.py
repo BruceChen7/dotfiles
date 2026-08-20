@@ -94,15 +94,17 @@ def tab_display_label(label: str) -> str:
     return label
 
 
-# ---- pure: recency sorting ------------------------------------------------
+# ---- pure: merged ordering + recency sort --------------------------------
 
 
 def recency_rank(workspace_id: str, recent: list, focused: bool) -> int:
-    """Rank for ascending sort: focused parks last; recent rows follow their
-    reversed recency order; never-recorded rows (all tied at -999999) keep
-    their original order via Python's stable sort."""
+    """Rank for ascending sort: never-recorded rows (all tied at -999999)
+    keep their original order via Python's stable sort at the top; recent rows
+    follow their reversed recency order (most recent last, right above the
+    focused row); focused parks last at the bottom — nearest the prompt in
+    fzf's reverse-list layout (input box at the bottom of the pane)."""
     if focused:
-        return 1
+        return 999999
     try:
         idx = recent.index(workspace_id)
     except ValueError:
@@ -110,22 +112,46 @@ def recency_rank(workspace_id: str, recent: list, focused: bool) -> int:
     return -idx
 
 
-def sorted_agents(agents: list[dict], recent: list) -> list[dict]:
-    return sorted(
-        agents,
-        key=lambda a: recency_rank(
-            a.get("workspace_id", ""), recent, a.get("focused", False)
-        ),
+def row_sort_key(
+    workspace_id: str, recent: list, focused: bool, kind: str
+) -> tuple[int, int]:
+    """Merged-list sort key: recency first, then kind — agents (kind 0) come
+    before spaces (kind 1) when their recency ties (same workspace)."""
+    return (
+        recency_rank(workspace_id, recent, focused),
+        0 if kind == "agent" else 1,
     )
 
 
-def sorted_workspaces(workspaces: list[dict], recent: list) -> list[dict]:
-    return sorted(
-        workspaces,
-        key=lambda w: recency_rank(
-            w.get("workspace_id", ""), recent, w.get("focused", False)
-        ),
-    )
+def merged_entries(
+    agents: list[dict], workspaces: list[dict], recent: list
+) -> list[tuple[tuple[int, int], str, dict]]:
+    """Unified merged row order: one entry per agent row + one per space row,
+    as ``(sort_key, kind, obj)``, stably sorted by ``row_sort_key``. Both
+    ``build_lines`` and ``resolve_branch_by_row`` iterate this same sequence so
+    branch-suffix row numbers stay aligned with the rendered rows."""
+    raw: list[tuple[tuple[int, int], str, dict]] = [
+        (
+            row_sort_key(
+                a.get("workspace_id", ""), recent, a.get("focused", False), "agent"
+            ),
+            "agent",
+            a,
+        )
+        for a in agents
+    ]
+    raw += [
+        (
+            row_sort_key(
+                w.get("workspace_id", ""), recent, w.get("focused", False), "space"
+            ),
+            "space",
+            w,
+        )
+        for w in workspaces
+    ]
+    raw.sort(key=lambda e: e[0])
+    return raw
 
 
 # ---- pure: row builders ---------------------------------------------------
@@ -219,32 +245,32 @@ def build_lines(
     home: str,
     branch_by_row: dict[int, str] | None = None,
 ) -> str:
-    """Merge agents + workspaces into the tab-separated list (old picker.sh
-    byte-equivalent: agents block first, then spaces, one row per line).
+    """Merge agents + workspaces into one tab-separated list, one row per
+    line, in ``merged_entries`` order: never-recorded at the top, then least
+    recently used up to the most recently used at the bottom (agents before
+    their space on a recency tie) — the bottom rows sit closest to the fzf
+    prompt, so recently used entries are right at the input box.
 
     *branch_by_row* maps a 1-based row index to a git branch name that is
-    appended to that row's display as ``(branch)``.  ``None`` keeps the
-    legacy output byte-identical.
+    appended to that row's display as ``(branch)``.
     """
     wsmap = {w.get("workspace_id", ""): w for w in workspaces}
     tabmap = {t.get("tab_id", ""): tab_display_label(t.get("label", "")) for t in tabs}
 
     rows = []
     index = 1
-    for agent in sorted_agents(agents, recent):
-        row = agent_row(agent, wsmap, tabmap, home)
-        if branch_by_row is not None and index in branch_by_row:
-            row[F_DISPLAY] = with_branch(row[F_DISPLAY], branch_by_row[index])
-        rows.append("\t".join(row))
-        index += 1
-    for space in sorted_workspaces(workspaces, recent):
-        wid = space.get("workspace_id", "")
-        running = sum(
-            1
-            for a in agents
-            if a.get("workspace_id") == wid and _is_running(a.get("agent_status", ""))
-        )
-        row = space_row(space, running)
+    for _, kind, obj in merged_entries(agents, workspaces, recent):
+        if kind == "agent":
+            row = agent_row(obj, wsmap, tabmap, home)
+        else:
+            wid = obj.get("workspace_id", "")
+            running = sum(
+                1
+                for a in agents
+                if a.get("workspace_id") == wid
+                and _is_running(a.get("agent_status", ""))
+            )
+            row = space_row(obj, running)
         if branch_by_row is not None and index in branch_by_row:
             row[F_DISPLAY] = with_branch(row[F_DISPLAY], branch_by_row[index])
         rows.append("\t".join(row))
@@ -458,10 +484,12 @@ def collect_unique_cwds(agents: list[dict]) -> list[str]:
 def resolve_branch_by_row(
     agents: list[dict],
     workspaces: list[dict],
+    recent: list,
     branch_by_cwd: dict[str, str],
     worktree_branches: dict[str, str],
 ) -> dict[int, str]:
-    """构建 1-based 行号 → 分支名 的映射。
+    """构建 1-based 行号 → 分支名 的映射，行号顺序与 build_lines 一致
+    （merged_entries 的合并排序）。
 
     agent 行按自己的 cwd；space 行优先用 worktree 映射，否则用该 space
     下第一个 agent 的 cwd 分支（space 本身没有 cwd）。
@@ -470,23 +498,23 @@ def resolve_branch_by_row(
     """
     result = {}
     index = 1
-    for agent in agents:
-        cwd = agent.get("cwd") or ""
-        if cwd in branch_by_cwd:
-            result[index] = branch_by_cwd[cwd]
-        index += 1
-    for space in workspaces:
-        wid = space.get("workspace_id", "")
-        branch = worktree_branches.get(wid)
-        if not branch:
-            for agent in agents:
-                if agent.get("workspace_id") == wid:
-                    cwd = agent.get("cwd") or ""
-                    branch = branch_by_cwd.get(cwd)
-                    if branch:
-                        break
-        if branch:
-            result[index] = branch
+    for _, kind, obj in merged_entries(agents, workspaces, recent):
+        if kind == "agent":
+            cwd = obj.get("cwd") or ""
+            if cwd in branch_by_cwd:
+                result[index] = branch_by_cwd[cwd]
+        else:
+            wid = obj.get("workspace_id", "")
+            branch = worktree_branches.get(wid)
+            if not branch:
+                for agent in agents:
+                    if agent.get("workspace_id") == wid:
+                        cwd = agent.get("cwd") or ""
+                        branch = branch_by_cwd.get(cwd)
+                        if branch:
+                            break
+            if branch:
+                result[index] = branch
         index += 1
     return result
 
@@ -758,7 +786,7 @@ def sub_picker() -> None:
             }
             worktree_branches = worktree_branch_map()
             branch_by_row = resolve_branch_by_row(
-                agents, workspaces, branch_by_cwd, worktree_branches
+                agents, workspaces, recent, branch_by_cwd, worktree_branches
             )
             lines = build_lines(
                 agents, workspaces, tabs, recent, str(Path.home()), branch_by_row
