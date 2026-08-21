@@ -208,6 +208,9 @@ end
 -- ---------------------------------------------------------------------------
 
 local function do_clamped_nav(orig_nav)
+  if state.tabpage ~= vim.api.nvim_get_current_tabpage() then
+    return orig_nav()
+  end
   local session = session_of()
   if not session then
     return orig_nav()

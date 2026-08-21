@@ -40,7 +40,7 @@ signs.setup {
     col = 1,
   },
   on_attach = function(bufnr)
-    if vim.b[bufnr].pi_cr_disable_gitsigns or vim.b[bufnr].gitsigns_enabled == false then
+    if vim.b[bufnr].pi_cr_disable_gitsigns then
       return false
     end
 
