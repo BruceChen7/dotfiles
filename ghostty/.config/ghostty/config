@@ -1,4 +1,5 @@
 font-family = "Iosevka Term"
 font-size = 16
 macos-option-as-alt = true
+macos-titlebar-style = hidden
 # keybind = shift+enter=text:\x1b\r

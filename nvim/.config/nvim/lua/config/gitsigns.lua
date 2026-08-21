@@ -40,6 +40,10 @@ signs.setup {
     col = 1,
   },
   on_attach = function(bufnr)
+    if vim.b[bufnr].pi_cr_disable_gitsigns or vim.b[bufnr].gitsigns_enabled == false then
+      return false
+    end
+
     local gs = package.loaded.gitsigns
 
     local function map(mode, l, r, opts)

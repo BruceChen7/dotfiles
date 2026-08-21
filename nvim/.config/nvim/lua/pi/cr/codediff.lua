@@ -48,6 +48,7 @@ local state = {
   tabpage = nil,
   installed = false,
   last_anchor = nil, -- {file, line} of the last diff cursor anchor (panel c)
+  gitsigns_disabled_buffers = {},
 }
 
 local function notify(message, level)
@@ -201,31 +202,33 @@ function M.anchor_at(first, last)
 end
 
 -- ---------------------------------------------------------------------------
--- Hunk navigation (]c/[c) with a repair for codediff's silent EOF failure
+-- Hunk navigation (]c/[c) — 单 owner 方案
+-- 劫持 codediff 原生 navigation，让它自带 EOF 修复；pi 不再另设 ]c 映射，
+-- 彻底消除与 gitsigns / lifecycle 的抢占 race
 -- ---------------------------------------------------------------------------
 
---- Run codediff's hunk navigation, then repair its silent failure mode:
---- when the target hunk's start line lies one past the buffer's end (EOF
---- deletions on the modified side, EOF additions on the original side),
---- codediff swallows the set_cursor error and reports success with the
---- cursor unmoved. Detect that (same window, cursor unchanged) and land on
---- the buffer's last line.
----@param nav fun(): boolean codediff navigation.next_hunk / prev_hunk
-local function clamped_hunk_nav(nav)
+local function do_clamped_nav(orig_nav)
   local session = session_of()
+  if not session then
+    return orig_nav()
+  end
+  if not session.stored_diff_result then
+    vim.notify("diff 计算中，请稍后再按 ]c/[c", vim.log.levels.INFO)
+    return false
+  end
   local win = vim.api.nvim_get_current_win()
   local before = vim.api.nvim_win_get_cursor(win)[1]
-  local ok = nav()
-  if not ok or not session then
-    return
+  local ok = orig_nav()
+  if not ok then
+    return false
   end
   local cur = vim.api.nvim_get_current_win()
   if cur ~= win or not vim.api.nvim_win_is_valid(cur) then
-    return -- nav hopped to another window (not a diff pane); leave it
+    return true -- 已跳文件/窗口，不需修复
   end
   local line = vim.api.nvim_win_get_cursor(cur)[1]
   if line ~= before then
-    return
+    return true
   end
   local side = "modified"
   if session.layout ~= "inline" and vim.api.nvim_get_current_buf() == original_buf() then
@@ -237,6 +240,42 @@ local function clamped_hunk_nav(nav)
     pcall(vim.api.nvim_win_set_cursor, cur, { target, 0 })
     vim.cmd "normal! zz"
   end
+  return ok
+end
+
+local function patch_codediff_navigation()
+  local ok, navi = pcall(require, "codediff.ui.view.navigation")
+  if not ok or navi._pi_patched then
+    return
+  end
+  local orig_next, orig_prev = navi.next_hunk, navi.prev_hunk
+  navi.next_hunk = function()
+    return do_clamped_nav(orig_next)
+  end
+  navi.prev_hunk = function()
+    return do_clamped_nav(orig_prev)
+  end
+  navi._pi_patched = true
+  -- 已有会话的映射闭包仍指向旧函数，需重设
+  local s = session_of()
+  if s then
+    local ok_life, lifecycle = pcall(require, "codediff.ui.lifecycle")
+    if ok_life then
+      local ob, mb = lifecycle.get_buffers(state.tabpage)
+      if ob and mb then
+        -- 让 codediff 重建 view 映射（会用到已 patch 的 navi）
+        local ok_view, view_keymaps = pcall(require, "codediff.ui.view.keymaps")
+        if ok_view then
+          pcall(view_keymaps.setup_all_keymaps, state.tabpage, ob, mb, s.mode == "explorer")
+        end
+      end
+    end
+  end
+end
+
+-- 保持兼容：旧 clamped_hunk_nav 供外部调用，内部转调 do_clamped_nav
+local function clamped_hunk_nav(nav)
+  return do_clamped_nav(nav)
 end
 
 -- ---------------------------------------------------------------------------
@@ -425,57 +464,61 @@ function M.jump_to_comment(id)
   end
 
   -- After the file loads, move the diff cursor to the comment line. The load
-  -- is async (event loop must spin), so wait with a retry budget instead of
+  -- is async (event loop must spin), so poll with a retry budget instead of
   -- a single schedule tick. Deleted files render as a single original-side
   -- pane (their modified side is a scratch that never grows), so the landing
   -- side comes from map.jump_landing; without that the wait burned its full
   -- budget on the empty modified side and the cursor never moved.
-  vim.schedule(function()
-    local attempts = 0
-    local checked_buf, checked_lines, stable_ticks
-    while attempts < 60 do
-      local s = session_of()
-      -- Only judge once the view actually shows the target file: the
-      -- selection is async, and judging earlier could land the cursor on the
-      -- previous file's buffer.
-      if s and view_matches(s, target.file) then
-        local view = {
-          single_side = s.single_side,
-          modified_lines = s.modified_bufnr and vim.api.nvim_buf_line_count(s.modified_bufnr) or 0,
-          original_lines = s.original_bufnr and vim.api.nvim_buf_line_count(s.original_bufnr) or 0,
-        }
-        local landing = map.jump_landing(view, target.line, stable_ticks or 0)
-        if landing.status == "ready" then
-          local orig_win, mod_win = lifecycle.get_windows(state.tabpage)
-          local win = landing.side == "original" and orig_win or mod_win
-          if win and vim.api.nvim_win_is_valid(win) then
-            vim.api.nvim_set_current_win(win)
-            vim.api.nvim_win_set_cursor(win, { target.line, 0 })
-            vim.cmd "normal! zz"
-          end
-          break
-        end
-        if landing.status == "hopeless" then
-          break -- the shown side settled shorter than the comment line
-        end
-        -- Still loading: track how long the checked side's line count has
-        -- stayed unchanged so a settled-too-short side can bail early.
-        local buf = landing.side == "original" and s.original_bufnr or s.modified_bufnr
-        local lines = buf and vim.api.nvim_buf_line_count(buf) or 0
-        if buf == checked_buf and lines == checked_lines then
-          stable_ticks = (stable_ticks or 0) + 1
-        else
-          stable_ticks = 0
-          checked_buf, checked_lines = buf, lines
-        end
-      end
-      attempts = attempts + 1
-      vim.wait(50, function()
-        return false
-      end)
+  --
+  -- Non-blocking: use vim.defer_fn so the UI stays responsive while the
+  -- virtual buffer fills. The old blocking vim.wait loop froze the editor
+  -- for up to 3s per jump.
+  local function jump_tick(attempts, checked_buf, checked_lines, stable_ticks)
+    if attempts >= 60 then
+      M.render_cards()
+      return
     end
-    M.render_cards()
-  end)
+    local s = session_of()
+    if s and view_matches(s, target.file) then
+      local view = {
+        single_side = s.single_side,
+        modified_lines = s.modified_bufnr and vim.api.nvim_buf_line_count(s.modified_bufnr) or 0,
+        original_lines = s.original_bufnr and vim.api.nvim_buf_line_count(s.original_bufnr) or 0,
+      }
+      local landing = map.jump_landing(view, target.line, stable_ticks or 0)
+      if landing.status == "ready" then
+        local orig_win, mod_win = lifecycle.get_windows(state.tabpage)
+        local win = landing.side == "original" and orig_win or mod_win
+        if win and vim.api.nvim_win_is_valid(win) then
+          vim.api.nvim_set_current_win(win)
+          vim.api.nvim_win_set_cursor(win, { target.line, 0 })
+          vim.cmd "normal! zz"
+        end
+        M.render_cards()
+        return
+      end
+      if landing.status == "hopeless" then
+        M.render_cards()
+        return
+      end
+      local buf = landing.side == "original" and s.original_bufnr or s.modified_bufnr
+      local lines = buf and vim.api.nvim_buf_line_count(buf) or 0
+      if buf == checked_buf and lines == checked_lines then
+        stable_ticks = (stable_ticks or 0) + 1
+      else
+        stable_ticks = 0
+        checked_buf, checked_lines = buf, lines
+      end
+      vim.defer_fn(function()
+        jump_tick(attempts + 1, checked_buf, checked_lines, stable_ticks)
+      end, 50)
+      return
+    end
+    vim.defer_fn(function()
+      jump_tick(attempts + 1, checked_buf, checked_lines, stable_ticks)
+    end, 50)
+  end
+  jump_tick(0, nil, nil, 0)
 end
 
 function M.redraw_all()
@@ -750,34 +793,90 @@ end
 -- Keymaps + hooks (session-scoped; die with the buffers on CodeDiffClose)
 -- ---------------------------------------------------------------------------
 
+local function buf_set_keymap(buf, mode, lhs, rhs, desc, extra_opts)
+  local tabpage = state.tabpage
+  if tabpage and vim.api.nvim_tabpage_is_valid(tabpage) then
+    local ok_life, lifecycle = pcall(require, "codediff.ui.lifecycle")
+    if ok_life and lifecycle.get_session(tabpage) then
+      local opts =
+        vim.tbl_extend("force", { desc = desc, noremap = true, silent = true, nowait = true }, extra_opts or {})
+      pcall(lifecycle.set_buf_keymap, tabpage, buf, mode, lhs, rhs, opts, { priority = 100 })
+    end
+  end
+  vim.keymap.set(mode, lhs, rhs, vim.tbl_extend("force", { buffer = buf, desc = desc }, extra_opts or {}))
+end
+
+local function mark_gitsigns_disabled(buf)
+  if not buf or not vim.api.nvim_buf_is_valid(buf) then
+    return false
+  end
+  if not state.gitsigns_disabled_buffers[buf] then
+    state.gitsigns_disabled_buffers[buf] = {
+      had_disable = vim.b[buf].pi_cr_disable_gitsigns ~= nil,
+      disable = vim.b[buf].pi_cr_disable_gitsigns,
+      had_enabled = vim.b[buf].gitsigns_enabled ~= nil,
+      enabled = vim.b[buf].gitsigns_enabled,
+    }
+  end
+  vim.b[buf].pi_cr_disable_gitsigns = true
+  vim.b[buf].gitsigns_enabled = false
+  return true
+end
+
+local function restore_gitsigns_disabled_buffers()
+  local disabled = state.gitsigns_disabled_buffers
+  state.gitsigns_disabled_buffers = {}
+  for buf, previous in pairs(disabled) do
+    if vim.api.nvim_buf_is_valid(buf) then
+      if previous.had_disable then
+        vim.b[buf].pi_cr_disable_gitsigns = previous.disable
+      else
+        vim.b[buf].pi_cr_disable_gitsigns = nil
+      end
+      if previous.had_enabled then
+        vim.b[buf].gitsigns_enabled = previous.enabled
+      else
+        vim.b[buf].gitsigns_enabled = nil
+      end
+      local name = vim.api.nvim_buf_get_name(buf)
+      if name ~= "" and not name:match "^codediff:///" and previous.enabled ~= false then
+        pcall(require("gitsigns.attach").attach, buf, nil, "PiCRClose")
+      end
+    end
+  end
+end
+
+local function disable_gitsigns(buf)
+  if not mark_gitsigns_disabled(buf) then
+    return
+  end
+  pcall(function()
+    require("gitsigns").detach(buf)
+  end)
+end
+
 local function install_view_keymaps(original_buf, modified_buf)
   for _, buf in ipairs(map.keymap_buffers(original_buf, modified_buf)) do
     if buf and vim.api.nvim_buf_is_valid(buf) then
-      vim.keymap.set("n", "c", function()
+      disable_gitsigns(buf)
+      buf_set_keymap(buf, "n", "c", function()
         M.comment_at_cursor(false)
-      end, { buffer = buf, desc = "Pi CR comment" })
-      vim.keymap.set("x", "c", function()
+      end, "Pi CR comment")
+      buf_set_keymap(buf, "x", "c", function()
         M.comment_at_cursor(true)
-      end, { buffer = buf, desc = "Pi CR comment (range)" })
-      vim.keymap.set("n", "dc", M.delete_at_cursor, { buffer = buf, desc = "Pi CR delete comment" })
-      vim.keymap.set("n", "e", M.open_real_file_at_cursor, { buffer = buf, desc = "Pi CR open real file" })
-      -- ]c/[c: codediff's own hunk navigation silently fails for hunks at
-      -- the end of the file (start line one past the buffer); wrap + repair.
-      vim.keymap.set("n", "]c", function()
-        clamped_hunk_nav(require("codediff.ui.view.navigation").next_hunk)
-      end, { buffer = buf, nowait = true, desc = "Pi CR next hunk" })
-      vim.keymap.set("n", "[c", function()
-        clamped_hunk_nav(require("codediff.ui.view.navigation").prev_hunk)
-      end, { buffer = buf, nowait = true, desc = "Pi CR prev hunk" })
-      vim.keymap.set("n", "q", M.exit_flow, { buffer = buf, desc = "Pi CR exit review" })
-      vim.keymap.set("n", "?", M.show_help, { buffer = buf, desc = "Pi CR help" })
-      vim.keymap.set("n", "<leader>cd", function()
+      end, "Pi CR comment (range)")
+      buf_set_keymap(buf, "n", "dc", M.delete_at_cursor, "Pi CR delete comment")
+      buf_set_keymap(buf, "n", "e", M.open_real_file_at_cursor, "Pi CR open real file")
+      -- ]c/[c 已由 patch_codediff_navigation 劫持 codediff 原生 navigation 实现单 owner，不再此处设映射
+      buf_set_keymap(buf, "n", "q", M.exit_flow, "Pi CR exit review")
+      buf_set_keymap(buf, "n", "?", M.show_help, "Pi CR help")
+      buf_set_keymap(buf, "n", "<leader>cd", function()
         panel.toggle()
-      end, { buffer = buf, desc = "Pi CR toggle comments dock" })
+      end, "Pi CR toggle comments dock")
       for _, k in ipairs { { "<C-h>", -1 }, { "<C-k>", -1 }, { "<C-l>", 1 }, { "<C-j>", 1 } } do
-        vim.keymap.set("n", k[1], function()
+        buf_set_keymap(buf, "n", k[1], function()
           M.focus_area(k[2])
-        end, { buffer = buf, desc = "Pi CR focus " .. (k[2] < 0 and "prev area" or "next area") })
+        end, "Pi CR focus " .. (k[2] < 0 and "prev area" or "next area"))
       end
     end
   end
@@ -793,23 +892,23 @@ local function reinstall_keymaps()
     return
   end
   install_view_keymaps(original_buf(), modified_buf())
-  local lifecycle = require "codediff.ui.lifecycle"
-  local explorer = lifecycle.get_explorer(state.tabpage)
+  local ok_life, lifecycle = pcall(require, "codediff.ui.lifecycle")
+  local explorer = ok_life and lifecycle.get_explorer(state.tabpage) or nil
   if explorer and explorer.split and explorer.split.bufnr and vim.api.nvim_buf_is_valid(explorer.split.bufnr) then
     local buf = explorer.split.bufnr
-    vim.keymap.set("n", "c", function()
+    buf_set_keymap(buf, "n", "c", function()
       notify "注释需在右侧 diff 窗格定位行后按 c"
-    end, { buffer = buf, desc = "Pi CR comment (hint)" })
+    end, "Pi CR comment (hint)")
     -- q must end the review from every pane, not just the diff windows.
-    vim.keymap.set("n", "q", M.exit_flow, { buffer = buf, desc = "Pi CR exit review" })
-    vim.keymap.set("n", "?", M.show_help, { buffer = buf, desc = "Pi CR help" })
-    vim.keymap.set("n", "<leader>cd", function()
+    buf_set_keymap(buf, "n", "q", M.exit_flow, "Pi CR exit review")
+    buf_set_keymap(buf, "n", "?", M.show_help, "Pi CR help")
+    buf_set_keymap(buf, "n", "<leader>cd", function()
       panel.toggle()
-    end, { buffer = buf, desc = "Pi CR toggle comments dock" })
+    end, "Pi CR toggle comments dock")
     for _, k in ipairs { { "<C-h>", -1 }, { "<C-k>", -1 }, { "<C-l>", 1 }, { "<C-j>", 1 } } do
-      vim.keymap.set("n", k[1], function()
+      buf_set_keymap(buf, "n", k[1], function()
         M.focus_area(k[2])
-      end, { buffer = buf, desc = "Pi CR focus " .. (k[2] < 0 and "prev area" or "next area") })
+      end, "Pi CR focus " .. (k[2] < 0 and "prev area" or "next area"))
     end
   end
 end
@@ -828,8 +927,9 @@ end
 --- superseded by a newer selection stops once the view moves to a file that
 --- is not its target (that keymap install is the newer chain's job). Without
 --- this, chains for deleted files could never complete early and would burn
---- their full retry budget (60 x 50ms of vim.wait) per selection, and rapid
---- Tab navigation would pile up concurrent chains, saturating the main loop.
+--- their full retry budget (60 x 50ms) per selection, and rapid Tab
+--- navigation would pile up concurrent chains. Polling uses vim.defer_fn
+--- (non-blocking) so the UI stays responsive.
 local reinstall_seq = 0
 local function reinstall_keymaps_until_file(target, tries)
   tries = tries or 60
@@ -852,14 +952,11 @@ local function reinstall_keymaps_until_file(target, tries)
     if shown ~= start_shown then
       return -- view moved to a file that is not our target: superseded
     end
-    vim.wait(50, function()
-      return false
-    end)
-    tick(remaining - 1)
+    vim.defer_fn(function()
+      tick(remaining - 1)
+    end, 50)
   end
-  vim.schedule(function()
-    tick(tries)
-  end)
+  tick(tries)
 end
 
 local function setup_hooks()
@@ -867,7 +964,26 @@ local function setup_hooks()
     return
   end
   state.installed = true
+  patch_codediff_navigation()
   local augroup = vim.api.nvim_create_augroup("PiCRCodediff", { clear = true })
+  -- 源头禁用 gitsigns：codediff 虚拟缓冲 + diff 窗真实文件缓冲
+  vim.api.nvim_create_autocmd({ "BufAdd", "BufReadPre" }, {
+    group = augroup,
+    callback = function(args)
+      local buf = args.buf
+      local name = vim.api.nvim_buf_get_name(buf)
+      if name:sub(1, 12) == "codediff:///" then
+        mark_gitsigns_disabled(buf)
+        pcall(require("gitsigns").detach, buf)
+        return
+      end
+      local s = session_of()
+      if s and s.git_root and name ~= "" and name:sub(1, #s.git_root + 1) == s.git_root .. "/" then
+        -- 真实文件且在 review 的 git 仓库内，可能是 diff 窗缓冲，预先禁用避免抢占 ]c
+        mark_gitsigns_disabled(buf)
+      end
+    end,
+  })
   vim.api.nvim_create_autocmd("User", {
     group = augroup,
     pattern = "CodeDiffFileSelect",
@@ -877,6 +993,9 @@ local function setup_hooks()
         -- pcall: during the placeholder->real buffer swap render_cards can hit
         -- a freshly wiped buffer; the keymap reinstall must still run.
         pcall(M.render_cards)
+        -- 首按无映射：view.update 的 nvim_win_set_buf 后立即重装（不走 50ms 轮询），
+        -- 否则用户在 async 完成前首按 ]c 必无反应，切 Tab 后 BufEnter 才补上
+        pcall(reinstall_keymaps)
         pcall(reinstall_keymaps_until_file, target)
       end)
     end,
@@ -905,6 +1024,7 @@ local function setup_hooks()
       vim.schedule(function()
         comments.close_ui "codediff-close"
         panel.close()
+        restore_gitsigns_disabled_buffers()
       end)
     end,
   })
@@ -916,6 +1036,52 @@ local function setup_hooks()
     group = augroup,
     callback = function()
       reinstall_keymaps()
+    end,
+  })
+  -- nvim_win_set_buf 触发 BufWinEnter（而非 BufEnter），首文件在 view.update 异步完成前
+  -- 首按 ]c 时映射还未通过轮询设上，靠此立即补上
+  vim.api.nvim_create_autocmd("BufWinEnter", {
+    group = augroup,
+    callback = function(args)
+      local buf = args.buf
+      local s = session_of()
+      if not s then
+        return
+      end
+      local ok_life, lifecycle = pcall(require, "codediff.ui.lifecycle")
+      if not ok_life then
+        return
+      end
+      local orig_win, mod_win = lifecycle.get_windows(state.tabpage)
+      local cur_ob = orig_win and vim.api.nvim_win_is_valid(orig_win) and vim.api.nvim_win_get_buf(orig_win) or nil
+      local cur_mb = mod_win and vim.api.nvim_win_is_valid(mod_win) and vim.api.nvim_win_get_buf(mod_win) or nil
+      if buf == cur_ob or buf == cur_mb then
+        disable_gitsigns(buf)
+        reinstall_keymaps()
+      end
+    end,
+  })
+  -- gitsigns 后于 pi 附加时会抢占 ]c；对 diff 窗的两个缓冲直接禁用
+  vim.api.nvim_create_autocmd("User", {
+    group = augroup,
+    pattern = "GitsignsAttach",
+    callback = function(args)
+      local buf = args.data and args.data.buf or args.buf
+      if not buf or not vim.api.nvim_buf_is_valid(buf) then
+        return
+      end
+      local s = session_of()
+      if not s then
+        return
+      end
+      local ok_life, lifecycle = pcall(require, "codediff.ui.lifecycle")
+      local obuf, mbuf = nil, nil
+      if ok_life then
+        obuf, mbuf = lifecycle.get_buffers(state.tabpage)
+      end
+      if buf == obuf or buf == mbuf then
+        disable_gitsigns(buf)
+      end
     end,
   })
 end
@@ -971,6 +1137,7 @@ function M.open(app)
     return
   end
   state.git_root = root
+  patch_codediff_navigation()
 
   local ok, codediff = pcall(require, "codediff.ui.view")
   if not ok then
