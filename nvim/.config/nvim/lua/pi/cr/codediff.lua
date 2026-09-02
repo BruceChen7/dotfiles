@@ -407,7 +407,7 @@ function M.jump_to_comment(id)
     return
   end
   local lifecycle = require "codediff.ui.lifecycle"
-  local explorer = lifecycle.get_explorer(state.tabpage)
+  local explorer = lifecycle.get_panel_view(state.tabpage)
   if not explorer or not explorer.tree then
     notify("explorer 不可用", vim.log.levels.WARN)
     return
@@ -675,7 +675,7 @@ end
 function M.focus_area(delta)
   local lifecycle = require "codediff.ui.lifecycle"
   local wins = {}
-  local explorer = lifecycle.get_explorer(state.tabpage)
+  local explorer = lifecycle.get_panel_view(state.tabpage)
   local ew = explorer and explorer.split and explorer.split.winid
   if ew and vim.api.nvim_win_is_valid(ew) then
     wins[#wins + 1] = ew
@@ -896,7 +896,7 @@ local function reinstall_keymaps()
   end
   install_view_keymaps(original_buf(), modified_buf())
   local ok_life, lifecycle = pcall(require, "codediff.ui.lifecycle")
-  local explorer = ok_life and lifecycle.get_explorer(state.tabpage) or nil
+  local explorer = ok_life and lifecycle.get_panel_view(state.tabpage) or nil
   if explorer and explorer.split and explorer.split.bufnr and vim.api.nvim_buf_is_valid(explorer.split.bufnr) then
     local buf = explorer.split.bufnr
     buf_set_keymap(buf, "n", "c", function()
@@ -1150,7 +1150,6 @@ function M.open(app)
   end
   local view = codediff
   local git = require "codediff.core.git"
-  local path = require "codediff.core.path"
 
   local function fail(err)
     notify("CR 会话创建失败：" .. tostring(err), vim.log.levels.ERROR)
@@ -1166,20 +1165,14 @@ function M.open(app)
       app.finish(true)
       return
     end
-    local result = view.create({
-      mode = "explorer",
-      git_root = root,
-      original = path.empty(),
-      modified = path.empty(),
-      original_revision = original_rev,
-      modified_revision = modified_rev,
-      exit_on_close = true,
-      explorer_data = {
-        status_result = status_result,
-        focus_file = nil,
-        pathspec = nil,
-      },
-    }, "")
+    local result = view.create(
+      map.explorer_session_config(status_result, {
+        git_root = root,
+        original_revision = original_rev,
+        modified_revision = modified_rev,
+      }),
+      ""
+    )
     M.setup_highlights()
     state.tabpage = vim.api.nvim_get_current_tabpage()
     setup_hooks()

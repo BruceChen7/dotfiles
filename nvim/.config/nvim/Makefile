@@ -9,6 +9,7 @@
 
 test:
 	./scripts/test-pi-cr.sh
+	./scripts/test-pi-cr-first-hunk-e2e.sh
 	./scripts/test-netrw-e117.sh
 
 test-file:
@@ -23,3 +24,4 @@ format:
 check:
 	stylua --check lua/pi/cr/ tests/
 	./scripts/test-pi-cr.sh
+	./scripts/test-pi-cr-first-hunk-e2e.sh

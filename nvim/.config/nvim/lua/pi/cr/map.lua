@@ -47,6 +47,46 @@ function M.scope_to_session(diff_args)
   return { ok = false, reason = "unsupported diffArgs: [" .. table.concat(diff_args, ", ") .. "]" }
 end
 
+--- An empty repo-relative path ref. Mirrors codediff.core.path.empty() so the
+--- pure module stays free of plugin requires.
+---@return {relative: string, absolute: string}
+local function empty_ref()
+  return { relative = "", absolute = "" }
+end
+
+--- Build the codediff.nvim `view.create` session config for the CR explorer.
+---
+--- Value in / value out. The plugin consumes the panel as
+--- `panel = { name = "explorer", data = { status_result, focus_file, pathspec } }`.
+--- An older plugin revision took `mode = "explorer"` + `explorer_data = {...}`;
+--- those fields are silently ignored today, which made the plugin open a bare
+--- two-pane diff with empty paths and emit `codediff:///<root>///<rev>/`
+--- buffers whose empty filepath can never parse (BufReadCmd -> "Invalid codediff
+--- URL"). This function exists so the CR always speaks the current shape.
+---
+---@param status_result table codediff status_result ({unstaged, staged, conflicts})
+---@param opts {git_root: string, original_revision: string|nil, modified_revision: string|nil}
+---@return table
+function M.explorer_session_config(status_result, opts)
+  opts = opts or {}
+  return {
+    panel = {
+      name = "explorer",
+      data = {
+        status_result = status_result,
+        focus_file = nil,
+        pathspec = nil,
+      },
+    },
+    git_root = opts.git_root,
+    original = empty_ref(),
+    modified = empty_ref(),
+    original_revision = opts.original_revision,
+    modified_revision = opts.modified_revision,
+    exit_on_close = true,
+  }
+end
+
 --- Return the concrete view buffers that need Pi CR mappings. A single-pane
 --- view leaves the absent side nil (untracked: original; deleted: modified),
 --- so this must not use ipairs on { original, modified }: ipairs stops at the

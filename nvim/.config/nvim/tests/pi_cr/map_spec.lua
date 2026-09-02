@@ -279,3 +279,51 @@ describe("pi.cr.map.jump_landing", function()
     assert.equal("wait", r.status)
   end)
 end)
+
+-- Regression: the CR explorer session config must speak the plugin's CURRENT
+-- panel shape. codediff.nvim renamed mode/explorer_data -> panel={name,data}
+-- (upstream "typed Path" refactor); the old fields are silently ignored, which
+-- made the plugin open a bare two-pane diff with empty paths and emit
+-- `codediff:///<root>///<rev>/` buffers whose empty filepath can never parse
+-- (BufReadCmd -> "Invalid codediff URL").
+describe("pi.cr.map.explorer_session_config", function()
+  local map = require "pi.cr.map"
+
+  it("builds the current panel={name=explorer,data=...} shape, not mode/explorer_data", function()
+    local status = { unstaged = {}, staged = {}, conflicts = {} }
+    local cfg = map.explorer_session_config(status, {
+      git_root = "/repo",
+      original_revision = "abc123",
+      modified_revision = "def456",
+    })
+
+    -- The two stale fields must not leak through.
+    assert.is_nil(cfg.mode)
+    assert.is_nil(cfg.explorer_data)
+
+    -- Panel carries the explorer data.
+    assert.equal("explorer", cfg.panel.name)
+    assert.same(status, cfg.panel.data.status_result)
+    assert.is_nil(cfg.panel.data.focus_file)
+    assert.is_nil(cfg.panel.data.pathspec)
+
+    -- Empty Path refs keep the plugin on the placeholder-pane path, so it never
+    -- builds empty-path codediff:// URLs.
+    assert.same({ relative = "", absolute = "" }, cfg.original)
+    assert.same({ relative = "", absolute = "" }, cfg.modified)
+
+    -- Revisions and root flow through for virtual (range/staged) scopes.
+    assert.equal("/repo", cfg.git_root)
+    assert.equal("abc123", cfg.original_revision)
+    assert.equal("def456", cfg.modified_revision)
+    assert.is_true(cfg.exit_on_close)
+  end)
+
+  it("tolerates a nil opts table", function()
+    local cfg = map.explorer_session_config { unstaged = {}, staged = {}, conflicts = {} }
+    assert.equal("explorer", cfg.panel.name)
+    assert.is_nil(cfg.git_root)
+    assert.is_nil(cfg.original_revision)
+    assert.is_nil(cfg.modified_revision)
+  end)
+end)
