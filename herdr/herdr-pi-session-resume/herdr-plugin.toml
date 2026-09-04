@@ -1,0 +1,40 @@
+# herdr-pi-session-resume — herdr plugin definition
+# =================================================
+# Cross-project full-text search of all pi sessions, then resume into the
+# selected session inside herdr.
+#
+# prefix+p → herdr-pi-session-resume.search → opens a popup pane running
+# picker.py picker (fzf).
+#   enter      → split a new pane (cwd = session's original cwd) and start
+#                `herdr agent start <name> --kind pi --pane <id> -- --session <path>`
+#   alt+enter  → copy `pi --fork <path>` command and show a manual-run hint
+#   ctrl+y     → copy `pi --session <path>` command to the clipboard
+#
+# Layout: pure functions (value in / value out) in session_index.py, thin
+# shell adapters (herdr CLI, fzf, clipboard) in picker.py.
+#
+# Install: herdr plugin link ~/work/dotfiles/herdr/herdr-pi-session-resume
+
+id = "herdr-pi-session-resume"
+name = "Herdr Pi Session Resume"
+version = "0.1.0"
+min_herdr_version = "0.7.4"
+description = "Search all pi sessions by content and resume"
+platforms = ["linux", "macos"]
+
+# The keybinding entry point: opens the picker popup pane.
+[[actions]]
+id = "search"
+title = "搜索全部 pi session 内容并 resume"
+contexts = ["global"]
+command = ["uv", "run", "picker.py", "open"]
+
+# The popup that hosts the fzf picker. Closes automatically when the
+# picker subcommand exits.
+[[panes]]
+id = "picker"
+title = "herdr-pi-session-resume"
+placement = "popup"
+width = "90%"
+height = "75%"
+command = ["uv", "run", "picker.py", "picker"]

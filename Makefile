@@ -8,8 +8,10 @@
 #   make test-file FILE=... run one nvim spec file
 #   make check              stylua check + full nvim test run
 #   make format             stylua format pi.cr + tests
+#   make herdr-install      link all local herdr plugins under herdr/
+#   make herdr-uninstall    unlink all local herdr plugins
 
-.PHONY: stow dryrun list test test-file check format
+.PHONY: stow dryrun list test test-file check format herdr-install herdr-uninstall
 
 # Managed packages (whitelist; everything else in the repo is NOT stowed —
 # .ssh/.pi/.git and tool docs stay out on purpose).
@@ -45,3 +47,27 @@ check:
 
 format:
 	$(MAKE) -C nvim/.config/nvim format
+
+# herdr/ holds local herdr plugins (each dir has a herdr-plugin.toml).
+HERDR_PLUGINS := $(wildcard herdr/*/herdr-plugin.toml)
+HERDR_PLUGIN_DIRS := $(dir $(HERDR_PLUGINS))
+
+herdr-install:
+	@if [ -z "$(HERDR_PLUGINS)" ]; then \
+		echo "no herdr plugins found under herdr/"; exit 1; \
+	fi
+	@for d in $(HERDR_PLUGIN_DIRS); do \
+		echo "==> linking $$d"; \
+		herdr plugin link $${d%/}; \
+	done
+
+herdr-uninstall:
+	@if [ -z "$(HERDR_PLUGINS)" ]; then \
+		echo "no herdr plugins found under herdr/"; exit 1; \
+	fi
+	@for d in $(HERDR_PLUGIN_DIRS); do \
+		id=$$(sed -n 's/^id[[:space:]]*=[[:space:]]*"\([^"]*\)"/\1/p' $${d}herdr-plugin.toml | head -1); \
+		[ -n "$$id" ] || { echo "!! no id in $${d}herdr-plugin.toml"; continue; }; \
+		echo "==> unlinking $$id"; \
+		herdr plugin unlink "$$id" || true; \
+	done
