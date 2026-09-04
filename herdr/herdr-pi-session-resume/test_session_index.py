@@ -437,6 +437,65 @@ class TestParseContextPaneId(unittest.TestCase):
         self.assertEqual(idx.parse_context_pane_id('["w1:p2"]'), "")
 
 
+class TestFindWorkspaceForCwd(unittest.TestCase):
+    """find_workspace_for_cwd：pane list → cwd 匹配的 workspace_id。
+
+    优先 focused workspace；否则第一个匹配；无匹配/空 cwd/空 panes → None；
+    字段缺失跳过不崩；前缀/子目录不完全相等不命中。
+    """
+
+    def _pane(self, cwd, workspace_id, focused=False):
+        return {"cwd": cwd, "workspace_id": workspace_id, "focused": focused}
+
+    def test_single_match(self):
+        panes = [self._pane("/proj/a", "w1")]
+        self.assertEqual(idx.find_workspace_for_cwd(panes, "/proj/a"), "w1")
+
+    def test_prefers_focused(self):
+        panes = [
+            self._pane("/proj/a", "w1"),
+            self._pane("/proj/a", "w2", focused=True),
+            self._pane("/proj/b", "w3"),
+        ]
+        self.assertEqual(idx.find_workspace_for_cwd(panes, "/proj/a"), "w2")
+
+    def test_first_match_when_none_focused(self):
+        panes = [
+            self._pane("/proj/a", "w1"),
+            self._pane("/proj/a", "w2"),
+            self._pane("/proj/b", "w3"),
+        ]
+        self.assertEqual(idx.find_workspace_for_cwd(panes, "/proj/a"), "w1")
+
+    def test_no_match(self):
+        panes = [self._pane("/proj/a", "w1")]
+        self.assertIsNone(idx.find_workspace_for_cwd(panes, "/proj/z"))
+
+    def test_empty_cwd(self):
+        panes = [self._pane("/proj/a", "w1")]
+        self.assertIsNone(idx.find_workspace_for_cwd(panes, ""))
+
+    def test_empty_panes(self):
+        self.assertIsNone(idx.find_workspace_for_cwd([], "/proj/a"))
+
+    def test_missing_fields_skipped(self):
+        """pane 缺 cwd / workspace_id / 非 dict → 跳过，不崩。"""
+        panes = [
+            {},
+            {"cwd": "/proj/a"},  # 缺 workspace_id
+            {"workspace_id": "w9"},  # 缺 cwd
+            "not-a-dict",
+            self._pane("/proj/a", "w1"),
+        ]
+        self.assertEqual(idx.find_workspace_for_cwd(panes, "/proj/a"), "w1")
+
+    def test_cwd_not_exact_prefix(self):
+        """不完全相等（前缀/子目录）不命中。"""
+        panes = [self._pane("/proj/a", "w1")]
+        self.assertIsNone(idx.find_workspace_for_cwd(panes, "/proj"))
+        self.assertIsNone(idx.find_workspace_for_cwd(panes, "/proj/a/sub"))
+
+
 class TestStripSkillBlocks(unittest.TestCase):
     def test_plain_text_unchanged(self):
         self.assertEqual(idx.strip_skill_blocks("grill me"), "grill me")

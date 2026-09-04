@@ -288,37 +288,8 @@ def copy_to_clipboard(text: str) -> bool:
 # ---- shell: 动作 --------------------------------------------------------------
 
 
-def do_resume(session_path: str, cwd: str) -> bool:
-    """enter → split 新 pane（cwd=session 原 cwd）→ agent start pi --session。
-
-    True → popup 应关闭。
-
-    关键坑（herdr 源码实证）：插件 popup 进程**没有** HERDR_PANE_ID env
-    （plugin_pane_launch_env 只注入 HERDR_PLUGIN_CONTEXT_JSON），所以
-    `pane split --current` 会报 "--current requires HERDR_PANE_ID"。
-    目标 pane 必须从 HERDR_PLUGIN_CONTEXT_JSON.focused_pane_id 取——
-    它是用户打开 popup 前聚焦的 pane（split 的目标）。
-    """
-    target_pane = idx.parse_context_pane_id(os.environ.get("HERDR_PLUGIN_CONTEXT_JSON"))
-    if not target_pane:
-        warn(
-            "无法确定 split 目标 pane（HERDR_PLUGIN_CONTEXT_JSON 缺少 focused_pane_id）"
-        )
-        return False
-
-    split_args = ["pane", "split", target_pane, "--direction", "right", "--no-focus"]
-    # session 原 cwd 可能已被删除——目录不存在时不传 --cwd（让新 pane 继承当前 cwd）
-    if cwd and os.path.isdir(cwd):
-        split_args += ["--cwd", cwd]
-    data = herdr(*split_args, timeout=15)
-    if data is None:
-        warn(f"pane split 失败: {target_pane}（当前 pane 不可分割？）")
-        return False
-    pane_id = data.get("result", {}).get("pane", {}).get("pane_id")
-    if not pane_id:
-        warn("pane split 未返回 pane_id")
-        return False
-
+def _start_agent(session_path: str, pane_id: str) -> bool:
+    """agent start pi --session 到指定 pane；成功 → True。"""
     name = f"resume-{int(time.time())}"
     print(f"{COLOR_GRAY}正在启动 pi (session {session_path})…{RESET}", file=sys.stderr)
     ap = herdr(
@@ -340,6 +311,84 @@ def do_resume(session_path: str, cwd: str) -> bool:
         )
         return False
     return True
+
+
+def _split_pane(cwd: str) -> str | None:
+    """现状降级路径：当前 space split 新 pane（cwd=session 原 cwd）→ pane_id。
+
+    关键坑（herdr 源码实证）：插件 popup 进程**没有** HERDR_PANE_ID env
+    （plugin_pane_launch_env 只注入 HERDR_PLUGIN_CONTEXT_JSON），所以
+    `pane split --current` 会报 "--current requires HERDR_PANE_ID"。
+    目标 pane 必须从 HERDR_PLUGIN_CONTEXT_JSON.focused_pane_id 取——
+    它是用户打开 popup 前聚焦的 pane（split 的目标）。
+    """
+    target_pane = idx.parse_context_pane_id(os.environ.get("HERDR_PLUGIN_CONTEXT_JSON"))
+    if not target_pane:
+        warn(
+            "无法确定 split 目标 pane（HERDR_PLUGIN_CONTEXT_JSON 缺少 focused_pane_id）"
+        )
+        return None
+
+    split_args = ["pane", "split", target_pane, "--direction", "right", "--no-focus"]
+    # session 原 cwd 可能已被删除——目录不存在时不传 --cwd（让新 pane 继承当前 cwd）
+    if cwd and os.path.isdir(cwd):
+        split_args += ["--cwd", cwd]
+    data = herdr(*split_args, timeout=15)
+    if data is None:
+        warn(f"pane split 失败: {target_pane}（当前 pane 不可分割？）")
+        return None
+    pane_id = data.get("result", {}).get("pane", {}).get("pane_id")
+    if not pane_id:
+        warn("pane split 未返回 pane_id")
+        return None
+    return pane_id
+
+
+def _tab_in_workspace(workspace_id: str, cwd: str) -> tuple[str | None, str]:
+    """跳转 space + 开新 tab，返回 (root pane_id, 失败原因)。
+
+    成功时（root_pane_id, ""）；失败时（None, 原因）供调用方降级/提示。
+    """
+    if herdr("workspace", "focus", workspace_id) is None:
+        return None, f"workspace focus 失败: {workspace_id}"
+    create_args = ["tab", "create", "--workspace", workspace_id]
+    # session 原 cwd 可能已被删除——目录不存在时不传 --cwd
+    if cwd and os.path.isdir(cwd):
+        create_args += ["--cwd", cwd]
+    create_args += ["--focus"]
+    data = herdr(*create_args, timeout=15)
+    if data is None:
+        return None, f"tab create 失败: workspace {workspace_id}"
+    pane_id = data.get("result", {}).get("root_pane", {}).get("pane_id")
+    if not pane_id:
+        return None, "tab create 未返回 root_pane.pane_id"
+    return pane_id, ""
+
+
+def do_resume(session_path: str, cwd: str) -> bool:
+    """enter → 若 session 原 cwd 已有专属 space，跳转并开新 tab（新 tab root
+    pane 启动 pi）；否则维持现状：当前 space split 新 pane 再启动 pi。
+
+    True → popup 应关闭。
+
+    space 跳转路径（2026-09-04 用户决策）：workspace 本身不暴露 cwd，靠
+    pane list 的 cwd + workspace_id 判定；匹配优先 focused workspace；
+    pane list 查询失败或 space 路径失败 → 降级现状 split，不阻断 resume。
+    """
+    pane_id = None
+    panes_json = herdr("pane", "list", timeout=15)
+    if panes_json is not None:
+        panes = panes_json.get("result", {}).get("panes", []) or []
+        wid = idx.find_workspace_for_cwd(panes, cwd)
+        if wid:
+            pane_id, reason = _tab_in_workspace(wid, cwd)
+            if pane_id is None:
+                warn(f"{reason}，降级为当前 space split 新 pane")
+    if pane_id is None:
+        pane_id = _split_pane(cwd)
+        if pane_id is None:
+            return False
+    return _start_agent(session_path, pane_id)
 
 
 def do_fork(session_path: str) -> bool:

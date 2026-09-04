@@ -5,8 +5,11 @@
 #
 # prefix+p → herdr-pi-session-resume.search → opens a popup pane running
 # picker.py picker (fzf).
-#   enter      → split a new pane (cwd = session's original cwd) and start
+#   enter      → if session's cwd already has a workspace (space): jump to that
+#                space, open a new tab there (cwd = session's original cwd) and start
 #                `herdr agent start <name> --kind pi --pane <id> -- --session <path>`
+#                in the new tab's root pane; otherwise split a new pane in the
+#                current space (cwd = session's original cwd) and start it there.
 #   alt+enter  → copy `pi --fork <path>` command and show a manual-run hint
 #   ctrl+y     → copy `pi --session <path>` command to the clipboard
 #

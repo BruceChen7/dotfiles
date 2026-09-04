@@ -298,6 +298,34 @@ def parse_context_pane_id(context_json: str | None) -> str:
     return str(pid) if pid else ""
 
 
+def find_workspace_for_cwd(panes: list[dict], cwd: str) -> str | None:
+    """给定 pane list（dict 含 cwd + workspace_id + focused），返回 cwd 完全
+    匹配的 workspace_id；优先 focused workspace，否则第一个匹配；无匹配
+    返回 None。cwd 为空 / panes 为空 → None。
+
+    用途：resume 时判断 session 原 cwd 是否已有专属 space——workspace 本身
+    不暴露 cwd（WorkspaceInfo 无该字段），pane list 的 cwd + workspace_id
+    是可靠来源。
+    """
+    if not cwd or not panes:
+        return None
+    fallback: str | None = None
+    for pane in panes:
+        if not isinstance(pane, dict):
+            continue
+        if pane.get("cwd") != cwd:
+            continue
+        wid = pane.get("workspace_id")
+        if not wid:
+            continue
+        wid = str(wid)
+        if pane.get("focused"):
+            return wid
+        if fallback is None:
+            fallback = wid
+    return fallback
+
+
 # ---- 纯函数：增量缓存判定 ---------------------------------------------------
 
 
