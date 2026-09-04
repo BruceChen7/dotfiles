@@ -13,7 +13,7 @@
 
 # Managed packages (whitelist; everything else in the repo is NOT stowed —
 # .ssh/.pi/.git and tool docs stay out on purpose).
-PACKAGES := nvim starship tig ghostty dot-local
+PACKAGES := nvim starship tig ghostty dot-local kitty
 
 STOW := stow --dotfiles -t $(HOME)
 
