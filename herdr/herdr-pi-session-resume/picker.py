@@ -378,15 +378,45 @@ def _tab_in_workspace(workspace_id: str, cwd: str) -> tuple[str | None, str]:
     return pane_id, ""
 
 
+def _new_workspace_for_cwd(cwd: str) -> tuple[str | None, str]:
+    """session cwd 无已开 workspace 时：新建带 cwd 的 workspace → root_pane_id。
+
+    `workspace create --cwd <path> --focus` 一次调用即建好 workspace + 首个
+    tab + root pane（shell 起始 cwd = session 原 cwd，实测返回
+    result.root_pane.pane_id），无需再 tab create；--focus 让用户落在新
+    space（pi 随后在此 root pane 启动），与 _tab_in_workspace 的跳转行为一致。
+
+    成功 → (root_pane_id, "")；失败 → (None, 原因) 供调用方降级。
+    """
+    create_args = ["workspace", "create"]
+    # session 原 cwd 可能已被删除——目录不存在时不传 --cwd（继承当前 cwd）
+    if cwd and os.path.isdir(cwd):
+        create_args += ["--cwd", cwd]
+    create_args += ["--focus"]
+    data = herdr(*create_args, timeout=15)
+    if data is None:
+        return None, "workspace create 失败"
+    pane_id = data.get("result", {}).get("root_pane", {}).get("pane_id")
+    if not pane_id:
+        return None, "workspace create 未返回 root_pane.pane_id"
+    return pane_id, ""
+
+
 def do_resume(session_path: str, cwd: str) -> bool:
-    """enter → 若 session 原 cwd 已有专属 space，跳转并开新 tab（新 tab root
-    pane 启动 pi）；否则维持现状：当前 space split 新 pane 再启动 pi。
+    """enter → 目标 pane 选择（2026-09-07 起优先级）：
+
+      1. session 原 cwd 已有专属 space → 跳转并开新 tab（_tab_in_workspace）；
+      2. 无匹配 space 且 cwd 有效 → 新建带 cwd 的 workspace
+         （_new_workspace_for_cwd：1 次调用，root pane 即目标）；
+      3. 上述失败 / cwd 缺失 / pane list 查询失败 → 维持现状：当前 space
+         split 新 pane（_split_pane）。
+
+    选定 pane 后统一 _start_agent_async（popup 立即关闭，后台启动 pi）。
 
     True → popup 应关闭。
 
-    space 跳转路径（2026-09-04 用户决策）：workspace 本身不暴露 cwd，靠
-    pane list 的 cwd + workspace_id 判定；匹配优先 focused workspace；
-    pane list 查询失败或 space 路径失败 → 降级现状 split，不阻断 resume。
+    space 判定（2026-09-04 用户决策）：workspace 本身不暴露 cwd，靠
+    pane list 的 cwd + workspace_id 匹配；匹配优先 focused workspace。
     """
     pane_id = None
     panes_json = herdr("pane", "list", timeout=15)
@@ -395,6 +425,12 @@ def do_resume(session_path: str, cwd: str) -> bool:
         wid = idx.find_workspace_for_cwd(panes, cwd)
         if wid:
             pane_id, reason = _tab_in_workspace(wid, cwd)
+            if pane_id is None:
+                warn(f"{reason}，降级为当前 space split 新 pane")
+        elif cwd and os.path.isdir(cwd):
+            # 无匹配 space 且 cwd 有效 → 新建带 cwd 的 workspace（2026-09-07
+            # 用户决策：比在当前 space 塞一个无关 pane 更干净）
+            pane_id, reason = _new_workspace_for_cwd(cwd)
             if pane_id is None:
                 warn(f"{reason}，降级为当前 space split 新 pane")
     if pane_id is None:
