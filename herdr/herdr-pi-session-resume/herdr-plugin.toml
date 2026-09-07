@@ -6,10 +6,12 @@
 # prefix+p → herdr-pi-session-resume.search → opens a popup pane running
 # picker.py picker (fzf).
 #   enter      → if session's cwd already has a workspace (space): jump to that
-#                space, open a new tab there (cwd = session's original cwd) and start
-#                `herdr agent start <name> --kind pi --pane <id> -- --session <path>`
-#                in the new tab's root pane; otherwise split a new pane in the
-#                current space (cwd = session's original cwd) and start it there.
+#                space, open a new tab there (cwd = session's original cwd); otherwise
+#                split a new pane in the current space. The popup closes immediately
+#                (~1s) and `herdr agent start <name> --kind pi --pane <id> -- --session <path>`
+#                runs in a detached background process (picker.py agentstart): the
+#                destination pane shows pi starting; real failures surface as a herdr
+#                notification, terminal prints nothing on the happy path.
 #   alt+enter  → copy `pi --fork <path>` command and show a manual-run hint
 #   ctrl+y     → copy `pi --session <path>` command to the clipboard
 #
@@ -20,7 +22,7 @@
 
 id = "herdr-pi-session-resume"
 name = "Herdr Pi Session Resume"
-version = "0.1.0"
+version = "0.1.1"
 min_herdr_version = "0.7.4"
 description = "Search all pi sessions by content and resume"
 platforms = ["linux", "macos"]

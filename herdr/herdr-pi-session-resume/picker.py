@@ -7,9 +7,11 @@
 picker.py — herdr-pi-session-resume 薄 shell。
 
 Subcommands（见 herdr-plugin.toml）:
-    picker   — 主 fzf picker 循环（prefix+p）
-    preview  — fzf preview 渲染器（读取选中行的 TSV 字段）
-    open     — 打开 picker popup pane
+    picker     — 主 fzf picker 循环（prefix+p）
+    preview    — fzf preview 渲染器（读取选中行的 TSV 字段）
+    open       — 打开 picker popup pane
+    agentstart — 后台子命令：resume 的 `herdr agent start`（popup 已关闭，
+                 成功静默；失败用 herdr notification 提示，终端零输出）
 
 职责边界：session_index.py 是纯函数核心；本文件只做 IO / 编排——
 扫描 session 目录、增量缓存读写、fzf 交互、herdr CLI（split + agent start）、
@@ -288,29 +290,37 @@ def copy_to_clipboard(text: str) -> bool:
 # ---- shell: 动作 --------------------------------------------------------------
 
 
-def _start_agent(session_path: str, pane_id: str) -> bool:
-    """agent start pi --session 到指定 pane；成功 → True。"""
-    name = f"resume-{int(time.time())}"
-    print(f"{COLOR_GRAY}正在启动 pi (session {session_path})…{RESET}", file=sys.stderr)
-    ap = herdr(
-        "agent",
-        "start",
-        name,
-        "--kind",
-        "pi",
-        "--pane",
+def _start_agent_async(session_path: str, pane_id: str) -> bool:
+    """异步启动 pi：popup 立即关闭，agent start 交给后台独立进程。
+
+    背景：`herdr agent start` 会阻塞到 pi 就绪（默认 30s，herdr skill doc），
+    同步实现让 popup 全程停在焦点上并打印状态日志。改为 spawn 一个
+    detached 子进程跑 `picker.py agentstart`——目标 pane 自然展示 pi 启动
+    过程；失败由子进程用 herdr notification 提示（正常路径零日志）。
+
+    True → popup 关闭（子进程脱离 popup 进程组，pane 关闭不影响后台）。
+    """
+    log = _state_dir() / "agent-start.log"
+    _state_dir().mkdir(parents=True, exist_ok=True)
+    cmd = [
+        sys.executable,
+        str(Path(__file__).resolve()),
+        "agentstart",
         pane_id,
-        "--",
-        "--session",
         session_path,
-    )
-    if ap is None:
-        warn(
-            f"agent start 失败或超时（{AGENT_START_TIMEOUT}s）：pane {pane_id}\n"
-            "pane 需处于空闲 shell 提示符才能启动 pi。"
-        )
+    ]
+    try:
+        with open(log, "a") as lf:
+            subprocess.Popen(
+                cmd,
+                stdin=subprocess.DEVNULL,
+                stdout=lf,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,  # setsid：脱离 popup 进程组
+            )
+        return True
+    except OSError:
         return False
-    return True
 
 
 def _split_pane(cwd: str) -> str | None:
@@ -388,7 +398,7 @@ def do_resume(session_path: str, cwd: str) -> bool:
         pane_id = _split_pane(cwd)
         if pane_id is None:
             return False
-    return _start_agent(session_path, pane_id)
+    return _start_agent_async(session_path, pane_id)
 
 
 def do_fork(session_path: str) -> bool:
@@ -428,6 +438,73 @@ def do_copy(session_path: str) -> bool:
         )
         _read_key()
     return True
+
+
+def _pane_has_agent(pane_id: str) -> bool:
+    """agent list 是否已有 agent 占用该 pane（agent start 报错但 pi 实际起来了）。"""
+    data = herdr("agent", "list", timeout=15)
+    if not data:
+        return False
+    agents = data.get("result", {}).get("agents", []) or []
+    return any(
+        isinstance(a, dict) and str(a.get("pane_id")) == pane_id for a in agents
+    )
+
+
+def sub_agentstart() -> None:
+    """后台子命令：resume 的 `herdr agent start`（popup 已关闭，无终端交互）。
+
+    成功 → 静默退出（pi 已在目标 pane 启动，用户直接看到）。
+    失败 → 先排除误报，确认为真失败后 herdr notification 提示（代替 popup
+    里的 warn / 日志打印）：
+      - 错误含 agent_not_ready：agent 仍在启动中，不打扰（稍后自己会好）；
+      - agent list 已注册该 pane：pi 实际已就绪，不打扰；
+      - 其余：notification + 一行记录到 state 目录 agent-start.log（隐藏文件）。
+    """
+    pane_id = sys.argv[2] if len(sys.argv) > 2 else ""
+    session_path = sys.argv[3] if len(sys.argv) > 3 else ""
+    name = f"resume-{int(time.time())}-{os.getpid()}"
+    err = ""
+    try:
+        p = subprocess.run(
+            [
+                _HERDR,
+                "agent",
+                "start",
+                name,
+                "--kind",
+                "pi",
+                "--pane",
+                pane_id,
+                "--",
+                "--session",
+                session_path,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=AGENT_START_TIMEOUT,
+            check=False,
+        )
+        ok = p.returncode == 0
+        err = (p.stderr or "") + (p.stdout or "")
+    except (OSError, subprocess.TimeoutExpired):
+        ok = False
+        err = "agent start 子进程超时或无法运行"
+    if ok or "agent_not_ready" in err or _pane_has_agent(pane_id):
+        return
+    body = (
+        f"pane {pane_id} 启动 pi 失败：{err.strip()[:300] or '未知错误'}\n"
+        f"可手动运行：pi --session {session_path}"
+    )
+    herdr("notification", "show", "pi session resume 失败", "--body", body)
+    try:
+        with open(_state_dir() / "agent-start.log", "a") as lf:
+            lf.write(
+                f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] resume failed "
+                f"pane={pane_id} session={session_path}\n{err}\n"
+            )
+    except OSError:
+        pass
 
 
 # ---- 子命令 ------------------------------------------------------------------
@@ -532,6 +609,7 @@ SUBCOMMANDS = {
     "preview": sub_preview,
     "open": sub_open,
     "scope": sub_scope,
+    "agentstart": sub_agentstart,
 }
 
 
