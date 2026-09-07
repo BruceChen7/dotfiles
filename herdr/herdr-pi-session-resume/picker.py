@@ -11,7 +11,8 @@ Subcommands（见 herdr-plugin.toml）:
     preview    — fzf preview 渲染器（读取选中行的 TSV 字段）
     open       — 打开 picker popup pane
     agentstart — 后台子命令：resume 的 `herdr agent start`（popup 已关闭，
-                 成功静默；失败用 herdr notification 提示，终端零输出）
+                 成功静默；agent_pane_busy 竞态自动重试；失败用 herdr
+                 notification 提示，终端零输出）
 
 职责边界：session_index.py 是纯函数核心；本文件只做 IO / 编排——
 扫描 session 目录、增量缓存读写、fzf 交互、herdr CLI（split + agent start）、
@@ -39,6 +40,8 @@ SESSIONS_ROOT = Path(
 )
 CACHE_FILE_NAME = "session-index.json"
 AGENT_START_TIMEOUT = 35  # 略大于 herdr 默认 30s，留缓冲
+AGENT_START_RETRY_WINDOW = 15  # agent_pane_busy（新 pane shell 初始化竞态）最长重试秒数
+AGENT_START_RETRY_SLEEP = 0.5  # 每次 busy 重试的间隔秒数
 
 COLOR_RED = "\033[31m"
 COLOR_YELLOW = "\033[33m"
@@ -451,20 +454,12 @@ def _pane_has_agent(pane_id: str) -> bool:
     )
 
 
-def sub_agentstart() -> None:
-    """后台子命令：resume 的 `herdr agent start`（popup 已关闭，无终端交互）。
+def _run_agent_start(name: str, pane_id: str, session_path: str) -> tuple[bool, str]:
+    """单次 `herdr agent start`：成功 → (True, "")；失败 → (False, 错误文本)。
 
-    成功 → 静默退出（pi 已在目标 pane 启动，用户直接看到）。
-    失败 → 先排除误报，确认为真失败后 herdr notification 提示（代替 popup
-    里的 warn / 日志打印）：
-      - 错误含 agent_not_ready：agent 仍在启动中，不打扰（稍后自己会好）；
-      - agent list 已注册该 pane：pi 实际已就绪，不打扰；
-      - 其余：notification + 一行记录到 state 目录 agent-start.log（隐藏文件）。
+    herdr CLI 对 API 错误（含 agent_pane_busy）退出码非 0，错误 JSON 在
+    stdout/stderr——两者拼接返回给调用方判断可重试性。
     """
-    pane_id = sys.argv[2] if len(sys.argv) > 2 else ""
-    session_path = sys.argv[3] if len(sys.argv) > 3 else ""
-    name = f"resume-{int(time.time())}-{os.getpid()}"
-    err = ""
     try:
         p = subprocess.run(
             [
@@ -485,13 +480,47 @@ def sub_agentstart() -> None:
             timeout=AGENT_START_TIMEOUT,
             check=False,
         )
-        ok = p.returncode == 0
-        err = (p.stderr or "") + (p.stdout or "")
+        if p.returncode == 0:
+            return True, ""
+        return False, (p.stderr or "") + (p.stdout or "")
     except (OSError, subprocess.TimeoutExpired):
-        ok = False
-        err = "agent start 子进程超时或无法运行"
-    if ok or "agent_not_ready" in err or _pane_has_agent(pane_id):
-        return
+        return False, "agent start 子进程超时或无法运行"
+
+
+def sub_agentstart() -> None:
+    """后台子命令：resume 的 `herdr agent start`（popup 已关闭，无终端交互）。
+
+    成功 → 静默退出（pi 已在目标 pane 启动，用户直接看到）。
+
+    agent_pane_busy → 以 AGENT_START_RETRY_SLEEP 间隔重试至多
+    AGENT_START_RETRY_WINDOW 秒。背景（2026-09-07 实证）：新 split 的 pane
+    前 ~1s 在「zsh 独占 / zsh+启动子进程(env·mise·starship·atuin·git) /
+    独立进程组守护进程」之间切换；herdr 的 agent start CLI 只在 shell
+    初始化态的 2s 内重试，且一旦某个探测命中 pgid≠shell 的瞬态（如守护
+    进程）就提前放弃返回 agent_pane_busy——异步 resume 恰好把 agent start
+    落在竞态窗口内，必须由这层兜底重试。
+
+    agent_not_ready → pi 已在启动中，静默等它（不重试，避免重复发送 pi）。
+    pane 已注册 agent（_pane_has_agent）→ 说明 pi 实际已起来，静默成功。
+    其余错误 / 窗口耗尽 → herdr notification 提示（代替 popup 里的
+    warn / 日志），并记一行到 state 目录 agent-start.log（隐藏文件）。
+    """
+    pane_id = sys.argv[2] if len(sys.argv) > 2 else ""
+    session_path = sys.argv[3] if len(sys.argv) > 3 else ""
+    name = f"resume-{int(time.time())}-{os.getpid()}"
+    deadline = time.monotonic() + AGENT_START_RETRY_WINDOW
+    err = ""
+    while True:
+        if _pane_has_agent(pane_id):
+            return  # pi 实际已在 pane 上（busy 误报场景），静默成功
+        ok, err = _run_agent_start(name, pane_id, session_path)
+        if ok:
+            return
+        if "agent_not_ready" in err:
+            return  # pi 启动中，不打扰
+        if "agent_pane_busy" not in err or time.monotonic() >= deadline:
+            break
+        time.sleep(AGENT_START_RETRY_SLEEP)
     body = (
         f"pane {pane_id} 启动 pi 失败：{err.strip()[:300] or '未知错误'}\n"
         f"可手动运行：pi --session {session_path}"

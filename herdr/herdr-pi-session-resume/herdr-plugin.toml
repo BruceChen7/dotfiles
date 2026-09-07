@@ -22,7 +22,7 @@
 
 id = "herdr-pi-session-resume"
 name = "Herdr Pi Session Resume"
-version = "0.1.1"
+version = "0.1.2"
 min_herdr_version = "0.7.4"
 description = "Search all pi sessions by content and resume"
 platforms = ["linux", "macos"]
