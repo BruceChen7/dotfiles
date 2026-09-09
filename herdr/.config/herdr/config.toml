@@ -135,7 +135,8 @@ description = "toggle between the last two spaces (herdr-switch)"
 # =============================================================================
 # Cross-project full-text search of all pi sessions (~/.pi/agent/sessions/*/),
 # grouped by project (cwd). Selected session resumes inside herdr:
-#   enter      → split new pane (cwd = session's original cwd) + agent start
+#   enter      → jump to an existing cwd space and open a tab; otherwise create
+#                a cwd space; final fallback splits the current space, then runs
 #                `--kind pi -- --session <path>` (resume)
 #   alt+enter  → copy `pi --fork <path>` command + manual-run hint
 #   ctrl+y     → copy `pi --session <path>` command

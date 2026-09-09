@@ -11,6 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import picker
 import session_index as idx
 
 
@@ -374,6 +375,29 @@ class TestPreviewText(unittest.TestCase):
 
     def test_empty_line(self):
         self.assertEqual(idx.preview_text(""), "")
+
+
+class TestPickerParseFzfOutput(unittest.TestCase):
+    def test_enter_preserves_raw_cwd_when_content_contains_encoded_newlines(self):
+        selected = "\t".join(
+            [
+                "celld display",
+                "/tmp/celld-session.jsonl",
+                "~/work/celld",
+                "09-09 15:54",
+                "model",
+                "first",
+                f"user: line1{idx.CONTENT_NL}line2",
+                "/Users/ming.chen/work/celld",
+            ]
+        )
+
+        query, key, line = picker.parse_fzf_output(f"celld\n\n{selected}\n")
+
+        self.assertEqual(query, "celld")
+        self.assertEqual(key, "")
+        self.assertEqual(line, selected)
+        self.assertEqual(line.split("\t")[7], "/Users/ming.chen/work/celld")
 
 
 class TestScopeGroups(unittest.TestCase):

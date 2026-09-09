@@ -42,6 +42,7 @@ CACHE_FILE_NAME = "session-index.json"
 AGENT_START_TIMEOUT = 35  # 略大于 herdr 默认 30s，留缓冲
 AGENT_START_RETRY_WINDOW = 15  # agent_pane_busy（新 pane shell 初始化竞态）最长重试秒数
 AGENT_START_RETRY_SLEEP = 0.5  # 每次 busy 重试的间隔秒数
+FZF_EXPECT_KEYS = {"alt-enter", "ctrl-y"}
 
 COLOR_RED = "\033[31m"
 COLOR_YELLOW = "\033[33m"
@@ -205,11 +206,23 @@ def run_fzf(
 
 def parse_fzf_output(out: str) -> tuple[str, str, str]:
     """fzf --print-query --expect 输出：query / 按键（''=enter）/ 选中行。"""
-    lines = out.splitlines()
+    # Do not use str.splitlines(): our TSV content field encodes message
+    # newlines as idx.CONTENT_NL (\x1e), and splitlines() treats \x1e as a
+    # line boundary. That truncates the selected row before the raw_cwd field,
+    # causing resume to fall back to the redacted ~/... cwd and split the
+    # current space without --cwd.
+    lines = out.split("\n")
+    if lines and lines[-1] == "":
+        lines = lines[:-1]
     query = lines[0] if len(lines) > 0 else ""
-    key = lines[1] if len(lines) > 1 else ""
-    line = lines[2] if len(lines) > 2 else ""
-    return query, key, line
+    if len(lines) >= 3 and (lines[1] == "" or lines[1] in FZF_EXPECT_KEYS):
+        return query, lines[1], lines[2]
+    # fzf --filter prints query + selected row without an empty key line. The
+    # interactive picker normally emits the blank key line for Enter, but this
+    # fallback keeps the parser correct for non-interactive harnesses too.
+    if len(lines) >= 2:
+        return query, "", lines[1]
+    return query, "", ""
 
 
 # ---- shell: 终端 -------------------------------------------------------------
@@ -485,9 +498,7 @@ def _pane_has_agent(pane_id: str) -> bool:
     if not data:
         return False
     agents = data.get("result", {}).get("agents", []) or []
-    return any(
-        isinstance(a, dict) and str(a.get("pane_id")) == pane_id for a in agents
-    )
+    return any(isinstance(a, dict) and str(a.get("pane_id")) == pane_id for a in agents)
 
 
 def _run_agent_start(name: str, pane_id: str, session_path: str) -> tuple[bool, str]:
