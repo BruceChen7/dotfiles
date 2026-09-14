@@ -60,6 +60,11 @@ return {
           javascript = { "ts_fmt_script" },
         },
         format_on_save = function(bufnr)
+          local filename = vim.api.nvim_buf_get_name(bufnr)
+          -- .pb.go 不参与保存时格式化（含 conform CLI 和 LSP fallback）
+          if filename:match "%.pb%.go$" then
+            return nil
+          end
           return { timeout_ms = 1000, lsp_fallback = true }
         end,
         formatters = {
@@ -174,14 +179,12 @@ return {
       end
 
       -- 创建Go格式化器工厂函数
+      -- 注意：不要用返回 { command = "" } 来表示"跳过"——conform 会把空命令
+      -- 判定为 formatter 不可用，在 lsp_fallback = true 时反而会触发 gopls
+      -- 的 LSP 格式化（.pb.go 就是这么被格式化的）。跳过格式化统一在
+      -- format_on_save 里用返回 nil 处理。
       local function make_go_formatter(cmd_name)
-        return function(bufnr)
-          local filename = vim.api.nvim_buf_get_name(bufnr)
-          -- 如果以.pb.go结尾，什么都不执行
-          if filename:match "%.pb%.go$" then
-            -- print("skip " .. filename)
-            return { command = "" }
-          end
+        return function()
           -- 返回指定的命令配置
           return { command = cmd_name }
         end
