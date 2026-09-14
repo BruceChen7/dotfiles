@@ -45,7 +45,7 @@ return {
         async_switch_im = true,
       }
     end,
-    -- event = "InsertEnter",
+    event = "InsertEnter",
   },
 
   {

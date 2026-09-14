@@ -8,12 +8,24 @@ return {
     event = "VeryLazy",
   },
 
-  { "skywind3000/vim-preview" },
-  { "skywind3000/vim-quickui" },
-  { "skywind3000/asynctasks.vim" },
+  {
+    "skywind3000/vim-preview",
+    cmd = {
+      "PreviewQuickfix",
+      "PreviewClose",
+      "PreviewFile",
+      "PreviewTag",
+      "PreviewSignature",
+      "PreviewList",
+      "PreviewScroll",
+      "PreviewGoto",
+    },
+  },
+  { "skywind3000/vim-quickui", cmd = { "QuickUI" } },
+  { "skywind3000/asynctasks.vim", event = "VeryLazy" },
   {
     "skywind3000/gutentags_plus",
-    -- event = "VeryLazy",
+    event = "VeryLazy",
   },
 
   {
@@ -95,4 +107,3 @@ return {
     dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
   },
 }
-

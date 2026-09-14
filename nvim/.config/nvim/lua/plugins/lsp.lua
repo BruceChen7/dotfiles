@@ -71,6 +71,21 @@ return {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
     },
+    -- BufReadPre 在文件读取/文件类型检测之前触发，保证 LSP 在首个文件上正常 attach；
+    -- 同时保留 Lsp*/Mason 命令作为手动触发入口。
+    event = { "BufReadPre", "BufNewFile" },
+    cmd = {
+      "LspInfo",
+      "LspLog",
+      "LspRestart",
+      "LspStart",
+      "LspStop",
+      "Mason",
+      "MasonInstall",
+      "MasonUninstall",
+      "MasonInstallAll",
+      "MasonLog",
+    },
     config = function()
       require "config/lsp"
     end,

@@ -5,6 +5,7 @@ return {
     config = function()
       require "config/cmd"
     end,
+    event = "VeryLazy",
   },
   -- {
   --   "suliatis/Jumppack.nvim",

@@ -13,11 +13,13 @@ return {
 
   -- https://github.com/ravsii/tree-sitter-d2
   -- for d2 syntax highlight
+  -- NOTE: lazy.nvim 的字段是 `ft`，不是 `filetype`。之前写成 `filetype` 会被当作
+  -- 未知字段忽略，导致插件永远在启动时加载；改成 `ft` 后只在打开 d2 文件时加载。
   {
     "ravsii/tree-sitter-d2",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
     build = "make nvim-install",
-    filetype = { "d2" },
+    ft = { "d2" },
   },
   -- Smartly select the inner part of texts
   {
@@ -50,6 +52,7 @@ return {
   {
     "meznaric/key-analyzer.nvim",
     opts = {},
+    event = "VeryLazy",
   },
 
   {

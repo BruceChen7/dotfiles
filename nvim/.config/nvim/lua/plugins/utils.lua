@@ -29,10 +29,26 @@ return {
 
   {
     "esmuellert/codediff.nvim",
+    -- 按需加载：仅在用到 CodeDiff 命令/快捷键时加载（启动省 ~26ms）。
+    -- 快捷键与 config/codediff 内注册的保持一致，首次触发即加载插件。
+    cmd = { "CodeDiff" },
+    keys = {
+      { "<leader>gd", "<cmd>CodeDiff<CR>", desc = "CodeDiff changed files" },
+      { "<leader>gD", "<cmd>CodeDiff --inline<CR>", desc = "CodeDiff changed files inline" },
+      { "<leader>gf", "<cmd>CodeDiff file HEAD<CR>", desc = "CodeDiff current file vs HEAD" },
+      { "<leader>gm", "<cmd>CodeDiff main...<CR>", desc = "CodeDiff PR against main" },
+      { "<leader>gh", "<cmd>CodeDiff history --reverse<CR>", desc = "CodeDiff recent history" },
+      { "<leader>gH", "<cmd>CodeDiff history % --reverse<CR>", desc = "CodeDiff current file history" },
+      {
+        "<leader>gh",
+        ":'<,'>CodeDiff history --reverse<CR>",
+        mode = "x",
+        desc = "CodeDiff selected lines history",
+      },
+    },
     config = function()
       require "config/codediff"
     end,
-    -- event = "VeryLazy",
   },
 
   {
