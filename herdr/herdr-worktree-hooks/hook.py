@@ -113,7 +113,7 @@ def main() -> int:
         return 0
 
     _log(f"{event} → {' '.join(args)}")
-    result = subprocess.run([WT_HOOKS, *args])
+    result = subprocess.run([WT_HOOKS, *args], check=False)
     return result.returncode
 
 

@@ -49,6 +49,7 @@ def _run_hook(env: dict, cwd: Path) -> subprocess.CompletedProcess:
         capture_output=True,
         text=True,
         timeout=60,
+        check=False,
     )
 
 
@@ -111,9 +112,7 @@ class HookFixtureTests(unittest.TestCase):
         )
         result = _run_hook(env, self.tmp)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(
-            self.recorded(), ["clean", "/repo", "/repo/wt/worktree-foo"]
-        )
+        self.assertEqual(self.recorded(), ["clean", "/repo", "/repo/wt/worktree-foo"])
 
     def test_removed_falls_back_to_context_json(self) -> None:
         env = dict(self.env)
@@ -123,13 +122,16 @@ class HookFixtureTests(unittest.TestCase):
             "worktree.removed", "/repo/wt/worktree-foo"
         )
         env["HERDR_PLUGIN_CONTEXT_JSON"] = json.dumps(
-            {"worktree": {"repo_root": "/repo", "checkout_path": "/repo/wt/worktree-foo"}}
+            {
+                "worktree": {
+                    "repo_root": "/repo",
+                    "checkout_path": "/repo/wt/worktree-foo",
+                }
+            }
         )
         result = _run_hook(env, self.tmp)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(
-            self.recorded(), ["clean", "/repo", "/repo/wt/worktree-foo"]
-        )
+        self.assertEqual(self.recorded(), ["clean", "/repo", "/repo/wt/worktree-foo"])
 
     def test_removed_without_repo_root_is_noop(self) -> None:
         env = dict(self.env)
@@ -186,9 +188,7 @@ class HookFixtureTests(unittest.TestCase):
         self.assertEqual(result.returncode, 7)
 
 
-@unittest.skipUnless(
-    shutil.which("git"), "git is required for the integration test"
-)
+@unittest.skipUnless(shutil.which("git"), "git is required for the integration test")
 @unittest.skipUnless(REAL_WT_HOOKS.exists(), "~/.local/bin/worktree-hooks not found")
 class RealCliIntegrationTest(unittest.TestCase):
     """Drive the real worktree-hooks CLI through hook.py's exact call shapes."""
@@ -242,18 +242,26 @@ class RealCliIntegrationTest(unittest.TestCase):
         self._git("commit", "--quiet", "-m", "initial")
 
         # Simulate herdr worktree.created: checkout exists → one positional arg.
-        self._git("worktree", "add", "--quiet", "-b", "wt/test", str(self.checkout), "HEAD")
-        self.assertFalse((self.checkout / ".pi").exists(), "untracked .pi must not be checked out")
+        self._git(
+            "worktree", "add", "--quiet", "-b", "wt/test", str(self.checkout), "HEAD"
+        )
+        self.assertFalse(
+            (self.checkout / ".pi").exists(), "untracked .pi must not be checked out"
+        )
         presetup = subprocess.run(
             [str(REAL_WT_HOOKS), "presetup", str(self.checkout)],
             capture_output=True,
             text=True,
             timeout=120,
+            check=False,
         )
         self.assertEqual(presetup.returncode, 0, presetup.stderr)
         self.assertTrue((self.checkout / ".pi").is_symlink(), "expected .pi symlink")
         self.assertTrue((self.checkout / "node_modules").is_symlink())
-        self.assertTrue((self.checkout / ".gitignore").is_file(), "tracked .gitignore stays a real file")
+        self.assertTrue(
+            (self.checkout / ".gitignore").is_file(),
+            "tracked .gitignore stays a real file",
+        )
         self.assertFalse((self.checkout / ".gitignore").is_symlink())
         self.assertEqual(
             (self.marks / "presetup").read_text().strip(), str(self.checkout)
@@ -270,6 +278,7 @@ class RealCliIntegrationTest(unittest.TestCase):
             capture_output=True,
             text=True,
             timeout=120,
+            check=False,
         )
         self.assertEqual(clean.returncode, 0, clean.stderr)
         self.assertEqual(

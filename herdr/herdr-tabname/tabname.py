@@ -15,6 +15,7 @@ Environment (set by herdr plugin hook):
     HERDR_PLUGIN_STATE_DIR — plugin state directory
 """
 
+import contextlib
 import json
 import os
 import subprocess
@@ -52,6 +53,7 @@ def _herdr(*args: str, timeout: int = 10) -> dict | None:
             capture_output=True,
             text=True,
             timeout=timeout,
+            check=False,
         )
     except (OSError, subprocess.TimeoutExpired):
         return None
@@ -108,10 +110,8 @@ def _save_state(state: dict) -> None:
         os.replace(tmp, str(_state_file()))
     except Exception:
         # Best-effort cleanup of the temp file.
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(tmp)
-        except OSError:
-            pass
         raise
 
 
@@ -307,9 +307,8 @@ def _protected_rename_tab(
         if not (_is_numeric(current) or current == plugin_label):
             tabs_state.pop(tab_id, None)
             return  # user-named
-        if computed != current:
-            if _herdr("tab", "rename", tab_id, computed) is None:
-                return  # rename failed
+        if computed != current and _herdr("tab", "rename", tab_id, computed) is None:
+            return  # rename failed
         entry = {"plugin_label": computed}
         if mark_checked:
             entry["last_checked"] = time.time()
@@ -457,7 +456,7 @@ def main() -> None:
         elif event == "pane.updated":
             _handle_pane_updated()
         # Unknown event → silently ignore (future-proofing)
-    except Exception:
+    except Exception:  # noqa: BLE001 — never throw from a background hook
         # Never throw from a background hook; log/discard.
         # (We use stderr so herdr's plugin command log can capture it.)
         import traceback

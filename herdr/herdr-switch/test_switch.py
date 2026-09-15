@@ -6,7 +6,6 @@ Usage: uv run python test_switch.py
 """
 
 import json
-
 import sys
 import tempfile
 import unittest
@@ -16,7 +15,6 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import switch
-
 
 HOME = "/Users/x"
 
@@ -785,9 +783,11 @@ class TestSubToggle(unittest.TestCase):
 
     def test_no_state_file_is_silent(self):
         log = []
-        with patch.dict("os.environ", self.env, clear=False):
-            with patch("switch.herdr", side_effect=self._fake_herdr(log)):
-                switch.sub_toggle()
+        with (
+            patch.dict("os.environ", self.env, clear=False),
+            patch("switch.herdr", side_effect=self._fake_herdr(log)),
+        ):
+            switch.sub_toggle()
         self.assertEqual(log, [])
         self.assertFalse(self._state_file().exists())
 
@@ -796,9 +796,11 @@ class TestSubToggle(unittest.TestCase):
             json.dumps({"current": "wA", "previous": None, "recent": ["wA"]})
         )
         log = []
-        with patch.dict("os.environ", self.env, clear=False):
-            with patch("switch.herdr", side_effect=self._fake_herdr(log)):
-                switch.sub_toggle()
+        with (
+            patch.dict("os.environ", self.env, clear=False),
+            patch("switch.herdr", side_effect=self._fake_herdr(log)),
+        ):
+            switch.sub_toggle()
         self.assertEqual(log, [])
         # file untouched
         self.assertEqual(json.loads(self._state_file().read_text())["current"], "wA")
@@ -808,9 +810,11 @@ class TestSubToggle(unittest.TestCase):
             json.dumps({"current": "wA", "previous": "wB", "recent": ["wA", "wB"]})
         )
         log = []
-        with patch.dict("os.environ", self.env, clear=False):
-            with patch("switch.herdr", side_effect=self._fake_herdr(log)):
-                switch.sub_toggle()
+        with (
+            patch.dict("os.environ", self.env, clear=False),
+            patch("switch.herdr", side_effect=self._fake_herdr(log)),
+        ):
+            switch.sub_toggle()
         self.assertIn(("workspace", "focus", "wB"), log)
         self.assertIn(("notification", "show"), [a[:2] for a in log])
         state = json.loads(self._state_file().read_text())
@@ -823,11 +827,11 @@ class TestSubToggle(unittest.TestCase):
             json.dumps({"current": "wA", "previous": "wB", "recent": ["wA", "wB"]})
         )
         log = []
-        with patch.dict("os.environ", self.env, clear=False):
-            with patch(
-                "switch.herdr", side_effect=self._fake_herdr(log, focus_ok=False)
-            ):
-                switch.sub_toggle()
+        with (
+            patch.dict("os.environ", self.env, clear=False),
+            patch("switch.herdr", side_effect=self._fake_herdr(log, focus_ok=False)),
+        ):
+            switch.sub_toggle()
         state = json.loads(self._state_file().read_text())
         self.assertEqual(state["current"], "wA")
         self.assertIsNone(state["previous"])
@@ -1216,20 +1220,24 @@ class TestPaneSnapshotBlock(unittest.TestCase):
 
     def test_success_returns_snapshot(self):
         detail = json.dumps({"active_tab_id": "w1E:t1", "agents": []})
-        with patch(
-            "switch.herdr",
-            return_value={
-                "result": {
-                    "panes": [
-                        {"workspace_id": "w1E", "tab_id": "w1E:t1", "pane_id": "w1E:p1"}
-                    ]
-                }
-            },
+        with (
+            patch(
+                "switch.herdr",
+                return_value={
+                    "result": {
+                        "panes": [
+                            {
+                                "workspace_id": "w1E",
+                                "tab_id": "w1E:t1",
+                                "pane_id": "w1E:p1",
+                            }
+                        ]
+                    }
+                },
+            ),
+            patch("switch.herdr_raw", return_value="\x1b[32m$\x1b[0m git status\n"),
         ):
-            with patch(
-                "switch.herdr_raw", return_value="\x1b[32m$\x1b[0m git status\n"
-            ):
-                out = switch.pane_snapshot_block(self._space_line(detail))
+            out = switch.pane_snapshot_block(self._space_line(detail))
         self.assertEqual(out, "\x1b[32m$\x1b[0m git status\n")
 
     def test_agent_row_returns_none(self):
@@ -1267,32 +1275,36 @@ class TestPaneSnapshotBlock(unittest.TestCase):
             self.assertIsNone(switch.pane_snapshot_block(self._space_line()))
 
     def test_pane_read_failure_returns_none(self):
-        with patch(
-            "switch.herdr",
-            return_value={
-                "result": {
-                    "panes": [
-                        {"workspace_id": "w1E", "tab_id": "", "pane_id": "w1E:p1"}
-                    ]
-                }
-            },
+        with (
+            patch(
+                "switch.herdr",
+                return_value={
+                    "result": {
+                        "panes": [
+                            {"workspace_id": "w1E", "tab_id": "", "pane_id": "w1E:p1"}
+                        ]
+                    }
+                },
+            ),
+            patch("switch.herdr_raw", return_value=None),
         ):
-            with patch("switch.herdr_raw", return_value=None):
-                self.assertIsNone(switch.pane_snapshot_block(self._space_line()))
+            self.assertIsNone(switch.pane_snapshot_block(self._space_line()))
 
     def test_empty_snapshot_returns_none(self):
-        with patch(
-            "switch.herdr",
-            return_value={
-                "result": {
-                    "panes": [
-                        {"workspace_id": "w1E", "tab_id": "", "pane_id": "w1E:p1"}
-                    ]
-                }
-            },
+        with (
+            patch(
+                "switch.herdr",
+                return_value={
+                    "result": {
+                        "panes": [
+                            {"workspace_id": "w1E", "tab_id": "", "pane_id": "w1E:p1"}
+                        ]
+                    }
+                },
+            ),
+            patch("switch.herdr_raw", return_value="   \n"),
         ):
-            with patch("switch.herdr_raw", return_value="   \n"):
-                self.assertIsNone(switch.pane_snapshot_block(self._space_line()))
+            self.assertIsNone(switch.pane_snapshot_block(self._space_line()))
 
     def test_bad_detail_json_snapshot_via_workspace_fallback(self):
         line = "\t".join(
@@ -1310,18 +1322,24 @@ class TestPaneSnapshotBlock(unittest.TestCase):
                 "{bad",
             ]
         )
-        with patch(
-            "switch.herdr",
-            return_value={
-                "result": {
-                    "panes": [
-                        {"workspace_id": "w1E", "tab_id": "w1E:t2", "pane_id": "w1E:p2"}
-                    ]
-                }
-            },
+        with (
+            patch(
+                "switch.herdr",
+                return_value={
+                    "result": {
+                        "panes": [
+                            {
+                                "workspace_id": "w1E",
+                                "tab_id": "w1E:t2",
+                                "pane_id": "w1E:p2",
+                            }
+                        ]
+                    }
+                },
+            ),
+            patch("switch.herdr_raw", return_value="out\n"),
         ):
-            with patch("switch.herdr_raw", return_value="out\n"):
-                self.assertEqual(switch.pane_snapshot_block(line), "out\n")
+            self.assertEqual(switch.pane_snapshot_block(line), "out\n")
 
 
 class TestSubPreview(unittest.TestCase):
@@ -1344,10 +1362,12 @@ class TestSubPreview(unittest.TestCase):
                 detail,
             ]
         )
-        with patch("switch.pane_snapshot_block", return_value="SNAP\n") as snap:
-            with patch("sys.argv", ["switch.py", "preview", line]):
-                with patch("sys.stdout") as out:
-                    switch.sub_preview()
+        with (
+            patch("switch.pane_snapshot_block", return_value="SNAP\n") as snap,
+            patch("sys.argv", ["switch.py", "preview", line]),
+            patch("sys.stdout") as out,
+        ):
+            switch.sub_preview()
         snap.assert_called_once_with(line)
         rendered = "".join(c.args[0] for c in out.write.call_args_list)
         self.assertIn(switch.PREVIEW_DIVIDER, rendered)
@@ -1416,9 +1436,11 @@ class TestFetchData(unittest.TestCase):
         self.assertEqual(cur_tab, "t1")
 
     def test_agent_list_cli_failure(self):
-        with patch("switch.herdr", return_value=None):
-            with self.assertRaises(switch.FetchError) as ctx:
-                switch.fetch_data()
+        with (
+            patch("switch.herdr", return_value=None),
+            self.assertRaises(switch.FetchError) as ctx,
+        ):
+            switch.fetch_data()
         self.assertEqual(str(ctx.exception), "herdr agent list 失败(herdr 在运行吗?)")
 
     def test_workspace_list_cli_failure(self):
@@ -1427,9 +1449,11 @@ class TestFetchData(unittest.TestCase):
                 return _agents_json()
             return None
 
-        with patch("switch.herdr", side_effect=fake_herdr):
-            with self.assertRaises(switch.FetchError) as ctx:
-                switch.fetch_data()
+        with (
+            patch("switch.herdr", side_effect=fake_herdr),
+            self.assertRaises(switch.FetchError) as ctx,
+        ):
+            switch.fetch_data()
         self.assertEqual(str(ctx.exception), "herdr workspace list 失败")
 
     def test_tab_list_cli_failure(self):
@@ -1440,9 +1464,11 @@ class TestFetchData(unittest.TestCase):
                 return _ws_json()
             return None
 
-        with patch("switch.herdr", side_effect=fake_herdr):
-            with self.assertRaises(switch.FetchError) as ctx:
-                switch.fetch_data()
+        with (
+            patch("switch.herdr", side_effect=fake_herdr),
+            self.assertRaises(switch.FetchError) as ctx,
+        ):
+            switch.fetch_data()
         self.assertEqual(str(ctx.exception), "herdr tab list 失败")
 
     def test_unparseable_agent_payload(self):
@@ -1455,9 +1481,11 @@ class TestFetchData(unittest.TestCase):
                 return _tabs_json()
             return None
 
-        with patch("switch.herdr", side_effect=fake_herdr):
-            with self.assertRaises(switch.FetchError) as ctx:
-                switch.fetch_data()
+        with (
+            patch("switch.herdr", side_effect=fake_herdr),
+            self.assertRaises(switch.FetchError) as ctx,
+        ):
+            switch.fetch_data()
         self.assertEqual(str(ctx.exception), "agent list 返回了无法解析的数据")
 
     def test_empty_agent_list_is_valid(self):
@@ -1514,28 +1542,28 @@ class TestPickerLoop(unittest.TestCase):
         return FakeHerdr()
 
     def _run_picker(self, fzf_results, herdr_fake, filtered=None):
-        import io
         import contextlib
+        import io
 
         env = {
             "HERDR_PLUGIN_STATE_DIR": tempfile.mkdtemp(prefix="switch-test-"),
             "HOME": HOME,
         }
         line = self._agent_line()
-        with patch.dict("os.environ", env, clear=False):
-            with patch("switch.herdr", side_effect=herdr_fake):
-                with patch("switch.run_fzf", side_effect=fzf_results) as rf:
-                    with patch(
-                        "switch.run_fzf_filter",
-                        return_value=filtered if filtered is not None else [line],
-                    ) as rff:
-                        with patch("switch.warn", return_value=None) as w:
-                            with patch("switch.fail", return_value=None):
-                                with contextlib.redirect_stdout(io.StringIO()):
-                                    try:
-                                        switch.sub_picker()
-                                    except SystemExit:
-                                        pass  # esc → silent exit
+        with (
+            patch.dict("os.environ", env, clear=False),
+            patch("switch.herdr", side_effect=herdr_fake),
+            patch("switch.run_fzf", side_effect=fzf_results) as rf,
+            patch(
+                "switch.run_fzf_filter",
+                return_value=filtered if filtered is not None else [line],
+            ) as rff,
+            patch("switch.warn", return_value=None) as w,
+            patch("switch.fail", return_value=None),
+            contextlib.redirect_stdout(io.StringIO()),
+            contextlib.suppress(SystemExit),  # esc → silent exit
+        ):
+            switch.sub_picker()
         return rf, rff, w
 
     def test_enter_on_agent_focuses_and_breaks(self):
@@ -1554,15 +1582,17 @@ class TestPickerLoop(unittest.TestCase):
 
     def test_esc_exits_silently(self):
         herdr = self._herdr_fake()
-        with self.assertRaises(SystemExit) as ctx:
-            with patch.dict(
+        with (
+            self.assertRaises(SystemExit) as ctx,
+            patch.dict(
                 "os.environ",
                 {"HERDR_PLUGIN_STATE_DIR": tempfile.mkdtemp(), "HOME": HOME},
                 clear=False,
-            ):
-                with patch("switch.herdr", side_effect=herdr):
-                    with patch("switch.run_fzf", return_value=(1, "")):
-                        switch.sub_picker()
+            ),
+            patch("switch.herdr", side_effect=herdr),
+            patch("switch.run_fzf", return_value=(1, "")),
+        ):
+            switch.sub_picker()
         self.assertEqual(ctx.exception.code, 0)
         self.assertNotIn("focus", "".join(str(a) for a in herdr.log))
 
@@ -1579,7 +1609,7 @@ class TestPickerLoop(unittest.TestCase):
     def test_ctrl_x_then_cursor_parks_above_deleted_row(self):
         herdr = self._herdr_fake()
         line = self._agent_line()
-        rf, rff, _ = self._run_picker(
+        rf, _, _ = self._run_picker(
             [(0, f"q\nctrl-x\n{line}\n"), (0, f"q\n\n{line}\n")],
             herdr,
             filtered=["other-row", line],
@@ -1591,7 +1621,7 @@ class TestPickerLoop(unittest.TestCase):
     def test_alt_enter_on_space_warns_and_stays(self):
         herdr = self._herdr_fake()
         line = self._space_line()
-        rf, _, w = self._run_picker(
+        _, _, w = self._run_picker(
             [(0, f"q\nalt-enter\n{line}\n"), (0, f"q\n\n{self._agent_line()}\n")], herdr
         )
         self.assertIn("alt+enter 只能用于 agent", str(w.call_args))
@@ -1617,7 +1647,7 @@ class TestPickerLoop(unittest.TestCase):
     def test_close_failure_warns_and_keeps_cursor(self):
         herdr = self._herdr_fake(close_ok=False)
         line = self._agent_line()
-        rf, rff, w = self._run_picker(
+        rf, _, w = self._run_picker(
             [(0, f"q\nctrl-x\n{line}\n"), (0, f"q\n\n{line}\n")],
             herdr,
             filtered=["other-row", line],

@@ -6,19 +6,18 @@ Usage: uv run python test_tabname.py
 """
 
 import json
-import tempfile
-import time
-import unittest
-from unittest.mock import patch
-from pathlib import Path
 
 # Import the module under test
 import sys
+import tempfile
+import time
+import unittest
+from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import tabname
-
 
 # ---- Fixtures ------------------------------------------------------------
 
@@ -465,9 +464,11 @@ class TestHandlePaneUpdated(unittest.TestCase):
         # process); the state record is what makes the rename allowed.
         self._write_state({"w1:t1": {"plugin_label": "nvim"}})
         env = dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1")
-        with patch.dict("os.environ", env, clear=False):
-            with patch("tabname._herdr", side_effect=self._fake_herdr(renames)):
-                tabname._handle_pane_updated()
+        with (
+            patch.dict("os.environ", env, clear=False),
+            patch("tabname._herdr", side_effect=self._fake_herdr(renames)),
+        ):
+            tabname._handle_pane_updated()
 
         self.assertEqual(renames, [("tab", "rename", "w1:t1", "~/work/dotfiles")])
         entry = json.loads(self._state_path().read_text())["tabs"]["w1:t1"]
@@ -482,9 +483,11 @@ class TestHandlePaneUpdated(unittest.TestCase):
             {"event": "pane.updated", "data": {"pane": {"pane_id": "w1:p1"}}}
         )
         env = dict(self.env, HERDR_PLUGIN_EVENT_JSON=payload)
-        with patch.dict("os.environ", env, clear=False):
-            with patch("tabname._herdr", side_effect=self._fake_herdr(renames)):
-                tabname._handle_pane_updated()
+        with (
+            patch.dict("os.environ", env, clear=False),
+            patch("tabname._herdr", side_effect=self._fake_herdr(renames)),
+        ):
+            tabname._handle_pane_updated()
 
         self.assertEqual(renames, [("tab", "rename", "w1:t1", "~/work/dotfiles")])
 
@@ -497,13 +500,15 @@ class TestHandlePaneUpdated(unittest.TestCase):
         def bomb(*args, **kwargs):
             raise AssertionError("debounced event must not call herdr")
 
-        with patch.dict(
-            "os.environ",
-            dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1"),
-            clear=False,
+        with (
+            patch.dict(
+                "os.environ",
+                dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1"),
+                clear=False,
+            ),
+            patch("tabname._herdr", side_effect=bomb),
         ):
-            with patch("tabname._herdr", side_effect=bomb):
-                tabname._handle_pane_updated()
+            tabname._handle_pane_updated()
 
     def test_stale_checked_tab_is_not_debounced(self):
         """last_checked older than DEBOUNCE_SECONDS → renamed again."""
@@ -516,13 +521,15 @@ class TestHandlePaneUpdated(unittest.TestCase):
                 }
             }
         )
-        with patch.dict(
-            "os.environ",
-            dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1"),
-            clear=False,
+        with (
+            patch.dict(
+                "os.environ",
+                dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1"),
+                clear=False,
+            ),
+            patch("tabname._herdr", side_effect=self._fake_herdr(renames)),
         ):
-            with patch("tabname._herdr", side_effect=self._fake_herdr(renames)):
-                tabname._handle_pane_updated()
+            tabname._handle_pane_updated()
 
         self.assertEqual(renames, [("tab", "rename", "w1:t1", "~/work/dotfiles")])
 
@@ -537,13 +544,15 @@ class TestHandlePaneUpdated(unittest.TestCase):
                 return {"result": {"layout": {"focused_pane_id": "w1:p2"}}}
             raise AssertionError(f"background title change must stop at layout: {cmd}")
 
-        with patch.dict(
-            "os.environ",
-            dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1"),
-            clear=False,
+        with (
+            patch.dict(
+                "os.environ",
+                dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1"),
+                clear=False,
+            ),
+            patch("tabname._herdr", side_effect=fake),
         ):
-            with patch("tabname._herdr", side_effect=fake):
-                tabname._handle_pane_updated()
+            tabname._handle_pane_updated()
 
         self.assertEqual(renames, [])
 
@@ -581,13 +590,15 @@ class TestHandlePaneUpdated(unittest.TestCase):
                 }
             raise AssertionError(f"unexpected herdr call: {cmd}")
 
-        with patch.dict(
-            "os.environ",
-            dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1"),
-            clear=False,
+        with (
+            patch.dict(
+                "os.environ",
+                dict(self.env, HERDR_PANE_ID="w1:p1", HERDR_TAB_ID="w1:t1"),
+                clear=False,
+            ),
+            patch("tabname._herdr", side_effect=fake),
         ):
-            with patch("tabname._herdr", side_effect=fake):
-                tabname._handle_pane_updated()
+            tabname._handle_pane_updated()
 
         self.assertEqual(renames, [])
         self.assertEqual(json.loads(self._state_path().read_text())["tabs"], {})
@@ -598,9 +609,11 @@ class TestHandlePaneUpdated(unittest.TestCase):
         def bomb(*args, **kwargs):
             raise AssertionError("must not call herdr without a pane_id")
 
-        with patch.dict("os.environ", self.env, clear=False):
-            with patch("tabname._herdr", side_effect=bomb):
-                tabname._handle_pane_updated()
+        with (
+            patch.dict("os.environ", self.env, clear=False),
+            patch("tabname._herdr", side_effect=bomb),
+        ):
+            tabname._handle_pane_updated()
 
 
 class TestDebounce(unittest.TestCase):

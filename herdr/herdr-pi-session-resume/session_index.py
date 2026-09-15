@@ -202,8 +202,8 @@ def build_index_from_lines(
     first_user = ""
     msg_count = 0
 
-    for line in lines:
-        line = line.strip()
+    for raw in lines:
+        line = raw.strip()
         if not line:
             continue
         try:

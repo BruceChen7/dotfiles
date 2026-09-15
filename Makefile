@@ -10,8 +10,10 @@
 #   make format             stylua format pi.cr + tests
 #   make herdr-install      link all local herdr plugins under herdr/
 #   make herdr-uninstall    unlink all local herdr plugins
+#   make herdr-lint         ruff check (only herdr/ — see ruff.toml include)
+#   make herdr-format       ruff format herdr/ plugins
 
-.PHONY: stow dryrun list test test-file check format herdr-install herdr-uninstall
+.PHONY: stow dryrun list test test-file check format herdr-install herdr-uninstall herdr-lint herdr-format
 
 # Managed packages (whitelist; everything else in the repo is NOT stowed —
 # .ssh/.pi/.git and tool docs stay out on purpose).
@@ -51,6 +53,12 @@ format:
 # herdr/ holds local herdr plugins (each dir has a herdr-plugin.toml).
 HERDR_PLUGINS := $(wildcard herdr/*/herdr-plugin.toml)
 HERDR_PLUGIN_DIRS := $(dir $(HERDR_PLUGINS))
+
+herdr-lint:
+	ruff check herdr/
+
+herdr-format:
+	ruff format herdr/
 
 herdr-install:
 	@if [ -z "$(HERDR_PLUGINS)" ]; then \

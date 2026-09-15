@@ -18,6 +18,7 @@ Layout: pure functions (value in / value out) on top, thin shell adapters
 (herdr CLI, fzf, terminal keys) below, main() dispatches subcommands.
 """
 
+import contextlib
 import json
 import os
 import re
@@ -26,8 +27,8 @@ import subprocess
 import sys
 import tempfile
 import time
-from typing import NoReturn
 from pathlib import Path
+from typing import NoReturn
 
 # ---- constants -----------------------------------------------------------
 
@@ -579,7 +580,11 @@ def herdr(*args: str, timeout: int = 10) -> dict | None:
     global _LAST_STDERR
     try:
         p = subprocess.run(
-            [_HERDR, *args], capture_output=True, text=True, timeout=timeout
+            [_HERDR, *args],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
         )
     except (OSError, subprocess.TimeoutExpired):
         _LAST_STDERR = ""
@@ -599,7 +604,11 @@ def herdr_raw(*args: str, timeout: int = 3) -> str | None:
     global _LAST_STDERR
     try:
         p = subprocess.run(
-            [_HERDR, *args], capture_output=True, text=True, timeout=timeout
+            [_HERDR, *args],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
         )
     except (OSError, subprocess.TimeoutExpired):
         _LAST_STDERR = ""
@@ -620,6 +629,7 @@ def current_branch(cwd: str, timeout: int = 2) -> str | None:
             capture_output=True,
             text=True,
             timeout=timeout,
+            check=False,
         )
     except (OSError, subprocess.TimeoutExpired):
         return None
@@ -736,7 +746,7 @@ def pane_snapshot_block(line: str, timeout: int = 3) -> str | None:
         if snap is None or not snap.strip():
             return None
         return snap
-    except Exception:
+    except Exception:  # noqa: BLE001 — snapshot read failures degrade to None
         return None
 
 
@@ -777,10 +787,8 @@ def save_state(state_dir: Path, state: dict) -> None:
             f.write("\n")
         os.replace(tmp, str(state_dir / STATE_FILE_NAME))
     except Exception:
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(tmp)
-        except OSError:
-            pass
         raise
 
 
@@ -843,7 +851,8 @@ def run_fzf(
     lines: str, query: str, binds: str, header: str, preview_cmd: str
 ) -> tuple[int, str]:
     """Interactive fzf; returns (returncode, stdout)."""
-    args = _fzf_base_args() + [
+    args = [
+        *_fzf_base_args(),
         "--header",
         header,
         "--preview",
@@ -858,7 +867,7 @@ def run_fzf(
     ]
     try:
         p = subprocess.run(
-            args, input=lines, capture_output=True, text=True, timeout=300
+            args, input=lines, capture_output=True, text=True, timeout=300, check=False
         )
         return p.returncode, p.stdout
     except (OSError, subprocess.TimeoutExpired):
@@ -867,10 +876,10 @@ def run_fzf(
 
 def run_fzf_filter(query: str, lines: str) -> list[str]:
     """fzf --filter replica of the interactive view (ANSI-stripped rows)."""
-    args = _fzf_base_args() + ["--filter", query]
+    args = [*_fzf_base_args(), "--filter", query]
     try:
         p = subprocess.run(
-            args, input=lines, capture_output=True, text=True, timeout=30
+            args, input=lines, capture_output=True, text=True, timeout=30, check=False
         )
         return p.stdout.splitlines()
     except (OSError, subprocess.TimeoutExpired):
@@ -895,7 +904,7 @@ def _read_key() -> str:
             return sys.stdin.read(1)
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
-    except Exception:
+    except Exception:  # noqa: BLE001 — non-tty / raw-mode failure → no key
         return ""
 
 
@@ -1008,7 +1017,7 @@ def sub_picker() -> None:
                 branch_by_row,
                 space_details,
             )
-        except Exception as e:  # [DEBUG-herdr-switch] 分支装饰失败时留痕
+        except Exception as e:  # noqa: BLE001 — [DEBUG-herdr-switch] 分支装饰失败时留痕
             import traceback
 
             with open("/tmp/herdr-switch-branch-err.log", "a") as f:
@@ -1168,7 +1177,7 @@ def main() -> None:
         sys.exit(2)
     try:
         handler()
-    except Exception:
+    except Exception:  # noqa: BLE001 — never throw from a background hook
         # Never throw from a background hook; log to stderr for herdr's
         # plugin command log.
         import traceback

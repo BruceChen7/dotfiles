@@ -1,0 +1,40 @@
+# Ruff config — dotfiles repo.
+#
+# Lint scope: only herdr/ (the local herdr plugins). Everything else in this
+# repo (dot-local tools, editor configs, etc.) is intentionally out of scope.
+#   make herdr-lint  →  ruff check herdr/
+#
+# The rule set is pinned explicitly instead of relying on ruff's version-
+# dependent defaults (ruff 0.16 grew the default from 59 → 413 rules), so
+# lint results stay stable across ruff upgrades.
+
+include = ["herdr/**/*.py", "herdr/**/*.pyi", "herdr/**/*.ipynb"]
+line-length = 88  # matches how the herdr code is already formatted
+target-version = "py310"  # herdr plugins declare requires-python = ">=3.10"
+
+[lint]
+select = [
+    "E4",   # pycodestyle errors (imports)
+    "E7",   # pycodestyle errors (statements)
+    "E9",   # pycodestyle errors (runtime)
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade (modern 3.10+ syntax)
+    "SIM",  # flake8-simplify
+    "PLW",  # pylint warnings
+    "RUF",  # ruff-specific
+    "BLE",  # flake8-blind-except
+    "EXE",  # flake8-executable
+]
+ignore = [
+    # Opinionated pycodestyle rules ruff 0.16 dropped from the default set;
+    # keep them off for stability across versions.
+    "E701", "E702", "E703", "E711", "E712", "E713", "E714", "E721",
+    "E731", "E741", "E742", "E743",
+    # Ambiguous-unicode rules are noise here: herdr code intentionally uses
+    # Chinese comments and non-ASCII fixture strings (π, emoji, CJK).
+    "RUF001", "RUF002", "RUF003",
+    # Module-level mutable cache (`_LAST_STDERR`) in single-file plugin
+    # scripts is idiomatic; keep `global` usage unchecked.
+    "PLW0603",
+]

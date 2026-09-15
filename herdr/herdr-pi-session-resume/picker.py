@@ -19,6 +19,7 @@ Subcommands（见 herdr-plugin.toml）:
 剪贴板。所有决策逻辑都委托给 session_index.py。
 """
 
+import contextlib
 import json
 import os
 import shlex
@@ -116,10 +117,8 @@ def save_cache(cache: dict) -> None:
             f.write("\n")
         os.replace(tmp, str(_cache_file()))
     except Exception:
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(tmp)
-        except OSError:
-            pass
         raise
 
 
@@ -182,7 +181,8 @@ def _fzf_base_args() -> list[str]:
 def run_fzf(
     lines: str, query: str, binds: str, header: str, preview_cmd: str
 ) -> tuple[int, str]:
-    args = _fzf_base_args() + [
+    args = [
+        *_fzf_base_args(),
         "--header",
         header,
         "--preview",
