@@ -48,7 +48,8 @@ STATE_FILE_NAME = "prev-space.json"
     F_NAME,
     F_RAW,
     F_RUNNING,
-) = range(10)
+    F_DETAIL,  # 11th column: per-space JSON detail blob (agent rows = "")
+) = range(11)
 
 # ANSI status dots / markers (byte-identical to the old jq output).
 DOT_WORKING = "\033[33m●\033[0m"
@@ -237,6 +238,63 @@ def space_row(space: dict, running: int) -> list[str]:
     ]
 
 
+# ---- pure: per-space preview detail (F_DETAIL, 11th TSV column) ------------
+
+
+def space_detail_blob(
+    space: dict,
+    agents_in_space: list[dict],
+    tabmap: dict[str, str],
+    branch_by_cwd: dict[str, str],
+    home: str,
+) -> str:
+    """space → 单行 JSON detail：number / tab_count / pane_count /
+    active_tab / active_tab_id / agents[{name, status, cwd(redacted), branch}]。
+    无 agents 也生成（agents: []）。JSON 由 json.dumps 转义 \t/\n，TSV 保持单行。"""
+    active_tab_id = space.get("active_tab_id", "") or ""
+    detail = {
+        "number": space.get("number"),
+        "tab_count": space.get("tab_count"),
+        "pane_count": space.get("pane_count"),
+        "active_tab": tabmap.get(active_tab_id) or active_tab_id or None,
+        "active_tab_id": active_tab_id or None,
+        "agents": [
+            {
+                "name": a.get("name") or a.get("agent") or "",
+                "status": a.get("agent_status", ""),
+                "cwd": redact_path(a.get("cwd") or "", home),
+                "branch": branch_by_cwd.get(a.get("cwd") or ""),
+            }
+            for a in agents_in_space
+        ],
+    }
+    return json.dumps(detail, ensure_ascii=False)
+
+
+def resolve_space_details(
+    agents: list[dict],
+    workspaces: list[dict],
+    tabs: list[dict],
+    branch_by_cwd: dict[str, str],
+    home: str,
+) -> dict[str, str]:
+    """{workspace_id: space_detail_blob(...)}；只含存在的 space。纯函数。"""
+    tabmap = {t.get("tab_id", ""): tab_display_label(t.get("label", "")) for t in tabs}
+    agents_by_ws: dict[str, list[dict]] = {}
+    for a in agents:
+        agents_by_ws.setdefault(a.get("workspace_id", ""), []).append(a)
+    return {
+        w.get("workspace_id", ""): space_detail_blob(
+            w,
+            agents_by_ws.get(w.get("workspace_id", ""), []),
+            tabmap,
+            branch_by_cwd,
+            home,
+        )
+        for w in workspaces
+    }
+
+
 def build_lines(
     agents: list[dict],
     workspaces: list[dict],
@@ -244,6 +302,7 @@ def build_lines(
     recent: list,
     home: str,
     branch_by_row: dict[int, str] | None = None,
+    space_details: dict[str, str] | None = None,
 ) -> str:
     """Merge agents + workspaces into one tab-separated list, one row per
     line, in ``merged_entries`` order: never-recorded at the top, then least
@@ -253,6 +312,9 @@ def build_lines(
 
     *branch_by_row* maps a 1-based row index to a git branch name that is
     appended to that row's display as ``(branch)``.
+    *space_details* maps a workspace_id to its F_DETAIL JSON (11th column):
+    space rows carry it for the preview pane; agent rows always get "".
+    Both default to None → output identical to the pre-detail format.
     """
     wsmap = {w.get("workspace_id", ""): w for w in workspaces}
     tabmap = {t.get("tab_id", ""): tab_display_label(t.get("label", "")) for t in tabs}
@@ -262,6 +324,7 @@ def build_lines(
     for _, kind, obj in merged_entries(agents, workspaces, recent):
         if kind == "agent":
             row = agent_row(obj, wsmap, tabmap, home)
+            row.append("")
         else:
             wid = obj.get("workspace_id", "")
             running = sum(
@@ -271,6 +334,7 @@ def build_lines(
                 and _is_running(a.get("agent_status", ""))
             )
             row = space_row(obj, running)
+            row.append(space_details.get(wid, "") if space_details else "")
         if branch_by_row is not None and index in branch_by_row:
             row[F_DISPLAY] = with_branch(row[F_DISPLAY], branch_by_row[index])
         rows.append("\t".join(row))
@@ -394,8 +458,53 @@ def toggle_state(old: dict, target: str, *, ok: bool) -> dict:
     }
 
 
-def preview_text(line: str) -> str:
-    """fzf preview renderer — old preview.sh byte-equivalent detail block."""
+PREVIEW_DIVIDER = "─" * 17  # 富信息块 / 快照段之间的分隔线
+
+
+def preview_space_block(detail: dict, name: str) -> str:
+    """F_DETAIL JSON → 富信息块：标题 `label  #N`；tabs·panes / active；
+    agents 段（状态点 + name + cwd + (分支)）。不渲染 workspace_id / 状态（对区分无用）。"""
+    title = f"{COLOR_BOLD}{name}{RESET}"
+    number = detail.get("number")
+    if number is not None:
+        title += f"  #{number}"
+    lines = [title]
+
+    meta = []
+    tabs = detail.get("tab_count")
+    panes = detail.get("pane_count")
+    if tabs is not None and panes is not None:
+        meta.append(f"tabs:    {tabs} · panes: {panes}")
+    elif panes is not None:
+        meta.append(f"panes:   {panes}")
+    active_tab = detail.get("active_tab")
+    if active_tab:
+        meta.append(f"active:  {active_tab}")
+    if meta:
+        lines.append(PREVIEW_DIVIDER)
+        lines += meta
+
+    lines.append(PREVIEW_DIVIDER)
+    agents = detail.get("agents") or []
+    lines.append(f"agents ({len(agents)}):")
+    if not agents:
+        lines.append("  无 agent（纯终端 pane）")
+    for a in agents:
+        line = f"  {_status_dot(a.get('status', ''))} {a.get('name', '')}  {a.get('cwd', '')}"
+        branch = a.get("branch")
+        if branch:
+            line += f"  ({branch})"
+        lines.append(line)
+    return "\n".join(lines) + "\n"
+
+
+def preview_text(line: str, snapshot: str | None = None) -> str:
+    """fzf preview renderer — old preview.sh byte-equivalent for agent rows and
+    the no-detail fallback; space rows with F_DETAIL render the rich block.
+
+    *snapshot* (optional, shell-supplied) is appended after a divider for
+    space rows; agent rows ignore it.
+    """
     if not line:
         return ""
     fields = line.split("\t")
@@ -417,8 +526,42 @@ def preview_text(line: str) -> str:
             f"pane:   {target}",
         ]
     else:
-        out += [f"id:     {target}", f"panes:  {title}", f"状态:   {status}"]
+        detail_raw = fields[F_DETAIL] if len(fields) > F_DETAIL else ""
+        detail = None
+        if detail_raw:
+            try:
+                detail = json.loads(detail_raw)
+            except json.JSONDecodeError:
+                detail = None
+        if detail is not None:
+            out = [preview_space_block(detail, name).rstrip("\n")]
+        else:
+            out += [f"id:     {target}", f"panes:  {title}", f"状态:   {status}"]
+        if snapshot and kind == "space":
+            out += ["", PREVIEW_DIVIDER, snapshot.rstrip("\n")]
     return "\n".join(out) + "\n"
+
+
+def select_snapshot_pane(
+    workspace_id: str, active_tab_id: str, panes: list[dict]
+) -> str | None:
+    """从 pane list 选出 Tier 2 快照的 pane_id：优先 active_tab_id 对应的 pane，
+    否则该 workspace 的第一个 pane；无 pane → None。纯函数。"""
+    if active_tab_id:
+        for p in panes:
+            if (
+                p.get("workspace_id") == workspace_id
+                and p.get("tab_id") == active_tab_id
+            ):
+                pane_id = p.get("pane_id")
+                if pane_id:
+                    return pane_id
+    for p in panes:
+        if p.get("workspace_id") == workspace_id:
+            pane_id = p.get("pane_id")
+            if pane_id:
+                return pane_id
+    return None
 
 
 # ---- shell: herdr CLI ------------------------------------------------------
@@ -448,6 +591,23 @@ def herdr(*args: str, timeout: int = 10) -> dict | None:
         return json.loads(p.stdout)
     except json.JSONDecodeError:
         return None
+
+
+def herdr_raw(*args: str, timeout: int = 3) -> str | None:
+    """Run a herdr CLI command and return raw stdout (e.g. `pane read`
+    terminal snapshots, which are not JSON); None on any failure."""
+    global _LAST_STDERR
+    try:
+        p = subprocess.run(
+            [_HERDR, *args], capture_output=True, text=True, timeout=timeout
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        _LAST_STDERR = ""
+        return None
+    _LAST_STDERR = p.stderr or ""
+    if p.returncode != 0:
+        return None
+    return p.stdout
 
 
 def current_branch(cwd: str, timeout: int = 2) -> str | None:
@@ -530,6 +690,54 @@ def worktree_branch_map() -> dict[str, str]:
         for t in worktrees
         if t.get("open_workspace_id") and t.get("branch")
     }
+
+
+SNAPSHOT_LINES = 12  # Tier 2 快照行数上限（控制 40% preview 窗格体积）
+
+
+def pane_snapshot_block(line: str, timeout: int = 3) -> str | None:
+    """Tier 2：space 行 → 活动 pane 的真实终端内容（`herdr pane read
+    --source visible --format ansi --lines 12`）。只对 space 行生效；
+    pane list 失败 / 无 pane / pane read 失败 / 空输出 → None（静默省略，
+    不影响 Tier 1）。薄壳：IO 在此层，pane 选择逻辑在 FC 的 select_snapshot_pane。"""
+    try:
+        if not line:
+            return None
+        fields = line.split("\t")
+        if len(fields) <= F_KIND or fields[F_KIND] != "space":
+            return None
+        workspace_id = fields[F_TARGET] if len(fields) > F_TARGET else ""
+        active_tab_id = ""
+        detail_raw = fields[F_DETAIL] if len(fields) > F_DETAIL else ""
+        if detail_raw:
+            try:
+                active_tab_id = json.loads(detail_raw).get("active_tab_id") or ""
+            except json.JSONDecodeError:
+                active_tab_id = ""
+        data = herdr("pane", "list", timeout=timeout)
+        if data is None:
+            return None
+        panes = data.get("result", {}).get("panes", [])
+        pane_id = select_snapshot_pane(workspace_id, active_tab_id, panes)
+        if not pane_id:
+            return None
+        snap = herdr_raw(
+            "pane",
+            "read",
+            pane_id,
+            "--source",
+            "visible",
+            "--format",
+            "ansi",
+            "--lines",
+            str(SNAPSHOT_LINES),
+            timeout=timeout,
+        )
+        if snap is None or not snap.strip():
+            return None
+        return snap
+    except Exception:
+        return None
 
 
 def _err_tail() -> str:
@@ -788,8 +996,17 @@ def sub_picker() -> None:
             branch_by_row = resolve_branch_by_row(
                 agents, workspaces, recent, branch_by_cwd, worktree_branches
             )
+            space_details = resolve_space_details(
+                agents, workspaces, tabs, branch_by_cwd, str(Path.home())
+            )
             lines = build_lines(
-                agents, workspaces, tabs, recent, str(Path.home()), branch_by_row
+                agents,
+                workspaces,
+                tabs,
+                recent,
+                str(Path.home()),
+                branch_by_row,
+                space_details,
             )
         except Exception as e:  # [DEBUG-herdr-switch] 分支装饰失败时留痕
             import traceback
@@ -869,7 +1086,8 @@ def sub_picker() -> None:
 
 def sub_preview() -> None:
     line = sys.argv[2] if len(sys.argv) > 2 else ""
-    sys.stdout.write(preview_text(line))
+    snapshot = pane_snapshot_block(line)  # Tier 2: 失败静默 → None
+    sys.stdout.write(preview_text(line, snapshot))
 
 
 def sub_record() -> None:

@@ -889,6 +889,470 @@ class TestPreviewText(unittest.TestCase):
     def test_empty_line_renders_nothing(self):
         self.assertEqual(switch.preview_text(""), "")
 
+    def test_space_rich_block_exact(self):
+        detail = json.dumps(
+            {
+                "number": 13,
+                "tab_count": 2,
+                "pane_count": 2,
+                "active_tab": "t1",
+                "active_tab_id": "w1E:t1",
+                "agents": [
+                    {
+                        "name": "pi",
+                        "status": "working",
+                        "cwd": "~/work/svc",
+                        "branch": "feat/x",
+                    },
+                    {
+                        "name": "codex",
+                        "status": "idle",
+                        "cwd": "~/work/svc",
+                        "branch": None,
+                    },
+                ],
+            }
+        )
+        line = "\t".join(
+            [
+                "display",
+                "space",
+                "w1E",
+                "当前",
+                "status-service",
+                "",
+                "2 panes",
+                "status-service",
+                "current",
+                "1",
+                detail,
+            ]
+        )
+        expected = (
+            f"{switch.COLOR_BOLD}status-service{switch.RESET}  #13\n"
+            f"{switch.PREVIEW_DIVIDER}\n"
+            "tabs:    2 · panes: 2\n"
+            "active:  t1\n"
+            f"{switch.PREVIEW_DIVIDER}\n"
+            "agents (2):\n"
+            f"  {switch.DOT_WORKING} pi  ~/work/svc  (feat/x)\n"
+            f"  {switch.DOT_OTHER} codex  ~/work/svc\n"
+        )
+        self.assertEqual(switch.preview_text(line), expected)
+
+    def test_space_rich_block_no_agents(self):
+        detail = json.dumps({"number": 3, "agents": []})
+        line = "\t".join(
+            [
+                "display",
+                "space",
+                "w1",
+                "-",
+                "pi-kit",
+                "",
+                "1 panes",
+                "pi-kit",
+                "-",
+                "0",
+                detail,
+            ]
+        )
+        expected = (
+            f"{switch.COLOR_BOLD}pi-kit{switch.RESET}  #3\n"
+            f"{switch.PREVIEW_DIVIDER}\n"
+            "agents (0):\n"
+            "  无 agent（纯终端 pane）\n"
+        )
+        self.assertEqual(switch.preview_text(line), expected)
+
+    def test_space_bad_detail_json_falls_back(self):
+        line = "\t".join(
+            [
+                "display",
+                "space",
+                "w1",
+                "-",
+                "pi-kit",
+                "",
+                "1 panes",
+                "pi-kit",
+                "-",
+                "0",
+                "{not json",
+            ]
+        )
+        expected = (
+            f"{switch.COLOR_BOLD}pi-kit{switch.RESET}\n"
+            "\n"
+            "id:     w1\n"
+            "panes:  1 panes\n"
+            "状态:   -\n"
+        )
+        self.assertEqual(switch.preview_text(line), expected)
+
+    def test_space_snapshot_appended_after_divider(self):
+        detail = json.dumps({"number": 13, "agents": []})
+        line = "\t".join(
+            [
+                "display",
+                "space",
+                "w1E",
+                "-",
+                "status-service",
+                "",
+                "2 panes",
+                "status-service",
+                "-",
+                "0",
+                detail,
+            ]
+        )
+        snap = "\x1b[32m$ git status\x1b[0m\n\nclean"
+        expected = (
+            switch.preview_text(line)
+            + "\n"
+            + switch.PREVIEW_DIVIDER
+            + "\n"
+            + snap
+            + "\n"
+        )
+        self.assertEqual(switch.preview_text(line, snapshot=snap), expected)
+
+    def test_agent_row_ignores_snapshot(self):
+        line = "\t".join(
+            [
+                "display",
+                "agent",
+                "w1:p3",
+                "idle",
+                "pi-kit",
+                "~/work/pi-kit",
+                "π - pi-kit",
+                "pi",
+                "idle",
+                "0",
+            ]
+        )
+        self.assertEqual(
+            switch.preview_text(line, snapshot="SNAP"), switch.preview_text(line)
+        )
+
+
+class TestSpaceDetailBlob(unittest.TestCase):
+    """space_detail_blob — F_DETAIL JSON blob: 编号/tabs/active/agents."""
+
+    def _space(self, **over):
+        base = {
+            "workspace_id": "w1",
+            "label": "pi-kit",
+            "number": 3,
+            "tab_count": 2,
+            "pane_count": 2,
+            "active_tab_id": "w1:t1",
+        }
+        base.update(over)
+        return base
+
+    def test_blob_fields_exact(self):
+        agents = [
+            {"agent": "pi", "agent_status": "working", "cwd": f"{HOME}/work/pi-kit"}
+        ]
+        blob = switch.space_detail_blob(
+            self._space(),
+            agents,
+            {"w1:t1": "t1"},
+            {f"{HOME}/work/pi-kit": "feat/x"},
+            HOME,
+        )
+        detail = json.loads(blob)
+        self.assertEqual(detail["number"], 3)
+        self.assertEqual(detail["tab_count"], 2)
+        self.assertEqual(detail["pane_count"], 2)
+        self.assertEqual(detail["active_tab"], "t1")
+        self.assertEqual(detail["active_tab_id"], "w1:t1")
+        self.assertEqual(
+            detail["agents"],
+            [
+                {
+                    "name": "pi",
+                    "status": "working",
+                    "cwd": "~/work/pi-kit",
+                    "branch": "feat/x",
+                }
+            ],
+        )
+
+    def test_blob_redacts_cwd_and_missing_branch_is_null(self):
+        agents = [{"agent": "codex", "agent_status": "idle", "cwd": f"{HOME}/work/a"}]
+        detail = json.loads(
+            switch.space_detail_blob(self._space(), agents, {}, {}, HOME)
+        )
+        self.assertEqual(detail["agents"][0]["cwd"], "~/work/a")
+        self.assertIsNone(detail["agents"][0]["branch"])
+
+    def test_blob_no_agents(self):
+        detail = json.loads(switch.space_detail_blob(self._space(), [], {}, {}, HOME))
+        self.assertEqual(detail["agents"], [])
+
+    def test_blob_active_tab_falls_back_to_raw_id(self):
+        detail = json.loads(
+            switch.space_detail_blob(
+                self._space(active_tab_id="w9:t2"), [], {}, {}, HOME
+            )
+        )
+        self.assertEqual(detail["active_tab"], "w9:t2")
+
+    def test_blob_stays_single_line(self):
+        agents = [{"agent": "pi", "agent_status": "idle", "cwd": f"{HOME}/work/pi-kit"}]
+        blob = switch.space_detail_blob(self._space(), agents, {}, {}, HOME)
+        self.assertNotIn("\t", blob)
+        self.assertNotIn("\n", blob)
+
+
+class TestResolveSpaceDetails(unittest.TestCase):
+    """resolve_space_details — 按 workspace 分组、只含存在的 wid."""
+
+    def test_groups_agents_by_workspace(self):
+        agents = [
+            _agent_fixture(),
+            _agent_fixture(workspace_id="w2", agent="codex", cwd=f"{HOME}/other"),
+        ]
+        workspaces = [
+            _space_fixture(),
+            _space_fixture(workspace_id="w2", label="other"),
+        ]
+        tabs = [{"tab_id": "w1:t1", "label": "1"}]
+        details = switch.resolve_space_details(agents, workspaces, tabs, {}, HOME)
+        self.assertEqual(set(details.keys()), {"w1", "w2"})
+        self.assertEqual(len(json.loads(details["w1"])["agents"]), 1)
+        self.assertEqual(len(json.loads(details["w2"])["agents"]), 1)
+
+    def test_workspace_without_agents_gets_empty_list(self):
+        workspaces = [_space_fixture(workspace_id="w2", label="other")]
+        details = switch.resolve_space_details([], workspaces, [], {}, HOME)
+        self.assertEqual(json.loads(details["w2"])["agents"], [])
+
+
+class TestBuildLinesDetailColumn(unittest.TestCase):
+    """build_lines 第 11 列 F_DETAIL."""
+
+    def test_no_details_byte_identical(self):
+        agents = [_agent_fixture()]
+        workspaces = [_space_fixture()]
+        tabs = [{"tab_id": "w1:t1", "label": "1"}]
+        self.assertEqual(
+            switch.build_lines(agents, workspaces, tabs, [], HOME),
+            switch.build_lines(agents, workspaces, tabs, [], HOME, {}, {}),
+        )
+        self.assertEqual(
+            switch.build_lines(agents, workspaces, tabs, [], HOME),
+            switch.build_lines(agents, workspaces, tabs, [], HOME, {}, None),
+        )
+
+    def test_space_row_gets_json_agent_row_gets_empty(self):
+        workspaces = [_space_fixture()]
+        tabs = [{"tab_id": "w1:t1", "label": "1"}]
+        details = switch.resolve_space_details([], workspaces, tabs, {}, HOME)
+        out = switch.build_lines([], workspaces, tabs, [], HOME, {}, details)
+        lines = out.splitlines()
+        self.assertEqual(len(lines), 1)
+        fields = lines[0].split("\t")
+        self.assertEqual(len(fields), 11)
+        self.assertEqual(fields[switch.F_KIND], "space")
+        self.assertEqual(fields[switch.F_DETAIL], details["w1"])
+        self.assertEqual(json.loads(fields[switch.F_DETAIL])["agents"], [])
+
+    def test_agent_row_detail_empty_string(self):
+        agents = [_agent_fixture()]
+        out = switch.build_lines(agents, [], [], [], HOME, {}, {})
+        fields = out.splitlines()[0].split("\t")
+        self.assertEqual(len(fields), 11)
+        self.assertEqual(fields[switch.F_KIND], "agent")
+        self.assertEqual(fields[switch.F_DETAIL], "")
+
+
+class TestSelectSnapshotPane(unittest.TestCase):
+    """select_snapshot_pane — 优先 active tab，退化到 workspace 首个 pane."""
+
+    def test_prefers_active_tab_pane(self):
+        panes = [
+            {"workspace_id": "w1", "tab_id": "w1:t2", "pane_id": "w1:p2"},
+            {"workspace_id": "w1", "tab_id": "w1:t1", "pane_id": "w1:p1"},
+            {"workspace_id": "w9", "tab_id": "w9:t1", "pane_id": "w9:p9"},
+        ]
+        self.assertEqual(switch.select_snapshot_pane("w1", "w1:t1", panes), "w1:p1")
+
+    def test_falls_back_to_first_workspace_pane(self):
+        panes = [{"workspace_id": "w2", "tab_id": "w2:t1", "pane_id": "w2:p1"}]
+        self.assertEqual(switch.select_snapshot_pane("w2", "", panes), "w2:p1")
+        self.assertEqual(switch.select_snapshot_pane("w2", "w2:t9", panes), "w2:p1")
+
+    def test_no_panes_returns_none(self):
+        self.assertIsNone(switch.select_snapshot_pane("w1", "w1:t1", []))
+
+    def test_empty_pane_id_skipped(self):
+        panes = [{"workspace_id": "w1", "tab_id": "w1:t1", "pane_id": ""}]
+        self.assertIsNone(switch.select_snapshot_pane("w1", "w1:t1", panes))
+
+
+class TestPaneSnapshotBlock(unittest.TestCase):
+    """pane_snapshot_block — 薄壳接线与容错（mock herdr/herdr_raw，无真 IO）."""
+
+    def _space_line(self, detail=""):
+        fields = [
+            "display",
+            "space",
+            "w1E",
+            "-",
+            "status-service",
+            "",
+            "2 panes",
+            "status-service",
+            "-",
+            "0",
+            detail,
+        ]
+        return "\t".join(fields)
+
+    def test_success_returns_snapshot(self):
+        detail = json.dumps({"active_tab_id": "w1E:t1", "agents": []})
+        with patch(
+            "switch.herdr",
+            return_value={
+                "result": {
+                    "panes": [
+                        {"workspace_id": "w1E", "tab_id": "w1E:t1", "pane_id": "w1E:p1"}
+                    ]
+                }
+            },
+        ):
+            with patch(
+                "switch.herdr_raw", return_value="\x1b[32m$\x1b[0m git status\n"
+            ):
+                out = switch.pane_snapshot_block(self._space_line(detail))
+        self.assertEqual(out, "\x1b[32m$\x1b[0m git status\n")
+
+    def test_agent_row_returns_none(self):
+        line = "\t".join(
+            [
+                "display",
+                "agent",
+                "w1:p3",
+                "idle",
+                "pi-kit",
+                "~/work/pi-kit",
+                "π - pi-kit",
+                "pi",
+                "idle",
+                "0",
+            ]
+        )
+        self.assertIsNone(switch.pane_snapshot_block(line))
+
+    def test_pane_list_failure_returns_none(self):
+        with patch("switch.herdr", return_value=None):
+            self.assertIsNone(switch.pane_snapshot_block(self._space_line()))
+
+    def test_no_pane_for_workspace_returns_none(self):
+        with patch(
+            "switch.herdr",
+            return_value={
+                "result": {
+                    "panes": [
+                        {"workspace_id": "w9", "tab_id": "w9:t1", "pane_id": "w9:p1"}
+                    ]
+                }
+            },
+        ):
+            self.assertIsNone(switch.pane_snapshot_block(self._space_line()))
+
+    def test_pane_read_failure_returns_none(self):
+        with patch(
+            "switch.herdr",
+            return_value={
+                "result": {
+                    "panes": [
+                        {"workspace_id": "w1E", "tab_id": "", "pane_id": "w1E:p1"}
+                    ]
+                }
+            },
+        ):
+            with patch("switch.herdr_raw", return_value=None):
+                self.assertIsNone(switch.pane_snapshot_block(self._space_line()))
+
+    def test_empty_snapshot_returns_none(self):
+        with patch(
+            "switch.herdr",
+            return_value={
+                "result": {
+                    "panes": [
+                        {"workspace_id": "w1E", "tab_id": "", "pane_id": "w1E:p1"}
+                    ]
+                }
+            },
+        ):
+            with patch("switch.herdr_raw", return_value="   \n"):
+                self.assertIsNone(switch.pane_snapshot_block(self._space_line()))
+
+    def test_bad_detail_json_snapshot_via_workspace_fallback(self):
+        line = "\t".join(
+            [
+                "display",
+                "space",
+                "w1E",
+                "-",
+                "status-service",
+                "",
+                "2 panes",
+                "status-service",
+                "-",
+                "0",
+                "{bad",
+            ]
+        )
+        with patch(
+            "switch.herdr",
+            return_value={
+                "result": {
+                    "panes": [
+                        {"workspace_id": "w1E", "tab_id": "w1E:t2", "pane_id": "w1E:p2"}
+                    ]
+                }
+            },
+        ):
+            with patch("switch.herdr_raw", return_value="out\n"):
+                self.assertEqual(switch.pane_snapshot_block(line), "out\n")
+
+
+class TestSubPreview(unittest.TestCase):
+    """sub_preview — 薄壳接线：snapshot 拼进 preview 输出."""
+
+    def test_wires_snapshot_into_preview(self):
+        detail = json.dumps({"number": 13, "agents": []})
+        line = "\t".join(
+            [
+                "display",
+                "space",
+                "w1E",
+                "-",
+                "status-service",
+                "",
+                "2 panes",
+                "status-service",
+                "-",
+                "0",
+                detail,
+            ]
+        )
+        with patch("switch.pane_snapshot_block", return_value="SNAP\n") as snap:
+            with patch("sys.argv", ["switch.py", "preview", line]):
+                with patch("sys.stdout") as out:
+                    switch.sub_preview()
+        snap.assert_called_once_with(line)
+        rendered = "".join(c.args[0] for c in out.write.call_args_list)
+        self.assertIn(switch.PREVIEW_DIVIDER, rendered)
+        self.assertTrue(rendered.endswith("SNAP\n"))
+
 
 # ---- Slice 14-15: fetch_data validation + main loop ------------------------
 
