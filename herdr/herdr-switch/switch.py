@@ -23,6 +23,7 @@ import json
 import os
 import re
 import shlex
+import signal
 import subprocess
 import sys
 import tempfile
@@ -563,6 +564,55 @@ def select_snapshot_pane(
             if pane_id:
                 return pane_id
     return None
+
+
+# ---- pure: sub_open result classification / stale picker discovery ---------
+
+
+def classify_open_result(stdout: str, stderr: str) -> tuple[str, str]:
+    """Classify `herdr plugin pane open` CLI output (value in / value out).
+
+    Returns (kind, msg):
+      - ("success", "")      — popup opened
+      - ("recover_popup", m) — ui_busy because a popup pane is already open
+      - ("fail", msg)        — any other failure (msg = error message, stderr
+                               summary, or a generic fallback)
+    """
+    try:
+        payload = json.loads(stdout)
+    except (json.JSONDecodeError, TypeError):
+        return "fail", (stderr or stdout or "未知错误").strip()
+    error = payload.get("error") if isinstance(payload, dict) else None
+    if not isinstance(error, dict):
+        return "success", ""
+    message = error.get("message", "") or ""
+    if error.get("code") == "ui_busy" and "popup" in message:
+        return "recover_popup", message
+    return "fail", message or (stderr or "未知错误").strip()
+
+
+_PICKER_RE = re.compile(r"switch\.py\s+picker(?:\s|$)")
+
+
+def stale_picker_pgids(ps_lines: list[str]) -> list[int]:
+    """PGIDs of leftover `switch.py picker` processes (value in / value out).
+
+    ps lines are "PID PGID COMMAND...". Only the plugin's own picker
+    entrypoint matches; `switch.py open|preview|record|toggle` and unrelated
+    processes are ignored. Returns sorted, deduplicated pgids.
+    """
+    pgids: set[int] = set()
+    for line in ps_lines:
+        parts = line.split(None, 2)
+        if len(parts) < 3:
+            continue
+        _, pgid_str, command = parts
+        if _PICKER_RE.search(command):
+            try:
+                pgids.add(int(pgid_str))
+            except ValueError:
+                continue
+    return sorted(pgids)
 
 
 # ---- shell: herdr CLI ------------------------------------------------------
@@ -1139,22 +1189,75 @@ def sub_toggle() -> None:
     save_state(state_dir, toggle_state(old, target, ok=True))
 
 
+def _open_picker_pane(plugin_id: str) -> tuple[str, str]:
+    """Run `herdr plugin pane open` and classify the result (thin IO)."""
+    try:
+        p = subprocess.run(
+            [
+                _HERDR,
+                "plugin",
+                "pane",
+                "open",
+                "--plugin",
+                plugin_id,
+                "--entrypoint",
+                "picker",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return "fail", "herdr plugin pane open 超时/失败"
+    return classify_open_result(p.stdout, p.stderr)
+
+
+def _ps_lines() -> list[str]:
+    """ps snapshot lines (PID PGID COMMAND); [] on any failure."""
+    try:
+        p = subprocess.run(
+            ["ps", "-ax", "-o", "pid=,pgid=,command="],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+        return p.stdout.splitlines()
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+
+
+def _kill_group(pgid: int) -> None:
+    """TERM an entire process group; missing group is fine."""
+    with contextlib.suppress(OSError):
+        os.killpg(pgid, signal.SIGTERM)
+
+
+def _notify(title: str, body: str) -> None:
+    herdr("notification", "show", title, "--body", body, "--sound", "none")
+
+
 def sub_open() -> None:
-    herdr_bin = os.environ.get("HERDR_BIN_PATH", "herdr")
     plugin_id = os.environ.get("HERDR_PLUGIN_ID", "herdr-switch")
-    os.execvp(
-        herdr_bin,
-        [
-            herdr_bin,
-            "plugin",
-            "pane",
-            "open",
-            "--plugin",
-            plugin_id,
-            "--entrypoint",
-            "picker",
-        ],
-    )
+    kind, msg = _open_picker_pane(plugin_id)
+    if kind == "success":
+        return
+    if kind != "recover_popup":
+        # ui_busy from Settings/Copy mode etc. — nothing of ours to clear.
+        _notify("herdr-switch", f"无法打开搜索面板: {msg or '另一个 modal 正在占用'}")
+        sys.exit(1)
+    # A previous popup pane is still open (stale picker). Clear only our own
+    # picker processes, then retry once so prefix+f always opens the panel.
+    for pgid in stale_picker_pgids(_ps_lines()):
+        _kill_group(pgid)
+    time.sleep(0.5)
+    kind, msg = _open_picker_pane(plugin_id)
+    if kind == "success":
+        _notify("herdr-switch", "已清理卡住的搜索面板,已重新打开")
+        return
+    _notify("herdr-switch", f"无法打开搜索面板: {msg or '未知错误'}")
+    sys.exit(1)
 
 
 SUBCOMMANDS = {

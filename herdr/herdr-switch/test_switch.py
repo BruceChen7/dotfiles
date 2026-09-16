@@ -6,6 +6,7 @@ Usage: uv run python test_switch.py
 """
 
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -1655,6 +1656,183 @@ class TestPickerLoop(unittest.TestCase):
         self.assertIn("pane close 失败", str(w.call_args))
         binds = rf.call_args_list[1].kwargs["binds"]
         self.assertIn("pos(2)", binds)  # idx 2, not closed → same row kept
+
+
+# ---- Slice: sub_open ui_busy 自愈 (Core 纯函数 + 薄壳) -------------------
+
+
+class TestClassifyOpenResult(unittest.TestCase):
+    """classify_open_result — Core: value in / value out."""
+
+    def test_ok_result_is_success(self):
+        kind, msg = switch.classify_open_result(
+            '{"id":"cli:plugin","result":{"type":"ok"}}', ""
+        )
+        self.assertEqual(kind, "success")
+        self.assertEqual(msg, "")
+
+    def test_popup_ui_busy_is_recoverable(self):
+        kind, msg = switch.classify_open_result(
+            '{"error":{"code":"ui_busy","message":"a popup pane is already open"},"id":"cli:plugin"}',
+            "",
+        )
+        self.assertEqual(kind, "recover_popup")
+        self.assertEqual(msg, "a popup pane is already open")
+
+    def test_other_ui_busy_is_fail_with_message(self):
+        kind, msg = switch.classify_open_result(
+            '{"error":{"code":"ui_busy","message":"copy mode is active"},"id":"cli:plugin"}',
+            "",
+        )
+        self.assertEqual(kind, "fail")
+        self.assertIn("copy mode", msg)
+
+    def test_other_error_code_is_fail(self):
+        kind, _ = switch.classify_open_result(
+            '{"error":{"code":"plugin_not_found","message":"nope"},"id":"cli:plugin"}',
+            "",
+        )
+        self.assertEqual(kind, "fail")
+
+    def test_non_json_uses_stderr_summary(self):
+        kind, msg = switch.classify_open_result("", "herdr: boom")
+        self.assertEqual(kind, "fail")
+        self.assertIn("boom", msg)
+
+    def test_empty_output_is_fail(self):
+        kind, _ = switch.classify_open_result("", "")
+        self.assertEqual(kind, "fail")
+
+
+class TestStalePickerPgids(unittest.TestCase):
+    """stale_picker_pgids — Core: value in / value out."""
+
+    def test_single_group_deduped(self):
+        lines = [
+            "22545 22545 uv run switch.py picker",
+            "22546 22545 /x/python3 switch.py picker",
+            "22568 22545 fzf --ansi --layout=reverse-list --sync",
+        ]
+        self.assertEqual(switch.stale_picker_pgids(lines), [22545])
+
+    def test_multiple_stale_groups_sorted(self):
+        lines = [
+            "111 111 uv run switch.py picker",
+            "222 222 uv run switch.py picker",
+        ]
+        self.assertEqual(switch.stale_picker_pgids(lines), [111, 222])
+
+    def test_excludes_open_preview_record_and_unrelated(self):
+        lines = [
+            "11111 11111 uv run switch.py open",
+            "22222 22222 uv run switch.py preview {}",
+            "33333 33333 uv run switch.py record",
+            "44444 44444 fzf --ansi --sync",
+            "55555 55555 /opt/homebrew/bin/zsh -f zsh",
+        ]
+        self.assertEqual(switch.stale_picker_pgids(lines), [])
+
+    def test_empty_input(self):
+        self.assertEqual(switch.stale_picker_pgids([]), [])
+
+    def test_malformed_lines_ignored(self):
+        lines = ["", "   ", "only-once", "123 not-a-number uv run switch.py picker"]
+        self.assertEqual(switch.stale_picker_pgids(lines), [])
+
+
+class TestSubOpenRecovery(unittest.TestCase):
+    """sub_open — 薄壳集成:ui_busy → kill → 重试 → toast。"""
+
+    def _fake_herdr_script(self, tmpdir, always_busy=False):
+        """Fake herdr CLI: 1st plugin.pane.open → ui_busy, 2nd → ok.
+
+        Returns (script_path, log_path, state_path).
+        """
+        script = tmpdir / "fake_herdr.py"
+        log = tmpdir / "log.txt"
+        state = tmpdir / "calls"
+        script.write_text(
+            f"""#!/usr/bin/env python3
+import json, os, sys
+log = {str(log)!r}
+state = {str(state)!r}
+with open(log, "a") as f:
+    f.write(" ".join(sys.argv[1:]) + "\\n")
+n = 0
+if os.path.exists(state):
+    n = int(open(state).read())
+n += 1
+open(state, "w").write(str(n))
+args = sys.argv[1:]
+if args[:3] == ["plugin", "pane", "open"]:
+    if {always_busy!s} or n == 1:
+        print(json.dumps({{"error": {{"code": "ui_busy", "message": "a popup pane is already open"}}, "id": "cli:plugin"}}))
+        sys.exit(1)
+    print(json.dumps({{"id": "cli:plugin", "result": {{"type": "ok"}}}}))
+    sys.exit(0)
+if args[:2] == ["notification", "show"]:
+    print(json.dumps({{"id": "cli:notification", "result": {{"type": "ok"}}}}))
+    sys.exit(0)
+sys.exit(1)
+""",
+            encoding="utf-8",
+        )
+        os.chmod(script, 0o755)
+        return str(script), str(log), str(state)
+
+    def _run_open(self, script, tmpdir):
+        killed = []
+        with (
+            patch("switch._HERDR", script),
+            patch(
+                "switch._ps_lines",
+                return_value=["22545 22545 uv run switch.py picker"],
+            ),
+            patch(
+                "switch._kill_group",
+                side_effect=killed.append,
+            ),
+            patch("switch.time.sleep", return_value=None),
+            patch.dict("os.environ", {"HERDR_PLUGIN_ID": "herdr-switch"}, clear=False),
+        ):
+            try:
+                switch.sub_open()
+                rc = 0
+            except SystemExit as e:
+                rc = e.code
+        return rc, killed
+
+    def test_busy_then_recover_opens_and_toasts(self):
+        with tempfile.TemporaryDirectory(prefix="switch-open-") as td:
+            tmpdir = Path(td)
+            script, log, _ = self._fake_herdr_script(tmpdir)
+            rc, killed = self._run_open(script, tmpdir)
+            self.assertEqual(rc, 0)
+            self.assertEqual(killed, [22545])
+            calls = Path(log).read_text().splitlines()
+            self.assertEqual(
+                calls.count(
+                    "plugin pane open --plugin herdr-switch --entrypoint picker"
+                ),
+                2,
+            )
+            self.assertTrue(any("notification show" in c for c in calls))
+
+    def test_busy_twice_fails_with_toast(self):
+        with tempfile.TemporaryDirectory(prefix="switch-open-") as td:
+            tmpdir = Path(td)
+            script, log, _ = self._fake_herdr_script(tmpdir, always_busy=True)
+            rc, killed = self._run_open(script, tmpdir)
+            self.assertEqual(rc, 1)
+            self.assertEqual(killed, [22545])
+            calls = Path(log).read_text().splitlines()
+            self.assertEqual(
+                calls.count(
+                    "plugin pane open --plugin herdr-switch --entrypoint picker"
+                ),
+                2,
+            )
+            self.assertTrue(any("notification show" in c for c in calls))
 
 
 if __name__ == "__main__":
