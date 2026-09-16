@@ -267,31 +267,36 @@ class TestNeedsReparse(unittest.TestCase):
         self.assertTrue(idx.needs_reparse(1.0, 11, cached))
 
 
-class TestGroupByCwd(unittest.TestCase):
+class TestSortGlobal(unittest.TestCase):
     def _mk(self, path, cwd, mtime):
         return idx.SessionIndex(
             path=path, sid="s", cwd=cwd, timestamp=mtime, mtime=mtime
         )
 
-    def test_grouped_and_sorted(self):
+    def test_descending_mtime_flat(self):
+        """全局平铺：不分组、不设组头，全部按 mtime 倒序。"""
         indexes = [
-            self._mk("/a/old.jsonl", "/proj/alpha", 100),
-            self._mk("/a/new.jsonl", "/proj/alpha", 200),
-            self._mk("/b/only.jsonl", "/proj/beta", 150),
+            self._mk("/b/x.jsonl", "/proj/b", 100),
+            self._mk("/a/y.jsonl", "/proj/a", 300),
+            self._mk("/a/z.jsonl", "/proj/a", 200),
+            self._mk("/c/w.jsonl", "", 250),  # 无 cwd 无特例，按 mtime 落位
         ]
-        groups = idx.group_by_cwd(indexes)
-        self.assertEqual([c for c, _ in groups], ["/proj/alpha", "/proj/beta"])
+        out = idx.sort_global(indexes)
         self.assertEqual(
-            [i.path for i in groups[0][1]], ["/a/new.jsonl", "/a/old.jsonl"]
+            [i.path for i in out],
+            ["/a/y.jsonl", "/c/w.jsonl", "/a/z.jsonl", "/b/x.jsonl"],
         )
 
-    def test_empty_cwd_last(self):
+    def test_stable_tiebreak_by_path(self):
         indexes = [
-            self._mk("/b/x.jsonl", "", 300),
-            self._mk("/a/y.jsonl", "/proj/a", 100),
+            self._mk("/b/2.jsonl", "/p", 100),
+            self._mk("/a/1.jsonl", "/p", 100),
         ]
-        groups = idx.group_by_cwd(indexes)
-        self.assertEqual([c for c, _ in groups], ["/proj/a", ""])
+        out = idx.sort_global(indexes)
+        self.assertEqual([i.path for i in out], ["/a/1.jsonl", "/b/2.jsonl"])
+
+    def test_empty(self):
+        self.assertEqual(idx.sort_global([]), [])
 
 
 class TestBuildLines(unittest.TestCase):
@@ -306,18 +311,13 @@ class TestBuildLines(unittest.TestCase):
             recent=recent or [("user", first)],
         )
 
-    def test_group_header_and_rows(self):
-        groups = [
-            (
-                "/proj/alpha",
-                [self._mk("/a/1.jsonl", "/proj/alpha", 200, "首条消息内容")],
-            )
-        ]
-        out = idx.build_lines(groups, home="/Users/x")
+    def test_flat_rows_no_group_headers(self):
+        """平铺：每行一个 session，无组头行。"""
+        indexes = [self._mk("/a/1.jsonl", "/proj/alpha", 200, "首条消息内容")]
+        out = idx.build_lines(indexes, home="/Users/x")
         lines = [l for l in out.splitlines() if l]
-        self.assertEqual(len(lines), 2)
-        self.assertIn("── /proj/alpha (1) ──", lines[0])
-        fields = lines[1].split("\t")
+        self.assertEqual(len(lines), 1)
+        fields = lines[0].split("\t")
         self.assertEqual(
             len(fields), 8
         )  # display+search | path | cwd | date | model | first | content | raw_cwd
@@ -326,29 +326,19 @@ class TestBuildLines(unittest.TestCase):
         # 全文搜索文本已并入第 1 列（fzf 不搜隐藏字段）
         self.assertIn("首条消息内容", fields[0])
 
-    def test_group_header_row_has_empty_raw_cwd(self):
-        groups = [("/proj/alpha", [self._mk("/a/1.jsonl", "/proj/alpha", 200, "hi")])]
-        out = idx.build_lines(groups, home="/Users/x")
-        fields = out.splitlines()[0].split("\t")
-        self.assertEqual(len(fields), 8)
-        self.assertEqual(fields[1], "")  # 组头行 path 为空
-        self.assertEqual(fields[7], "")  # 组头行 raw_cwd 为空
-
     def test_empty_result(self):
         self.assertEqual(idx.build_lines([], home="/"), "")
 
     def test_unknown_cwd_label(self):
-        groups = [("", [self._mk("/a/1.jsonl", "", 200, "hi")])]
-        out = idx.build_lines(groups, home="/")
+        """无 cwd 的 session：summary 里显示"未知目录"，cwd 列留空。"""
+        out = idx.build_lines([self._mk("/a/1.jsonl", "", 200, "hi")], home="/")
         self.assertIn("未知目录", out.splitlines()[0])
 
     def test_search_field_capped(self):
         big = "x" * 5000
-        groups = [
-            ("/p", [self._mk("/a/1.jsonl", "/p", 200, "hi", recent=[("user", big)])])
-        ]
-        out = idx.build_lines(groups, home="/")
-        fields = out.splitlines()[1].split("\t")
+        indexes = [self._mk("/a/1.jsonl", "/p", 200, "hi", recent=[("user", big)])]
+        out = idx.build_lines(indexes, home="/")
+        fields = out.splitlines()[0].split("\t")
         self.assertLessEqual(len(fields[0]), 4025)  # summary + 4000 cap + 省略号
 
 
@@ -367,6 +357,25 @@ class TestPreviewText(unittest.TestCase):
         self.assertIn("回复内容", out)  # 内容区 assistant 消息
         self.assertIn("session 信息", out)  # 底部信息条
 
+    def test_preview_highlights_query_in_title_and_content(self):
+        content = idx.CONTENT_SEP.join(
+            ["user: 问题内容 关键词", "assistant: 回复关键词 内容"]
+        )
+        line = f"d\t/a/1.jsonl\t~/proj\t09-04 07:32\tm\t首条 关键词\t{content}"
+        out = idx.preview_text(line, "关键词")
+        # 内容区：默认黄底高亮
+        self.assertIn("\033[43m关键词\033[0m", out)
+        # 标题（bold 上下文）：bold+黄底，reset 恢复 bold，不破坏行内粗体
+        self.assertIn("\033[1;43m关键词\033[1m", out)
+        self.assertIn("\033[1m首条 \033[1;43m关键词\033[1m\033[0m", out)
+
+    def test_preview_no_query_unchanged(self):
+        content = idx.CONTENT_SEP.join(["user: 问题内容"])
+        line = f"d\t/a/1.jsonl\t~/proj\t09-04 07:32\tm\t首条\t{content}"
+        out = idx.preview_text(line, "")
+        self.assertNotIn("\033[43m", out)
+        self.assertNotIn("\033[1;43m", out)
+
     def test_preview_info_bar(self):
         line = "d\t/s/2026-09-04T07-32-19-202Z_01a06b55-2c82-735e-9f26-4411af904df4.jsonl\t~/work\t09-04 07:32\tm\t首条\t"
         out = idx.preview_text(line)
@@ -375,6 +384,60 @@ class TestPreviewText(unittest.TestCase):
 
     def test_empty_line(self):
         self.assertEqual(idx.preview_text(""), "")
+
+
+class TestHighlightQuery(unittest.TestCase):
+    def test_no_query_or_text_unchanged(self):
+        self.assertEqual(idx.highlight_query("abc", ""), "abc")
+        self.assertEqual(idx.highlight_query("", "foo"), "")
+        self.assertEqual(idx.highlight_query(None, "foo"), None)
+
+    def test_single_term_highlighted(self):
+        out = idx.highlight_query("hello searchterm world", "searchterm")
+        self.assertEqual(out, "hello \033[43msearchterm\033[0m world")
+
+    def test_all_occurrences_and_case_insensitive(self):
+        out = idx.highlight_query("Foo bar foo FOO", "foo")
+        self.assertEqual(
+            out, "\033[43mFoo\033[0m bar \033[43mfoo\033[0m \033[43mFOO\033[0m"
+        )
+
+    def test_multi_term_and_irrelevant_text_untouched(self):
+        out = idx.highlight_query("alpha beta gamma", "alpha gamma")
+        self.assertIn("\033[43malpha\033[0m", out)
+        self.assertIn("\033[43mgamma\033[0m", out)
+        self.assertNotIn("\033[43mbeta\033[0m", out)
+
+    def test_overlapping_ranges_merged(self):
+        """相邻/重叠命中合并为一个区间，不产生嵌套 ANSI。"""
+        self.assertEqual(idx.highlight_query("aaaa", "aa"), "\033[43maaaa\033[0m")
+        # (0,4) 覆盖 (0,3)：合并后只保留外层区间
+        self.assertEqual(
+            idx.highlight_query("ababa", "abab aba"), "\033[43mabab\033[0ma"
+        )
+
+    def test_short_terms_ignored(self):
+        self.assertEqual(idx.highlight_query("a b c", "a b c"), "a b c")
+        # 短词与长词混搜：只高亮长词
+        out = idx.highlight_query("x keyword", "x keyword")
+        self.assertEqual(out, "x \033[43mkeyword\033[0m")
+
+    def test_fzf_syntax_stripped(self):
+        out = idx.highlight_query("foo bar", "^foo 'bar' !baz")
+        self.assertIn("\033[43mfoo\033[0m", out)
+        self.assertIn("\033[43mbar\033[0m", out)
+        self.assertNotIn("\033[43mbaz\033[0m", out)
+
+    def test_no_match_returns_unchanged(self):
+        self.assertEqual(idx.highlight_query("nothing here", "missing"), "nothing here")
+
+    def test_custom_style(self):
+        out = idx.highlight_query("foo", "foo", hl="\033[1;43m", reset="\033[1m")
+        self.assertEqual(out, "\033[1;43mfoo\033[1m")
+
+    def test_non_ascii(self):
+        out = idx.highlight_query("好的，第一轮。", "第一")
+        self.assertEqual(out, "好的，\033[43m第一\033[0m轮。")
 
 
 class TestPickerParseFzfOutput(unittest.TestCase):
@@ -400,7 +463,7 @@ class TestPickerParseFzfOutput(unittest.TestCase):
         self.assertEqual(line.split("\t")[7], "/Users/ming.chen/work/celld")
 
 
-class TestScopeGroups(unittest.TestCase):
+class TestScopeIndexes(unittest.TestCase):
     """ctrl-g 二次筛选（仿 snacks.nvim grep picker 的 <c-g>=tcd+picker_grep）。"""
 
     def _mk(self, path, cwd, mtime):
@@ -408,24 +471,23 @@ class TestScopeGroups(unittest.TestCase):
             path=path, sid="s", cwd=cwd, timestamp=mtime, mtime=mtime
         )
 
-    def _groups(self):
+    def _indexes(self):
         return [
-            ("/proj/alpha", [self._mk("/a/1.jsonl", "/proj/alpha", 200)]),
-            ("/proj/beta", [self._mk("/b/1.jsonl", "/proj/beta", 150)]),
+            self._mk("/a/1.jsonl", "/proj/alpha", 200),
+            self._mk("/b/1.jsonl", "/proj/beta", 150),
         ]
 
     def test_filter_to_one_cwd(self):
-        groups = idx.scope_groups(self._groups(), "/proj/alpha")
-        self.assertEqual([c for c, _ in groups], ["/proj/alpha"])
-        self.assertEqual(len(groups[0][1]), 1)
+        out = idx.scope_indexes(self._indexes(), "/proj/alpha")
+        self.assertEqual([i.path for i in out], ["/a/1.jsonl"])
 
     def test_empty_cwd_returns_all(self):
         """空 cwd（组头行 / alt-g 恢复全量）→ 原样返回。"""
-        groups = self._groups()
-        self.assertEqual(idx.scope_groups(groups, ""), groups)
+        indexes = self._indexes()
+        self.assertEqual(idx.scope_indexes(indexes, ""), indexes)
 
     def test_unknown_cwd_returns_empty(self):
-        self.assertEqual(idx.scope_groups(self._groups(), "/no/such"), [])
+        self.assertEqual(idx.scope_indexes(self._indexes(), "/no/such"), [])
 
 
 class TestRedactAndFmt(unittest.TestCase):

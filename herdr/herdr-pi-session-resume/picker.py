@@ -588,17 +588,19 @@ def sub_agentstart() -> None:
 
 def sub_picker() -> None:
     here = Path(__file__).resolve().parent
-    preview_cmd = f"uv run {shlex.quote(str(here / 'picker.py'))} preview {{}}"
+    # {} / {q} 都会被 fzf 单引号包裹（QuoteEntry），参数传递安全；
+    # {q} = 当前搜索词，preview 用它高亮命中词。
+    preview_cmd = f"uv run {shlex.quote(str(here / 'picker.py'))} preview {{}} {{q}}"
     scope_cmd = f"uv run {shlex.quote(str(here / 'picker.py'))}"
     query = ""
     home = str(Path.home())
 
     while True:
-        indexes = build_indexes()
+        indexes = idx.sort_global(build_indexes())
         if not indexes:
             fail("未找到任何 pi session（~/.pi/agent/sessions/）")
-        groups = idx.group_by_cwd(indexes)
-        lines = idx.build_lines(groups, home)
+        lines = idx.build_lines(indexes, home)
+        projects = len({i.cwd for i in indexes if i.cwd})
         # ctrl-g: 二次筛选（仿 snacks.nvim grep picker 的 <c-g>=tcd+picker_grep）——
         #   reload 用 scope 子命令的 stdout 动态替换输入列表（fzf 不重启、query 保留），
         #   列表收窄到当前选中 session 的项目目录后可继续输入筛选。
@@ -610,7 +612,7 @@ def sub_picker() -> None:
             f"alt-g:reload({scope_cmd} scope)"
         )
         header = (
-            f"共 {len(indexes)} 个 session · {len(groups)} 个项目    "
+            f"共 {len(indexes)} 个 session · {projects} 个项目    "
             "enter=resume · alt+enter=fork · ctrl+y=复制 · ctrl-g=项目内筛选 · alt-g=全部 · esc=退出"
         )
         rc, out = run_fzf(
@@ -644,22 +646,28 @@ def sub_picker() -> None:
 
 
 def sub_scope() -> None:
-    """ctrl-g 二次筛选：输出仅包含指定 cwd 项目的 fzf 行。
+    """ctrl-g 二次筛选：输出仅包含指定 cwd 项目的 fzf 行（全局排序）。
 
-    由 fzf become 调用：become 用本命令的 stdout 替换 fzf 输入并重启
+    由 fzf reload 调用：reload 用本命令的 stdout 替换 fzf 输入并重启
     （query 保留），等价于 snacks.nvim grep picker 的 <c-g>（tcd 到当前项
     所在目录后重新筛选）。参数为空 → 输出全量（alt-g 恢复全部）。
     """
     cwd = sys.argv[2] if len(sys.argv) > 2 else ""
     home = str(Path.home())
-    indexes = build_indexes()
-    groups = idx.scope_groups(idx.group_by_cwd(indexes), cwd)
-    sys.stdout.write(idx.build_lines(groups, home))
+    indexes = idx.sort_global(idx.scope_indexes(build_indexes(), cwd))
+    sys.stdout.write(idx.build_lines(indexes, home))
 
 
 def sub_preview() -> None:
+    """fzf preview 渲染：`preview <line> [<query>]`。
+
+    <query> 由 fzf 的 {q} 占位符注入（当前搜索词，空串 = 无查询）；
+    preview_text 用它高亮命中词。fzf 对占位符做单引号包裹，query 始终
+    是单个参数（含空格也不拆词）；join 只是防御其它调用路径。
+    """
     line = sys.argv[2] if len(sys.argv) > 2 else ""
-    sys.stdout.write(idx.preview_text(line))
+    query = " ".join(sys.argv[3:])
+    sys.stdout.write(idx.preview_text(line, query))
 
 
 def sub_open() -> None:

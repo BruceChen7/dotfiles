@@ -2,7 +2,7 @@
 """
 session_index.py — herdr-pi-session-resume 核心（纯函数，value in / value out）。
 
-职责：把 pi session JSONL 解析成可搜索索引，按 cwd 分组，渲染 fzf 行与
+职责：把 pi session JSONL 解析成可搜索索引，按全局 mtime 排序渲染 fzf 行与
 preview 详情。本文件不含 herdr CLI / fzf / 剪贴板等副作用（那些在 picker.py）。
 
 数据格式（pi session，v3，见 docs/session-format.md）：
@@ -355,39 +355,29 @@ def cache_merge(cache: dict, fresh: list[SessionIndex]) -> dict:
     return merged
 
 
-# ---- 纯函数：分组与渲染 ------------------------------------------------------
+# ---- 纯函数：全局排序与筛选 --------------------------------------------------
 
 
-def group_by_cwd(indexes: list[SessionIndex]) -> list[tuple[str, list[SessionIndex]]]:
-    """按 cwd 分组：组间按最近活动（组内最大 mtime）倒序，组内按 mtime 倒序。
+def sort_global(indexes: list[SessionIndex]) -> list[SessionIndex]:
+    """全局平铺排序：按 mtime 倒序（最新 session 在最上），不分项目。
 
-    无 cwd 的 session 归入 "" 组（渲染为 "未知目录"），排在最后。
+    取代旧的分组排序（group_by_cwd 已移除）：整条时间线混排，无组头；
+    同 mtime 用 path 作稳定 tiebreak。无 cwd 的 session 无特例，按
+    mtime 自然落位。
     """
-    groups: dict[str, list[SessionIndex]] = {}
-    for idx in indexes:
-        groups.setdefault(idx.cwd, []).append(idx)
-    items = sorted(
-        groups.items(),
-        key=lambda kv: (-max(i.mtime for i in kv[1]), kv[0]),
-    )
-    # 空 cwd 组垫底（-max 会把空组排前面，需单独处理）
-    non_empty = [(c, sorted(v, key=lambda i: -i.mtime)) for c, v in items if c]
-    empty = [(c, sorted(v, key=lambda i: -i.mtime)) for c, v in items if not c]
-    return non_empty + empty
+    return sorted(indexes, key=lambda i: (-i.mtime, i.path))
 
 
-def scope_groups(
-    groups: list[tuple[str, list[SessionIndex]]], cwd: str
-) -> list[tuple[str, list[SessionIndex]]]:
-    """二次筛选（ctrl-g）：只保留 cwd 匹配的组；cwd 为空 → 返回全量。
+def scope_indexes(indexes: list[SessionIndex], cwd: str) -> list[SessionIndex]:
+    """ctrl-g 二次筛选：只保留 cwd 完全匹配的 session；cwd 为空 → 全量。
 
     snacks.nvim grep picker 的 `<c-g>` = tcd + picker_grep（收窄到当前项
     所在目录后重新筛选）在 session picker 里的对应物：把列表收窄到当前
     选中 session 的项目目录，fzf 重启后 query 保留，可继续输入二次筛选。
     """
     if not cwd:
-        return groups
-    return [(c, v) for c, v in groups if c == cwd]
+        return indexes
+    return [i for i in indexes if i.cwd == cwd]
 
 
 def redact_path(cwd: str, home: str) -> str:
@@ -428,6 +418,69 @@ def _flat_field(text: str) -> str:
 CONTENT_SEP = "\x1f"  # 行内消息分隔符（fzf 行不能含换行，用 Unit Separator）
 CONTENT_NL = "\x1e"  # 消息内换行占位（Record Separator；preview 解码回 \n）
 
+# preview 内命中词高亮样式（ANSI）。正文上下文用黄底；first 摘要行是 bold
+# 上下文，用 bold+黄底、reset 恢复 bold，避免高亮词把行内剩余文字重置成常规体。
+ANSI_HL_QUERY = "\033[43m"  # 黄底（grep 风格，深/浅终端都可读）
+ANSI_RESET = "\033[0m"
+
+# highlight_query 忽略长度小于该值的词（单字符搜索会全屏噪音高亮）
+MIN_QUERY_TERM_LEN = 2
+
+
+def highlight_query(
+    text: str,
+    query: str,
+    hl: str = ANSI_HL_QUERY,
+    reset: str = ANSI_RESET,
+) -> str:
+    """preview 内容里给命中词加 ANSI 高亮（value in / value out）。
+
+    语义对齐 fzf 的 --exact + 空格 AND：query 按空白拆词，逐词做不区分
+    大小写的子串查找；词长 < MIN_QUERY_TERM_LEN 忽略（防单字符噪音）。
+    fzf 语法前缀（' " ! ^ $）从词首尾剥离后参与匹配。全部区间先收集、
+    合并重叠，再一次性包裹 ANSI——避免嵌套转义码把颜色状态搞乱。
+
+    hl/reset 可定制：调用方处于 bold 等属性上下文时传恢复样式的 reset，
+    使高亮词不破坏行内其它属性（见 preview_text 的 first 行）。
+    """
+    if not text or not query:
+        return text
+    terms = [t.strip("'\"!").strip("^$") for t in re.split(r"\s+", query.strip())]
+    terms = [t for t in terms if len(t) >= MIN_QUERY_TERM_LEN]
+    if not terms:
+        return text
+
+    lower = text.lower()
+    ranges: list[tuple[int, int]] = []
+    for term in terms:
+        needle = term.lower()
+        start = 0
+        while True:
+            i = lower.find(needle, start)
+            if i < 0:
+                break
+            ranges.append((i, i + len(term)))
+            start = i + len(term)
+    if not ranges:
+        return text
+
+    ranges.sort()
+    merged: list[list[int]] = [list(ranges[0])]
+    for s, e in ranges[1:]:
+        if s <= merged[-1][1]:  # 相邻/重叠合并（重叠只算一个区间，不嵌套 ANSI）
+            merged[-1][1] = max(merged[-1][1], e)
+        else:
+            merged.append([s, e])
+
+    out: list[str] = []
+    last = 0
+    for s, e in merged:
+        out.append(text[last:s])
+        out.append(hl + text[s:e] + reset)
+        last = e
+    out.append(text[last:])
+    return "".join(out)
+
 
 def _content_field(recent: list) -> str:
     """recent [(role, text)] → 单字段：`user: text\x1fuser: text`。
@@ -441,47 +494,43 @@ def _content_field(recent: list) -> str:
     )
 
 
-def build_lines(groups: list[tuple[str, list[SessionIndex]]], home: str) -> str:
+def build_lines(indexes: list[SessionIndex], home: str) -> str:
     """渲染 fzf 行（TSV，第 1 列显示，其余列供 preview/动作）：
 
         display+search \t path \t cwd \t date \t model \t first \t content \t raw_cwd
 
-    组头行：display = `── <cwd> (N) ──`，path 为空（选中组头无动作）。
-    组内第 1 列 = `MM-DD HH:MM · <cwd> · <首条消息截断>` + 全文搜索文本——
-    fzf 只搜索变换后行（隐藏字段不可搜），所以全文必须并入第 1 列；
-    显示时 fzf 自动截断到终端宽度，搜索则匹配整列。
-    preview 的 `{}` 是原始行（字段可解析）。
-    content 列 = 完整消息（带 role），供 preview 展示全部内容。
-    raw_cwd 列 = 未 redact 的原始 cwd，供 ctrl-g 二次筛选（scope）精确匹配。
+    全局平铺（无组头；排序由调用方 sort_global 负责）。第 1 列 =
+    `MM-DD HH:MM · <cwd> · <首条消息截断>` + 全文搜索文本——fzf 只搜索
+    变换后行（隐藏字段不可搜），所以全文必须并入第 1 列；显示时 fzf
+    自动截断到终端宽度，搜索则匹配整列。preview 的 `{}` 是原始行
+    （字段可解析）。content 列 = 完整消息（带 role），供 preview 展示
+    全部内容。raw_cwd 列 = 未 redact 的原始 cwd，供 ctrl-g 二次筛选
+    （scope）精确匹配。
     """
     lines = []
-    for cwd, indexes in groups:
-        label = redact_path(cwd, home) if cwd else "未知目录"
-        head = f"── {label} ({len(indexes)}) ──"
-        lines.append(f"{head}\t\t\t\t\t\t\t")
-        for idx in indexes:
-            summary = (
-                f"{fmt_timestamp(idx.timestamp)} · {redact_path(idx.cwd, home)}"
-                f" · {_truncate(idx.first_msg, 60)}"
+    for idx in indexes:
+        label = redact_path(idx.cwd, home) or "未知目录"
+        summary = (
+            f"{fmt_timestamp(idx.timestamp)} · {label} · {_truncate(idx.first_msg, 60)}"
+        )
+        search = _flat_field(idx.search_text)
+        if len(search) > 4000:  # 行级 cap，防 fzf 单行过大
+            search = search[:4000] + "…"
+        display = f"{summary}  {search}"
+        lines.append(
+            "\t".join(
+                [
+                    display,
+                    idx.path,
+                    redact_path(idx.cwd, home),
+                    fmt_timestamp(idx.timestamp),
+                    idx.model,
+                    _truncate(idx.first_msg, 200),
+                    _content_field(idx.recent),
+                    idx.cwd,
+                ]
             )
-            search = _flat_field(idx.search_text)
-            if len(search) > 4000:  # 行级 cap，防 fzf 单行过大
-                search = search[:4000] + "…"
-            display = f"{summary}  {search}"
-            lines.append(
-                "\t".join(
-                    [
-                        display,
-                        idx.path,
-                        redact_path(idx.cwd, home),
-                        fmt_timestamp(idx.timestamp),
-                        idx.model,
-                        _truncate(idx.first_msg, 200),
-                        _content_field(idx.recent),
-                        idx.cwd,
-                    ]
-                )
-            )
+        )
     if not lines:
         return ""
     return "\n".join(lines) + "\n"
@@ -490,12 +539,15 @@ def build_lines(groups: list[tuple[str, list[SessionIndex]]], home: str) -> str:
 # ---- 纯函数：preview 详情 ----------------------------------------------------
 
 
-def preview_text(line: str) -> str:
+def preview_text(line: str, query: str = "") -> str:
     """fzf preview 渲染（方案 A：完整内容在上 + session 信息在下）。
 
     行 = build_lines 的 TSV（7 列）；组头行(path 空)只显示分组标题。
     内容区显示 content 列（带 role 的完整消息，按 CONTENT_SEP 拆回）；
     信息区固定在底部（session id / cwd / model / 消息数 / 时间 / 文件）。
+
+    query 非空时对标题/内容区命中词加高亮（highlight_query；fzf 通过
+    preview 命令的 {q} 占位符传入当前搜索词）。信息区不高亮。
     """
     if not line:
         return ""
@@ -511,11 +563,17 @@ def preview_text(line: str) -> str:
     content = fields[6] if len(fields) > 6 else ""
 
     # 内容区：完整消息（role 着色，换行解码）
-    out = [f"\033[1m{_truncate(first, 120)}\033[0m", ""]
+    # first 行处于 bold 上下文：高亮用 bold+黄底、reset 恢复 bold，
+    # 避免命中词把该行剩余文字重置成常规体。
+    title = highlight_query(
+        _truncate(first, 120), query, hl="\033[1;43m", reset="\033[1m"
+    )
+    out = [f"\033[1m{title}\033[0m", ""]
     if content:
         for seg in content.split(CONTENT_SEP):
             role, _, text = seg.partition(": ")
             text = text.replace(CONTENT_NL, "\n")
+            text = highlight_query(text, query)
             if role == "user":
                 out.append(f"\033[34muser\033[0m: {text}")
             else:

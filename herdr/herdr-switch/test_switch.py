@@ -1053,7 +1053,8 @@ class TestPreviewText(unittest.TestCase):
         )
         self.assertEqual(switch.preview_text(line), expected)
 
-    def test_space_snapshot_appended_after_divider(self):
+    def test_space_snapshot_as_main_with_rich_footer(self):
+        """V3：带快照的 space 行 → 快照为主内容，Tier 1 压缩成两行 footer 沉底。"""
         detail = json.dumps({"number": 13, "agents": []})
         line = "\t".join(
             [
@@ -1072,14 +1073,91 @@ class TestPreviewText(unittest.TestCase):
         )
         snap = "\x1b[32m$ git status\x1b[0m\n\nclean"
         expected = (
-            switch.preview_text(line)
-            + "\n"
-            + switch.PREVIEW_DIVIDER
-            + "\n"
-            + snap
+            "\n".join(
+                [
+                    snap,
+                    "",
+                    switch.PREVIEW_DIVIDER,
+                    f"{switch.COLOR_BOLD}status-service{switch.RESET}  #13",
+                    "无 agent（纯终端 pane）",
+                ]
+            )
             + "\n"
         )
         self.assertEqual(switch.preview_text(line, snapshot=snap), expected)
+
+    def test_space_rich_footer_exact(self):
+        """富 footer 两行形状：标题 #N · tabs/panes · active + agents 内联（状态点+name+(branch)）。"""
+        detail = json.dumps(
+            {
+                "number": 13,
+                "tab_count": 2,
+                "pane_count": 2,
+                "active_tab": "t1",
+                "agents": [
+                    {"name": "pi", "status": "working", "branch": "feat/x"},
+                    {"name": "codex", "status": "idle", "branch": None},
+                ],
+            }
+        )
+        line = "\t".join(
+            [
+                "display",
+                "space",
+                "w1E",
+                "-",
+                "status-service",
+                "",
+                "2 panes",
+                "status-service",
+                "-",
+                "0",
+                detail,
+            ]
+        )
+        expected = (
+            "\n".join(
+                [
+                    "SNAP\nline2",
+                    "",
+                    switch.PREVIEW_DIVIDER,
+                    f"{switch.COLOR_BOLD}status-service{switch.RESET}  #13  ·  2 tabs · 2 panes · t1",
+                    f"{switch.DOT_WORKING} pi (feat/x)  {switch.DOT_OTHER} codex",
+                ]
+            )
+            + "\n"
+        )
+        self.assertEqual(switch.preview_text(line, snapshot="SNAP\nline2"), expected)
+
+    def test_space_fallback_footer_with_snapshot(self):
+        """detail 损坏但快照存在：footer 用回退字段（id · panes · 状态）。"""
+        line = "\t".join(
+            [
+                "display",
+                "space",
+                "w1",
+                "-",
+                "pi-kit",
+                "",
+                "1 panes",
+                "pi-kit",
+                "-",
+                "0",
+                "{not json",
+            ]
+        )
+        expected = (
+            "\n".join(
+                [
+                    "SNAP",
+                    "",
+                    switch.PREVIEW_DIVIDER,
+                    "id: w1 · panes: 1 panes · 状态: -",
+                ]
+            )
+            + "\n"
+        )
+        self.assertEqual(switch.preview_text(line, snapshot="SNAP"), expected)
 
     def test_agent_row_ignores_snapshot(self):
         line = "\t".join(
@@ -1430,7 +1508,13 @@ class TestSubPreview(unittest.TestCase):
         snap.assert_called_once_with(line)
         rendered = "".join(c.args[0] for c in out.write.call_args_list)
         self.assertIn(switch.PREVIEW_DIVIDER, rendered)
-        self.assertTrue(rendered.endswith("SNAP\n"))
+        # V3：快照为主内容在前，footer 沉底
+        self.assertTrue(rendered.startswith("SNAP\n"))
+        self.assertTrue(
+            rendered.endswith(
+                f"{switch.COLOR_BOLD}status-service{switch.RESET}  #13\n无 agent（纯终端 pane）\n"
+            )
+        )
 
 
 # ---- Slice 14-15: fetch_data validation + main loop ------------------------

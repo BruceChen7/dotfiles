@@ -547,12 +547,50 @@ def preview_space_block(detail: dict, name: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def preview_text(line: str, snapshot: str | None = None) -> str:
-    """fzf preview renderer — old preview.sh byte-equivalent for agent rows and
-    the no-detail fallback; space rows with F_DETAIL render the rich block.
+def preview_footer(
+    detail: dict, name: str, *, target: str = "", title: str = "", status: str = ""
+) -> str:
+    """Tier 1 富信息 → 两行 footer：标题 `label #N · tabs · panes · active`
+    + agents 内联（状态点 + name + (branch)）。detail 缺失时用回退字段。"""
+    if detail is not None:
+        head = f"{COLOR_BOLD}{name}{RESET}"
+        number = detail.get("number")
+        if number is not None:
+            head += f"  #{number}"
+        meta: list[str] = []
+        tabs = detail.get("tab_count")
+        panes = detail.get("pane_count")
+        if tabs is not None and panes is not None:
+            meta.append(f"{tabs} tabs · {panes} panes")
+        elif panes is not None:
+            meta.append(f"{panes} panes")
+        active_tab = detail.get("active_tab")
+        if active_tab:
+            meta.append(active_tab)
+        if meta:
+            head += "  ·  " + " · ".join(meta)
+        agents = detail.get("agents") or []
+        if not agents:
+            agent_line = "无 agent（纯终端 pane）"
+        else:
+            parts = []
+            for a in agents:
+                p = f"{_status_dot(a.get('status', ''))} {a.get('name', '')}"
+                branch = a.get("branch")
+                if branch:
+                    p += f" ({branch})"
+                parts.append(p)
+            agent_line = "  ".join(parts)
+        return f"{head}\n{agent_line}"
+    return f"id: {target} · panes: {title} · 状态: {status}"
 
-    *snapshot* (optional, shell-supplied) is appended after a divider for
-    space rows; agent rows ignore it.
+
+def preview_text(line: str, snapshot: str | None = None) -> str:
+    """fzf preview renderer.
+
+    agent 行与无快照的 space 行保持旧字节级块；带 Tier-2 快照的 space 行
+    以快照为主内容，Tier 1 压缩成两行 footer 沉底（原型 V3：snapshot 占满
+    窗格，footer 在最后 → fzf --preview-window=follow 底对齐）。
     """
     if not line:
         return ""
@@ -565,8 +603,8 @@ def preview_text(line: str, snapshot: str | None = None) -> str:
     cwd = fields[F_CWD] if len(fields) > F_CWD else ""
     title = fields[F_TITLE] if len(fields) > F_TITLE else ""
 
-    out = [f"{COLOR_BOLD}{name}{RESET}", ""]
     if kind == "agent":
+        out = [f"{COLOR_BOLD}{name}{RESET}", ""]
         out += [
             f"状态:   {status}",
             f"space:  {ws}",
@@ -574,21 +612,35 @@ def preview_text(line: str, snapshot: str | None = None) -> str:
             f"终端:   {title}",
             f"pane:   {target}",
         ]
-    else:
-        detail_raw = fields[F_DETAIL] if len(fields) > F_DETAIL else ""
-        detail = None
-        if detail_raw:
-            try:
-                detail = json.loads(detail_raw)
-            except json.JSONDecodeError:
-                detail = None
-        if detail is not None:
-            out = [preview_space_block(detail, name).rstrip("\n")]
-        else:
-            out += [f"id:     {target}", f"panes:  {title}", f"状态:   {status}"]
-        if snapshot and kind == "space":
-            out += ["", PREVIEW_DIVIDER, snapshot.rstrip("\n")]
-    return "\n".join(out) + "\n"
+        return "\n".join(out) + "\n"
+
+    detail_raw = fields[F_DETAIL] if len(fields) > F_DETAIL else ""
+    detail = None
+    if detail_raw:
+        try:
+            detail = json.loads(detail_raw)
+        except json.JSONDecodeError:
+            detail = None
+
+    if snapshot:
+        footer = preview_footer(detail, name, target=target, title=title, status=status)
+        return "\n".join([snapshot.rstrip("\n"), "", PREVIEW_DIVIDER, footer]) + "\n"
+
+    # 无快照（读取失败/非 space）：保持旧块字节级不变
+    if detail is not None:
+        return preview_space_block(detail, name)
+    return (
+        "\n".join(
+            [
+                f"{COLOR_BOLD}{name}{RESET}",
+                "",
+                f"id:     {target}",
+                f"panes:  {title}",
+                f"状态:   {status}",
+            ]
+        )
+        + "\n"
+    )
 
 
 def select_snapshot_pane(
@@ -799,12 +851,12 @@ def worktree_branch_map() -> dict[str, str]:
     }
 
 
-SNAPSHOT_LINES = 12  # Tier 2 快照行数上限（控制 40% preview 窗格体积）
+SNAPSHOT_LINES = 24  # Tier 2 快照行数上限（快照已是 preview 主内容；footer 沉底）
 
 
 def pane_snapshot_block(line: str, timeout: int = 3) -> str | None:
     """Tier 2：space 行 → 活动 pane 的真实终端内容（`herdr pane read
-    --source visible --format ansi --lines 12`）。只对 space 行生效；
+    --source visible --format ansi --lines SNAPSHOT_LINES`）。只对 space 行生效；
     pane list 失败 / 无 pane / pane read 失败 / 空输出 → None（静默省略，
     不影响 Tier 1）。薄壳：IO 在此层，pane 选择逻辑在 FC 的 select_snapshot_pane。"""
     try:
@@ -959,7 +1011,7 @@ def run_fzf(
         header,
         "--preview",
         preview_cmd,
-        "--preview-window=right:40%",
+        "--preview-window=right:40%,follow",
         "--bind",
         binds,
         "--print-query",
