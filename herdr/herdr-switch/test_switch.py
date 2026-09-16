@@ -7,6 +7,7 @@ Usage: uv run python test_switch.py
 
 import json
 import os
+import re
 import sys
 import tempfile
 import unittest
@@ -233,6 +234,22 @@ def _space_fixture(**over):
 
 WSMAP = {"w1": {"label": "pi-kit", "pane_count": 2}}
 TABMAP = {"w1:t1": "t1"}
+
+
+class TestPlaceholderRow(unittest.TestCase):
+    """placeholder_row — 顶部占位行:永不匹配查询,选中时是无操作。"""
+
+    def test_eleven_fields_space_kind_empty_target(self):
+        fields = switch.placeholder_row().split("\t")
+        self.assertEqual(len(fields), 11)
+        self.assertEqual(fields[switch.F_KIND], "space")
+        self.assertEqual(fields[switch.F_TARGET], "")
+
+    def test_display_has_no_letters(self):
+        """占位行不含任何 latin/CJK 字符 → 任何查询都匹配不到它。"""
+        display = switch.placeholder_row().split("\t")[switch.F_DISPLAY]
+        self.assertFalse(re.search(r"[A-Za-z0-9\u4e00-\u9fff]", display))
+        self.assertGreater(len(display), 0)
 
 
 class TestBranchSuffix(unittest.TestCase):
@@ -1394,7 +1411,8 @@ class TestHeaderText(unittest.TestCase):
     def test_header_includes_current_space_and_tab(self):
         self.assertEqual(
             switch.header_text("pi-kit", "t1"),
-            "当前 space: pi-kit · 当前 tab: t1    enter=focus · alt+enter=attach · ctrl+x=close · esc=退出 · 最近使用在底部",
+            "当前 space: pi-kit · 当前 tab: t1    enter=focus · alt+enter=attach · "
+            "ctrl+x=close · esc=退出 · 输入后光标跳至最佳匹配 · 最近使用在底部",
         )
 
 
@@ -1580,6 +1598,44 @@ class TestPickerLoop(unittest.TestCase):
         self.assertTrue(binds.startswith("alt-enter:accept"))
         self.assertIn("start:last", binds)
         self.assertIn("load:last", binds)
+
+    def test_first_open_binds_change_first(self):
+        """查询变化时光标应跳到最佳匹配(change:first)。"""
+        herdr = self._herdr_fake()
+        rf, _, _ = self._run_picker([(0, f"q\n\n{self._agent_line()}\n")], herdr)
+        binds = rf.call_args.kwargs["binds"]
+        self.assertIn("change:first", binds)
+
+    def test_lines_start_with_placeholder_row(self):
+        """传给 fzf 的列表以占位行开头 — change:first 的光标落点。"""
+        herdr = self._herdr_fake()
+        rf, _, _ = self._run_picker([(0, f"q\n\n{self._agent_line()}\n")], herdr)
+        lines = rf.call_args.args[0]
+        self.assertTrue(lines.startswith(switch.placeholder_row() + "\n"))
+
+    def test_placeholder_selection_is_noop_and_continues(self):
+        """选中占位行(空 target)→ 不 focus/close,循环继续。"""
+        herdr = self._herdr_fake()
+        placeholder = switch.placeholder_row()
+        rf, _, _ = self._run_picker(
+            [(0, f"q\n\n{placeholder}\n"), (0, f"q\n\n{self._agent_line()}\n")],
+            herdr,
+        )
+        self.assertEqual(rf.call_count, 2)  # 占位行被跳过,循环继续
+        # 占位行(空 target)没有触发任何 focus/close 调用
+        self.assertNotIn(
+            ("workspace", "focus", ""), herdr.log
+        )
+        self.assertNotIn(
+            ("agent", "focus", ""), herdr.log
+        )
+
+    def test_fzf_args_use_relevance_sort_not_no_sort(self):
+        """--no-sort 会让光标钉在第一个 input 序模糊匹配(分支串几乎匹配一切);
+        必须用相关度排序,--tiebreak=index 保证空查询时保持 recency 输入序。"""
+        args = switch._fzf_base_args()
+        self.assertNotIn("--no-sort", args)
+        self.assertIn("--tiebreak=index", args)
 
     def test_esc_exits_silently(self):
         herdr = self._herdr_fake()

@@ -36,6 +36,10 @@ from typing import NoReturn
 MAX_RECENT = 20
 STATE_FILE_NAME = "prev-space.json"
 
+# Placeholder display: pure box-drawing characters, so fzf never matches it
+# against any latin/CJK query (see placeholder_row).
+PLACEHOLDER_DISPLAY = "─" * 24
+
 # Tab-separated line layout (must stay compatible with preview.sh's fields):
 #   1 display  2 kind  3 target  4 status  5 ws  6 cwd  7 title  8 name
 #   9 raw  10 running
@@ -295,6 +299,26 @@ def resolve_space_details(
         )
         for w in workspaces
     }
+
+
+def placeholder_row() -> str:
+    """Top row that never matches a query (pure box-drawing chars — no
+    latin/CJK letters), so it drops out of every non-empty fzf result.
+
+    The picker prepends it at index 0 and binds change:first: fzf fires the
+    change action *before* re-searching (vset(0) on the previous merger), so
+    the cursor is parked here and then falls to index 0 of the new result =
+    the best match. Without it, fzf's retain-position keeps the cursor on
+    whatever row it started on whenever that row still fuzzy-matches — and
+    the current-workspace row matches nearly every query, so Enter just
+    re-focused the current pane (a no-op).
+
+    kind=space with an empty target: if the row is ever selected (only
+    possible with an empty query), the picker treats it as a no-op.
+    """
+    return "\t".join(
+        [PLACEHOLDER_DISPLAY, "space", "", "-", "", "", "", "", "-", "0", ""]
+    )
 
 
 def build_lines(
@@ -875,7 +899,8 @@ def fetch_data() -> tuple[list, list, list, str, str]:
 def header_text(cur_ws: str, cur_tab: str) -> str:
     return (
         f"当前 space: {cur_ws} · 当前 tab: {cur_tab}"
-        "    enter=focus · alt+enter=attach · ctrl+x=close · esc=退出 · 最近使用在底部"
+        "    enter=focus · alt+enter=attach · ctrl+x=close · esc=退出 · "
+        "输入后光标跳至最佳匹配 · 最近使用在底部"
     )
 
 
@@ -892,7 +917,11 @@ def _fzf_base_args() -> list[str]:
         "\t",
         "--with-nth=1",
         "--no-multi",
-        "--no-sort",
+        # Relevance sort: typing a query ranks the best match first. The
+        # recency order is preserved for empty queries via --tiebreak=index
+        # (all scores tie → input order). --no-sort was dropped because it
+        # made the cursor stick to the first input-order fuzzy match (long
+        # branch/path strings match almost any query).
         "--tiebreak=index",
     ]
 
@@ -1079,11 +1108,19 @@ def sub_picker() -> None:
                     f"{time.strftime('%H:%M:%S')} OK cwds={len(branch_by_cwd)} rows={len(branch_by_row)}\n"
                 )
 
+        # Placeholder row at index 0 (see placeholder_row): change:first parks
+        # the cursor here before re-searching, so after any query change the
+        # cursor lands on the best match instead of staying on the
+        # current-workspace row (which fuzzy-matches nearly every query).
+        lines = placeholder_row() + ("\n" + lines if lines else "")
+
         binds = "alt-enter:accept"
         if next_index is not None:
             binds += f",start:pos({next_index}),load:pos({next_index})"
         else:
-            binds += ",start:last,load:last"
+            # change:first fires on query change (before re-search): cursor →
+            # placeholder → falls to index 0 of the new result = best match.
+            binds += ",start:last,load:last,change:first"
 
         # Always-on debug dumps (same files as the old picker.sh).
         try:
@@ -1118,6 +1155,8 @@ def sub_picker() -> None:
         fields = line.split("\t")
         kind = fields[F_KIND]
         target = fields[F_TARGET]
+        if not target:
+            continue  # placeholder row — nothing to focus/close/attach
         name = fields[F_NAME]
         raw = fields[F_RAW]
         running = fields[F_RUNNING]
