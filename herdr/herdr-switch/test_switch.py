@@ -237,7 +237,7 @@ TABMAP = {"w1:t1": "t1"}
 
 
 class TestPlaceholderRow(unittest.TestCase):
-    """placeholder_row — 顶部占位行:永不匹配查询,选中时是无操作。"""
+    """placeholder_row — 顶部占位行:不匹配查询，空查询选中时无操作。"""
 
     def test_eleven_fields_space_kind_empty_target(self):
         fields = switch.placeholder_row().split("\t")
@@ -655,6 +655,47 @@ class TestParseFzfOutput(unittest.TestCase):
     def test_no_trailing_newline(self):
         self.assertEqual(
             switch.parse_fzf_output("q\nctrl-x\nw1"), ("q", "ctrl-x", "w1")
+        )
+
+
+class TestRecoverQuerySelection(unittest.TestCase):
+    def setUp(self):
+        self.placeholder = switch.placeholder_row()
+        self.agent = "display\tagent\tw1:p3\tidle"
+        self.space = "display\tspace\tw2\t-"
+
+    def test_normal_selection_is_preserved(self):
+        self.assertEqual(
+            switch.recover_query_selection("pi", self.agent, [self.space]),
+            self.agent,
+        )
+
+    def test_nonempty_query_placeholder_recovers_best_actionable_result(self):
+        self.assertEqual(
+            switch.recover_query_selection(
+                "pi", self.placeholder, [self.placeholder, self.agent, self.space]
+            ),
+            self.agent,
+        )
+
+    def test_recovery_skips_malformed_and_empty_target_rows(self):
+        self.assertEqual(
+            switch.recover_query_selection(
+                "pi", self.placeholder, ["malformed", self.placeholder, self.space]
+            ),
+            self.space,
+        )
+
+    def test_empty_query_placeholder_stays_noop(self):
+        self.assertEqual(
+            switch.recover_query_selection("", self.placeholder, [self.agent]),
+            self.placeholder,
+        )
+
+    def test_no_actionable_result_returns_empty(self):
+        self.assertEqual(
+            switch.recover_query_selection("pi", self.placeholder, [self.placeholder]),
+            "",
         )
 
 
@@ -1585,11 +1626,17 @@ class TestPickerLoop(unittest.TestCase):
             switch.sub_picker()
         return rf, rff, w
 
-    def test_enter_on_agent_focuses_and_breaks(self):
+    def test_enter_on_agent_focuses_and_breaks_without_fallback_filter(self):
         herdr = self._herdr_fake()
-        rf, _, _ = self._run_picker([(0, f"q\n\n{self._agent_line()}\n")], herdr)
+        rf, rff, _ = self._run_picker([(0, f"q\n\n{self._agent_line()}\n")], herdr)
+        self.assertIn(("workspace", "focus", "w1"), herdr.log)
         self.assertIn(("agent", "focus", "w1:p3"), herdr.log)
+        self.assertLess(
+            herdr.log.index(("workspace", "focus", "w1")),
+            herdr.log.index(("agent", "focus", "w1:p3")),
+        )
         self.assertEqual(rf.call_count, 1)
+        rff.assert_not_called()
 
     def test_first_open_binds_start_last(self):
         herdr = self._herdr_fake()
@@ -1613,22 +1660,33 @@ class TestPickerLoop(unittest.TestCase):
         lines = rf.call_args.args[0]
         self.assertTrue(lines.startswith(switch.placeholder_row() + "\n"))
 
-    def test_placeholder_selection_is_noop_and_continues(self):
-        """选中占位行(空 target)→ 不 focus/close,循环继续。"""
+    def test_nonempty_query_placeholder_recovers_and_focuses_in_same_round(self):
+        """查询重搜竞态选中占位行 → 用同一 query 的最佳结果完成 focus。"""
         herdr = self._herdr_fake()
         placeholder = switch.placeholder_row()
-        rf, _, _ = self._run_picker(
-            [(0, f"q\n\n{placeholder}\n"), (0, f"q\n\n{self._agent_line()}\n")],
+        agent = self._agent_line()
+        rf, rff, _ = self._run_picker(
+            [(0, f"pi\n\n{placeholder}\n")],
+            herdr,
+            filtered=[agent],
+        )
+        self.assertEqual(rf.call_count, 1)
+        rff.assert_called_once()
+        self.assertIn(("workspace", "focus", "w1"), herdr.log)
+        self.assertIn(("agent", "focus", "w1:p3"), herdr.log)
+
+    def test_empty_query_placeholder_is_noop_and_continues(self):
+        """空 query 选中占位行仍不 focus，保持原有 no-op。"""
+        herdr = self._herdr_fake()
+        placeholder = switch.placeholder_row()
+        rf, rff, _ = self._run_picker(
+            [(0, f"\n\n{placeholder}\n"), (0, f"q\n\n{self._agent_line()}\n")],
             herdr,
         )
-        self.assertEqual(rf.call_count, 2)  # 占位行被跳过,循环继续
-        # 占位行(空 target)没有触发任何 focus/close 调用
-        self.assertNotIn(
-            ("workspace", "focus", ""), herdr.log
-        )
-        self.assertNotIn(
-            ("agent", "focus", ""), herdr.log
-        )
+        self.assertEqual(rf.call_count, 2)
+        rff.assert_not_called()
+        self.assertNotIn(("workspace", "focus", ""), herdr.log)
+        self.assertNotIn(("agent", "focus", ""), herdr.log)
 
     def test_fzf_args_use_relevance_sort_not_no_sort(self):
         """--no-sort 会让光标钉在第一个 input 序模糊匹配(分支串几乎匹配一切);
@@ -1698,7 +1756,7 @@ class TestPickerLoop(unittest.TestCase):
         rf, _, w = self._run_picker(
             [(0, f"q\n\n{line}\n"), (0, f"q\n\n{line}\n"), (1, "")], herdr
         )
-        self.assertIn("agent focus 失败", str(w.call_args))
+        self.assertIn("workspace focus 失败", str(w.call_args))
         self.assertEqual(rf.call_count, 3)
 
     def test_close_failure_warns_and_keeps_cursor(self):

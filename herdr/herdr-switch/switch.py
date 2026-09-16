@@ -313,8 +313,9 @@ def placeholder_row() -> str:
     the current-workspace row matches nearly every query, so Enter just
     re-focused the current pane (a no-op).
 
-    kind=space with an empty target: if the row is ever selected (only
-    possible with an empty query), the picker treats it as a no-op.
+    kind=space with an empty target: with an empty query it remains a no-op;
+    if fzf accepts it during the pre-search race for a non-empty query,
+    sub_picker resolves the first actionable relevance-sorted result instead.
     """
     return "\t".join(
         [PLACEHOLDER_DISPLAY, "space", "", "-", "", "", "", "", "-", "0", ""]
@@ -410,6 +411,28 @@ def parse_fzf_output(out: str) -> tuple[str, str, str]:
     key = lines[1] if len(lines) > 1 else ""
     line = lines[2] if len(lines) > 2 else ""
     return query, key, line
+
+
+def recover_query_selection(
+    query: str, selected_line: str, filtered_lines: list[str]
+) -> str:
+    """Recover the selection when fzf accepts the placeholder mid-search.
+
+    ``change:first`` runs before fzf publishes the new result, so a quick
+    confirmation can return the no-target placeholder even though the query
+    is non-empty. In that case, use the first actionable row from the same
+    relevance-sorted filter. Normal selections and empty-query no-ops stay
+    unchanged.
+    """
+    fields = selected_line.split("\t")
+    target = fields[F_TARGET] if len(fields) > F_TARGET else ""
+    if not query or target:
+        return selected_line
+    for candidate in filtered_lines:
+        candidate_fields = candidate.split("\t")
+        if len(candidate_fields) > F_TARGET and candidate_fields[F_TARGET]:
+            return candidate
+    return ""
 
 
 # ---- pure: recency / record / toggle / preview ----------------------------
@@ -1037,6 +1060,14 @@ def do_close(kind: str, target: str, name: str, raw: str, running: str) -> bool:
 def do_focus(kind: str, target: str, name: str) -> bool:
     """enter → focus; True → popup should close."""
     if kind == "agent":
+        # In the client-shell endpoint model, workspace.focus is the public
+        # navigation boundary that also updates the client's visible target.
+        # Focus the agent's workspace first, then keep agent.focus for the
+        # agent-specific seen/status side effects.
+        workspace_id = target.split(":", 1)[0]
+        if herdr("workspace", "focus", workspace_id) is None:
+            warn(f"workspace focus 失败: {name}\n{_err_tail()}")
+            return False
         if herdr("agent", "focus", target) is None:
             warn(f"agent focus 失败: {name}\n{_err_tail()}")
             return False
@@ -1120,6 +1151,7 @@ def sub_picker() -> None:
         else:
             # change:first fires on query change (before re-search): cursor →
             # placeholder → falls to index 0 of the new result = best match.
+            # start:last parks the opening cursor on the most-recent rows.
             binds += ",start:last,load:last,change:first"
 
         # Always-on debug dumps (same files as the old picker.sh).
@@ -1150,13 +1182,19 @@ def sub_picker() -> None:
             sys.exit(0)  # cancelled / fzf missing → silent exit
 
         query, key, line = parse_fzf_output(out)
+        fields = line.split("\t") if line else []
         if not line:
             continue
-        fields = line.split("\t")
-        kind = fields[F_KIND]
         target = fields[F_TARGET]
+        if query and not target:
+            line = recover_query_selection(query, line, run_fzf_filter(query, lines))
+            if not line:
+                continue
+            fields = line.split("\t")
+            target = fields[F_TARGET]
+        kind = fields[F_KIND]
         if not target:
-            continue  # placeholder row — nothing to focus/close/attach
+            continue  # empty-query placeholder — nothing to focus/close/attach
         name = fields[F_NAME]
         raw = fields[F_RAW]
         running = fields[F_RUNNING]
