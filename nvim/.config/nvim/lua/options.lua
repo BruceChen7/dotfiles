@@ -89,6 +89,10 @@ o.jumpoptions = "stack"
 vim.api.nvim_create_augroup("wrap_group", {})
 
 local function set_wrap()
+  -- markdown 文件使用 style.lua 中的 wrap 设置，不覆盖
+  if vim.bo.filetype == "markdown" then
+    return
+  end
   local file_size = vim.fn.getfsize(vim.api.nvim_buf_get_name(0))
   if file_size > 1024 * 1024 then
     vim.wo.wrap = true

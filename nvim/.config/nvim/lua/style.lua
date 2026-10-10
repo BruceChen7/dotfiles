@@ -62,7 +62,10 @@ augroup InitFileTypesGroup
   au BufNewFile,BufRead *.es setlocal filetype=erlang
   au BufNewFile,BufRead *.asc setlocal filetype=asciidoc
   au BufNewFile,BufRead *.vl setlocal filetype=verilog
-  au BufNewFile,BufRead *.md setlocal wrap
+  " Markdown 自动换行：软换行 + 单词边界换行 + 保持缩进
+  au FileType markdown setlocal wrap linebreak breakindent
+  " 可选：硬换行（输入时自动插入换行符）
+  " au FileType markdown setlocal textwidth=80 formatoptions+=tc
   au BufNewFile,BufRead *.log setlocal wrap
 augroup END
 ]]
