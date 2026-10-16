@@ -1159,7 +1159,67 @@ class TestPreviewText(unittest.TestCase):
         )
         self.assertEqual(switch.preview_text(line, snapshot="SNAP"), expected)
 
-    def test_agent_row_ignores_snapshot(self):
+    def test_agent_row_snapshot_as_main_with_footer(self):
+        """agent 行 + 快照 → 快照为主内容，两行 agent footer 沉底（与 space V3 同构）。"""
+        line = "\t".join(
+            [
+                "display",
+                "agent",
+                "w1:p3",
+                "idle",
+                "pi-kit",
+                "~/work/pi-kit",
+                "π - pi-kit",
+                "pi",
+                "idle",
+                "0",
+            ]
+        )
+        snap = "\x1b[32mπ thinking…\x1b[0m\n"
+        expected = (
+            "\n".join(
+                [
+                    snap.rstrip("\n"),
+                    "",
+                    switch.PREVIEW_DIVIDER,
+                    f"{switch.DOT_OTHER} {switch.COLOR_BOLD}pi{switch.RESET}  @ pi-kit  ·  ~/work/pi-kit",
+                    "状态: idle · 终端: π - pi-kit · pane: w1:p3",
+                ]
+            )
+            + "\n"
+        )
+        self.assertEqual(switch.preview_text(line, snapshot=snap), expected)
+
+    def test_agent_row_without_snapshot_keeps_block(self):
+        """快照缺失（读取失败/空白）→ 旧 5 行块字节不变（回退保护）。"""
+        line = "\t".join(
+            [
+                "display",
+                "agent",
+                "w1:p3",
+                "idle",
+                "pi-kit",
+                "~/work/pi-kit",
+                "π - pi-kit",
+                "pi",
+                "idle",
+                "0",
+            ]
+        )
+        expected = (
+            f"{switch.COLOR_BOLD}pi{switch.RESET}\n"
+            "\n"
+            "状态:   idle\n"
+            "space:  pi-kit\n"
+            "cwd:    ~/work/pi-kit\n"
+            "终端:   π - pi-kit\n"
+            "pane:   w1:p3\n"
+        )
+        self.assertEqual(switch.preview_text(line), expected)
+        self.assertEqual(switch.preview_text(line, snapshot=None), expected)
+
+    def test_agent_row_snapshot_blank_falls_back_to_block(self):
+        """空字符串快照 → 与 None 同样走回退块。"""
         line = "\t".join(
             [
                 "display",
@@ -1175,7 +1235,52 @@ class TestPreviewText(unittest.TestCase):
             ]
         )
         self.assertEqual(
-            switch.preview_text(line, snapshot="SNAP"), switch.preview_text(line)
+            switch.preview_text(line, snapshot=""), switch.preview_text(line)
+        )
+
+
+class TestAgentFooter(unittest.TestCase):
+    """agent_footer — agent 行两行 footer（纯函数，value in / value out）."""
+
+    def test_full_fields_exact(self):
+        out = switch.agent_footer(
+            "pi",
+            "idle",
+            raw="idle",
+            ws="pi-kit",
+            cwd="~/work/pi-kit",
+            title="π - pi-kit",
+            target="w1:p3",
+        )
+        self.assertEqual(
+            out,
+            f"{switch.DOT_OTHER} {switch.COLOR_BOLD}pi{switch.RESET}  @ pi-kit  ·  ~/work/pi-kit\n"
+            "状态: idle · 终端: π - pi-kit · pane: w1:p3",
+        )
+
+    def test_raw_status_drives_dot(self):
+        """F_STATUS 带「(聚焦)」时用 F_RAW 选状态点（working → 黄点，不是灰点）."""
+        out = switch.agent_footer(
+            "pi",
+            "working (聚焦)",
+            raw="working",
+            ws="w",
+            cwd="",
+            title="",
+            target="w1:p1",
+        )
+        self.assertTrue(out.startswith(switch.DOT_WORKING))
+        self.assertIn("状态: working (聚焦)", out)
+
+    def test_raw_defaults_to_status(self):
+        out = switch.agent_footer("pi", "blocked", ws="", cwd="", title="", target="")
+        self.assertTrue(out.startswith(switch.DOT_BLOCKED))
+
+    def test_empty_optional_fields_are_omitted(self):
+        """ws/cwd/title/target 为空 → 不留悬空段（只有标题 + 状态）."""
+        out = switch.agent_footer("pi", "idle", ws="", cwd="", title="", target="")
+        self.assertEqual(
+            out, f"{switch.DOT_OTHER} {switch.COLOR_BOLD}pi{switch.RESET}\n状态: idle"
         )
 
 
@@ -1377,22 +1482,59 @@ class TestPaneSnapshotBlock(unittest.TestCase):
             out = switch.pane_snapshot_block(self._space_line(detail))
         self.assertEqual(out, "\x1b[32m$\x1b[0m git status\n")
 
-    def test_agent_row_returns_none(self):
-        line = "\t".join(
-            [
-                "display",
-                "agent",
-                "w1:p3",
-                "idle",
-                "pi-kit",
-                "~/work/pi-kit",
-                "π - pi-kit",
-                "pi",
-                "idle",
-                "0",
-            ]
+    def _agent_line(self, target="w1:p3"):
+        fields = [
+            "display",
+            "agent",
+            target,
+            "idle",
+            "pi-kit",
+            "~/work/pi-kit",
+            "π - pi-kit",
+            "pi",
+            "idle",
+            "0",
+        ]
+        return "\t".join(fields)
+
+    def test_agent_row_reads_pane_without_listing_panes(self):
+        """agent 行的 F_TARGET 就是 pane_id：直接 pane read，不查 pane list。"""
+        with (
+            patch("switch.herdr") as pane_list,
+            patch("switch.herdr_raw", return_value="\x1b[32mπ\x1b[0m\n") as raw,
+        ):
+            out = switch.pane_snapshot_block(self._agent_line())
+        self.assertEqual(out, "\x1b[32mπ\x1b[0m\n")
+        pane_list.assert_not_called()
+        raw.assert_called_once_with(
+            "pane",
+            "read",
+            "w1:p3",
+            "--source",
+            "visible",
+            "--format",
+            "ansi",
+            "--lines",
+            str(switch.SNAPSHOT_LINES),
+            timeout=3,
         )
-        self.assertIsNone(switch.pane_snapshot_block(line))
+
+    def test_agent_row_empty_target_returns_none(self):
+        with (
+            patch("switch.herdr") as pane_list,
+            patch("switch.herdr_raw") as raw,
+        ):
+            self.assertIsNone(switch.pane_snapshot_block(self._agent_line(target="")))
+        pane_list.assert_not_called()
+        raw.assert_not_called()
+
+    def test_agent_row_pane_read_failure_returns_none(self):
+        with patch("switch.herdr_raw", return_value=None):
+            self.assertIsNone(switch.pane_snapshot_block(self._agent_line()))
+
+    def test_agent_row_blank_snapshot_returns_none(self):
+        with patch("switch.herdr_raw", return_value="   \n"):
+            self.assertIsNone(switch.pane_snapshot_block(self._agent_line()))
 
     def test_pane_list_failure_returns_none(self):
         with patch("switch.herdr", return_value=None):

@@ -585,12 +585,41 @@ def preview_footer(
     return f"id: {target} · panes: {title} · 状态: {status}"
 
 
+def agent_footer(
+    name: str,
+    status: str,
+    *,
+    raw: str = "",
+    ws: str = "",
+    cwd: str = "",
+    title: str = "",
+    target: str = "",
+) -> str:
+    """agent 行 Tier 1 元信息 → 两行 footer（与 space footer 同高）：
+    `{状态点} name  @ space  ·  cwd` + `状态: … · 终端: … · pane: …`。
+    空字段整段省略，不留悬空分隔符；状态点用 *raw*（未带「(聚焦)」的
+    agent_status）选色，缺省回退到 *status*。纯函数。仅在有快照时调用；
+    快照缺失时 preview_text 回退到旧 5 行块。"""
+    head = f"{_status_dot(raw or status)} {COLOR_BOLD}{name}{RESET}"
+    if ws:
+        head += f"  @ {ws}"
+    if cwd:
+        head += f"  ·  {cwd}"
+    meta = [f"状态: {status}"]
+    if title:
+        meta.append(f"终端: {title}")
+    if target:
+        meta.append(f"pane: {target}")
+    return f"{head}\n" + " · ".join(meta)
+
+
 def preview_text(line: str, snapshot: str | None = None) -> str:
     """fzf preview renderer.
 
-    agent 行与无快照的 space 行保持旧字节级块；带 Tier-2 快照的 space 行
-    以快照为主内容，Tier 1 压缩成两行 footer 沉底（原型 V3：snapshot 占满
-    窗格，footer 在最后 → fzf --preview-window=follow 底对齐）。
+    带快照的 agent / space 行以快照为主内容，Tier 1 压缩成两行 footer 沉底
+    （原型 V3：snapshot 占满窗格，footer 在最后 → fzf
+    --preview-window=follow 底对齐）；无快照（读取失败/空输出）的 agent 行
+    回退旧 5 行元信息块，无快照的 space 行回退旧富信息块。
     """
     if not line:
         return ""
@@ -604,6 +633,19 @@ def preview_text(line: str, snapshot: str | None = None) -> str:
     title = fields[F_TITLE] if len(fields) > F_TITLE else ""
 
     if kind == "agent":
+        if snapshot:
+            footer = agent_footer(
+                name,
+                status,
+                raw=fields[F_RAW] if len(fields) > F_RAW else "",
+                ws=ws,
+                cwd=cwd,
+                title=title,
+                target=target,
+            )
+            return (
+                "\n".join([snapshot.rstrip("\n"), "", PREVIEW_DIVIDER, footer]) + "\n"
+            )
         out = [f"{COLOR_BOLD}{name}{RESET}", ""]
         out += [
             f"状态:   {status}",
@@ -855,29 +897,37 @@ SNAPSHOT_LINES = 24  # Tier 2 快照行数上限（快照已是 preview 主内�
 
 
 def pane_snapshot_block(line: str, timeout: int = 3) -> str | None:
-    """Tier 2：space 行 → 活动 pane 的真实终端内容（`herdr pane read
-    --source visible --format ansi --lines SNAPSHOT_LINES`）。只对 space 行生效；
-    pane list 失败 / 无 pane / pane read 失败 / 空输出 → None（静默省略，
-    不影响 Tier 1）。薄壳：IO 在此层，pane 选择逻辑在 FC 的 select_snapshot_pane。"""
+    """Tier 2：agent / space 行 → 目标 pane 的真实终端内容（`herdr pane read
+    --source visible --format ansi --lines SNAPSHOT_LINES`）。agent 行的
+    F_TARGET 本身就是 pane_id，直接读，不查 pane list；space 行先 `pane list`
+    再交给 FC 的 select_snapshot_pane 选活动 pane。其它行 kind / pane list 失败 /
+    无 pane / pane read 失败 / 空输出 → None（静默省略，不影响 Tier 1）。
+    薄壳：IO 在此层，pane 选择逻辑在 FC 的 select_snapshot_pane。"""
     try:
         if not line:
             return None
         fields = line.split("\t")
-        if len(fields) <= F_KIND or fields[F_KIND] != "space":
+        if len(fields) <= F_KIND:
             return None
-        workspace_id = fields[F_TARGET] if len(fields) > F_TARGET else ""
-        active_tab_id = ""
-        detail_raw = fields[F_DETAIL] if len(fields) > F_DETAIL else ""
-        if detail_raw:
-            try:
-                active_tab_id = json.loads(detail_raw).get("active_tab_id") or ""
-            except json.JSONDecodeError:
-                active_tab_id = ""
-        data = herdr("pane", "list", timeout=timeout)
-        if data is None:
+        kind = fields[F_KIND]
+        target = fields[F_TARGET] if len(fields) > F_TARGET else ""
+        if kind == "agent":
+            pane_id = target
+        elif kind == "space":
+            active_tab_id = ""
+            detail_raw = fields[F_DETAIL] if len(fields) > F_DETAIL else ""
+            if detail_raw:
+                try:
+                    active_tab_id = json.loads(detail_raw).get("active_tab_id") or ""
+                except json.JSONDecodeError:
+                    active_tab_id = ""
+            data = herdr("pane", "list", timeout=timeout)
+            if data is None:
+                return None
+            panes = data.get("result", {}).get("panes", [])
+            pane_id = select_snapshot_pane(target, active_tab_id, panes)
+        else:
             return None
-        panes = data.get("result", {}).get("panes", [])
-        pane_id = select_snapshot_pane(workspace_id, active_tab_id, panes)
         if not pane_id:
             return None
         snap = herdr_raw(
