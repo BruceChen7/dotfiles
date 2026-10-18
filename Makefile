@@ -1,6 +1,9 @@
 # Dotfiles root Makefile: stow the managed config packages + nvim plugin tests.
 #
 #   make stow               stow all managed packages (whitelist below)
+#                           (herdr stows only .config/herdr/config.toml; its
+#                            plugin dirs go through herdr-install — see
+#                            herdr/.stow-local-ignore)
 #   make stow PACKAGE=nvim  stow a single package (must be in the whitelist)
 #   make dryrun             preview what stow would create/conflict (no changes)
 #   make list               show the managed packages
@@ -17,7 +20,7 @@
 
 # Managed packages (whitelist; everything else in the repo is NOT stowed —
 # .ssh/.pi/.git and tool docs stay out on purpose).
-PACKAGES := nvim starship tig ghostty dot-local kitty
+PACKAGES := nvim starship tig ghostty dot-local kitty herdr
 
 STOW := stow --dotfiles -t $(HOME)
 

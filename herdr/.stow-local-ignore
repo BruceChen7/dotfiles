@@ -1,0 +1,9 @@
+# Only .config/herdr/config.toml is stow-managed in this package.
+# The plugin dirs below are linked into herdr via `make herdr-install`
+# (herdr plugin link ...), NOT via stow — ignoring them here keeps
+# `stow herdr` from creating ~/herdr-* symlinks in $HOME.
+^herdr-nav-plugin$
+^herdr-pi-session-resume$
+^herdr-switch$
+^herdr-tabname$
+^herdr-worktree-hooks$
