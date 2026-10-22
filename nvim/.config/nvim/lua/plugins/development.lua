@@ -12,14 +12,6 @@ return {
     event = "LspAttach",
   },
 
-  {
-    "Exafunction/codeium.vim",
-    config = function()
-      require "config/codeium"
-    end,
-    event = "InsertEnter",
-  },
-
   -- {
   --   "supermaven-inc/supermaven-nvim",
   --   config = function()

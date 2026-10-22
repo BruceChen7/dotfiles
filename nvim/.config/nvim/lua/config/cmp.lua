@@ -92,7 +92,6 @@ cmp.setup {
       priority = 100,
       max_item_count = 5,
     },
-    { name = "codeium", priority = 800 },
     { name = "crates" },
     { name = "calc" },
     -- { name = "md_link" },
@@ -147,7 +146,6 @@ cmp.setup {
         Event = "",
         Operator = "",
         TypeParameter = " ",
-        Codeium = " ",
         MdLink = " ",
       }
       local meta_type = vim_item.kind
@@ -160,7 +158,6 @@ cmp.setup {
         path = " Path",
         luasnip = " LuaSnip",
         tags = " Tags",
-        codeium = " Codeium",
         -- md_link = " MdLink",
         git = "Git",
       })[entry.source.name]
