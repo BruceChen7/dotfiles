@@ -12,8 +12,8 @@ preview 详情。本文件不含 herdr CLI / fzf / 剪贴板等副作用（那�
     type=model_change(modelId)、type=thinking_level_change、type=custom 等。
 
 索引规则（spec 已定）：
-    - 索引字段 = user 文本 + assistant text 块；跳过 thinking/toolCall/image base64。
-    - 每 session 只保留最近 MAX_INDEX_MESSAGES 条消息的文本做全文搜索。
+    - 索引字段 = 全部消息里的 user 文本 + assistant text 块；跳过 thinking/toolCall/image base64。
+    - 全文搜索覆盖整段历史（从首条消息到最新），不按条数截断。
     - 容错：坏行跳过、超大文件截断、无 session 头部则返回 None。
     - 增量：缓存按 (mtime, size) 判定是否需要重解析。
 """
@@ -23,14 +23,14 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 
-MAX_INDEX_MESSAGES = 30
 MAX_FILE_BYTES = 5 * 1024 * 1024  # 单文件读取上限 5MB
 MAX_USER_INPUT_LINES = 2  # user 消息索引只取前 2 行（模板长正文自然排除）
 
 # 索引逻辑版本：解析/剥离/截断逻辑变化时 +1 → picker 检测到不匹配会全量重建缓存。
 # 增量缓存按 (mtime, size) 判定，代码改了但 session 文件没变时缓存永远不会失效，
 # 必须靠这个版本号强制重建（2026-09-04 踩坑：改截断逻辑后用户仍看到旧索引）。
-INDEX_LOGIC_VERSION = 2
+# 3：移除 30 条消息上限 + 第 1 列 4000 字符截断（recent → messages）。
+INDEX_LOGIC_VERSION = 3
 
 # 目录名以这些前缀开头 → 视为临时/私有，跳过（--private-tmp-- 等）
 EXCLUDE_DIR_PREFIXES = ("--private-", "--var-", "--tmp-")
@@ -52,16 +52,15 @@ class SessionIndex:
     timestamp: float  # 头部 timestamp 的 epoch 秒；缺失用文件 mtime
     model: str = ""  # 最后一个 model_change 的 modelId
     first_msg: str = ""  # 第一条 user 消息全文
-    recent: list = field(default_factory=list)  # [(role, text)] 最近 N 条消息
+    messages: list = field(default_factory=list)  # [(role, text)] 全部消息（时间顺序）
     msg_count: int = 0  # 消息条目数（user + assistant）
     mtime: float = 0.0  # 文件 mtime（缓存判定 + 组内排序）
     size: int = 0  # 文件 size（缓存判定）
 
     @property
     def search_text(self) -> str:
-        """全文搜索字段：首条 + 最近消息文本（cap 由 recent 已保证）。"""
-        parts = [self.first_msg] + [t for _, t in self.recent]
-        return "\n".join(p for p in parts if p)
+        """全文搜索字段：全部消息文本，从 session 首条到最后一条。"""
+        return "\n".join(t for _, t in self.messages if t)
 
     def to_dict(self) -> dict:
         return {
@@ -71,7 +70,7 @@ class SessionIndex:
             "timestamp": self.timestamp,
             "model": self.model,
             "first_msg": self.first_msg,
-            "recent": self.recent,
+            "messages": self.messages,
             "msg_count": self.msg_count,
             "mtime": self.mtime,
             "size": self.size,
@@ -86,7 +85,7 @@ class SessionIndex:
             timestamp=float(d.get("timestamp", 0) or 0),
             model=d.get("model", ""),
             first_msg=d.get("first_msg", ""),
-            recent=list(d.get("recent", []) or []),
+            messages=list(d.get("messages", []) or []),
             msg_count=int(d.get("msg_count", 0) or 0),
             mtime=float(d.get("mtime", 0) or 0),
             size=int(d.get("size", 0) or 0),
@@ -192,7 +191,7 @@ def build_index_from_lines(
       - type=message 行：role ∈ {user, assistant} 计入；text 块为索引文本。
       - 其他 type（model_change 记 model；thinking_level_change/custom 等跳过）。
       - 坏行跳过；无任何消息 → None。
-      - recent 只保留最近 MAX_INDEX_MESSAGES 条。
+      - messages 保留全部消息，从首条到最后一条（不按条数截断）。
     """
     sid = ""
     cwd = ""
@@ -244,10 +243,9 @@ def build_index_from_lines(
             if role == "user" and not first_user:
                 first_user = text
 
-    if not msgs and not first_user:
+    if not msgs:
         return None
 
-    recent = msgs[-MAX_INDEX_MESSAGES:]
     if timestamp is None:
         timestamp = mtime
     return SessionIndex(
@@ -257,7 +255,7 @@ def build_index_from_lines(
         timestamp=timestamp,
         model=model,
         first_msg=first_user,
-        recent=recent,
+        messages=msgs,
         msg_count=msg_count,
         mtime=mtime,
         size=size,
@@ -415,9 +413,6 @@ def _flat_field(text: str) -> str:
     return re.sub(r"[\t\n\r]", " ", text).strip()
 
 
-CONTENT_SEP = "\x1f"  # 行内消息分隔符（fzf 行不能含换行，用 Unit Separator）
-CONTENT_NL = "\x1e"  # 消息内换行占位（Record Separator；preview 解码回 \n）
-
 # preview 内命中词高亮样式（ANSI）。正文上下文用黄底；first 摘要行是 bold
 # 上下文，用 bold+黄底、reset 恢复 bold，避免高亮词把行内剩余文字重置成常规体。
 ANSI_HL_QUERY = "\033[43m"  # 黄底（grep 风格，深/浅终端都可读）
@@ -482,30 +477,17 @@ def highlight_query(
     return "".join(out)
 
 
-def _content_field(recent: list) -> str:
-    """recent [(role, text)] → 单字段：`user: text\x1fuser: text`。
-
-    消息间用 CONTENT_SEP 分隔；消息内换行编码为 CONTENT_NL——fzf 行必须
-    是单行，preview 解析时把 CONTENT_NL 解码回换行以完整展示消息。
-    """
-    return CONTENT_SEP.join(
-        f"{role}: {text.replace(chr(10), CONTENT_NL).replace(chr(9), ' ').strip()}"
-        for role, text in recent
-    )
-
-
 def build_lines(indexes: list[SessionIndex], home: str) -> str:
-    """渲染 fzf 行（TSV，第 1 列显示，其余列供 preview/动作）：
+    """渲染 fzf 行（TSV，第 1 列显示，其余列供动作/筛选）：
 
-        display+search \t path \t cwd \t date \t model \t first \t content \t raw_cwd
+        display+search \t path \t cwd \t date \t model \t first \t raw_cwd
 
     全局平铺（无组头；排序由调用方 sort_global 负责）。第 1 列 =
-    `MM-DD HH:MM · <cwd> · <首条消息截断>` + 全文搜索文本——fzf 只搜索
-    变换后行（隐藏字段不可搜），所以全文必须并入第 1 列；显示时 fzf
-    自动截断到终端宽度，搜索则匹配整列。preview 的 `{}` 是原始行
-    （字段可解析）。content 列 = 完整消息（带 role），供 preview 展示
-    全部内容。raw_cwd 列 = 未 redact 的原始 cwd，供 ctrl-g 二次筛选
-    （scope）精确匹配。
+    `MM-DD HH:MM · <cwd> · <首条消息截断>` + 全文搜索文本（整段历史，
+    不截断）——fzf 只搜索变换后行（隐藏字段不可搜），所以全文必须并入
+    第 1 列；显示时 fzf 自动截断到终端宽度，搜索则匹配整列。
+    preview 只收 path（`{2}`），自己读文件渲染，不依赖行内长字段。
+    raw_cwd 列 = 未 redact 的原始 cwd，供 ctrl-g 二次筛选（scope）精确匹配。
     """
     lines = []
     for idx in indexes:
@@ -514,8 +496,6 @@ def build_lines(indexes: list[SessionIndex], home: str) -> str:
             f"{fmt_timestamp(idx.timestamp)} · {label} · {_truncate(idx.first_msg, 60)}"
         )
         search = _flat_field(idx.search_text)
-        if len(search) > 4000:  # 行级 cap，防 fzf 单行过大
-            search = search[:4000] + "…"
         display = f"{summary}  {search}"
         lines.append(
             "\t".join(
@@ -526,7 +506,6 @@ def build_lines(indexes: list[SessionIndex], home: str) -> str:
                     fmt_timestamp(idx.timestamp),
                     idx.model,
                     _truncate(idx.first_msg, 200),
-                    _content_field(idx.recent),
                     idx.cwd,
                 ]
             )
@@ -539,53 +518,36 @@ def build_lines(indexes: list[SessionIndex], home: str) -> str:
 # ---- 纯函数：preview 详情 ----------------------------------------------------
 
 
-def preview_text(line: str, query: str = "") -> str:
-    """fzf preview 渲染（方案 A：完整内容在上 + session 信息在下）。
+def preview_text(index: SessionIndex, query: str = "", home: str = "") -> str:
+    """preview 渲染（完整内容在上 + session 信息在下）。
 
-    行 = build_lines 的 TSV（7 列）；组头行(path 空)只显示分组标题。
-    内容区显示 content 列（带 role 的完整消息，按 CONTENT_SEP 拆回）；
-    信息区固定在底部（session id / cwd / model / 消息数 / 时间 / 文件）。
+    输入是单个 SessionIndex（由 picker 读文件后构建），不是 fzf 行：
+    整段历史的消息直接从 index.messages 渲染，不再经过 TSV/转义编码。
+    信息区固定在底部（id / cwd / model / 时间 / 文件）。
 
     query 非空时对标题/内容区命中词加高亮（highlight_query；fzf 通过
     preview 命令的 {q} 占位符传入当前搜索词）。信息区不高亮。
     """
-    if not line:
-        return ""
-    fields = line.split("\t")
-    display = fields[0]
-    path = fields[1] if len(fields) > 1 else ""
-    if not path:
-        return f"{display}\n"
-    cwd = fields[2]
-    date = fields[3]
-    model = fields[4]
-    first = fields[5] if len(fields) > 5 else ""
-    content = fields[6] if len(fields) > 6 else ""
-
-    # 内容区：完整消息（role 着色，换行解码）
     # first 行处于 bold 上下文：高亮用 bold+黄底、reset 恢复 bold，
     # 避免命中词把该行剩余文字重置成常规体。
     title = highlight_query(
-        _truncate(first, 120), query, hl="\033[1;43m", reset="\033[1m"
+        _truncate(index.first_msg, 120), query, hl="\033[1;43m", reset="\033[1m"
     )
     out = [f"\033[1m{title}\033[0m", ""]
-    if content:
-        for seg in content.split(CONTENT_SEP):
-            role, _, text = seg.partition(": ")
-            text = text.replace(CONTENT_NL, "\n")
-            text = highlight_query(text, query)
-            if role == "user":
-                out.append(f"\033[34muser\033[0m: {text}")
-            else:
-                out.append(f"\033[33massistant\033[0m: {text}")
+    for role, text in index.messages:
+        body = highlight_query(text.strip(), query)
+        if role == "user":
+            out.append(f"\033[34muser\033[0m: {body}")
+        else:
+            out.append(f"\033[33massistant\033[0m: {body}")
     out.append("")
 
     # 信息区（底部固定）
     out.append("\033[90m──── session 信息 ────\033[0m")
-    sid = path.rsplit("/", 1)[-1].rsplit(".", 1)[0].split("_", 1)[-1]
+    sid = index.path.rsplit("/", 1)[-1].rsplit(".", 1)[0].split("_", 1)[-1]
     out.append(f"id:      {sid}")
-    out.append(f"cwd:     {cwd}")
-    out.append(f"model:   {model or '-'}")
-    out.append(f"时间:    {date}")
-    out.append(f"文件:    {path}")
+    out.append(f"cwd:     {redact_path(index.cwd, home) if home else index.cwd}")
+    out.append(f"model:   {index.model or '-'}")
+    out.append(f"时间:    {fmt_timestamp(index.timestamp)}")
+    out.append(f"文件:    {index.path}")
     return "\n".join(out) + "\n"

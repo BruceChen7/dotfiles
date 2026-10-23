@@ -49,7 +49,7 @@ describe("pi.cr.comments UI lifecycle", function()
   end
 
   -- headless 下无法稳定模拟 insert 模式，改为断言映射接线：
-  -- <Esc> 不能占用（保持 vim 默认 insert -> normal），<C-c> 在 i/n 两模式都接到 cancel。
+  -- <Esc> 不能占用（保持 vim 默认 insert -> normal），取消只在 normal 模式用 q。
   it("leaves <Esc> unmapped so it only exits insert mode", function()
     local source_win = vim.api.nvim_get_current_win()
     local editor_buf = open_editor()
@@ -64,17 +64,18 @@ describe("pi.cr.comments UI lifecycle", function()
     assert.equal(source_win, vim.api.nvim_get_current_win())
   end)
 
-  it("cancels the annotation with <C-c> in insert and normal mode", function()
+  it("cancels the annotation with q in normal mode, and frees <C-c>", function()
     local before = #vim.api.nvim_list_wins()
 
     local editor_buf = open_editor()
-    for _, mode in ipairs { "i", "n" } do
-      local map = buffer_keymap(editor_buf, mode, "<C-c>")
-      assert.is_not_nil(map)
-      assert.equal("Cancel Pi CR annotation", map.desc)
-    end
+    assert.is_nil(buffer_keymap(editor_buf, "i", "<C-c>"))
+    assert.is_nil(buffer_keymap(editor_buf, "n", "<C-c>"))
+    local map = buffer_keymap(editor_buf, "n", "q")
+    assert.is_not_nil(map)
+    assert.equal("Cancel Pi CR annotation", map.desc)
+
     assert.equal(before + 2, #vim.api.nvim_list_wins())
-    vim.fn.maparg("<C-c>", "n", false, true).callback()
+    map.callback()
     assert.equal(before, #vim.api.nvim_list_wins())
   end)
 
@@ -168,7 +169,7 @@ describe("pi.cr.comments UI lifecycle", function()
     assert.is_true(comments.edit_by_id(comments.comments[1].id))
     local buf = vim.api.nvim_get_current_buf()
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "discarded draft" })
-    press(buf, "i", "<C-c>")
+    press(buf, "n", "q")
 
     assert.equal(wins_before, #vim.api.nvim_list_wins())
     assert.equal(1, #comments.comments)

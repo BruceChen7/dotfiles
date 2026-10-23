@@ -561,7 +561,7 @@ local PI_VIEW_HELP = {
 local PI_POPUP_HELP = {
   { "<Tab> / <S-Tab>", "cycle comment type (NOTE / FIX / QUESTION)" },
   { "<C-t>", "insert template text" },
-  { "<CR> / <C-c>", "save / cancel" },
+  { "<CR> / q", "save / cancel (q in normal mode)" },
 }
 
 local PI_PANEL_HELP = {

@@ -2,6 +2,9 @@
 # /// script
 # requires-python = ">=3.10"
 # dependencies = []
+#
+# [tool.ty.environment]
+# root = ["."]
 # ///
 """
 picker.py — herdr-pi-session-resume 薄 shell。
@@ -134,7 +137,7 @@ def build_indexes() -> list[idx.SessionIndex]:
     cache = load_cache()
     files = scan_session_files(SESSIONS_ROOT)
     fresh: list[idx.SessionIndex] = []
-    kept = {}
+    kept: dict[str, dict] = {}
     for path in files:
         try:
             st = path.stat()
@@ -142,20 +145,33 @@ def build_indexes() -> list[idx.SessionIndex]:
             continue
         mtime, size = st.st_mtime, st.st_size
         cached = cache.get(str(path))
-        if not idx.needs_reparse(mtime, size, cached):
+        if cached is None or idx.needs_reparse(mtime, size, cached):
+            text = _read_file_truncated(path, idx.MAX_FILE_BYTES)
+            parsed = idx.build_index_from_lines(
+                text.splitlines(), path=str(path), mtime=mtime, size=size
+            )
+            if parsed is None:
+                continue  # 空文件 / 无消息 → 不入索引
+            fresh.append(parsed)
+            kept[str(path)] = {"mtime": mtime, "size": size, "index": parsed.to_dict()}
+        else:
             kept[str(path)] = cached
-            continue
-        text = _read_file_truncated(path, idx.MAX_FILE_BYTES)
-        parsed = idx.build_index_from_lines(
-            text.splitlines(), path=str(path), mtime=mtime, size=size
-        )
-        if parsed is None:
-            continue  # 空文件 / 无消息 → 不入索引
-        fresh.append(parsed)
-        kept[str(path)] = {"mtime": mtime, "size": size, "index": parsed.to_dict()}
     if fresh:
         save_cache(idx.cache_merge(kept, fresh))
     return [idx.SessionIndex.from_dict(v["index"]) for v in kept.values()]
+
+
+def index_one(path: str) -> idx.SessionIndex | None:
+    """单文件解析（preview 用）：不走缓存，始终反映磁盘最新内容。"""
+    p = Path(path)
+    try:
+        st = p.stat()
+        text = _read_file_truncated(p, idx.MAX_FILE_BYTES)
+    except OSError:
+        return None
+    return idx.build_index_from_lines(
+        text.splitlines(), path=str(p), mtime=st.st_mtime, size=st.st_size
+    )
 
 
 # ---- shell: fzf -------------------------------------------------------------
@@ -169,9 +185,9 @@ def _fzf_base_args() -> list[str]:
         "--sync",
         "--delimiter",
         "\t",
-        "--with-nth=1",  # 只显示 display 列；搜索/预览仍用原始整行
+        "--with-nth=1",  # 只显示 display 列；搜索用变换行，动作/预览取原始行字段
         "--exact",  # 连续子串匹配（替代 fuzzy 子序列），大幅降噪；全文仍在第 1 列可搜
-        "--no-hscroll",  # 禁用横向滚动：display 列含全文(4000+字符)，匹配深处时不滚动挤掉行首结构
+        "--no-hscroll",  # 禁用横向滚动：display 列含全文，匹配深处时不滚动挤掉行首结构
         "--no-multi",
         "--no-sort",
         "--tiebreak=index",
@@ -206,11 +222,9 @@ def run_fzf(
 
 def parse_fzf_output(out: str) -> tuple[str, str, str]:
     """fzf --print-query --expect 输出：query / 按键（''=enter）/ 选中行。"""
-    # Do not use str.splitlines(): our TSV content field encodes message
-    # newlines as idx.CONTENT_NL (\x1e), and splitlines() treats \x1e as a
-    # line boundary. That truncates the selected row before the raw_cwd field,
-    # causing resume to fall back to the redacted ~/... cwd and split the
-    # current space without --cwd.
+    # Do not use str.splitlines(): rows are plain single-line TSV now, but
+    # splitlines() also splits on other Unicode line separators, so splitting
+    # on "\n" keeps the parser tied to what fzf actually emits.
     lines = out.split("\n")
     if lines and lines[-1] == "":
         lines = lines[:-1]
@@ -534,6 +548,27 @@ def _run_agent_start(name: str, pane_id: str, session_path: str) -> tuple[bool, 
         return False, "agent start 子进程超时或无法运行"
 
 
+def _wait_for_agent_start(name: str, pane_id: str, session_path: str) -> str | None:
+    """重试到有结论为止：需要提示时返回最后一次错误文本，静默结局返回 None。
+
+    agent_pane_busy → 以 AGENT_START_RETRY_SLEEP 间隔重试至多
+    AGENT_START_RETRY_WINDOW 秒（竞态细节见 sub_agentstart 文档）。
+    agent_not_ready / pane 已注册 agent → 视为成功，静默。
+    """
+    deadline = time.monotonic() + AGENT_START_RETRY_WINDOW
+    while True:
+        if _pane_has_agent(pane_id):
+            return None  # pi 实际已在 pane 上（busy 误报场景），静默成功
+        ok, err = _run_agent_start(name, pane_id, session_path)
+        if ok:
+            return None
+        if "agent_not_ready" in err:
+            return None  # pi 启动中，不打扰
+        if "agent_pane_busy" not in err or time.monotonic() >= deadline:
+            return err
+        time.sleep(AGENT_START_RETRY_SLEEP)
+
+
 def sub_agentstart() -> None:
     """后台子命令：resume 的 `herdr agent start`（popup 已关闭，无终端交互）。
 
@@ -555,19 +590,9 @@ def sub_agentstart() -> None:
     pane_id = sys.argv[2] if len(sys.argv) > 2 else ""
     session_path = sys.argv[3] if len(sys.argv) > 3 else ""
     name = f"resume-{int(time.time())}-{os.getpid()}"
-    deadline = time.monotonic() + AGENT_START_RETRY_WINDOW
-    err = ""
-    while True:
-        if _pane_has_agent(pane_id):
-            return  # pi 实际已在 pane 上（busy 误报场景），静默成功
-        ok, err = _run_agent_start(name, pane_id, session_path)
-        if ok:
-            return
-        if "agent_not_ready" in err:
-            return  # pi 启动中，不打扰
-        if "agent_pane_busy" not in err or time.monotonic() >= deadline:
-            break
-        time.sleep(AGENT_START_RETRY_SLEEP)
+    err = _wait_for_agent_start(name, pane_id, session_path)
+    if err is None:
+        return
     body = (
         f"pane {pane_id} 启动 pi 失败：{err.strip()[:300] or '未知错误'}\n"
         f"可手动运行：pi --session {session_path}"
@@ -588,9 +613,10 @@ def sub_agentstart() -> None:
 
 def sub_picker() -> None:
     here = Path(__file__).resolve().parent
-    # {} / {q} 都会被 fzf 单引号包裹（QuoteEntry），参数传递安全；
-    # {q} = 当前搜索词，preview 用它高亮命中词。
-    preview_cmd = f"uv run {shlex.quote(str(here / 'picker.py'))} preview {{}} {{q}}"
+    # {2} / {q} 都会被 fzf 单引号包裹（QuoteEntry），参数传递安全；
+    # {2} = session 文件路径，{q} = 当前搜索词（preview 用它高亮命中词）。
+    # 不传整行：整行长度随 session 历史增长，Linux 单参数上限 128KB。
+    preview_cmd = f"uv run {shlex.quote(str(here / 'picker.py'))} preview {{2}} {{q}}"
     scope_cmd = f"uv run {shlex.quote(str(here / 'picker.py'))}"
     query = ""
     home = str(Path.home())
@@ -604,11 +630,11 @@ def sub_picker() -> None:
         # ctrl-g: 二次筛选（仿 snacks.nvim grep picker 的 <c-g>=tcd+picker_grep）——
         #   reload 用 scope 子命令的 stdout 动态替换输入列表（fzf 不重启、query 保留），
         #   列表收窄到当前选中 session 的项目目录后可继续输入筛选。
-        #   {8} = 当前行第 8 列（raw_cwd，--delimiter 已设为 \t）；组头/空 cwd → 全量。
+        #   {7} = 当前行第 7 列（raw_cwd，--delimiter 已设为 \t）；空 cwd → 全量。
         # alt-g: 恢复全部项目。
         binds = (
             "alt-enter:accept,ctrl-y:accept,start:pos(2),load:pos(2),"
-            f"ctrl-g:reload({scope_cmd} scope {{8}}),"
+            f"ctrl-g:reload({scope_cmd} scope {{7}}),"
             f"alt-g:reload({scope_cmd} scope)"
         )
         header = (
@@ -628,8 +654,8 @@ def sub_picker() -> None:
         session_path = fields[1] if len(fields) > 1 else ""
         if not session_path:
             continue  # 选中组头行 → 无动作，留在列表
-        # 用 raw_cwd 列（index 7）：redact 后的 `~/x` 无法被 os.path.isdir 解析
-        cwd = fields[7] if len(fields) > 7 else fields[2]
+        # 用 raw_cwd 列（index 6）：redact 后的 `~/x` 无法被 os.path.isdir 解析
+        cwd = fields[6] if len(fields) > 6 else fields[2]
         target = Path(session_path)
 
         if key == "ctrl-y":
@@ -659,15 +685,23 @@ def sub_scope() -> None:
 
 
 def sub_preview() -> None:
-    """fzf preview 渲染：`preview <line> [<query>]`。
+    """fzf preview 渲染：`preview <path> [<query>]`。
 
-    <query> 由 fzf 的 {q} 占位符注入（当前搜索词，空串 = 无查询）；
-    preview_text 用它高亮命中词。fzf 对占位符做单引号包裹，query 始终
-    是单个参数（含空格也不拆词）；join 只是防御其它调用路径。
+    <path> 由 fzf 的 {2} 占位符注入（session 文件路径）；preview 自己读文件
+    解析，不接收整行——行长度随历史增长，Linux 单参数上限 128KB。
+    <query> 由 {q} 注入（空串 = 无查询）；preview_text 用它高亮命中词。
+    fzf 对占位符做单引号包裹，query 始终是单个参数（含空格也不拆词）；
+    join 只是防御其它调用路径。
     """
-    line = sys.argv[2] if len(sys.argv) > 2 else ""
+    path = sys.argv[2] if len(sys.argv) > 2 else ""
     query = " ".join(sys.argv[3:])
-    sys.stdout.write(idx.preview_text(line, query))
+    if not path:
+        return
+    index = index_one(path)
+    if index is None:
+        print(f"无法读取 session: {path}", file=sys.stderr)
+        return
+    sys.stdout.write(idx.preview_text(index, query, str(Path.home())))
 
 
 def sub_open() -> None:

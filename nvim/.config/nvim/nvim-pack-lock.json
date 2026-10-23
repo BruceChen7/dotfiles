@@ -24,6 +24,10 @@
       "rev": "426dbebe06b5c69fd846ceb17b42e12f890aedf1",
       "src": "https://github.com/catppuccin/nvim"
     },
+    "codeium.vim": {
+      "rev": "3c0a4f8a7be75113a6e19be13b7cc37210d6e26a",
+      "src": "https://github.com/Exafunction/codeium.vim"
+    },
     "conform.nvim": {
       "rev": "dca1a190aa85f9065979ef35802fb77131911106",
       "src": "https://github.com/stevearc/conform.nvim"

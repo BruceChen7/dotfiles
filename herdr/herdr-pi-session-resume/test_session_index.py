@@ -5,6 +5,7 @@ Tests for session_index.py — herdr-pi-session-resume core.
 Usage: uv run python test_session_index.py
 """
 
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -207,7 +208,8 @@ class TestBuildIndexFromLines(unittest.TestCase):
         self.assertNotIn("base64", idx_obj.search_text)
         self.assertIn("答案是 42", idx_obj.search_text)
 
-    def test_recent_capped_at_max(self):
+    def test_all_messages_kept(self):
+        """40 条消息全部留在 messages/search_text，不再有 30 条窗口。"""
         lines = [
             json_dumps(
                 {
@@ -218,7 +220,7 @@ class TestBuildIndexFromLines(unittest.TestCase):
                 }
             )
         ]
-        for i in range(idx.MAX_INDEX_MESSAGES + 10):
+        for i in range(40):
             lines.append(
                 json_dumps(
                     {
@@ -229,12 +231,37 @@ class TestBuildIndexFromLines(unittest.TestCase):
             )
         idx_obj = idx.build_index_from_lines(lines, path="/s/c.jsonl", mtime=1, size=1)
         assert idx_obj is not None
-        self.assertEqual(len(idx_obj.recent), idx.MAX_INDEX_MESSAGES)
-        self.assertIn("msg0", idx_obj.search_text)  # 首条保留在 search 里
-        self.assertNotIn("msg5", idx_obj.search_text)  # 前段非首条被裁掉
-        self.assertIn(
-            f"msg{idx.MAX_INDEX_MESSAGES + 9}", idx_obj.search_text
-        )  # 最新一条保留
+        self.assertEqual(len(idx_obj.messages), 40)
+        self.assertEqual(idx_obj.msg_count, 40)
+        self.assertIn("msg5", idx_obj.search_text)  # 第 6 条不再被裁掉
+        self.assertIn("msg39", idx_obj.search_text)
+
+    def test_search_text_covers_whole_history(self):
+        """200 条消息的时间线：头、中、尾都可搜。"""
+        lines = [
+            json_dumps(
+                {
+                    "type": "session",
+                    "id": "x",
+                    "cwd": "/tmp",
+                    "timestamp": "2026-09-04T07:32:19Z",
+                }
+            )
+        ]
+        for i in range(200):
+            role = "user" if i % 2 == 0 else "assistant"
+            lines.append(
+                json_dumps(
+                    {
+                        "type": "message",
+                        "message": {"role": role, "content": f"needle{i}"},
+                    }
+                )
+            )
+        idx_obj = idx.build_index_from_lines(lines, path="/s/h.jsonl", mtime=1, size=1)
+        assert idx_obj is not None
+        for i in (0, 100, 199):
+            self.assertIn(f"needle{i}", idx_obj.search_text)
 
     def test_cwd_fallback_and_missing_fields(self):
         lines = [
@@ -300,7 +327,7 @@ class TestSortGlobal(unittest.TestCase):
 
 
 class TestBuildLines(unittest.TestCase):
-    def _mk(self, path, cwd, mtime, first, recent=None):
+    def _mk(self, path, cwd, mtime, first, messages=None):
         return idx.SessionIndex(
             path=path,
             sid="s",
@@ -308,7 +335,7 @@ class TestBuildLines(unittest.TestCase):
             timestamp=mtime,
             mtime=mtime,
             first_msg=first,
-            recent=recent or [("user", first)],
+            messages=messages or [("user", first)],
         )
 
     def test_flat_rows_no_group_headers(self):
@@ -319,10 +346,10 @@ class TestBuildLines(unittest.TestCase):
         self.assertEqual(len(lines), 1)
         fields = lines[0].split("\t")
         self.assertEqual(
-            len(fields), 8
-        )  # display+search | path | cwd | date | model | first | content | raw_cwd
+            len(fields), 7
+        )  # display+search | path | cwd | date | model | first | raw_cwd
         self.assertEqual(fields[1], "/a/1.jsonl")
-        self.assertEqual(fields[7], "/proj/alpha")  # raw_cwd 供 ctrl-g 二次筛选
+        self.assertEqual(fields[6], "/proj/alpha")  # raw_cwd 供 ctrl-g 二次筛选
         # 全文搜索文本已并入第 1 列（fzf 不搜隐藏字段）
         self.assertIn("首条消息内容", fields[0])
 
@@ -334,35 +361,59 @@ class TestBuildLines(unittest.TestCase):
         out = idx.build_lines([self._mk("/a/1.jsonl", "", 200, "hi")], home="/")
         self.assertIn("未知目录", out.splitlines()[0])
 
-    def test_search_field_capped(self):
+    def test_search_field_not_capped(self):
+        """第 1 列保留全文，不再截到 4000 字符。"""
         big = "x" * 5000
-        indexes = [self._mk("/a/1.jsonl", "/p", 200, "hi", recent=[("user", big)])]
+        indexes = [self._mk("/a/1.jsonl", "/p", 200, "hi", messages=[("user", big)])]
         out = idx.build_lines(indexes, home="/")
         fields = out.splitlines()[0].split("\t")
-        self.assertLessEqual(len(fields[0]), 4025)  # summary + 4000 cap + 省略号
+        self.assertIn(big, fields[0])
+        self.assertGreater(len(fields[0]), 5000)
 
 
 class TestPreviewText(unittest.TestCase):
-    def test_group_header_preview(self):
-        out = idx.preview_text("── ~/proj (2) ──\t\t\t\t\t\t")
-        self.assertIn("── ~/proj (2) ──", out)
+    def _idx(
+        self, messages=None, first="首条", path="/Users/x/s/1_01a06b55-2c82.jsonl"
+    ):
+        return idx.SessionIndex(
+            path=path,
+            sid="s",
+            cwd="/Users/x/proj",
+            timestamp=200,
+            mtime=200,
+            model="m",
+            first_msg=first,
+            messages=messages or [("user", first)],
+        )
 
-    def test_session_row_preview(self):
-        content = idx.CONTENT_SEP.join(["user: 问题内容", "assistant: 回复内容"])
-        line = f"d\t/a/1.jsonl\t~/proj\t09-04 07:32\tm\t首条\t{content}"
-        out = idx.preview_text(line)
-        self.assertIn("/a/1.jsonl", out)  # 信息区文件
+    def test_preview_renders_messages_and_info(self):
+        index = self._idx(
+            messages=[("user", "问题内容"), ("assistant", "回复内容")], first="首条"
+        )
+        out = idx.preview_text(index, home="/Users/x")
         self.assertIn("首条", out)  # 标题
         self.assertIn("问题内容", out)  # 内容区 user 消息
         self.assertIn("回复内容", out)  # 内容区 assistant 消息
         self.assertIn("session 信息", out)  # 底部信息条
+        self.assertIn("01a06b55-2c82", out)  # sid 从文件名提取
+        self.assertIn("cwd:     ~/proj", out)  # home 前缀缩成 ~
+
+    def test_preview_shows_all_messages(self):
+        """40 条消息全部渲染，没有 30 条窗口。"""
+        messages = [
+            ("user" if i % 2 == 0 else "assistant", f"body{i:03d}") for i in range(40)
+        ]
+        out = idx.preview_text(self._idx(messages=messages, first="body000"), home="/")
+        for i in range(40):
+            self.assertIn(f"body{i:03d}", out)
+        self.assertEqual(out.count("body"), 41)  # 1 行标题 + 40 条消息
 
     def test_preview_highlights_query_in_title_and_content(self):
-        content = idx.CONTENT_SEP.join(
-            ["user: 问题内容 关键词", "assistant: 回复关键词 内容"]
+        index = self._idx(
+            messages=[("user", "问题内容 关键词"), ("assistant", "回复关键词 内容")],
+            first="首条 关键词",
         )
-        line = f"d\t/a/1.jsonl\t~/proj\t09-04 07:32\tm\t首条 关键词\t{content}"
-        out = idx.preview_text(line, "关键词")
+        out = idx.preview_text(index, "关键词", home="/Users/x")
         # 内容区：默认黄底高亮
         self.assertIn("\033[43m关键词\033[0m", out)
         # 标题（bold 上下文）：bold+黄底，reset 恢复 bold，不破坏行内粗体
@@ -370,20 +421,50 @@ class TestPreviewText(unittest.TestCase):
         self.assertIn("\033[1m首条 \033[1;43m关键词\033[1m\033[0m", out)
 
     def test_preview_no_query_unchanged(self):
-        content = idx.CONTENT_SEP.join(["user: 问题内容"])
-        line = f"d\t/a/1.jsonl\t~/proj\t09-04 07:32\tm\t首条\t{content}"
-        out = idx.preview_text(line, "")
+        out = idx.preview_text(
+            self._idx(messages=[("user", "问题内容")]), "", "/Users/x"
+        )
         self.assertNotIn("\033[43m", out)
         self.assertNotIn("\033[1;43m", out)
 
-    def test_preview_info_bar(self):
-        line = "d\t/s/2026-09-04T07-32-19-202Z_01a06b55-2c82-735e-9f26-4411af904df4.jsonl\t~/work\t09-04 07:32\tm\t首条\t"
-        out = idx.preview_text(line)
-        self.assertIn("01a06b55-2c82-735e-9f26-4411af904df4", out)  # sid 从文件名提取
-        self.assertIn("cwd:     ~/work", out)
+    def test_index_one_parses_real_file(self):
+        """preview 的入口：读真实 jsonl → preview_text，不经过 fzf 行。"""
+        import tempfile
 
-    def test_empty_line(self):
-        self.assertEqual(idx.preview_text(""), "")
+        lines = [
+            json_dumps(
+                {
+                    "type": "session",
+                    "id": "x",
+                    "cwd": "/Users/x/work/proj",
+                    "timestamp": "2026-09-04T07:32:19Z",
+                }
+            )
+        ]
+        for i in range(40):
+            lines.append(
+                json_dumps(
+                    {
+                        "type": "message",
+                        "message": {
+                            "role": "user" if i % 2 == 0 else "assistant",
+                            "content": f"line{i:03d}",
+                        },
+                    }
+                )
+            )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "2026-09-04T07-32-19-202Z_01a06b55-2c82.jsonl"
+            path.write_text("\n".join(lines) + "\n")
+            index = picker.index_one(str(path))
+            assert index is not None
+            out = idx.preview_text(index, "line039", home="/Users/x")
+        self.assertIn("line000", out)  # 首条
+        self.assertIn("line039", out)  # 第 40 条
+        self.assertIn("cwd:     ~/work/proj", out)
+
+    def test_index_one_missing_file(self):
+        self.assertIsNone(picker.index_one("/nonexistent/session.jsonl"))
 
 
 class TestHighlightQuery(unittest.TestCase):
@@ -441,7 +522,7 @@ class TestHighlightQuery(unittest.TestCase):
 
 
 class TestPickerParseFzfOutput(unittest.TestCase):
-    def test_enter_preserves_raw_cwd_when_content_contains_encoded_newlines(self):
+    def test_enter_keeps_raw_cwd_field(self):
         selected = "\t".join(
             [
                 "celld display",
@@ -450,7 +531,6 @@ class TestPickerParseFzfOutput(unittest.TestCase):
                 "09-09 15:54",
                 "model",
                 "first",
-                f"user: line1{idx.CONTENT_NL}line2",
                 "/Users/ming.chen/work/celld",
             ]
         )
@@ -460,7 +540,7 @@ class TestPickerParseFzfOutput(unittest.TestCase):
         self.assertEqual(query, "celld")
         self.assertEqual(key, "")
         self.assertEqual(line, selected)
-        self.assertEqual(line.split("\t")[7], "/Users/ming.chen/work/celld")
+        self.assertEqual(line.split("\t")[6], "/Users/ming.chen/work/celld")
 
 
 class TestScopeIndexes(unittest.TestCase):
@@ -817,12 +897,23 @@ class TestBuildIndexTemplateAndSkillCleanup(unittest.TestCase):
 class TestCachePayloadMerge(unittest.TestCase):
     def test_roundtrip(self):
         index = idx.SessionIndex(
-            path="/a.jsonl", sid="s", cwd="/p", timestamp=1.0, mtime=1.0, size=2
+            path="/a.jsonl",
+            sid="s",
+            cwd="/p",
+            timestamp=1.0,
+            mtime=1.0,
+            size=2,
+            messages=[("user", "q"), ("assistant", "a")],
         )
         payload = idx.cache_payload([index])
-        restored = idx.SessionIndex.from_dict(payload["/a.jsonl"]["index"])
+        # 真实缓存走 json.dump/load（tuple → list），这里同样过一轮 JSON
+        restored = idx.SessionIndex.from_dict(
+            json.loads(json.dumps(payload))["/a.jsonl"]["index"]
+        )
         self.assertEqual(restored.path, "/a.jsonl")
         self.assertEqual(restored.cwd, "/p")
+        self.assertEqual(restored.messages, [["user", "q"], ["assistant", "a"]])
+        self.assertEqual(restored.search_text, "q\na")
 
     def test_merge_overwrites_same_path(self):
         a = idx.SessionIndex(
