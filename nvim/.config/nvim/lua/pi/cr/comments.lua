@@ -96,13 +96,26 @@ local function serialized(comment)
   }
 end
 
----@param comment CrComment
-local function append_artifact(comment)
+--- Rewrite the JSONL artifact as a projection of M.comments.
+--- 写临时文件再 rename：崩溃时读取方永远看不到半截文件；
+--- 每次 mutation 都全量重写，因此 add/edit/delete 重放都收敛到同一结果。
+local function rewrite_artifact()
   if not state.config or not state.config.annotationsPath then
     return
   end
-  local encoded = vim.json.encode(serialized(comment))
-  vim.fn.writefile({ encoded }, state.config.annotationsPath, "a")
+  local path = state.config.annotationsPath
+  local lines = {}
+  for _, comment in ipairs(M.comments) do
+    lines[#lines + 1] = vim.json.encode(serialized(comment))
+  end
+  local tmp = path .. ".tmp"
+  if not pcall(vim.fn.writefile, lines, tmp) then
+    return
+  end
+  local ok = pcall(vim.uv.fs_rename, tmp, path)
+  if not ok then
+    pcall(vim.fn.delete, tmp)
+  end
 end
 
 ---@param comment CrComment
@@ -132,10 +145,33 @@ function M.add_comment(comment)
   comment.id = state.next_id
   state.next_id = state.next_id + 1
   table.insert(M.comments, comment)
-  append_artifact(comment)
+  rewrite_artifact()
   place_sign(comment)
   notify("Saved CR annotation " .. tostring(#M.comments))
   refresh()
+end
+
+--- Update an existing annotation in place, keeping its id and dock position.
+---@param id number
+---@param fields {type: string|nil, comment: string|nil}
+---@return boolean updated
+function M.update_by_id(id, fields)
+  for index, comment in ipairs(M.comments) do
+    if comment.id == id then
+      if fields.type then
+        comment.type = fields.type
+      end
+      if fields.comment then
+        comment.comment = fields.comment
+      end
+      rewrite_artifact()
+      notify("Updated CR annotation " .. tostring(index))
+      refresh()
+      return true
+    end
+  end
+  notify("No CR annotation with that id", vim.log.levels.WARN)
+  return false
 end
 
 function M.clear_all()
@@ -147,13 +183,10 @@ function M.clear_all()
   end
   state.sign_ids = {}
   M.comments = {}
-  -- Discard semantics: wipe the artifact file too. Comments are appended to
-  -- the JSONL as they are saved, and the extension falls back to that file
-  -- when the finish handshake does not land (async race / crash). Clearing
-  -- only memory would leak the comments to Pi on the fallback path.
-  if state.config and state.config.annotationsPath then
-    pcall(vim.fn.writefile, {}, state.config.annotationsPath)
-  end
+  -- Discard semantics: wipe the artifact file too (rewrite of an empty list).
+  -- The extension falls back to that file when the finish handshake does not
+  -- land (async race / crash), so leaving stale rows would leak the comments.
+  rewrite_artifact()
 end
 
 ---@param id number
@@ -166,6 +199,7 @@ function M.delete_by_id(id)
       end
       state.sign_ids[id] = nil
       table.remove(M.comments, index)
+      rewrite_artifact()
       notify("Deleted CR annotation " .. tostring(index))
       refresh()
       return
@@ -187,6 +221,7 @@ function M.delete_at(file, line)
       end
       state.sign_ids[id] = nil
       table.remove(M.comments, index)
+      rewrite_artifact()
       notify("Deleted CR annotation " .. tostring(index))
       refresh()
       return id
@@ -386,18 +421,24 @@ local function open_template_picker(comment_win, apply)
 end
 
 ---@param context {file: string, line: number, end_line: number|nil, snippet: string, context: CrCommentContext|nil}
-function M.add(context)
+---@param existing CrComment|nil when set, the popup prefills from it and submit updates it
+local function open_editor(context, existing)
   ensure_ui_autocmds()
   M.close_ui "replace"
   local source_win = vim.api.nvim_get_current_win()
   local ui = state.ui
   ui.source_win = source_win
   ui.tabpage = vim.api.nvim_get_current_tabpage()
-  local input_type = "note"
+  local input_type = existing and existing.type or "note"
   local editor_buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(editor_buf, 0, -1, false, { "" })
+  local initial_lines = existing and vim.split(existing.comment, "\n", { plain = true }) or { "" }
+  vim.api.nvim_buf_set_lines(editor_buf, 0, -1, false, initial_lines)
   vim.bo[editor_buf].bufhidden = "wipe"
   vim.bo[editor_buf].filetype = "markdown"
+  -- 关掉补全菜单：blink.cmp 在 InsertEnter 时把 <CR> 映射到 select_and_accept，
+  -- 会盖掉本 buffer 的 <CR>=submit，导致"回车选中提示而不是提交评论"。
+  -- blink.cmp 认 vim.b.completion == false（见 config.enabled()），设了就整个 buffer 静默。
+  vim.b[editor_buf].completion = false
   vim.b[editor_buf].pi_cr_context = context
 
   local comment_context = map.normalize_context(context.context or {
@@ -453,7 +494,7 @@ function M.add(context)
   )
   ui.editor_win, ui.editor_buf = editor_win, editor_buf
   ui.context_win, ui.context_buf = context_win, context_buf
-  vim.api.nvim_win_set_cursor(editor_win, { 1, 0 })
+  vim.api.nvim_win_set_cursor(editor_win, { #initial_lines, 0 })
 
   local ns = vim.api.nvim_create_namespace "pi-cr-comment-context"
   local anchor_index = context_anchor - context_start + 1
@@ -499,6 +540,10 @@ function M.add(context)
       return
     end
     M.close_ui "submit"
+    if existing then
+      M.update_by_id(existing.id, { type = input_type, comment = comment })
+      return
+    end
     M.add_comment {
       file = context.file,
       line = context.line,
@@ -532,6 +577,31 @@ function M.add(context)
   vim.keymap.set("i", "<S-CR>", insert_newline, { buffer = editor_buf, desc = "Newline" })
   vim.keymap.set("i", "<C-CR>", insert_newline, { buffer = editor_buf, desc = "Newline" })
   vim.cmd "startinsert"
+end
+
+---@param context {file: string, line: number, end_line: number|nil, snippet: string, context: CrCommentContext|nil}
+function M.add(context)
+  open_editor(context, nil)
+end
+
+--- Reopen the annotation popup pre-filled with an existing comment.
+---@param id number
+---@return boolean opened
+function M.edit_by_id(id)
+  for _, comment in ipairs(M.comments) do
+    if comment.id == id then
+      open_editor({
+        file = comment.file,
+        line = comment.line,
+        end_line = comment.end_line,
+        snippet = comment.snippet,
+        context = comment.context,
+      }, comment)
+      return true
+    end
+  end
+  notify("No CR annotation with that id", vim.log.levels.WARN)
+  return false
 end
 
 --- Serialize all comments for the finish payload.

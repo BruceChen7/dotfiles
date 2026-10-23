@@ -321,7 +321,7 @@ local function selected_row()
   return nil
 end
 
----@param actions {jump: fun(id: number), delete: fun(id: number), new_comment: fun(), exit: fun(), help: fun(), parent_win: number|nil}
+---@param actions {jump: fun(id: number), delete: fun(id: number), edit: fun(id: number), new_comment: fun(), exit: fun(), help: fun(), parent_win: number|nil}
 function M.register(actions)
   state.actions = actions
   state.folds = {}
@@ -390,6 +390,12 @@ function M.open()
     local row = selected_row()
     if row then
       state.actions.delete(row.id)
+    end
+  end)
+  map("e", function()
+    local row = selected_row()
+    if row then
+      state.actions.edit(row.id)
     end
   end)
   map("c", function()

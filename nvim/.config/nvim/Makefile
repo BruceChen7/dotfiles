@@ -14,8 +14,10 @@ test:
 
 test-file:
 	@test -n "$(FILE)" || (echo "usage: make test-file FILE=tests/pi_cr/xxx_spec.lua" && exit 1)
+	@# PlenaryBustedFile 不带 minimal_init 时会回落到用户自己的 init.lua，
+	@# 测试结果会随本机配置漂移；直接跑 plenary.busted.run，与 make test 的子进程环境一致。
 	nvim --headless -u tests/minimal_init.lua \
-		-c "PlenaryBustedFile $(FILE)"
+		-c 'lua require("plenary.busted").run("$(FILE)")'
 
 # Only the code this repo tests/owns; other lua/ files predate stylua config.
 format:

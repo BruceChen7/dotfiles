@@ -73,3 +73,45 @@ describe("pi.cr.panel.build_tree_rows", function()
     assert.equal(3, model.selected_line)
   end)
 end)
+
+describe("pi.cr.panel dock", function()
+  local panel = require "pi.cr.panel"
+  local comments = require "pi.cr.comments"
+
+  it("binds e to edit the selected comment", function()
+    comments.clear_all()
+    table.insert(comments.comments, {
+      id = 7,
+      file = "src/a.lua",
+      line = 2,
+      end_line = 2,
+      type = "note",
+      snippet = "body",
+      comment = "body",
+    })
+    local edited
+    panel.register {
+      jump = function() end,
+      delete = function() end,
+      edit = function(id)
+        edited = id
+      end,
+      new_comment = function() end,
+      exit = function() end,
+      help = function() end,
+    }
+    panel.open()
+    local key = nil
+    for _, map in ipairs(vim.api.nvim_buf_get_keymap(panel._state.buf, "n")) do
+      if map.lhs == "e" then
+        key = map
+      end
+    end
+    assert.is_not_nil(key)
+    key.callback()
+    panel.close()
+    comments.clear_all()
+
+    assert.equal(7, edited)
+  end)
+end)

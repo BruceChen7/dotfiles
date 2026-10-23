@@ -318,6 +318,10 @@ function M.delete_comment_by_id(id)
   comments.delete_by_id(id)
 end
 
+function M.edit_comment_by_id(id)
+  comments.edit_by_id(id)
+end
+
 function M.new_comment()
   local anchor = state.last_anchor
   if not anchor then
@@ -563,6 +567,7 @@ local PI_POPUP_HELP = {
 local PI_PANEL_HELP = {
   { "j / k", "move selection" },
   { "<CR>", "jump to comment (syncs explorer + card)" },
+  { "e", "edit selected comment" },
   { "d", "delete selected comment" },
   { "za", "fold / unfold group" },
   { "c", "new comment (anchored at diff cursor line)" },
@@ -1180,6 +1185,7 @@ function M.open(app)
     panel.register {
       jump = M.jump_to_comment,
       delete = M.delete_comment_by_id,
+      edit = M.edit_comment_by_id,
       new_comment = M.new_comment,
       exit = M.exit_flow,
       help = M.show_help,
