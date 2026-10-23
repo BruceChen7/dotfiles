@@ -526,9 +526,9 @@ function M.add(context)
     vim.keymap.set(mode, "<C-t>", function()
       open_template_picker(editor_win, apply_template)
     end, { buffer = editor_buf, desc = "Pi CR comment template" })
-    vim.keymap.set(mode, "<Esc>", cancel, { buffer = editor_buf, desc = "Cancel Pi CR annotation" })
+    -- <Esc> 保持默认（insert → normal），取消用 <C-c>，避免误触丢失已写内容
+    vim.keymap.set(mode, "<C-c>", cancel, { buffer = editor_buf, desc = "Cancel Pi CR annotation" })
   end
-  vim.keymap.set("i", "<C-c>", cancel, { buffer = editor_buf, desc = "Cancel Pi CR annotation" })
   vim.keymap.set("i", "<S-CR>", insert_newline, { buffer = editor_buf, desc = "Newline" })
   vim.keymap.set("i", "<C-CR>", insert_newline, { buffer = editor_buf, desc = "Newline" })
   vim.cmd "startinsert"
