@@ -294,6 +294,122 @@ class TestNeedsReparse(unittest.TestCase):
         self.assertTrue(idx.needs_reparse(1.0, 11, cached))
 
 
+class TestIsRetained(unittest.TestCase):
+    """保留窗口：value in / value out，边界算窗口内。"""
+
+    def test_inside_window(self):
+        self.assertTrue(idx.is_retained(1_000_000.0 - 89 * 86400, 1_000_000.0))
+
+    def test_outside_window(self):
+        self.assertFalse(idx.is_retained(1_000_000.0 - 91 * 86400, 1_000_000.0))
+
+    def test_exactly_on_boundary_is_retained(self):
+        self.assertTrue(idx.is_retained(1_000_000.0 - 90 * 86400, 1_000_000.0))
+
+    def test_days_override(self):
+        self.assertTrue(
+            idx.is_retained(1_000_000.0 - 200 * 86400, 1_000_000.0, days=365)
+        )
+
+    def test_future_mtime_retained(self):
+        """时钟回拨或文件时间戳在未来 → 保留，不误删。"""
+        self.assertTrue(idx.is_retained(1_000_000.0 + 86400, 1_000_000.0))
+
+
+class TestBuildIndexesRetention(unittest.TestCase):
+    """build_indexes 的窗口行为：窗口外不解析、不占缓存条目。
+
+    验证的是一份真实目录跑完之后的产物（返回的索引 + 落盘的缓存），
+    不是内部调用序列。
+    """
+
+    def setUp(self):
+        import os
+        import tempfile
+
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = Path(self._tmp.name) / "sessions"
+        self.state = Path(self._tmp.name) / "state"
+        self.pdir = self.root / "--opt-proj--"
+        self.pdir.mkdir(parents=True)
+        self.state.mkdir()
+        for var, val in (
+            ("HERDR_PLUGIN_STATE_DIR", str(self.state)),
+            ("PI_SESSIONS_ROOT", str(self.root)),
+        ):
+            old = os.environ.get(var)
+            os.environ[var] = val
+            self.addCleanup(self._restore_env, var, old)
+        old_root = picker.SESSIONS_ROOT
+        picker.SESSIONS_ROOT = self.root
+        self.addCleanup(setattr, picker, "SESSIONS_ROOT", old_root)
+
+    @staticmethod
+    def _restore_env(var, old):
+        import os
+
+        if old is None:
+            os.environ.pop(var, None)
+        else:
+            os.environ[var] = old
+
+    def _write_session(self, name: str, age_days: float, text: str) -> Path:
+        import time
+
+        path = self.pdir / f"{name}.jsonl"
+        path.write_text(
+            json_dumps(
+                {
+                    "type": "session",
+                    "id": name,
+                    "cwd": "/tmp/proj",
+                    "timestamp": "2026-01-01T00:00:00Z",
+                }
+            )
+            + "\n"
+            + json_dumps(
+                {"type": "message", "message": {"role": "user", "content": text}}
+            )
+            + "\n"
+        )
+        ts = time.time() - age_days * 86400
+        import os
+
+        os.utime(path, (ts, ts))
+        return path
+
+    def _cached_entries(self) -> dict:
+        return json.loads((self.state / picker.CACHE_FILE_NAME).read_text())["entries"]
+
+    def test_only_window_sessions_indexed(self):
+        self._write_session("recent", 89, "kept message")
+        self._write_session("stale", 91, "dropped message")
+        indexes = picker.build_indexes()
+        self.assertEqual([i.sid for i in indexes], ["recent"])
+        self.assertEqual(len(self._cached_entries()), 1)
+
+    def test_expired_entry_leaves_the_cache_file(self):
+        """删掉唯一文件后重扫，缓存文件里的条目也要消失。"""
+        path = self._write_session("only", 1, "hello")
+        self.assertEqual(len(picker.build_indexes()), 1)
+        path.unlink()
+        self.assertEqual(picker.build_indexes(), [])
+        self.assertEqual(self._cached_entries(), {})
+
+    def test_cache_version_bump_discards_old_index(self):
+        self._write_session("recent", 1, "hello")
+        picker.build_indexes()
+        (self.state / picker.CACHE_FILE_NAME).write_text(
+            json.dumps({"version": idx.INDEX_LOGIC_VERSION - 1, "entries": {"x": {}}})
+        )
+        self.assertEqual(len(picker.build_indexes()), 1)
+        self.assertEqual(
+            json.loads((self.state / picker.CACHE_FILE_NAME).read_text())["version"],
+            idx.INDEX_LOGIC_VERSION,
+        )
+
+
 class TestSortGlobal(unittest.TestCase):
     def _mk(self, path, cwd, mtime):
         return idx.SessionIndex(

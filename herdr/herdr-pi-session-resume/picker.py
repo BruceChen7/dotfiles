@@ -133,9 +133,16 @@ def _read_file_truncated(path: Path, max_bytes: int) -> str:
 
 
 def build_indexes() -> list[idx.SessionIndex]:
-    """扫描 + 增量解析：返回全部 SessionIndex（已含缓存命中）。"""
+    """扫描 + 增量解析：返回保留窗口内的全部 SessionIndex（已含缓存命中）。
+
+    窗口外的 session 不解析也不进 kept，所以缓存随窗口自然收缩。落盘条件
+    比 fresh 多一条键集判定：最后一个文件被删、或最后一条记录滑出窗口时
+    fresh 为空，只有键集能反映出来（2026-10-30 实测：删掉唯一文件后重扫，
+    缓存里仍留着那一条）。
+    """
     cache = load_cache()
     files = scan_session_files(SESSIONS_ROOT)
+    now = time.time()
     fresh: list[idx.SessionIndex] = []
     kept: dict[str, dict] = {}
     for path in files:
@@ -144,6 +151,8 @@ def build_indexes() -> list[idx.SessionIndex]:
         except OSError:
             continue
         mtime, size = st.st_mtime, st.st_size
+        if not idx.is_retained(mtime, now):
+            continue
         cached = cache.get(str(path))
         if cached is None or idx.needs_reparse(mtime, size, cached):
             text = _read_file_truncated(path, idx.MAX_FILE_BYTES)
@@ -156,7 +165,7 @@ def build_indexes() -> list[idx.SessionIndex]:
             kept[str(path)] = {"mtime": mtime, "size": size, "index": parsed.to_dict()}
         else:
             kept[str(path)] = cached
-    if fresh:
+    if fresh or set(kept) != set(cache):
         save_cache(idx.cache_merge(kept, fresh))
     return [idx.SessionIndex.from_dict(v["index"]) for v in kept.values()]
 
@@ -624,7 +633,9 @@ def sub_picker() -> None:
     while True:
         indexes = idx.sort_global(build_indexes())
         if not indexes:
-            fail("未找到任何 pi session（~/.pi/agent/sessions/）")
+            fail(
+                f"最近 {idx.RETENTION_DAYS} 天没有 pi session（~/.pi/agent/sessions/）"
+            )
         lines = idx.build_lines(indexes, home)
         projects = len({i.cwd for i in indexes if i.cwd})
         # ctrl-g: 二次筛选（仿 snacks.nvim grep picker 的 <c-g>=tcd+picker_grep）——
@@ -638,7 +649,8 @@ def sub_picker() -> None:
             f"alt-g:reload({scope_cmd} scope)"
         )
         header = (
-            f"共 {len(indexes)} 个 session · {projects} 个项目    "
+            f"近 {idx.RETENTION_DAYS} 天 · 共 {len(indexes)} 个 session · "
+            f"{projects} 个项目    "
             "enter=resume · alt+enter=fork · ctrl+y=复制 · ctrl-g=项目内筛选 · alt-g=全部 · esc=退出"
         )
         rc, out = run_fzf(

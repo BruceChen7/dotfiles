@@ -15,6 +15,8 @@ preview 详情。本文件不含 herdr CLI / fzf / 剪贴板等副作用（那�
     - 索引字段 = 全部消息里的 user 文本 + assistant text 块；跳过 thinking/toolCall/image base64。
     - 全文搜索覆盖整段历史（从首条消息到最新），不按条数截断。
     - 容错：坏行跳过、超大文件截断、无 session 头部则返回 None。
+    - 保留窗口：只索引 mtime 在最近 RETENTION_DAYS 天内的 session；窗口外的
+      文件不解析、不占缓存。窗口外的文件本身不动。
     - 增量：缓存按 (mtime, size) 判定是否需要重解析。
 """
 
@@ -25,12 +27,14 @@ from datetime import datetime
 
 MAX_FILE_BYTES = 5 * 1024 * 1024  # 单文件读取上限 5MB
 MAX_USER_INPUT_LINES = 2  # user 消息索引只取前 2 行（模板长正文自然排除）
+RETENTION_DAYS = 90  # picker 与缓存只保留最近 90 天的 session（按文件 mtime）
 
 # 索引逻辑版本：解析/剥离/截断逻辑变化时 +1 → picker 检测到不匹配会全量重建缓存。
 # 增量缓存按 (mtime, size) 判定，代码改了但 session 文件没变时缓存永远不会失效，
 # 必须靠这个版本号强制重建（2026-09-04 踩坑：改截断逻辑后用户仍看到旧索引）。
 # 3：移除 30 条消息上限 + 第 1 列 4000 字符截断（recent → messages）。
-INDEX_LOGIC_VERSION = 3
+# 4：加 90 天保留窗口，旧缓存里的窗口外条目要整体丢掉。
+INDEX_LOGIC_VERSION = 4
 
 # 目录名以这些前缀开头 → 视为临时/私有，跳过（--private-tmp-- 等）
 EXCLUDE_DIR_PREFIXES = ("--private-", "--var-", "--tmp-")
@@ -100,6 +104,15 @@ def classify_session_dir(name: str) -> bool:
     if not name.startswith("--") or not name.endswith("--"):
         return False
     return not any(name.startswith(p) for p in EXCLUDE_DIR_PREFIXES)
+
+
+def is_retained(mtime: float, now: float, days: int = RETENTION_DAYS) -> bool:
+    """文件 mtime 是否落在保留窗口内（含边界）。
+
+    按 mtime 而非 session 头部 timestamp 判定：mtime 是「最后一次活动」，
+    三个月前开的 session 昨天 resume 过仍然应该在列表里。
+    """
+    return now - mtime <= days * 86400
 
 
 def encoded_cwd_to_path(encoded: str) -> str:
