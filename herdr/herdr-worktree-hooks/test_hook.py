@@ -256,7 +256,20 @@ class RealCliIntegrationTest(unittest.TestCase):
             check=False,
         )
         self.assertEqual(presetup.returncode, 0, presetup.stderr)
-        self.assertTrue((self.checkout / ".pi").is_symlink(), "expected .pi symlink")
+        # .pi 现在逐条目镜像（git 未跟踪视图）：整体未跟踪 → 真目录 + 顶层同名链接，
+        # 不再是整目录 symlink（那样会把 tracked .pi 也串到主 checkout 的分支上）。
+        self.assertTrue((self.checkout / ".pi").is_dir())
+        self.assertFalse((self.checkout / ".pi").is_symlink())
+        self.assertEqual(
+            sorted(p.name for p in (self.checkout / ".pi").iterdir()),
+            sorted(p.name for p in (self.repo / ".pi").iterdir()),
+            "worktree .pi top level must match the main checkout",
+        )
+        self.assertEqual(
+            os.path.realpath(os.readlink(self.checkout / ".pi" / "worktree-hooks")),
+            os.path.realpath(self.repo / ".pi" / "worktree-hooks"),
+            "mirrored entry points at the source entry itself",
+        )
         self.assertTrue((self.checkout / "node_modules").is_symlink())
         self.assertTrue(
             (self.checkout / ".gitignore").is_file(),

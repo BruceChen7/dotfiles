@@ -16,4 +16,6 @@ stow --dotfiles -t ~ dot-local
 - `tmux_git_branch.sh` — tmux git 分支信息
 - `tmux_kill_window_to_right.sh` — 关闭右侧窗口
 - `worktree-hooks` — worktree 生命周期钩子框架（入口脚本）
-- `worktree-hooks-pkg/` — worktree-hooks Python 包
+- `worktree-hooks-pkg/` — worktree-hooks Python 包；`presetup` 把源仓库的
+  `node_modules` / `.gitignore` symlink 过来，再按 **git 未跟踪视图**
+  （`git ls-files -o --directory -- .pi`）逐条镜像 `.pi` 条目，tracked 内容跟分支走

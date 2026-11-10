@@ -1,150 +1,310 @@
 """Built-in default behaviors for worktree hooks.
 
-Presetup: symlink artifacts from source repo into the new worktree.
+Presetup: symlink whole-path artifacts from the source repo into the new
+          worktree, then mirror ``.pi``'s untracked entries (git's own view)
+          one by one.
 Clean:    remove symlinks that presetup created.
 """
 
 from __future__ import annotations
 
 import os
+import subprocess
 import sys
 from typing import List
 
 from worktree_hooks.ctx import WorktreeContext
 
-# Default list of artifacts to symlink (source → worktree).
+# Default list of artifacts to symlink whole-path (source → worktree).
 # Can be extended later via config if needed.
+#
+# 为什么 ``.pi`` 不在这里：它是混合目录 —— tracked 部分跟着分支走，未跟踪部分
+# （``plans/`` ``lessons.md`` ``extensions/`` …）只有主 checkout 有。整路径 symlink
+# 在「目标已存在」时只能整条 skip（内容丢失），在「目标不存在」时又会把 tracked
+# 内容也串到主 checkout 的分支上。所以 ``.pi`` 改走 :func:`mirror_pi_untracked`
+# 的逐条目规则，判断源是 git 的未跟踪视图。
 DEFAULT_ARTIFACTS: List[str] = [
-    ".pi",
     "node_modules",
     ".gitignore",
 ]
 
-# `.pi` 下面由 skill-toggle 维护的「仓库级忽略物」。
-#
-# 为什么需要单独一组：worktree 只带 tracked 文件，而 `.pi/skills` 是**混合目录** ——
-# tracked 的 skill 是真目录（跟着分支走），pi-kit 的 skill 是 skill-toggle 铺的
-# symlink（只活在这一台机器、不进版本库）。`.pi` 已存在时整路径规则只能 skip，
-# 于是 worktree 里的会话看不到那几十个 skill；而整目录 symlink 又会让 tracked skill
-# 读到主 checkout 的分支内容。所以对这两个目录改成**逐条目合并**：
-# 源里是 symlink 的条目镜像过去（目标原样复制），真目录/真文件留给分支。
-MERGED_PI_DIRS: List[str] = [
-    os.path.join(".pi", "skills"),
-    os.path.join(".pi", "disabled-skills"),
-]
+PI_DIR = ".pi"
 
-# 合并时只镜像 symlink 条目的目录：真目录是 tracked 的 skill，不能复制。
-_SYMLINK_ONLY_DIRS = {os.path.join(".pi", "skills")}
-
+# classify_entry 的返回值。trunk 指 git 把整棵 ``.pi`` 折叠成的一条候选
+# （``.pi/`` 自身）：只保证目录存在，绝不建整目录 symlink。
 LINK = "link"
-SKIP_EXISTS = "skip-exists"
-SKIP_TRACKED = "skip-tracked"
+SKIP = "skip"
+TRUNK_NOOP = "trunk-noop"
+TRUNK_MKDIR = "trunk-mkdir"
 
 
-def mirrored_entry_action(
-    source_entry: str,
-    dest_entry: str,
-    *,
-    symlink_only: bool,
-) -> str:
-    """源条目该怎么进 worktree（纯查表，不碰文件系统以外的东西）。
+def untracked_entries(source_repo: str, rel: str = PI_DIR) -> List[str]:
+    """git 眼里的「未跟踪条目」清单，相对 *rel*（默认 ``.pi``）。
 
-    - ``SKIP_EXISTS``：worktree 里已经有同名条目（含坏链）—— 幂等，也绝不覆盖 tracked。
-    - ``SKIP_TRACKED``：``symlink_only`` 目录里的真目录/真文件跟着分支走，不镜像。
-    - ``LINK``：建同名 symlink，目标由 :func:`mirrored_entry_target` 决定。
+    为什么用 git 而不是自己递归扫：``--directory`` 会把整棵未跟踪子树折叠成一条
+    （dotfiles 只给 ``.pi/``），而 tracked + untracked 混合的目录则逐条列出未跟踪项
+    （pi-mono 实测 ``.pi/extensions`` 出 37 条）。前者只需保证目录存在，后者恰好就是
+    「该镜像哪些条目」的答案，省掉手写走目录 + 自己对 ignore 求值。
+
+    - 不加 ``--exclude-standard``：被 ignore 的条目同样是「只活在这台机器上的本地
+      状态」，也必须可见；``-i`` 同理不需要。
+    - ``.pi/`` 自身返回 ``""``（trunk，见 :func:`classify_entry`）。
+    - git 缺失 / 非 repo / 超时 / 非零退出 → 返回 ``[]``，调用方退回退化路径。
     """
-    if os.path.lexists(dest_entry):
-        return SKIP_EXISTS
-    if symlink_only and not os.path.islink(source_entry):
-        return SKIP_TRACKED
+    rel = rel.rstrip("/")
+    try:
+        proc = subprocess.run(
+            ["git", "-C", source_repo, "ls-files", "-o", "--directory", "-z",
+             "--", rel],
+            capture_output=True,
+            check=False,
+            timeout=10,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+    if proc.returncode != 0:
+        return []
+
+    prefix = rel + "/"
+    entries: List[str] = []
+    for raw in proc.stdout.decode("utf-8", errors="surrogateescape").split("\0"):
+        if not raw:
+            continue
+        # trunk 条目（`.pi` 或 `.pi/`）代表整棵子树未跟踪，只保证目录存在。
+        if raw.rstrip("/") == rel:
+            entries.append("")
+            continue
+        if raw.startswith(prefix):
+            # `--directory` 给目录带尾斜杠（`.pi/plans/`），去掉后才是 symlink 名。
+            entries.append(raw[len(prefix):].rstrip("/"))
+    return entries
+
+
+def classify_entry(
+    entry: str,
+    *,
+    wt_pi_exists: bool,
+    dst_lexists: bool,
+) -> str:
+    """候选条目该怎么处理（纯查表：值进值出，不碰文件系统）。
+
+    探测（wt/.pi 是否存在、目标条目是否已存在）留给 shell 层，便于无文件系统测试。
+
+    - trunk（``""`` / ``"."``）：worktree 的 ``.pi`` 只保证是**真目录**，绝不建整目录
+      symlink —— 整目录 symlink 会让 worktree 里以 ``.pi/`` 为根的写操作落到主
+      checkout（plan 会写错仓库），未来任何 tracked ``.pi`` 文件也会静默串分支。
+    - 其余：目标已存在（含坏链）→ ``SKIP``，幂等且绝不覆盖 tracked / 分支自带内容。
+    """
+    if entry in ("", "."):
+        return TRUNK_NOOP if wt_pi_exists else TRUNK_MKDIR
+    if dst_lexists:
+        return SKIP
     return LINK
 
 
-def mirrored_entry_target(source_entry: str) -> str:
-    """镜像出来的链接该指向哪：源是链接就复制它的目标，否则直接指源本身。"""
-    if os.path.islink(source_entry):
-        return os.readlink(source_entry)
-    return source_entry
+def entry_link_target(source_pi: str, entry: str) -> str:
+    """链接指向源条目**自身**（不再复制源条目的 readlink 目标）。
 
-
-def run_merge_pi_dir(ctx: WorktreeContext, relative_dir: str) -> None:
-    """把一个 ``.pi`` 子目录里的仓库级条目逐个镜像进 worktree（幂等）。
-
-    只在「源是真目录、worktree 那边也是真目录」时工作：任一端是整目录 symlink 时，
-    整路径规则已经把内容带过来了，再合并只会重复。
+    少一层语义：源条目被重新指向（skill-toggle 换版本）时 worktree 自动跟随，
+    clean 的归属校验也退化成一次字符串比较。
     """
-    src_dir = os.path.abspath(os.path.join(ctx.source_repo, relative_dir))
-    dst_dir = os.path.join(ctx.worktree_path, relative_dir)
-    dst_pi = os.path.join(ctx.worktree_path, ".pi")
+    return os.path.abspath(os.path.join(source_pi, entry))
 
-    if os.path.islink(src_dir) or not os.path.isdir(src_dir):
-        return
-    # worktree 的 `.pi` 是整目录 symlink（源里没有 tracked `.pi`）：内容已经在，
-    # 合并会重复。真目录时才往里面补条目 —— 缺的 subdir（如 disabled-skills）自己建。
-    if os.path.islink(dst_pi) or not os.path.isdir(dst_pi):
-        return
 
-    symlink_only = relative_dir in _SYMLINK_ONLY_DIRS
+def mirror_pi_untracked(ctx: WorktreeContext) -> None:
+    """把源 ``.pi`` 里 git 未跟踪的条目逐条镜像进 worktree（幂等）。
 
-    try:
-        names = sorted(os.listdir(src_dir))
-    except OSError as exc:
-        print(f"  [warn] cannot read {relative_dir}: {exc}", file=sys.stderr)
-        return
+    - 有候选：worktree 的 ``.pi`` 只作为**真目录**存在（``os.makedirs``），
+      其余逐条 symlink。
+    - trunk 候选（整棵 ``.pi`` 未跟踪，git 折叠成一条）：绝不建整目录 symlink，
+      确保目录后把源 ``.pi`` 顶层条目逐个同名链接 —— 这是 plan 实测表里 dotfiles
+      样本的结果（".pi 目录 + 顶层同名 symlink"）；只浅一层 listdir，不是递归扫，
+      也不涉及 ignore 求值（整棵子树未跟踪已由 git 判定）。
+    - 无候选（非 git / ``.pi`` 全 tracked / ``.pi`` 空）：worktree 缺 ``.pi``
+      且源存在时退回整目录 symlink（非 git 场景行为不变）。
+    """
+    source_pi = os.path.abspath(os.path.join(ctx.source_repo, PI_DIR))
+    worktree_pi = os.path.join(ctx.worktree_path, PI_DIR)
+    entries = untracked_entries(ctx.source_repo)
 
-    pending = [
-        name
-        for name in names
-        if mirrored_entry_action(
-            os.path.join(src_dir, name),
-            os.path.join(dst_dir, name),
-            symlink_only=symlink_only,
-        )
-        == LINK
-    ]
-    if not pending:
-        # 没有要镜像的条目就不要凭空建目录（源 `.pi/disabled-skills` 常常是空目录）。
-        if ctx.verbose:
-            print(f"  [skip] {relative_dir} nothing to mirror", file=sys.stderr)
+    if not entries:
+        if not os.path.lexists(worktree_pi) and os.path.exists(source_pi):
+            os.symlink(source_pi, worktree_pi, target_is_directory=True)
+            print(f"  [ok] symlinked {PI_DIR} → {source_pi}", file=sys.stderr)
         return
 
-    try:
-        os.makedirs(dst_dir, exist_ok=True)
-    except OSError as exc:
-        print(f"  [warn] cannot create {relative_dir}: {exc}", file=sys.stderr)
-        return
-
-    for name in names:
-        src = os.path.join(src_dir, name)
-        dst = os.path.join(dst_dir, name)
-        action = mirrored_entry_action(src, dst, symlink_only=symlink_only)
-
-        if action == SKIP_EXISTS:
-            if ctx.verbose:
-                print(f"  [skip] {relative_dir}/{name} already exists", file=sys.stderr)
-            continue
-        if action == SKIP_TRACKED:
-            if ctx.verbose:
-                print(f"  [skip] {relative_dir}/{name} is tracked (not a symlink)", file=sys.stderr)
-            continue
-
+    if any(entry in ("", ".") for entry in entries):
+        # trunk：源 ``.pi`` 顶层条目逐个同名补进候选（git 折叠后不再给子条目）。
         try:
-            os.symlink(mirrored_entry_target(src), dst)
+            top_level = sorted(os.listdir(source_pi))
         except OSError as exc:
-            print(f"  [warn] cannot mirror {relative_dir}/{name}: {exc}", file=sys.stderr)
+            print(f"  [warn] cannot read {PI_DIR}: {exc}", file=sys.stderr)
+            return
+        known = set(entries)
+        entries.extend(name for name in top_level if name not in known)
+
+    for entry in entries:
+        dst = os.path.join(worktree_pi, entry)
+        action = classify_entry(
+            entry,
+            wt_pi_exists=os.path.lexists(worktree_pi),
+            dst_lexists=os.path.lexists(dst),
+        )
+
+        if action == TRUNK_NOOP:
             continue
-        print(f"  [ok] mirrored {relative_dir}/{name}", file=sys.stderr)
+        if action == TRUNK_MKDIR:
+            try:
+                os.makedirs(worktree_pi, exist_ok=True)
+            except OSError as exc:
+                print(
+                    f"  [warn] cannot create {PI_DIR}，aborting remaining "
+                    f".pi entries: {exc}",
+                    file=sys.stderr,
+                )
+                return
+            continue
+        if action == SKIP:
+            if ctx.verbose:
+                print(
+                    f"  [skip] {PI_DIR}/{entry} already exists", file=sys.stderr,
+                )
+            continue
+
+        # LINK：entry 可能带子路径（如 skills/how），父目录得先存在；
+        # 顺便把 worktree/.pi 建出来（真目录，不是整目录 symlink）。
+        parent = os.path.dirname(dst)
+        try:
+            os.makedirs(parent, exist_ok=True)
+        except OSError as exc:
+            print(
+                f"  [warn] cannot create {parent}，aborting remaining "
+                f".pi entries: {exc}",
+                file=sys.stderr,
+            )
+            return
+        try:
+            os.symlink(entry_link_target(source_pi, entry), dst)
+        except OSError as exc:
+            print(
+                f"  [warn] cannot mirror {PI_DIR}/{entry}: {exc}", file=sys.stderr,
+            )
+            continue
+        print(f"  [ok] mirrored {PI_DIR}/{entry}", file=sys.stderr)
+
+
+def _is_our_mirror(dst: str, source_pi: str, name: str) -> bool:
+    """判断 *dst* 是不是 presetup 为源条目 *name* 建出的镜像链接。
+
+    为什么这道校验是删除的唯一授权：clean 只回收工具自己建的链接。判据是
+    readlink 指向「presetup 当年会写入的目标」—— 字面相等，或去掉路径别名后相等
+    （见下）。源条目是否还在都不影响归属：源被删后的悬空链也必须回收，否则
+    worktree 里永远留着死链。readlink 可能在并发 ``git worktree remove`` 时失败，
+    与全模块一致：warn 后按「不是我们的」处理，绝不抛。
+    """
+    if not os.path.islink(dst):
+        return False
+    expected = entry_link_target(source_pi, name)
+    try:
+        actual = os.readlink(dst)
+    except OSError as exc:
+        print(f"  [warn] cannot readlink {PI_DIR}/{name}: {exc}", file=sys.stderr)
+        return False
+    if actual == expected:
+        return True
+    # 同一路径的符号链接等价形态：macOS 的 /tmp vs /private/tmp、源仓库搬迁后
+    # 绝对路径前缀变化，字符串比较不等但 realpath 相等 —— 仍是我们建的链；
+    # realpath 对不存在的叶路径也能解析前缀，故悬空链同样适用。
+    #
+    # 相对目标必须按**链接所在目录**解析：os.path.realpath 对相对路径是按进程 CWD
+    # 解析的，直接喂进去会把外来相对链接（如 tracked 的 ``skills/shadcn ->
+    # ../../.agents/skills/shadcn``）解析到毫不相干的位置，可能撞上 expected 而误删。
+    actual_abs = actual if os.path.isabs(actual) else os.path.join(
+        os.path.dirname(dst), actual,
+    )
+    return os.path.realpath(actual_abs) == os.path.realpath(expected)
+
+
+def unmirror_pi_untracked(ctx: WorktreeContext) -> None:
+    """回收 presetup 逐条建出来的 ``.pi`` 链接（幂等，只删我们建的）。
+
+    两道扫，缺一不可：
+
+    1. **候选集回收**：遍历 :func:`untracked_entries` 的当前候选，逐个回收。这是唯一
+       能到达**嵌套**链接（如 ``extensions/answer.ts`` —— pi-mono 样本）的路径：
+       递归扫描虽然也能看到它们，但「源条目仍在、链接仍有效」的常规情形按候选集
+       直查更省事，不必等遍历完整棵目录树。
+    2. **递归孤儿兜底**：候选集是**当前** git 视图，源里被删/重新 ignore 的条目已
+       不在其中，但 presetup 当年建的链接还挂在原地（含
+       ``<混合目录>/<entry>`` 这类嵌套孤儿）。故从 ``worktree/.pi`` 起递归遍历
+       **真目录**（symlink 一律不跟随、也不下钻），用同一套归属校验收干净。
+
+    两道都用 :func:`_is_our_mirror`（symlink + 源同名条目 lexists + 指向源条目），
+    tracked 内容、外来链接一律不动；第一道删过的路径在第二道里已不是 symlink，
+    自然跳过，不会重复删除或抛 FileNotFoundError。回收后留下的空目录一律不做
+    rmdir：无法区分目录是 presetup 建的还是用户自己建的，空目录也不阻塞
+    ``git worktree remove`` —— 也就是说 clean 不删 ``worktree/.pi`` 目录本身，
+    即使它空了。
+    """
+    source_pi = os.path.abspath(os.path.join(ctx.source_repo, PI_DIR))
+    worktree_pi = os.path.join(ctx.worktree_path, PI_DIR)
+
+    if os.path.islink(worktree_pi) or not os.path.isdir(worktree_pi):
+        # 整目录 symlink 由 run_clean_defaults 顶层的显式分支回收；缺目录则无事可做。
+        return
+
+    # 第一道：按当前候选集回收（覆盖嵌套条目）。trunk 只保证目录存在，无链接可收。
+    for entry in untracked_entries(ctx.source_repo):
+        if entry in ("", "."):
+            continue
+        dst = os.path.join(worktree_pi, entry)
+        if not _is_our_mirror(dst, source_pi, entry):
+            continue
+        try:
+            os.unlink(dst)
+        except OSError as exc:
+            print(
+                f"  [warn] cannot remove {PI_DIR}/{entry}: {exc}",
+                file=sys.stderr,
+            )
+            continue
+        print(f"  [ok] removed mirrored {PI_DIR}/{entry}", file=sys.stderr)
+
+    # 第二道：递归孤儿兜底（源里已删/重新 ignore、不在候选集里的链接，含嵌套）。
+    for root, dirnames, filenames in os.walk(worktree_pi, followlinks=False):
+        # 指向目录的 symlink 会出现在 dirnames 里：先对条目名单做快照（否则它们
+        # 自己会漏掉回收），再把 symlink 从 dirnames 剔除，明确不下钻进源仓库。
+        names = dirnames + filenames
+        dirnames[:] = [
+            name for name in dirnames
+            if not os.path.islink(os.path.join(root, name))
+        ]
+        for name in names:
+            dst = os.path.join(root, name)
+            if not os.path.islink(dst):
+                continue
+            rel = os.path.relpath(dst, worktree_pi)
+            if not _is_our_mirror(dst, source_pi, rel):
+                continue
+            try:
+                os.unlink(dst)
+            except OSError as exc:
+                print(
+                    f"  [warn] cannot remove {PI_DIR}/{rel}: {exc}",
+                    file=sys.stderr,
+                )
+                continue
+            print(f"  [ok] removed mirrored {PI_DIR}/{rel}", file=sys.stderr)
 
 
 def run_presetup_defaults(ctx: WorktreeContext) -> None:
     """Symlink default artifacts from *source_repo* into *worktree_path*.
 
     Strategy:
-    - Use absolute-path symlinks (worktree may be at a different directory level).
-    - Skip if destination already exists (file, dir, or symlink).
-    - Skip if source artifact does not exist.
-    - When ``.pi`` already exists in the worktree (tracked config), merge the
-      repo-level skill farm from ``MERGED_PI_DIRS`` instead of skipping outright.
+    - Whole-path artifacts (``node_modules`` / ``.gitignore``): absolute-target
+      symlink, skip if destination or source already exists / is missing.
+    - ``.pi``: :func:`mirror_pi_untracked` —— 逐条镜像 git 未跟踪条目，
+      整目录 symlink 只作为非 git / 空 ``.pi`` 的退化路径。
     """
     for artifact in DEFAULT_ARTIFACTS:
         src = os.path.abspath(os.path.join(ctx.source_repo, artifact))
@@ -165,8 +325,7 @@ def run_presetup_defaults(ctx: WorktreeContext) -> None:
         os.symlink(src, dst, target_is_directory=os.path.isdir(src))
         print(f"  [ok] symlinked {artifact} → {src}", file=sys.stderr)
 
-    for relative_dir in MERGED_PI_DIRS:
-        run_merge_pi_dir(ctx, relative_dir)
+    mirror_pi_untracked(ctx)
 
 
 def run_clean_defaults(ctx: WorktreeContext) -> None:
@@ -175,9 +334,8 @@ def run_clean_defaults(ctx: WorktreeContext) -> None:
     Strategy:
     - Only remove symlinks (``os.path.islink``), never regular files or
       directories — safe against accidental deletion.
-    - Silently skip non-symlink paths.
-    - For merged ``.pi`` dirs, only remove links that still point where the
-      mirrored copy pointed; tracked entries and foreign links stay.
+    - ``.pi`` 已不在 ``DEFAULT_ARTIFACTS``（现在逐条目镜像），但旧版本留下的整目录
+      symlink 仍要回收：显式处理，然后走 :func:`unmirror_pi_untracked`。
     """
     for artifact in DEFAULT_ARTIFACTS:
         path = os.path.join(ctx.worktree_path, artifact)
@@ -192,34 +350,10 @@ def run_clean_defaults(ctx: WorktreeContext) -> None:
         os.unlink(path)
         print(f"  [ok] removed symlink {artifact}", file=sys.stderr)
 
-    for relative_dir in MERGED_PI_DIRS:
-        _clean_merged_pi_dir(relative_dir, ctx)
-
-
-def _clean_merged_pi_dir(relative_dir: str, ctx: WorktreeContext) -> None:
-    src_dir = os.path.abspath(os.path.join(ctx.source_repo, relative_dir))
-    dst_dir = os.path.join(ctx.worktree_path, relative_dir)
-
-    if os.path.islink(dst_dir) or not os.path.isdir(dst_dir):
+    pi_path = os.path.join(ctx.worktree_path, PI_DIR)
+    if os.path.islink(pi_path):
+        os.unlink(pi_path)
+        print(f"  [ok] removed symlink {PI_DIR}", file=sys.stderr)
         return
 
-    try:
-        names = sorted(os.listdir(dst_dir))
-    except OSError:
-        return
-
-    for name in names:
-        dst = os.path.join(dst_dir, name)
-        src = os.path.join(src_dir, name)
-
-        if not os.path.islink(dst):
-            continue
-        # 源里已经没了的条目保持原样：删链接是 skill-toggle cleanup 的事，
-        # 不是 worktree clean 的事。
-        if not os.path.lexists(src):
-            continue
-        if os.readlink(dst) != mirrored_entry_target(src):
-            continue
-
-        os.unlink(dst)
-        print(f"  [ok] removed mirrored {relative_dir}/{name}", file=sys.stderr)
+    unmirror_pi_untracked(ctx)
