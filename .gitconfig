@@ -34,6 +34,8 @@
 [includeIf "hasconfig:remote.*.url:git@github.com:*/**"]
     path = ~/.config/git/config-github
 
+[includeIf "hasconfig:remote.*.url:https://github.com/**"]
+    path = ~/.config/git/config-github
 [includeIf "hasconfig:remote.*.url:ssh://git@codeberg.org/**"]
     path = ~/.config/git/config-codeberg
 
@@ -47,8 +49,8 @@
     git-fetch-with-cli = true
 
 [diff]
-    external = difft
     tool = difftastic
+	external = difft --byte-limit 100000 --graph-limit 10000 --display side-by-side
 
 [difftool]
     prompt = false
