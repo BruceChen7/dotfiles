@@ -40,9 +40,20 @@ def resolve_plugin(source_repo: str) -> Optional[ModuleType]:
     # imports inside the plugin (if any) work as expected.
     plugin_dir = os.path.dirname(plugin_path)
     sys.path.insert(0, plugin_dir)
+
+    # ``exec_module`` writes ``__pycache__/plugin.cpython-3xx.pyc`` next to the
+    # plugin by default. That cache serves one load in one process, but the file
+    # it leaves behind is an untracked entry that presetup then mirrors into
+    # every worktree (``.pi/worktree-hooks/__pycache__`` → a symlink that even
+    # the ``__pycache__/`` gitignore rule misses, since that rule only matches a
+    # real directory). Suppress it for the load, and for the plugin's own
+    # imports, then restore.
+    previous_dont_write_bytecode = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
     try:
         spec.loader.exec_module(module)
     finally:
+        sys.dont_write_bytecode = previous_dont_write_bytecode
         sys.path.remove(plugin_dir)
 
     return module

@@ -52,6 +52,32 @@ class TestPluginResolver(unittest.TestCase):
         self.assertTrue(hasattr(plugin, "presetup"))
         self.assertTrue(hasattr(plugin, "clean"))
 
+    def test_loading_leaves_no_bytecode_cache(self) -> None:
+        """Loading the plugin must not leave a ``__pycache__`` next to it.
+
+        That .pyc serves one load in one process, but presetup mirrors the
+        source repo's untracked ``.pi`` entries into every new worktree — the
+        leftover becomes ``.pi/worktree-hooks/__pycache__``, a symlink that
+        ``__pycache__/`` in .gitignore does not match (the rule wants a real
+        directory), so it shows up as untracked noise in each worktree.
+        """
+        plugin_path = self._write_plugin("def presetup(ctx): pass\n")
+        resolve_plugin(self.source)
+        cache_dir = os.path.join(os.path.dirname(plugin_path), "__pycache__")
+        self.assertFalse(
+            os.path.exists(cache_dir),
+            f"loading wrote bytecode cache at {cache_dir}",
+        )
+
+    def test_loading_restores_dont_write_bytecode(self) -> None:
+        """The suppression is scoped to the load, not the process."""
+        import sys
+
+        self._write_plugin("def presetup(ctx): pass\n")
+        before = sys.dont_write_bytecode
+        resolve_plugin(self.source)
+        self.assertEqual(sys.dont_write_bytecode, before)
+
     def test_plugin_hook_called(self) -> None:
         """call_plugin_hook should invoke the named hook."""
         self._write_plugin(
