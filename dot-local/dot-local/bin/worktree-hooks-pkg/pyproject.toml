@@ -1,7 +1,7 @@
 [project]
 name = "worktree-hooks"
-version = "0.1.0"
-description = "Project-level worktree lifecycle hook framework"
+version = "0.2.0"
+description = "Worktree presetup driven by a declarative rule table"
 requires-python = ">=3.10"
 dependencies = []
 
