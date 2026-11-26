@@ -1,9 +1,19 @@
 """Built-in default behaviors for worktree hooks.
 
-Presetup: symlink whole-path artifacts from the source repo into the new
-          worktree, then mirror ``.pi``'s untracked entries (git's own view)
-          one by one.
-Clean:    remove symlinks that presetup created.
+Presetup: 按**全局规则表**（:mod:`worktree_hooks.rules`）把被 gitignore 的本地产物
+          从主 checkout 铺进新 worktree，再镜像 ``.pi`` 的未跟踪条目（git 自己的视图）。
+Clean:    回收 presetup 建出来的那些链接。
+
+为什么产物清单不在这里：清单是「路径形状 → 补法」的映射，和项目无关。写成代码的
+结果是「每个 repo 一份 ITEMS 表 + 一份 plugin.py」，而清单里的条目（``node_modules``
+/ ``.nsh`` / ``env.local``）在所有 repo 里是同一件事，只是位置不同。规则表与覆盖层
+见 :mod:`worktree_hooks.rules`。
+
+为什么 ``.pi`` 不在规则表里：它是混合目录 —— tracked 部分跟着分支走，未跟踪部分
+（``plans/`` ``lessons.md`` ``extensions/`` …）只有本机有。整路径 symlink 在「目标
+已存在」时只能整条 skip（内容丢失），在「目标不存在」时又会把 tracked 内容也串到
+主 checkout 的分支上。所以 ``.pi`` 走 :func:`mirror_pi_untracked` 的逐条目规则，
+判据是 git 的未跟踪视图。
 """
 
 from __future__ import annotations
@@ -13,20 +23,8 @@ import subprocess
 import sys
 from typing import List
 
+from worktree_hooks import rules as rules_mod
 from worktree_hooks.ctx import WorktreeContext
-
-# Default list of artifacts to symlink whole-path (source → worktree).
-# Can be extended later via config if needed.
-#
-# 为什么 ``.pi`` 不在这里：它是混合目录 —— tracked 部分跟着分支走，未跟踪部分
-# （``plans/`` ``lessons.md`` ``extensions/`` …）只有主 checkout 有。整路径 symlink
-# 在「目标已存在」时只能整条 skip（内容丢失），在「目标不存在」时又会把 tracked
-# 内容也串到主 checkout 的分支上。所以 ``.pi`` 改走 :func:`mirror_pi_untracked`
-# 的逐条目规则，判断源是 git 的未跟踪视图。
-DEFAULT_ARTIFACTS: List[str] = [
-    "node_modules",
-    ".gitignore",
-]
 
 PI_DIR = ".pi"
 
@@ -297,58 +295,46 @@ def unmirror_pi_untracked(ctx: WorktreeContext) -> None:
             print(f"  [ok] removed mirrored {PI_DIR}/{rel}", file=sys.stderr)
 
 
-def run_presetup_defaults(ctx: WorktreeContext) -> None:
-    """Symlink default artifacts from *source_repo* into *worktree_path*.
+def run_presetup_defaults(ctx: WorktreeContext, *, dry_run: bool = False) -> None:
+    """把主 checkout 的本地产物铺进 worktree，再镜像 ``.pi`` 的未跟踪条目。
 
-    Strategy:
-    - Whole-path artifacts (``node_modules`` / ``.gitignore``): absolute-target
-      symlink, skip if destination or source already exists / is missing.
-    - ``.pi``: :func:`mirror_pi_untracked` —— 逐条镜像 git 未跟踪条目，
-      整目录 symlink 只作为非 git / 空 ``.pi`` 的退化路径。
+    策略：
+    - 产物：全局规则表（:mod:`worktree_hooks.rules`）发现 → 判定 → 执行。清单不再
+      需要每个 repo 各写一份，pi-clients 的 5 条（三份 ``node_modules``、``app/.nsh``、
+      ``server/ops/env.local``）全部命中内置规则。
+    - ``.pi``: :func:`mirror_pi_untracked` —— 逐条镜像 git 未跟踪条目，整目录
+      symlink 只作为非 git / 空 ``.pi`` 的退化路径。
     """
-    for artifact in DEFAULT_ARTIFACTS:
-        src = os.path.abspath(os.path.join(ctx.source_repo, artifact))
-        dst = os.path.join(ctx.worktree_path, artifact)
-
-        if os.path.exists(dst) or os.path.islink(dst):
-            if ctx.verbose:
-                print(f"  [skip] {artifact} already exists", file=sys.stderr)
-            continue
-
-        if not os.path.exists(src):
-            if ctx.verbose:
-                print(
-                    f"  [skip] {artifact} not in source", file=sys.stderr,
-                )
-            continue
-
-        os.symlink(src, dst, target_is_directory=os.path.isdir(src))
-        print(f"  [ok] symlinked {artifact} → {src}", file=sys.stderr)
-
+    actions = rules_mod.build_plan(ctx.source_repo, ctx.worktree_path)
+    result = rules_mod.apply(
+        ctx.source_repo, ctx.worktree_path, actions,
+        dry_run=dry_run, verbose=ctx.verbose,
+    )
+    if result.failed:
+        print(
+            f"  [warn] {result.failed} 项没铺成（跑 worktree-hooks presetup -v 看细节）",
+            file=sys.stderr,
+        )
+    if dry_run:
+        return
     mirror_pi_untracked(ctx)
 
 
-def run_clean_defaults(ctx: WorktreeContext) -> None:
-    """Remove symlinks that ``run_presetup_defaults`` created.
+def run_clean_defaults(ctx: WorktreeContext, *, dry_run: bool = False) -> None:
+    """回收 ``run_presetup_defaults`` 建出来的链接。
 
-    Strategy:
-    - Only remove symlinks (``os.path.islink``), never regular files or
-      directories — safe against accidental deletion.
-    - ``.pi`` 已不在 ``DEFAULT_ARTIFACTS``（现在逐条目镜像），但旧版本留下的整目录
-      symlink 仍要回收：显式处理，然后走 :func:`unmirror_pi_untracked`。
+    策略：
+    - 只删**指向源同名条目**的链接（符号链接 + realpath 相符），tracked 内容与外来
+      链接一律不动；``linkdir`` 只删子项，目录本身留下。
+    - ``.pi`` 已不在产物清单里（逐条目镜像），但旧版本留下的整目录 symlink 仍要回收：
+      显式处理，然后走 :func:`unmirror_pi_untracked`。
     """
-    for artifact in DEFAULT_ARTIFACTS:
-        path = os.path.join(ctx.worktree_path, artifact)
-
-        if not os.path.islink(path):
-            if ctx.verbose:
-                print(
-                    f"  [skip] {artifact} not a symlink", file=sys.stderr,
-                )
-            continue
-
-        os.unlink(path)
-        print(f"  [ok] removed symlink {artifact}", file=sys.stderr)
+    rules_mod.clean(
+        ctx.source_repo, ctx.worktree_path,
+        dry_run=dry_run, verbose=ctx.verbose,
+    )
+    if dry_run:
+        return
 
     pi_path = os.path.join(ctx.worktree_path, PI_DIR)
     if os.path.islink(pi_path):

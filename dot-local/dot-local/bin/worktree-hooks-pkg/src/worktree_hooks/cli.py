@@ -8,11 +8,25 @@ import subprocess
 import sys
 from typing import Optional, Sequence
 
+from worktree_hooks import hooks as hooks_mod
+from worktree_hooks import rules as rules_mod
 from worktree_hooks.ctx import WorktreeContext
 from worktree_hooks.defaults import run_clean_defaults, run_presetup_defaults
-from worktree_hooks.plugin import call_plugin_hook, resolve_plugin
 
 COMMANDS = ("presetup", "clean", "list")
+
+LEGACY_PLUGIN_RELPATH = os.path.join(".pi", "worktree-hooks", "plugin.py")
+
+
+def _warn_legacy_plugin(source_repo: str) -> None:
+    """``plugin.py`` 不再执行：一条迁移提示，比静默失效好。"""
+    if os.path.isfile(os.path.join(source_repo, LEGACY_PLUGIN_RELPATH)):
+        print(
+            "  [warn] .pi/worktree-hooks/plugin.py 已不再执行；"
+            "改用 .pi/worktree-hooks.toml 的 [[rule]] / [[hook]]"
+            "（见 worktree-hooks --help）",
+            file=sys.stderr,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -75,9 +89,14 @@ def resolve_source_repo(worktree_path: str) -> Optional[str]:
 
 
 def _resolve_worktree_path(cwd: str, args_path: Optional[str]) -> str:
-    """Determine the worktree path from CLI args or CWD."""
+    """Determine the worktree path from CLI args or CWD.
+
+    相对路径按 **$PWD** 解析，不是按进程 cwd：`uv run --directory <pkg>` 会把进程 cwd
+    换到包目录，用 `os.path.abspath` 会把 `worktree-hooks presetup .` 解释成包目录自己
+    （在 dotfiles 里 → 铺错仓库）。
+    """
     if args_path:
-        return os.path.abspath(args_path)
+        return os.path.normpath(os.path.join(cwd, args_path))
     return os.path.abspath(cwd)
 
 
@@ -85,10 +104,33 @@ def _resolve_worktree_path(cwd: str, args_path: Optional[str]) -> str:
 # Argument parsing
 # ---------------------------------------------------------------------------
 
+CONFIG_DOC = """\
+声明式配置（全部可选；内置规则表见 `worktree-hooks list`）：
+
+  ~/.config/worktree-hooks/config.toml   全局覆盖
+  <repo>/.pi/worktree-hooks.toml         仓库覆盖（先命中先得）
+
+  [[rule]]                               路径形状 → 补法
+  match = "**/node_modules"              **/x = 任意深度叫 x；字面路径也支持
+  kind  = "node_modules"                 link | linkdir | node_modules
+  keep  = ["test", "test-logs"]          linkdir 专用：这些子项不链
+  # disable = ["**/.nsh"]                裁掉内置规则
+
+  [[hook]]                               对目录跑一条命令（argv，不经 shell）
+  on      = "presetup"                   presetup | clean
+  command = ["bash", "tools/x.sh", "{worktree}", "{name}"]
+  cwd     = "{worktree}"                 可选；占位符 {worktree} {source} {name}
+
+仓库有 `.pi/worktree-hooks/plugin.py` 时会打一条提示：那套插件钩子已不再执行。
+"""
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="worktree-hooks",
-        description="Project-level worktree lifecycle hooks.",
+        description="Worktree presetup driven by a declarative rule table.",
+        epilog=CONFIG_DOC,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "-v",
@@ -96,6 +138,13 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help="Enable verbose output",
+    )
+    parser.add_argument(
+        "-n",
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Print what presetup/clean would do, touch nothing",
     )
     parser.add_argument(
         "command",
@@ -141,12 +190,12 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         args.source_repo = resolve_source_repo(args.worktree_path)
     elif args.worktree_path is None:
         # One positional arg: it's the worktree_path, auto-derive source
-        args.worktree_path = os.path.abspath(args.source_repo)
+        args.worktree_path = _resolve_worktree_path(cwd, args.source_repo)
         args.source_repo = resolve_source_repo(args.worktree_path)
     else:
-        # Two positional args: use both as-is
-        args.source_repo = os.path.abspath(args.source_repo)
-        args.worktree_path = os.path.abspath(args.worktree_path)
+        # Two positional args: use both as-is（相对路径仍按 $PWD 解析）
+        args.source_repo = _resolve_worktree_path(cwd, args.source_repo)
+        args.worktree_path = _resolve_worktree_path(cwd, args.worktree_path)
 
     if args.source_repo is None:
         parser.error(
@@ -161,45 +210,65 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 # Dispatch
 # ---------------------------------------------------------------------------
 
-def cmd_presetup(ctx: WorktreeContext) -> None:
-    """Run presetup: defaults first, then plugin."""
+def cmd_presetup(ctx: WorktreeContext, *, dry_run: bool = False) -> None:
+    """Run presetup: 规则表铺产物 → 镜像 .pi → 仓库声明的命令钩子。
+
+    ``dry_run`` 只打印会做什么：不碰磁盘、不跑 npm、不跑钩子。
+    """
+    _warn_legacy_plugin(ctx.source_repo)
     if ctx.verbose:
         print("Running presetup defaults…", file=sys.stderr)
-    run_presetup_defaults(ctx)
+    run_presetup_defaults(ctx, dry_run=dry_run)
 
-    plugin = resolve_plugin(ctx.source_repo)
-    if plugin and ctx.verbose:
-        print("Running plugin presetup…", file=sys.stderr)
-    call_plugin_hook(plugin, "presetup", ctx)
+    hooks_mod.run_hooks(ctx, "presetup", dry_run=dry_run)
 
 
-def cmd_clean(ctx: WorktreeContext) -> None:
-    """Run clean: plugin first (so it can read resources), then defaults."""
-    plugin = resolve_plugin(ctx.source_repo)
-    if plugin and ctx.verbose:
-        print("Running plugin clean…", file=sys.stderr)
-    call_plugin_hook(plugin, "clean", ctx)
+def cmd_clean(ctx: WorktreeContext, *, dry_run: bool = False) -> None:
+    """Run clean: 钩子先跑（它可以先读自己的产物），再回收默认产物。"""
+    _warn_legacy_plugin(ctx.source_repo)
+    hooks_mod.run_hooks(ctx, "clean", dry_run=dry_run)
+    if dry_run:
+        run_clean_defaults(ctx, dry_run=True)
+        return
 
     if ctx.verbose:
         print("Running clean defaults…", file=sys.stderr)
     run_clean_defaults(ctx)
 
 
-def cmd_list(ctx: WorktreeContext) -> None:
-    """List available hooks for the worktree."""
+def cmd_list(ctx: WorktreeContext, *, dry_run: bool = False) -> None:
+    """List the effective rule table and command hooks for this repo."""
     print(f"source_repo:  {ctx.source_repo}", file=sys.stderr)
     print(f"worktree:     {ctx.worktree_path}", file=sys.stderr)
     print(f"worktree_name: {ctx.worktree_name}", file=sys.stderr)
+    print(f"config:       {rules_mod.global_config_path()}", file=sys.stderr)
 
-    plugin = resolve_plugin(ctx.source_repo)
-    if plugin is None:
-        print("plugin:       (none)", file=sys.stderr)
-    else:
-        hooks = []
-        for name in ("presetup", "clean"):
-            if hasattr(plugin, name):
-                hooks.append(name)
-        print(f"plugin hooks: {', '.join(hooks) or '(none)'}", file=sys.stderr)
+    rules = rules_mod.load_rules(ctx.source_repo)
+    print("rules:", file=sys.stderr)
+    for rule in rules:
+        keep = f" keep={','.join(rule.keep)}" if rule.keep else ""
+        print(f"  {rule.match:24} {rule.kind}{keep}", file=sys.stderr)
+
+    print("hooks:", file=sys.stderr)
+    hooks = hooks_mod.load_hooks(ctx.source_repo)
+    if not hooks:
+        print("  (none)", file=sys.stderr)
+    for hook in hooks:
+        print(
+            f"  on {hook.on:10} {' '.join(hook.command)}  (cwd={hook.cwd})",
+            file=sys.stderr,
+        )
+
+    actions = rules_mod.plan(
+        rules_mod.inspect(
+            ctx.source_repo,
+            ctx.worktree_path,
+            rules_mod.discover(ctx.source_repo, rules),
+        )
+    )
+    print(f"candidates:   {len(actions)}", file=sys.stderr)
+    for action in actions:
+        print(f"  {action.action:10} {action.path}", file=sys.stderr)
 
 
 COMMAND_DISPATCH = {
@@ -229,7 +298,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         sys.exit(2)
 
     try:
-        dispatch(ctx)
+        dispatch(ctx, dry_run=args.dry_run)
     except Exception as exc:
         print(f"Error running {args.command}: {exc}", file=sys.stderr)
         if ctx.verbose:

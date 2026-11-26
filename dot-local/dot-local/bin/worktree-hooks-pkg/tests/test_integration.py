@@ -170,13 +170,25 @@ class TestCLIIntegration(unittest.TestCase):
 
     # -- list --------------------------------------------------------------
 
-    def test_list_no_plugin(self) -> None:
-        """list should report no plugin when none exists."""
+    def test_list_reports_rules_and_hooks(self) -> None:
+        """list 打印生效的规则表；没有命令钩子时明说 (none)。"""
         result = run_cli("list", self.source, self.worktree)
         self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("**/node_modules", result.stderr)
+        self.assertIn("hooks:", result.stderr)
         self.assertIn("(none)", result.stderr)
 
     # -- errors ------------------------------------------------------------
+
+    def test_relative_path_resolves_against_pwd(self) -> None:
+        """`presetup --dry-run .` 必须按 $PWD 解析，不是按 `uv run --directory` 的包目录。
+
+        包目录本身在 dotfiles 仓库里：按进程 cwd 解析会去铺 dotfiles，本仓库一个字不动，
+        而且看起来「成功」。
+        """
+        result = run_cli("list", ".", cwd=self.worktree)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn(f"worktree:     {self.worktree}", result.stderr)
 
     def test_invalid_command(self) -> None:
         """An unknown command should exit with code 2."""
@@ -204,8 +216,8 @@ class TestCLIIntegration(unittest.TestCase):
             self.assertTrue(os.path.islink(os.path.join(wt, ".pi")))
 
 
-class TestCLIWithPlugin(unittest.TestCase):
-    """Integration tests with a real project plugin."""
+class TestCLIWithDeclarativeHooks(unittest.TestCase):
+    """仓库用 `.pi/worktree-hooks.toml` 声明命令钩子（取代旧的 plugin.py）。"""
 
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
@@ -220,95 +232,77 @@ class TestCLIWithPlugin(unittest.TestCase):
         with open(os.path.join(self.source, ".gitignore"), "w") as f:
             f.write("*.pyc\n")
 
-        # Write a plugin
-        plugin_dir = os.path.join(
-            self.source, ".pi", "worktree-hooks",
+        # 声明式钩子：写标记文件，clean 时删掉 —— 只用 argv，不经过 shell。
+        _write(
+            os.path.join(self.source, ".pi", "worktree-hooks.toml"),
+            "[[hook]]\n"
+            'on = "presetup"\n'
+            'command = ["sh", "-c", "echo ok > .hook-ran"]\n'
+            "\n"
+            "[[hook]]\n"
+            'on = "clean"\n'
+            'command = ["rm", "-f", "{worktree}/.hook-ran"]\n',
         )
-        os.makedirs(plugin_dir, exist_ok=True)
-        with open(os.path.join(plugin_dir, "plugin.py"), "w") as f:
-            f.write(
-                "def presetup(ctx):\n"
-                "    import os\n"
-                '    marker = os.path.join(ctx.worktree_path, ".plugin-ran")\n'
-                "    with open(marker, \"w\") as fh:\n"
-                '        fh.write("ok")\n'
-                "def clean(ctx):\n"
-                "    import os\n"
-                '    marker = os.path.join(ctx.worktree_path, ".plugin-ran")\n'
-                "    if os.path.exists(marker):\n"
-                "        os.unlink(marker)\n"
-            )
 
         # Git init so source-repo derivation works
-        subprocess.run(
-            ["git", "init"],
-            cwd=self.source,
-            capture_output=True,
-            timeout=10,
-        )
-        subprocess.run(
-            ["git", "config", "user.email", "test@test"],
-            cwd=self.source,
-            capture_output=True,
-            timeout=10,
-        )
-        subprocess.run(
-            ["git", "config", "user.name", "Test"],
-            cwd=self.source,
-            capture_output=True,
-            timeout=10,
-        )
-        subprocess.run(
-            ["git", "add", "."],
-            cwd=self.source,
-            capture_output=True,
-            timeout=10,
-        )
-        subprocess.run(
-            ["git", "commit", "-m", "initial"],
-            cwd=self.source,
-            capture_output=True,
-            timeout=10,
-        )
+        _git(self.source, "init", "-q")
+        _git(self.source, "config", "user.email", "test@example.com")
+        _git(self.source, "config", "user.name", "Test")
+        _git(self.source, "add", ".")
+        _git(self.source, "commit", "-q", "-m", "initial")
 
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
-    def test_plugin_executed_after_defaults(self) -> None:
-        """Plugin.presetup runs after default symlinks are created."""
+    def test_hook_runs_after_defaults(self) -> None:
+        """钩子在默认产物铺好之后跑（它可能要读那些产物）。"""
         result = run_cli("presetup", self.source, self.worktree)
         self.assertEqual(result.returncode, 0, msg=result.stderr)
 
-        # Defaults created symlinks
         self.assertTrue(os.path.islink(os.path.join(self.worktree, ".pi")))
-        # Plugin created its marker
         self.assertTrue(
-            os.path.isfile(os.path.join(self.worktree, ".plugin-ran")),
+            os.path.isfile(os.path.join(self.worktree, ".hook-ran")),
         )
 
-    def test_plugin_clean_before_defaults(self) -> None:
-        """Plugin.clean runs before default symlink removal."""
-        # Setup
+    def test_clean_hook_runs_before_defaults(self) -> None:
         run_cli("presetup", self.source, self.worktree)
-        self.assertTrue(os.path.isfile(os.path.join(self.worktree, ".plugin-ran")))
+        self.assertTrue(os.path.isfile(os.path.join(self.worktree, ".hook-ran")))
 
-        # Clean
         result = run_cli("clean", self.source, self.worktree)
         self.assertEqual(result.returncode, 0, msg=result.stderr)
 
-        # Plugin marker should be gone (plugin.clean ran)
+        self.assertFalse(
+            os.path.isfile(os.path.join(self.worktree, ".hook-ran")),
+        )
+        self.assertFalse(os.path.islink(os.path.join(self.worktree, ".pi")))
+
+    def test_dry_run_does_not_execute_hooks(self) -> None:
+        result = run_cli("presetup", "--dry-run", self.source, self.worktree)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("would run", result.stdout)
+        self.assertFalse(
+            os.path.isfile(os.path.join(self.worktree, ".hook-ran")),
+        )
+
+    def test_list_shows_declarative_hooks(self) -> None:
+        result = run_cli("list", self.source, self.worktree)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("on presetup", result.stderr)
+        self.assertIn("on clean", result.stderr)
+
+    def test_legacy_plugin_warns_instead_of_running(self) -> None:
+        """旧的 plugin.py 不再执行，但要说出来（静默失效最难查）。"""
+        _write(
+            os.path.join(self.source, ".pi", "worktree-hooks", "plugin.py"),
+            "def presetup(ctx):\n"
+            "    open(ctx.worktree_path + '/.plugin-ran', 'w').close()\n",
+        )
+        result = run_cli("presetup", self.source, self.worktree)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("plugin.py 已不再执行", result.stderr)
         self.assertFalse(
             os.path.isfile(os.path.join(self.worktree, ".plugin-ran")),
         )
-        # Symlinks should also be gone
-        self.assertFalse(os.path.islink(os.path.join(self.worktree, ".pi")))
-
-    def test_list_shows_plugin_hooks(self) -> None:
-        """list should report the plugin's hooks."""
-        result = run_cli("list", self.source, self.worktree)
-        self.assertEqual(result.returncode, 0, msg=result.stderr)
-        self.assertIn("presetup", result.stderr)
-        self.assertIn("clean", result.stderr)
 
 
 class TestCLIRealWorktree(unittest.TestCase):

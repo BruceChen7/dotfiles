@@ -9,7 +9,6 @@ import unittest
 
 from worktree_hooks.ctx import WorktreeContext
 from worktree_hooks.defaults import (
-    DEFAULT_ARTIFACTS,
     LINK,
     SKIP,
     TRUNK_MKDIR,
@@ -20,6 +19,10 @@ from worktree_hooks.defaults import (
     run_presetup_defaults,
     untracked_entries,
 )
+
+# 产物清单现在由全局规则表提供（`worktree_hooks.rules`），本文件只断言其中
+# 在本机 checkout 里最常见的两项。规则表自己的行为在 test_rules.py 里测。
+ARTIFACTS = ("node_modules", ".gitignore")
 
 GIT_TIMEOUT = 10
 
@@ -560,7 +563,7 @@ class TestDefaultsPresetup(unittest.TestCase):
         """All default artifacts should be symlinked into the worktree."""
         run_presetup_defaults(self.ctx)
 
-        for artifact in DEFAULT_ARTIFACTS:
+        for artifact in ARTIFACTS:
             dst = os.path.join(self.worktree, artifact)
             self.assertTrue(
                 os.path.islink(dst), f"{artifact} should be a symlink"
@@ -599,20 +602,19 @@ class TestDefaultsPresetup(unittest.TestCase):
         )
 
     def test_skip_missing_source(self) -> None:
-        """If a source artifact does not exist, skip silently."""
-        extra_artifact = "some-extra-file"
+        """源里没有的条目不会被凭空造出来（也不报错）。
+
+        规则表是从源仓库**发现**候选的，所以「两边都没有」的路径根本不会进计划 ——
+        这是与旧清单式实现的行为差异：缺 `env.local` 之类的私参不再点名 warn，
+        留给真正需要它的命令自己报。
+        """
         os.remove(os.path.join(self.source, ".gitignore"))
 
-        # Manually extend for this test
-        orig = DEFAULT_ARTIFACTS[:]
-        try:
-            DEFAULT_ARTIFACTS.append(extra_artifact)
-            # .gitignore was removed; extra_artifact doesn't exist either.
-            run_presetup_defaults(self.ctx)
-            dst = os.path.join(self.worktree, extra_artifact)
-            self.assertFalse(os.path.lexists(dst))
-        finally:
-            DEFAULT_ARTIFACTS[:] = orig
+        run_presetup_defaults(self.ctx)
+
+        self.assertFalse(
+            os.path.lexists(os.path.join(self.worktree, ".gitignore"))
+        )
 
 
 class TestDefaultsClean(unittest.TestCase):
@@ -647,7 +649,7 @@ class TestDefaultsClean(unittest.TestCase):
         """Clean should remove all symlinks created by presetup."""
         run_clean_defaults(self.ctx)
 
-        for artifact in DEFAULT_ARTIFACTS:
+        for artifact in ARTIFACTS:
             dst = os.path.join(self.worktree, artifact)
             self.assertFalse(os.path.islink(dst), f"{artifact} should be removed")
             self.assertFalse(os.path.exists(dst), f"{artifact} should not exist")
