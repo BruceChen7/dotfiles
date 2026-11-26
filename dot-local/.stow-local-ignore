@@ -3,3 +3,6 @@ __pycache__
 \.pyc
 \.egg-info
 \.lock
+# 新文档不进 $HOME；README.md 保持包原有的 stow 行为，避免旧机器上的 symlink
+# 因规则变更变成「不属于 stow」的冲突。
+^WORKTREE\.md$

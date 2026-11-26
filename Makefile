@@ -5,6 +5,7 @@
 #                            plugin dirs go through herdr-install — see
 #                            herdr/.stow-local-ignore)
 #   make stow PACKAGE=nvim  stow a single package (must be in the whitelist)
+#   make stow-nvim          same thing, shorter (works for every managed package)
 #   make dryrun             preview what stow would create/conflict (no changes)
 #   make list               show the managed packages
 #   make test               run the nvim pi.cr plenary busted specs
@@ -33,6 +34,13 @@ stow:
 	else \
 		$(STOW) $(PACKAGES); \
 	fi
+
+# Per-package shorthand: `make stow-dot-local` == `make stow PACKAGE=dot-local`.
+# Generated from the same whitelist instead of duplicating it. (A pattern rule
+# `stow-%` would be simpler, but macOS make 3.81 never runs it with no prereqs.)
+.PHONY: $(addprefix stow-,$(PACKAGES))
+$(addprefix stow-,$(PACKAGES)):
+	@$(MAKE) stow PACKAGE=$(patsubst stow-%,%,$@)
 
 dryrun:
 	$(STOW) -n $(PACKAGES)

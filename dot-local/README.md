@@ -6,10 +6,15 @@
 
 ```bash
 cd ~/work/dotfiles
-stow --dotfiles -t ~ dot-local
+make stow-dot-local
 ```
 
 `--dotfiles` 将包内 `dot-local/` 路径重命名为 `.local/`，使目标路径正确落在 `~/.local/bin/`。
+同时把 `.config/worktree-hooks/config.toml` 链到 `~/.config/worktree-hooks/config.toml`
+（worktree-hooks 的全局规则表；字面 `.config/` 与 herdr 包同一写法）。
+
+worktree 的现役链路（内置规则表、TOML 声明、pi-clients 侧的消费改动）见
+[WORKTREE.md](WORKTREE.md)。
 
 ## 包含内容
 

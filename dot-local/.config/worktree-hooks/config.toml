@@ -1,0 +1,45 @@
+# worktree-hooks 的**全局**声明，随 dotfiles 的 dot-local 包 stow 到
+#   ~/.config/worktree-hooks/config.toml
+# （`make stow` / `stow --dotfiles -t ~ dot-local`；`--dotfiles` 只作用于 dot-local/，
+#   这里沿 herdr/.config 的写法用字面 .config。）
+#
+# 覆盖顺序：仓库 .pi/worktree-hooks.toml → 本文件 → 工具内置表（先命中先得）。
+# 本机临时替换整个文件可设 WORKTREE_HOOKS_CONFIG=/path/to/config.toml。
+#
+# 这里只放「跨 repo 同一件事」的路径形状。下面五条与 worktree_hooks/rules.py 的
+# BUILTIN_RULES 基线一致：本机即使没 stow 也能工作，stow 后得到同一张表；
+# 改这里等于在本机所有 repo 上改判据，改之前先看 `worktree-hooks list` 的候选。
+#
+# 不要放仓库专属命令：pi-clients 的 `[[hook]] on = "presetup"` 调
+# `bash tools/worktree-branch.sh {worktree} {name}` 属于仓库自己，留在
+# ~/work/pi-clients/.pi/worktree-hooks.toml（详见 dot-local/WORKTREE.md）。
+# 全局钩子只写真的对所有 repo 都成立的命令；钩子失败只 warn，不会中断建 worktree。
+
+# node_modules 从主 checkout 共享；源里没有就 npm ci；清单更新就地重装。
+[[rule]]
+match = "**/node_modules"
+kind = "node_modules"
+
+# .nsh 目录本身是真目录、子项逐个链；整目录 symlink 会让 nsh 认错 app 根。
+[[rule]]
+match = "**/.nsh"
+kind = "linkdir"
+keep = ["test", "test-logs"]
+
+# 本机私参，链接过来；源里没有就不进计划，由真正需要它的命令报错。
+[[rule]]
+match = "**/env.local"
+kind = "link"
+
+# 嵌套 .pi（如 tools/.pi）逐子项链；根 .pi 由 defaults 按 git 未跟踪视图镜像，
+# 不受这条规则影响。
+[[rule]]
+match = "**/.pi"
+kind = "linkdir"
+
+[[rule]]
+match = ".gitignore"
+kind = "link"
+
+# 需要裁掉上面某条时写 disable（match 精确匹配，例如：
+# disable = ["**/.nsh"]），仓库级 disable 与本文件的合并后一起生效。
